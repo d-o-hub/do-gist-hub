@@ -34,6 +34,7 @@ export interface GistDBSchema extends DBSchema {
     key: string;
     value: MetadataRecord;
   };
+  [key: string]: any;
 }
 
 /**
@@ -115,7 +116,7 @@ export async function initIndexedDB(): Promise<IDBPDatabase<GistDBSchema>> {
   }
   
   dbInstance = await openDB<GistDBSchema>(DB_NAME, DB_VERSION, {
-    upgrade(db, oldVersion, newVersion, transaction) {
+    upgrade(db, oldVersion, newVersion) {
       console.log(`[IndexedDB] Upgrading from ${oldVersion} to ${newVersion}`);
       
       // Create gists store

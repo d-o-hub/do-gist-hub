@@ -1,0 +1,17 @@
+{
+  "name": "GitHub Gist Manager",
+  "short_name": "GistManager",
+  "description": "Manage your GitHub Gists with offline-first support",
+  "theme_color": "#0d1117",
+  "background_color": "#0d1117",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
