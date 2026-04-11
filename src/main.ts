@@ -1,27 +1,17 @@
 import { App } from './components/app';
-import { initDesignTokens } from './tokens/design-tokens';
+import { initDesignTokens, initTheme } from './tokens/design-tokens';
 import { initIndexedDB } from './services/db';
-import { registerSW } from 'virtual:pwa-register';
+import './styles/base.css';
 
 // Initialize design tokens
 initDesignTokens();
 
+// Initialize theme from stored preference or system setting
+initTheme();
+
 // Initialize IndexedDB
 initIndexedDB().catch((error) => {
   console.error('Failed to initialize IndexedDB:', error);
-});
-
-// Register service worker
-registerSW({
-  immediate: false,
-  onRegisteredSW(swUrl, r) {
-    if (r?.active) {
-      console.log('Service Worker active');
-    }
-  },
-  onNeedRefresh() {
-    console.log('New content available, please refresh.');
-  },
 });
 
 // Mount app
