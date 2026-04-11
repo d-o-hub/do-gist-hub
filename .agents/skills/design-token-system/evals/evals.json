@@ -1,0 +1,17 @@
+{
+  "skill_name": "design-token-system",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a production-ready design token system from this demo. Need primitive tokens, semantic tokens, and component tokens following DTCG standards.",
+      "expected_output": "Generated complete token architecture with primitive/colors.ts, semantic/color-semantic.ts, component/button.ts files. Tokens use DTCG format with $type, $value, $description. Includes CSS variable generation and TypeScript types.",
+      "files": ["evals/files/demo-tokens.json"]
+    },
+    {
+      "id": 2,
+      "prompt": "Add theme support (light/dark) and responsive scaling to our token system for mobile, tablet, desktop breakpoints",
+      "expected_output": "Extended token system with theme variants in semantic layer, responsive spacing/breakpoint tokens, and media query-aware CSS custom properties that scale appropriately across screen sizes.",
+      "files": ["evals/files/existing-tokens.ts"]
+    }
+  ]
+}

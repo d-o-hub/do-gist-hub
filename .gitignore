@@ -2,85 +2,60 @@
 # Dependencies
 node_modules/
 
-# Build outputs
-dist/
-build/
-target/
-
-# TypeScript/JavaScript
-*.tsbuildinfo
-*.js.map
-*.mjs.map
-
-# Environment
+# Environment files
 .env
 .env.local
-*.env.*
+.env.*
 
-# Logs
-*.log
-
-# Editor
+# Editor/IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 *.tmp
 
-# OS
-.DS_Store
-Thumbs.db
+# Logs
+*.log
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# Python (if applicable)
+# Python specific
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
-venv/
-.venv/
-.env
+
+# Build artifacts
+dist/
+build/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.out
+
+# Testing and coverage
+.coverage
+coverage/
+htmlcov/
 .mypy_cache/
 .pytest_cache/
-.tox/
 
-# Java (if applicable)
-*.class
-*.jar
-*.war
-*.ear
+# System files
+.DS_Store
+Thumbs.db
+
+# Java/Gradle
+target/
 .gradle/
-build/
-target/
 
-# C/C++ (if applicable)
-*.o
-*.a
-*.so
-*.dll
-*.exe
-*.out
-*.obj
-
-# Go (if applicable)
+# Go
 *.exe
 *.dll
 *.so
 *.dylib
 
-# Rust (if applicable)
-*.o
-*.a
-*.so
-*.dylib
-target/
-
-# Compression
+# Compressed files
 *.zip
 *.gz
 *.tar

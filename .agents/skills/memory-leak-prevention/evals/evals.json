@@ -1,0 +1,46 @@
+{
+  "skill_name": "memory-leak-prevention",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this React component for memory leaks: src/components/DataFetcher.tsx. It uses useEffect with setInterval and event listeners.",
+      "expected_output": "Identified memory leak issues with setInterval not being cleared on unmount and event listeners not being removed. Provided fixed code with proper cleanup functions in useEffect return statements.",
+      "files": ["evals/files/DataFetcher.tsx"],
+      "assertions": [
+        "The output identifies the missing cleanup function in useEffect as a memory leak source",
+        "The output identifies that setInterval is not being cleared on unmount",
+        "The output identifies that the resize event listener is never removed",
+        "The output provides corrected code with a cleanup function returned from useEffect",
+        "The corrected code includes clearInterval(intervalId) in the cleanup",
+        "The corrected code includes window.removeEventListener('resize', handleResize) in the cleanup"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Check for memory leaks in this Vue component that creates WebSocket connections and subscribes to RxJS observables",
+      "expected_output": "Found missing cleanup for WebSocket connections and Observable subscriptions. Provided corrected code with proper teardown in beforeUnmount or onUnmounted hooks.",
+      "files": ["evals/files/WebSocketComponent.vue"],
+      "assertions": [
+        "The output identifies the WebSocket connection is not closed on component unmount",
+        "The output identifies the RxJS subscription is never unsubscribed",
+        "The output provides corrected code using onUnmounted hook for cleanup",
+        "The corrected code includes ws.close() or ws.terminate() in the cleanup",
+        "The corrected code includes subscription.unsubscribe() in the cleanup"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Analyze this Node.js service for potential memory leaks - it has global variables, caches, and event emitters",
+      "expected_output": "Identified unbounded cache growth, global variable accumulation, and event listener leaks on EventEmitter. Recommended WeakMap/WeakSet, bounded LRU cache, and removeListener calls.",
+      "files": ["evals/files/cache-service.js"],
+      "assertions": [
+        "The output identifies the unbounded cache growth (no size limit)",
+        "The output identifies the globalCache object grows without bounds",
+        "The output identifies that event listeners are added but never removed on each instance creation",
+        "The output recommends using an LRU cache or size-limited cache",
+        "The output recommends using appEvents.removeListener() or appEvents.off() in cleanup",
+        "The output mentions WeakMap/WeakSet as an option for preventing memory leaks with object keys"
+      ]
+    }
+  ]
+}

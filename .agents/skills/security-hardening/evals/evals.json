@@ -1,0 +1,17 @@
+{
+  "skill_name": "security-hardening",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Audit this authentication module for security vulnerabilities including XSS, CSRF, and insecure token handling",
+      "expected_output": "Identified missing CSRF tokens, unsafe innerHTML usage enabling XSS, tokens stored in localStorage instead of httpOnly cookies. Provided hardened code with CSRF protection, textContent instead of innerHTML, and secure token storage recommendations.",
+      "files": ["evals/files/auth-module.js"]
+    },
+    {
+      "id": 2,
+      "prompt": "Review this API endpoint for OWASP Top 10 vulnerabilities - SQL injection, auth bypass, sensitive data exposure",
+      "expected_output": "Found SQL injection via string concatenation, missing auth checks on sensitive endpoint, PII returned without redaction. Fixed with parameterized queries, middleware auth verification, and response filtering.",
+      "files": ["evals/files/api-endpoint.ts"]
+    }
+  ]
+}
