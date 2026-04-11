@@ -1,0 +1,17 @@
+{
+  "skill_name": "repo-bootstrap",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Initialize a new repository with the standard AI agent workflow structure. Need .agents/skills, plans/, agents-docs/, and proper symlinks for Claude, Gemini, and Qwen.",
+      "expected_output": "Created complete directory structure (.agents/skills, plans, agents-docs, scripts, src/ subdirectories), setup-skills.sh script for creating symlinks, quality_gate.sh for pre-commit validation, and working symlinks in .claude/skills, .gemini/skills, .qwen/skills.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Set up pre-commit hooks and quality gates for this repo. Should validate skills, run typecheck, and lint before commits.",
+      "expected_output": "Created pre-commit-hook.sh with global hooks check, quality_gate.sh running typecheck/lint/validate-skills, validate-skills.sh checking SKILL.md frontmatter. All scripts are executable and quality gate fails fast on first error.",
+      "files": ["evals/files/package.json"]
+    }
+  ]
+}

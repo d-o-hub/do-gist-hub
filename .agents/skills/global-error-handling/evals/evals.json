@@ -1,0 +1,23 @@
+{
+  "skill_name": "global-error-handling",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Implement error handling for this API fetch function that calls GitHub API. Handle rate limiting, auth failures, and network errors appropriately.",
+      "expected_output": "Created structured error handling with AppError class, proper error codes for different failure modes (AUTH_INVALID_TOKEN, API_RATE_LIMITED, NETWORK_OFFLINE), user-safe error messages, and redacted logging that doesn't expose tokens.",
+      "files": ["evals/files/github-fetch.ts"]
+    },
+    {
+      "id": 2,
+      "prompt": "Add error boundaries to this React app to prevent white screen of death on component crashes",
+      "expected_output": "Implemented GlobalErrorBoundary and RouteErrorBoundary components with componentDidCatch, getDerivedStateFromError, fallback UI screens, and proper error logging with context.",
+      "files": ["evals/files/App.tsx"]
+    },
+    {
+      "id": 3,
+      "prompt": "Create offline detection and graceful degradation for this PWA that syncs data to GitHub",
+      "expected_output": "Implemented OfflineMonitor class with online/offline event listeners, isOnline() method, subscribe() for reactive updates, and UI states that inform users of offline status with queued actions.",
+      "files": ["evals/files/sync-service.ts"]
+    }
+  ]
+}
