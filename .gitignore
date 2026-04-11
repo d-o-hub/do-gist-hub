@@ -2,83 +2,35 @@
 # Dependencies
 node_modules/
 
-# Build outputs
-dist/
-build/
-target/
-
-# TypeScript/JavaScript
-*.tsbuildinfo
-*.js.map
-*.mjs.map
-
 # Environment
 .env
 .env.local
-*.env.*
+.env.*
 
-# Logs
+# Logs and temp files
 *.log
-
-# Editor
-.vscode/
-.idea/
-*.swp
-*.swo
 *.tmp
 
-# OS
-.DS_Store
-Thumbs.db
+# Editors
+.vscode/
+.idea/
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# Python (if applicable)
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
-venv/
-.venv/
-.env
-.mypy_cache/
-.pytest_cache/
-.tox/
 
-# Java (if applicable)
-*.class
-*.jar
-*.war
-*.ear
-.gradle/
+# Build outputs
+dist/
 build/
-target/
-
-# C/C++ (if applicable)
 *.o
-*.a
+*.obj
 *.so
+*.a
 *.dll
 *.exe
 *.out
-*.obj
-
-# Go (if applicable)
-*.exe
-*.dll
-*.so
-*.dylib
-
-# Rust (if applicable)
-*.o
-*.a
-*.so
-*.dylib
-target/
 
 # Compression
 *.zip
@@ -103,4 +55,34 @@ target/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Java/Maven
+target/
+.gradle/
+*.class
+
+# Go
+*.mod
+*.sum
+
+# Rust
+target/
+Cargo.lock
+
+# Julia
+julia-*/
+
+# Zig
+zig*/
 ```
