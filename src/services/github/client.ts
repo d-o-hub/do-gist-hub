@@ -1,24 +1,37 @@
 /**
  * GitHub API Client
  * Handles all REST API calls to GitHub Gist API
+ * All requests support AbortController for cancellation
  */
 
-import type { 
-  GitHubGist, 
-  CreateGistRequest, 
-  UpdateGistRequest, 
+import type {
+  GitHubGist,
+  CreateGistRequest,
+  UpdateGistRequest,
   GistRevision,
   TokenInfo,
-  GitHubError 
+  GitHubError
 } from '../../types/api';
 
 const BASE_URL = 'https://api.github.com';
 
 /**
+ * Global abort controller for cancelling all in-flight requests
+ */
+let globalAbortController = new AbortController();
+
+/**
+ * Cancel all in-flight requests and create a new abort controller
+ */
+export function cancelAllRequests(): void {
+  globalAbortController.abort();
+  globalAbortController = new AbortController();
+}
+
+/**
  * Get stored PAT from IndexedDB
  */
 async function getAuthToken(): Promise<string | null> {
-  // Import dynamically to avoid circular dependencies
   const { getMetadata } = await import('../db');
   return (await getMetadata<string>('github-pat')) || null;
 }
@@ -28,7 +41,7 @@ async function getAuthToken(): Promise<string | null> {
  */
 async function buildHeaders(): Promise<HeadersInit> {
   const token = await getAuthToken();
-  
+
   return {
     'Accept': 'application/vnd.github.v3+json',
     'Content-Type': 'application/json',
@@ -37,19 +50,38 @@ async function buildHeaders(): Promise<HeadersInit> {
 }
 
 /**
+ * Build request options with signal and headers
+ */
+async function buildOptions(
+  method: string = 'GET',
+  body?: string
+): Promise<RequestInit> {
+  return {
+    method,
+    headers: await buildHeaders(),
+    signal: globalAbortController.signal,
+    ...(body ? { body } : {}),
+  };
+}
+
+/**
  * Handle API errors with proper typing
  */
 function handleApiError(error: unknown, context: string): never {
+  if (error instanceof DOMException && error.name === 'AbortError') {
+    throw new Error(`Request cancelled: ${context}`);
+  }
+
   console.error(`[GitHub API] ${context}:`, error);
-  
+
   if (error instanceof Response) {
     throw new Error(`GitHub API Error: ${error.status} ${error.statusText}`);
   }
-  
+
   if (error instanceof Error) {
     throw error;
   }
-  
+
   throw new Error(`Unknown error in ${context}: ${String(error)}`);
 }
 
@@ -64,7 +96,7 @@ export async function validateToken(token: string): Promise<TokenInfo> {
         'Authorization': `token ${token}`,
       },
     });
-    
+
     if (!response.ok) {
       const error = await response.json() as GitHubError;
       return {
@@ -72,10 +104,9 @@ export async function validateToken(token: string): Promise<TokenInfo> {
         error: error.message || 'Invalid token',
       };
     }
-    
+
     const user = await response.json();
-    
-    // Check for gist scope (fine-grained tokens don't use scopes the same way)
+
     return {
       isValid: true,
       username: user.login,
@@ -92,30 +123,26 @@ export async function validateToken(token: string): Promise<TokenInfo> {
  * List user's gists with pagination
  */
 export async function listGists(
-  options: { 
-    page?: number; 
-    perPage?: number; 
-    since?: string;
-  } = {}
+  options: { page?: number; perPage?: number; since?: string } = {}
 ): Promise<GitHubGist[]> {
   const { page = 1, perPage = 30, since } = options;
-  
+
   const params = new URLSearchParams({
     page: String(page),
     per_page: String(perPage),
     ...(since ? { since } : {}),
   });
-  
+
   try {
     const response = await fetch(
       `${BASE_URL}/users/${await getCurrentUsername()}/gists?${params}`,
-      { headers: await buildHeaders() }
+      await buildOptions()
     );
-    
+
     if (!response.ok) {
       handleApiError(response, 'listGists');
     }
-    
+
     return response.json() as Promise<GitHubGist[]>;
   } catch (error) {
     return handleApiError(error, 'listGists');
@@ -129,22 +156,22 @@ export async function listStarredGists(
   options: { page?: number; perPage?: number } = {}
 ): Promise<GitHubGist[]> {
   const { page = 1, perPage = 30 } = options;
-  
+
   const params = new URLSearchParams({
     page: String(page),
     per_page: String(perPage),
   });
-  
+
   try {
     const response = await fetch(
       `${BASE_URL}/gists/starred?${params}`,
-      { headers: await buildHeaders() }
+      await buildOptions()
     );
-    
+
     if (!response.ok) {
       handleApiError(response, 'listStarredGists');
     }
-    
+
     return response.json() as Promise<GitHubGist[]>;
   } catch (error) {
     return handleApiError(error, 'listStarredGists');
@@ -158,13 +185,13 @@ export async function getGist(id: string): Promise<GitHubGist> {
   try {
     const response = await fetch(
       `${BASE_URL}/gists/${id}`,
-      { headers: await buildHeaders() }
+      await buildOptions()
     );
-    
+
     if (!response.ok) {
       handleApiError(response, 'getGist');
     }
-    
+
     return response.json() as Promise<GitHubGist>;
   } catch (error) {
     return handleApiError(error, 'getGist');
@@ -176,16 +203,15 @@ export async function getGist(id: string): Promise<GitHubGist> {
  */
 export async function createGist(payload: CreateGistRequest): Promise<GitHubGist> {
   try {
-    const response = await fetch(`${BASE_URL}/gists`, {
-      method: 'POST',
-      headers: await buildHeaders(),
-      body: JSON.stringify(payload),
-    });
-    
+    const response = await fetch(
+      `${BASE_URL}/gists`,
+      await buildOptions('POST', JSON.stringify(payload))
+    );
+
     if (!response.ok) {
       handleApiError(response, 'createGist');
     }
-    
+
     return response.json() as Promise<GitHubGist>;
   } catch (error) {
     return handleApiError(error, 'createGist');
@@ -196,20 +222,19 @@ export async function createGist(payload: CreateGistRequest): Promise<GitHubGist
  * Update an existing gist
  */
 export async function updateGist(
-  id: string, 
+  id: string,
   payload: UpdateGistRequest
 ): Promise<GitHubGist> {
   try {
-    const response = await fetch(`${BASE_URL}/gists/${id}`, {
-      method: 'PATCH',
-      headers: await buildHeaders(),
-      body: JSON.stringify(payload),
-    });
-    
+    const response = await fetch(
+      `${BASE_URL}/gists/${id}`,
+      await buildOptions('PATCH', JSON.stringify(payload))
+    );
+
     if (!response.ok) {
       handleApiError(response, 'updateGist');
     }
-    
+
     return response.json() as Promise<GitHubGist>;
   } catch (error) {
     return handleApiError(error, 'updateGist');
@@ -221,11 +246,11 @@ export async function updateGist(
  */
 export async function deleteGist(id: string): Promise<void> {
   try {
-    const response = await fetch(`${BASE_URL}/gists/${id}`, {
-      method: 'DELETE',
-      headers: await buildHeaders(),
-    });
-    
+    const response = await fetch(
+      `${BASE_URL}/gists/${id}`,
+      await buildOptions('DELETE')
+    );
+
     if (!response.ok) {
       handleApiError(response, 'deleteGist');
     }
@@ -239,11 +264,11 @@ export async function deleteGist(id: string): Promise<void> {
  */
 export async function starGist(id: string): Promise<void> {
   try {
-    const response = await fetch(`${BASE_URL}/gists/${id}/star`, {
-      method: 'PUT',
-      headers: await buildHeaders(),
-    });
-    
+    const response = await fetch(
+      `${BASE_URL}/gists/${id}/star`,
+      await buildOptions('PUT')
+    );
+
     if (!response.ok) {
       handleApiError(response, 'starGist');
     }
@@ -257,11 +282,11 @@ export async function starGist(id: string): Promise<void> {
  */
 export async function unstarGist(id: string): Promise<void> {
   try {
-    const response = await fetch(`${BASE_URL}/gists/${id}/star`, {
-      method: 'DELETE',
-      headers: await buildHeaders(),
-    });
-    
+    const response = await fetch(
+      `${BASE_URL}/gists/${id}/star`,
+      await buildOptions('DELETE')
+    );
+
     if (!response.ok) {
       handleApiError(response, 'unstarGist');
     }
@@ -275,10 +300,11 @@ export async function unstarGist(id: string): Promise<void> {
  */
 export async function checkIfStarred(id: string): Promise<boolean> {
   try {
-    const response = await fetch(`${BASE_URL}/gists/${id}/star`, {
-      headers: await buildHeaders(),
-    });
-    
+    const response = await fetch(
+      `${BASE_URL}/gists/${id}/star`,
+      await buildOptions()
+    );
+
     return response.status === 204;
   } catch (error) {
     console.error('[GitHub API] checkIfStarred:', error);
@@ -291,15 +317,15 @@ export async function checkIfStarred(id: string): Promise<boolean> {
  */
 export async function forkGist(id: string): Promise<GitHubGist> {
   try {
-    const response = await fetch(`${BASE_URL}/gists/${id}/forks`, {
-      method: 'POST',
-      headers: await buildHeaders(),
-    });
-    
+    const response = await fetch(
+      `${BASE_URL}/gists/${id}/forks`,
+      await buildOptions('POST')
+    );
+
     if (!response.ok) {
       handleApiError(response, 'forkGist');
     }
-    
+
     return response.json() as Promise<GitHubGist>;
   } catch (error) {
     return handleApiError(error, 'forkGist');
@@ -313,13 +339,13 @@ export async function listGistRevisions(id: string): Promise<GistRevision[]> {
   try {
     const response = await fetch(
       `${BASE_URL}/gists/${id}/revisions`,
-      { headers: await buildHeaders() }
+      await buildOptions()
     );
-    
+
     if (!response.ok) {
       handleApiError(response, 'listGistRevisions');
     }
-    
+
     return response.json() as Promise<GistRevision[]>;
   } catch (error) {
     return handleApiError(error, 'listGistRevisions');
@@ -335,12 +361,12 @@ async function getCurrentUsername(): Promise<string> {
   if (cachedUsername) {
     return cachedUsername;
   }
-  
+
   const token = await getAuthToken();
   if (!token) {
     throw new Error('No authentication token available');
   }
-  
+
   try {
     const response = await fetch(`${BASE_URL}/user`, {
       headers: {
@@ -348,11 +374,11 @@ async function getCurrentUsername(): Promise<string> {
         'Authorization': `token ${token}`,
       },
     });
-    
+
     if (!response.ok) {
       handleApiError(response, 'getCurrentUsername');
     }
-    
+
     const user = await response.json();
     cachedUsername = user.login as string;
     return cachedUsername;

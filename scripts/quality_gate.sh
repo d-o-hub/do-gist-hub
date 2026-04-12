@@ -11,7 +11,7 @@ if command -v npm &> /dev/null && [[ -f "$ROOT_DIR/package.json" ]]; then
   cd "$ROOT_DIR"
   npm run typecheck || { echo "✗ Type check failed"; exit 1; }
   echo "✓ Type check passed"
-  
+
   npm run lint || { echo "✗ Lint failed"; exit 1; }
   echo "✓ Lint passed"
 fi

@@ -33,13 +33,14 @@ export interface AppError {
 function categorizeStatus(status: number): ErrorCategory {
   switch (status) {
     case 401:
+      return ErrorCategory.AUTH;
     case 403:
+      // Could be auth or rate limit — check response headers in caller
       return ErrorCategory.AUTH;
     case 404:
       return ErrorCategory.NOT_FOUND;
     case 422:
       return ErrorCategory.VALIDATION;
-    case 403: // Could also be rate limit
     case 429:
       return ErrorCategory.RATE_LIMIT;
     default:

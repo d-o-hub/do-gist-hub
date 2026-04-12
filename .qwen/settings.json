@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "WebFetch(raw.githubusercontent.com)",
-      "WebFetch(github.com)"
+      "WebFetch(github.com)",
+      "Bash(do *)",
+      "Bash(head *)",
+      "Bash(done)",
+      "Bash(then *)",
+      "Bash(else *)",
+      "Bash(fi)"
     ]
   },
   "$version": 3
