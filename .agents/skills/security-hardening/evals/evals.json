@@ -5,13 +5,56 @@
       "id": 1,
       "prompt": "Audit this authentication module for security vulnerabilities including XSS, CSRF, and insecure token handling",
       "expected_output": "Identified missing CSRF tokens, unsafe innerHTML usage enabling XSS, tokens stored in localStorage instead of httpOnly cookies. Provided hardened code with CSRF protection, textContent instead of innerHTML, and secure token storage recommendations.",
-      "files": ["evals/files/auth-module.js"]
+      "files": ["evals/files/auth-module.js"],
+      "assertions": [
+        "The output identifies at least one XSS vulnerability (e.g., innerHTML usage)",
+        "The output identifies CSRF risk and recommends a mitigation",
+        "The output recommends against localStorage for token storage"
+      ]
     },
     {
       "id": 2,
       "prompt": "Review this API endpoint for OWASP Top 10 vulnerabilities - SQL injection, auth bypass, sensitive data exposure",
       "expected_output": "Found SQL injection via string concatenation, missing auth checks on sensitive endpoint, PII returned without redaction. Fixed with parameterized queries, middleware auth verification, and response filtering.",
-      "files": ["evals/files/api-endpoint.ts"]
+      "files": ["evals/files/api-endpoint.ts"],
+      "assertions": [
+        "The output identifies SQL injection risk and recommends parameterized queries",
+        "The output identifies missing or insufficient authorization checks",
+        "The output recommends redacting or filtering sensitive/PII fields"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Configure Content-Security-Policy headers for our Vite-based PWA that loads from / and calls https://api.github.com",
+      "expected_output": "CSP with default-src 'self', script-src 'self' (no unsafe-inline), connect-src 'self' https://api.github.com, frame-ancestors 'none', and additional security headers like X-Frame-Options and X-Content-Type-Options.",
+      "files": [],
+      "assertions": [
+        "The output includes default-src 'self' in CSP",
+        "The output includes connect-src with https://api.github.com",
+        "The output avoids unsafe-inline for script-src"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm building a gist editor. How do I safely render user-provided gist file content that might contain markdown and HTML?",
+      "expected_output": "Use textContent instead of innerHTML for raw content. For markdown, use a sanitizer library or escape HTML entities first. Never pass unsanitized user content to innerHTML or document.write. External links must use rel='noopener noreferrer'.",
+      "files": [],
+      "assertions": [
+        "The output recommends textContent over innerHTML for raw content",
+        "The output mentions HTML sanitization before markdown rendering",
+        "The output warns against innerHTML and document.write with user content"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Validate these user inputs for a new gist: title='My awesome gist <script>alert(1)</script>', filename='../../../etc/passwd', body=<huge payload>",
+      "expected_output": "Title exceeds safe length or contains script tags - sanitize to 'My awesome gist'. Filename contains path traversal - reject or strip dangerous characters. Body should be checked against file size limit (500KB).",
+      "files": [],
+      "assertions": [
+        "The output identifies XSS attempt in the gist title",
+        "The output identifies path traversal attempt in the filename",
+        "The output mentions file size validation (max 500KB)"
+      ]
     }
   ]
 }

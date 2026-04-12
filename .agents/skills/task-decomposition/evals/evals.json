@@ -38,12 +38,24 @@
     {
       "id": 4,
       "prompt": "What dependency pattern should I use for: database migration, API update, frontend update, integration tests?",
-      "expected_output": "The agent maps: DB migration → API update → frontend update (sequential core), integration tests depend on all three. Pattern is converging (A, B, C → D).",
+      "expected_output": "The agent maps: DB migration \u2192 API update \u2192 frontend update (sequential core), integration tests depend on all three. Pattern is converging (A, B, C \u2192 D).",
       "files": [],
       "assertions": [
         "The agent identifies the dependency relationships",
         "The agent uses a dependency pattern (sequential, parallel, or converging)",
         "The agent correctly orders tasks by dependency"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I need to migrate our app from REST to GraphQL. The app has 15 endpoints, a React frontend, and integration tests. How do I approach this without breaking production?",
+      "expected_output": "The agent decomposes into phases: research/schema design (P0), set up GraphQL layer alongside REST (P0), migrate endpoints incrementally with feature flags (P1), update frontend resolvers one at a time (P1), integration tests per migration (P1), decommission REST endpoints (P2). Identifies strangler fig pattern, emphasizes zero-downtime migration with both APIs running in parallel.",
+      "files": [],
+      "assertions": [
+        "The agent proposes a phased/gradual migration strategy rather than a big-bang rewrite",
+        "The agent identifies that REST and GraphQL should coexist during transition",
+        "The agent includes testing and validation tasks",
+        "The agent maps clear dependencies between phases"
       ]
     }
   ]

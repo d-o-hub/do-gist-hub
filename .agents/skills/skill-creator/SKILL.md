@@ -27,10 +27,14 @@ Create and improve skills following the Agent Skills specification. A skill exte
 ```
 skill-name/
 ├── SKILL.md          # Required: metadata + instructions
+├── evals/            # Required: MUST contain evals.json with test cases
+│   └── evals.json    # Required: at least 3-5 realistic test cases
 ├── scripts/          # Optional: executable code
-├── references/       # Optional: documentation
+├── references/       # Optional: skill-specific reference docs ONLY
+│                     # NOTE: do NOT create evaluating-skills.md here.
+│                     # That file belongs only in the skill-evaluator skill.
 ├── assets/           # Optional: templates, resources
-└── evals/            # Optional: test cases
+└── evals/files/      # Optional: sample input files for evals
 ```
 
 ### Frontmatter Fields

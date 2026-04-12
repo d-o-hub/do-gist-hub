@@ -1,0 +1,70 @@
+{
+  "skill_name": "offline-indexeddb",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Set up IndexedDB as the local source of truth for our Gist Hub app. We need to store gists, a sync queue for offline writes, and app state.",
+      "expected_output": "Created src/services/storage/database.ts with GistDatabase class that opens an IndexedDB database named 'gist-hub' at version 1. Creates three object stores: 'gists' (keyPath: id, indexes on updatedAt and syncStatus), 'syncQueue' (autoIncrement keyPath, indexes on gistId and createdAt), and 'appState' (keyPath: key). Includes close() method for proper connection cleanup.",
+      "files": [],
+      "assertions": [
+        "Database name is 'gist-hub' with version 1",
+        "Creates 'gists' object store with keyPath 'id' and indexes on 'updatedAt' and 'syncStatus'",
+        "Creates 'syncQueue' object store with autoIncrement key and indexes on 'gistId' and 'createdAt'",
+        "Creates 'appState' object store with keyPath 'key'",
+        "Includes a close() method that closes the IDBDatabase connection and sets it to null"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I updated a gist description while offline. How should the optimistic write and sync queue work?",
+      "expected_output": "Implementation of optimistic write pattern: (1) Update local IndexedDB record immediately with syncStatus set to 'pending'. (2) Enqueue a sync operation in the syncQueue with action 'update', the updated payload, createdAt timestamp, and attempts counter at 0. (3) Trigger background sync processing. The UI reflects the change immediately without waiting for the network.",
+      "files": [],
+      "assertions": [
+        "Local DB is updated immediately with syncStatus set to 'pending'",
+        "A syncQueueItem is enqueued with action 'update', payload, createdAt, and attempts: 0",
+        "Background sync processing is triggered after enqueueing",
+        "UI reflects the local change immediately (optimistic update)",
+        "Sync queue item tracks the gistId it belongs to"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our sync queue keeps failing for some items. Implement retry logic with exponential backoff and a max attempt limit.",
+      "expected_output": "SyncQueue class with processQueue() method that: (1) Skips processing if offline or already processing. (2) Fetches pending items from IndexedDB. (3) For each item, checks if attempts >= maxAttempts (3) and marks as failed if so. (4) On success, removes the item from the queue. (5) On failure, increments attempt counter with exponential backoff (baseMs * 2^attempts). Sets processing flag to false when done.",
+      "files": [],
+      "assertions": [
+        "processQueue() returns early if navigator.onLine is false or processing flag is true",
+        "Items with attempts >= 3 are marked as failed and skipped",
+        "Successful sync removes the item from the queue",
+        "Failed sync increments attempts and schedules retry with backoff = baseMs * Math.pow(2, attempts)",
+        "Processing flag is set to false after all items are processed"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "How do we detect and handle sync conflicts when the local gist version differs from the remote version?",
+      "expected_output": "Conflict detection using ETag and updatedAt timestamp comparison. When fetching a gist from the API, compare the returned ETag with the locally stored etag. If they differ and the local record has syncStatus 'pending', mark it as 'conflict'. The conflict detector should expose the local vs remote differences and allow the user to choose which version to keep. Uses If-None-Match header for conditional requests to save rate limits.",
+      "files": [],
+      "assertions": [
+        "Conflict detection compares remote ETag with locally stored etag",
+        "If ETags differ and local syncStatus is 'pending', status is set to 'conflict'",
+        "Uses If-None-Match header for conditional API requests",
+        "Exposes both local and remote versions for user resolution",
+        "Allows user to choose local or remote version to keep"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "We need to migrate our IndexedDB schema from version 1 to version 2. The gists store now needs a new 'forkedFrom' field and index.",
+      "expected_output": "Database migration in the onupgradeneeded handler that checks event.oldVersion. For version 1 to 2 migration: adds 'forkedFrom' property to existing GistRecord type, opens the existing 'gists' object store, and creates a new index 'forkedFrom' on that store. Uses a switch or if-else on oldVersion to support skipping versions. Does not drop or recreate existing data.",
+      "files": [],
+      "assertions": [
+        "Migration checks event.oldVersion in onupgradeneeded handler",
+        "Handles version 1 to 2 transition specifically",
+        "Adds 'forkedFrom' index to the existing 'gists' object store",
+        "Does not drop or recreate existing object stores or data",
+        "GistRecord interface is updated to include optional forkedFrom?: string field"
+      ]
+    }
+  ]
+}

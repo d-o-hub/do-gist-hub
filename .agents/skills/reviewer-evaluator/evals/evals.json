@@ -1,0 +1,75 @@
+{
+  "skill_name": "reviewer-evaluator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this PR that adds a new gist search feature. The PR introduces a search input, debounced search function, and filters the gist list. Check for correctness, security (XSS), performance (unnecessary re-renders), and adherence to project conventions (naming, imports, TypeScript strict mode).",
+      "expected_output": "Review summary with status (Approved/Changes Requested/Blocked). Checks: input sanitization before rendering to prevent XSS, debounce implementation for search to avoid excessive filtering, no 'any' types in TypeScript, imports use absolute paths from src/, camelCase naming, functions under 500 lines. Specific issues flagged by severity (critical/warning/suggestion).",
+      "files": [],
+      "assertions": [
+        "Review provides a clear status: Approved, Changes Requested, or Blocked",
+        "XSS/security check covers search input sanitization",
+        "Performance check addresses debounce and unnecessary re-renders",
+        "TypeScript strict mode check verifies no 'any' types",
+        "Issues categorized by severity (critical, warning, suggestion)",
+        "Review checks for absolute import paths from src/ and naming conventions"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review a PR that adds GitHub PAT handling. The PR stores the token in IndexedDB, sends it in Authorization headers, and displays it in a settings UI. Focus on security: ensure the PAT is never logged, never in URLs, masked in the UI, and has a wipe flow.",
+      "expected_output": "Security-focused review with critical findings if: PAT is logged to console, PAT appears in URL query params, PAT displayed in plaintext in UI, no wipe/clear token flow. Confirms: Authorization header used (not query param), token masked after save, token redaction in error messages, HTTPS-only endpoint usage. Status should be Blocked if any critical security issue found.",
+      "files": [],
+      "assertions": [
+        "Review checks that PAT is never logged to console or diagnostics",
+        "Review verifies PAT sent via Authorization header, not URL/query params",
+        "Review confirms PAT is masked in UI after save (not plaintext)",
+        "Review checks for token wipe/clear functionality",
+        "Review verifies error messages redact token details",
+        "Review status is Blocked if any critical security vulnerability is found"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review a PR that refactors the gist list component to add virtualization for large lists. The component now renders 500+ gists. Check performance (virtualization correctness, memory usage), correctness (no missing items, correct scroll behavior), and cleanup (event listeners, observers).",
+      "expected_output": "Performance-focused review: verifies virtualization library is correctly configured with item height estimation, checks that all items are accessible via scroll, confirms no memory leaks from scroll event listeners or IntersectionObserver. Checks: cleanup on component unmount, no retained gist bodies in dead views, scroll position preserved on navigation. Code quality: small focused functions, no duplication.",
+      "files": [],
+      "assertions": [
+        "Review verifies virtualization configuration (item height, buffer size)",
+        "Review checks for memory leak prevention (listener cleanup on unmount)",
+        "Review confirms scroll behavior and position preservation",
+        "Review checks that large gist bodies are not retained in memory",
+        "Review addresses IntersectionObserver cleanup if used",
+        "Review includes constructive suggestions, not just problems"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Review a PR that adds offline write queuing. When offline, gist creations and edits are queued in IndexedDB and synced when connectivity returns. Review the sync queue logic, conflict detection, retry policy, and error handling for failed syncs.",
+      "expected_output": "Review checks: queue persistence in IndexedDB survives page reload, exponential backoff on retry (not infinite retries), conflict detection for concurrent edits, user notification when sync fails, structured error objects for all async paths, no silent failures. Verifies: retry policy has max attempts and backoff, conflicts surfaced to user, queued operations idempotent. Code quality: error handling present for every async path.",
+      "files": [],
+      "assertions": [
+        "Review verifies retry policy has bounded max attempts (not infinite)",
+        "Review checks exponential backoff implementation for retries",
+        "Review confirms conflict detection and user notification logic",
+        "Review verifies all async paths have structured error handling",
+        "Review checks that no promise rejections are silently swallowed",
+        "Review verifies queue survives page reload (IndexedDB persistence)"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Run a full review checklist on a PR that modifies the design token system. The PR adds new semantic color tokens and updates the responsive typography scale. Check convention adherence (token layering, DTCG alignment), no hardcoded values in components, and that all tokens derive from the token architecture.",
+      "expected_output": "Convention-focused review: verifies new tokens follow primitive -> semantic -> component layering, all component styles reference tokens (no hardcoded colors/sizes), responsive typography uses CSS custom properties, token names follow DTCG naming conventions. Checks: no magic numbers in component CSS, tokens support dark/light theme variants, new tokens documented. Runs quality gate (typecheck, lint, build) as part of review.",
+      "files": [],
+      "assertions": [
+        "Review verifies token layering: primitive -> semantic -> component",
+        "Review checks that component styles use tokens, not hardcoded values",
+        "Review confirms token names align with DTCG conventions",
+        "Review checks dark/light theme support for new color tokens",
+        "Review flags any magic numbers that should be token references",
+        "Review includes automated check results (typecheck, lint, build)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "skill_name": "performance-budgeting",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Set up performance budgets for the Gist Hub app. Define budgets for initial JS bundle size (150KB gzipped), per-route chunks (50KB), cold start time (2s on mid-tier mobile), and Core Web Vitals (LCP < 2.5s, CLS < 0.1, INP < 200ms). Create the budgets.ts file with all these values as named constants.",
+      "expected_output": "src/lib/perf/budgets.ts with PERFORMANCE_BUDGETS constant containing: initialJS at 150*1024 bytes, routeChunk at 50*1024 bytes, coldStart at 2000ms, lcp at 2500ms, cls at 0.1, inp at 200ms, fcp at 1500ms, fid at 100ms, interactionTarget at 100ms. All values exported as const with clear comments.",
+      "files": [],
+      "assertions": [
+        "File created at src/lib/perf/budgets.ts",
+        "initialJS budget is 150 * 1024 (150KB in bytes)",
+        "routeChunk budget is 50 * 1024 (50KB in bytes)",
+        "Core Web Vitals budgets defined: LCP < 2500ms, CLS < 0.1, INP < 200ms, FID < 100ms",
+        "All values exported as a single const object with as const",
+        "Interaction budgets included: interactionTarget 100ms, searchLatency 200ms"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Implement Web Vitals measurement for the Gist Hub app using the web-vitals library. Track LCP, FID, CLS, INP, and FCP. Report each metric to performance marks and log values. Exclude web-vitals from Vite's optimizeDeps.",
+      "expected_output": "src/lib/perf/web-vitals.ts with initWebVitalsReporting() function that calls onLCP, onFID, onCLS, onINP, onFCP from 'web-vitals'. Each callback logs the value and creates a performance.mark with metric name. vite.config.ts updated to exclude 'web-vitals' in optimizeDeps.",
+      "files": ["vite.config.ts"],
+      "assertions": [
+        "web-vitals imports used for onLCP, onFID, onCLS, onINP, onFCP",
+        "Each metric callback creates performance.mark with metric-specific name",
+        "Metric values are logged to console",
+        "vite.config.ts optimizeDeps excludes 'web-vitals'",
+        "Function is exported and callable during app initialization",
+        "No raw stack traces or internal details exposed in logging"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Create an InteractionTimer utility class that measures time between construction and end(). If duration exceeds the budget threshold, log a warning with the metric name, actual duration, and budget. Use performance.mark and performance.measure for DevTools integration.",
+      "expected_output": "src/lib/perf/interaction-timer.ts with InteractionTimer class. Constructor takes a name and records start time via performance.now(). end() method calculates duration, compares against budget (defaulting to PERFORMANCE_BUDGETS.interactionTarget), logs warning if exceeded, and creates performance.mark/measure entries.",
+      "files": [],
+      "assertions": [
+        "InteractionTimer class with constructor(name: string)",
+        "Uses performance.now() to capture start time",
+        "end() method accepts optional threshold parameter",
+        "Warning logged when duration exceeds budget with name, actual ms, and budget ms",
+        "performance.mark and performance.measure called with metric name",
+        "Default budget falls back to PERFORMANCE_BUDGETS.interactionTarget (100ms)"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Configure code splitting in vite.config.ts for the Gist Hub app. Create manual chunks for: app-shell (app.ts, router.ts), gist-editor (editor.ts), gist-revisions (revisions.ts), and syntax-highlight (highlighter.ts). Also add CSS code splitting and verify tree-shaking compatibility.",
+      "expected_output": "vite.config.ts with build.rollupOptions.output.manualChunks defining: 'app-shell' for app.ts and router.ts, 'gist-editor' for editor.ts, 'gist-revisions' for revisions.ts, 'syntax-highlight' for highlighter.ts. build.cssCodeSplit set to true. Comments explaining each chunk's purpose.",
+      "files": ["vite.config.ts"],
+      "assertions": [
+        "manualChunks defines 'app-shell', 'gist-editor', 'gist-revisions', 'syntax-highlight'",
+        "Each chunk maps to specific source files",
+        "build.cssCodeSplit is set to true",
+        "Heavy features (editor, revisions, highlighter) are in separate lazy chunks",
+        "Comments explain the purpose of each manual chunk",
+        "vite.config.ts remains valid TypeScript with defineConfig"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "The gist list interaction feels sluggish. Add performance measurement to the gist-list render path using InteractionTimer. Set a 100ms budget for gist-list-render and 200ms budget for search interactions. Report any budget violations to the console.",
+      "expected_output": "Code wrapping gist list render with new InteractionTimer('gist-list-render') and calling timer.end(100). Search interaction wrapped with InteractionTimer('search-interaction') and timer.end(200). Console warnings emitted when budgets are exceeded. Uses the InteractionTimer class from src/lib/perf/interaction-timer.ts.",
+      "files": [],
+      "assertions": [
+        "InteractionTimer instantiated with 'gist-list-render' name before render call",
+        "timer.end(100) called after gist list render completes",
+        "InteractionTimer instantiated with 'search-interaction' name before search",
+        "timer.end(200) called after search interaction completes",
+        "Console warnings generated when budgets are violated",
+        "Import path references src/lib/perf/interaction-timer.ts"
+      ]
+    }
+  ]
+}

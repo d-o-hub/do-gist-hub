@@ -39,11 +39,15 @@ Expected layout:
 
 ```text
 skill-name/
-  SKILL.md
-  evals/evals.json                   # required
-  references/evaluating-skills.md    # required for evaluator
-  scripts/                           # optional but useful
+  SKILL.md                       # required
+  evals/evals.json               # required — if evals/ dir exists, it MUST contain evals.json
+  references/                    # optional — skill-specific reference docs
+  scripts/                       # optional but useful
 ```
+
+**IMPORTANT**: `references/evaluating-skills.md` is NOT required in individual skills.
+It only exists in the `skill-evaluator` skill itself as its own reference doc.
+Do NOT create this file in other skills.
 
 Flag these issues explicitly:
 
@@ -51,6 +55,9 @@ Flag these issues explicitly:
 - nested duplicate directory like `skill-name/skill-name/`
 - `evals/` exists but `evals/evals.json` is missing or invalid JSON
 - eval cases missing `id`, `prompt`, or `expected_output`
+- SKILL.md exceeds 250 lines
+- name field invalid (must be lowercase letters, numbers, hyphens only, max 64 chars)
+- description exceeds 1024 chars
 
 ### 2. Eval Review
 
@@ -222,4 +229,5 @@ PASS | NEEDS_WORK | FAIL — <one sentence>
 
 ## References
 
-- `references/evaluating-skills.md` — condensed eval workflow and grading guidance
+- `references/evaluating-skills.md` — THIS FILE BELONGS ONLY IN skill-evaluator/.
+  Other skills do NOT need it. It documents the eval workflow for the evaluator itself.

@@ -1,0 +1,75 @@
+{
+  "skill_name": "responsive-system",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Define the 7 breakpoint system for the Gist Hub app. Create a TypeScript file with breakpoint values and corresponding media query strings. Breakpoints: 320px (small phones), 390px (modern phones), 480px (large phones), 768px (portrait tablets), 1024px (landscape tablets), 1280px (desktops), 1536px (wide desktops).",
+      "expected_output": "src/tokens/responsive/breakpoints.ts with two exported objects: breakpoints (numeric values in px) and breakpointQueries (CSS media query strings). breakpoints.phoneSmall = 320, breakpoints.phone = 390, breakpoints.phoneLarge = 480, breakpoints.tabletPortrait = 768, breakpoints.tabletLandscape = 1024, breakpoints.desktop = 1280, breakpoints.desktopWide = 1536. All values use as const.",
+      "files": [],
+      "assertions": [
+        "File created at src/tokens/responsive/breakpoints.ts",
+        "7 breakpoints defined: 320, 390, 480, 768, 1024, 1280, 1536",
+        "breakpointQueries object contains corresponding min-width CSS query strings",
+        "All values exported with as const for type safety",
+        "Breakpoint names are descriptive (phoneSmall, phone, tabletPortrait, etc.)",
+        "No hardcoded breakpoint values used outside this file"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create responsive CSS custom properties for the Gist Hub app. Define container padding, max-width, gap size, and base font size that scale across breakpoints. Start mobile-first at 320px and adjust at 390px, 768px, 1024px, 1280px, and 1536px.",
+      "expected_output": "src/styles/responsive.css with :root defining mobile-first defaults (--container-padding: 1rem, --gap-size: 0.5rem, --font-size-base: 1rem). Media queries at each breakpoint that progressively increase padding, gap, container max-width, and font-size. At 1536px: max-width 1440px, gap 2rem, font-size 1.1875rem.",
+      "files": [],
+      "assertions": [
+        "CSS custom properties defined in :root for mobile-first defaults",
+        "Media queries at 390px, 768px, 1024px, 1280px, and 1536px breakpoints",
+        "Container max-width scales: 100% -> 720px -> 960px -> 1200px -> 1440px",
+        "Gap size increases progressively: 0.5rem -> 0.75rem -> 1rem -> 1.25rem -> 1.5rem -> 2rem",
+        "Font size scales from 1rem base to 1.1875rem at widest breakpoint",
+        "All values use CSS custom properties (no hardcoded values in components)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Implement fluid typography using CSS clamp() for the Gist Hub app. Create heading sizes (h1-h3), body text, and small text that smoothly scale between minimum and maximum sizes. No hard breakpoints for font sizes -- use clamp() with viewport-relative scaling.",
+      "expected_output": "src/styles/typography.css with CSS custom properties using clamp(): --font-size-h1: clamp(1.5rem, 4vw + 0.5rem, 2.5rem), --font-size-h2: clamp(1.25rem, 3vw + 0.5rem, 2rem), --font-size-h3: clamp(1.125rem, 2vw + 0.5rem, 1.5rem), --font-size-body: clamp(1rem, 1vw + 0.5rem, 1.125rem), --font-size-small: clamp(0.875rem, 0.5vw + 0.5rem, 1rem). Typography rules apply these variables.",
+      "files": [],
+      "assertions": [
+        "clamp() used for all font size definitions (no hard breakpoints)",
+        "H1 scales from 1.5rem minimum to 2.5rem maximum",
+        "H2 scales from 1.25rem to 2rem",
+        "Body text scales from 1rem to 1.125rem",
+        "Small text scales from 0.875rem to 1rem",
+        "All typography rules reference CSS custom properties, not raw values"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add safe area support for notched devices (iPhone 12+, Android notched phones) to the Gist Hub app. Ensure the app shell, navigation, and bottom toolbar respect safe area insets. Use max() to maintain minimum padding on non-notched devices.",
+      "expected_output": "src/styles/safe-area.css with .app-shell using padding-top/right/bottom/left with env(safe-area-inset-*). Navigation uses padding-left: max(1rem, env(safe-area-inset-left)) and equivalent for right. Bottom toolbar uses padding-bottom: max(1rem, env(safe-area-inset-bottom)). All safe area properties gracefully degrade when not supported.",
+      "files": [],
+      "assertions": [
+        "Safe area CSS properties (env(safe-area-inset-*)) applied to app shell",
+        "max() function used to maintain minimum 1rem padding on non-notched devices",
+        "Navigation left/right safe areas covered with max(padding, env(...))",
+        "Bottom toolbar safe area covered with max(padding, env(safe-area-inset-bottom))",
+        "Properties gracefully degrade when env() not supported",
+        "File created at src/styles/safe-area.css"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Enforce minimum touch target sizes of 44x44px for all interactive elements in the Gist Hub app. Apply to buttons, links, icon buttons, and form controls. Icon buttons should use padding to meet the minimum while maintaining visual size.",
+      "expected_output": "src/styles/touch-targets.css with rules for button, a, [role='button'], input[type='submit'], input[type='button'] setting min-width: 44px and min-height: 44px. Icon buttons (.icon-button) get padding: 12px with min-width/min-height: 44px. All interactive elements meet WCAG 2.5.5 touch target guidelines.",
+      "files": [],
+      "assertions": [
+        "All interactive elements (buttons, links, role=button) have min-width: 44px",
+        "All interactive elements have min-height: 44px",
+        "Icon buttons (.icon-button) use padding to achieve 44px target",
+        "Selectors cover button, a, [role='button'], and form submit/button inputs",
+        "Rules align with WCAG 2.5.5 enhanced touch target size guidelines",
+        "No !important overrides used -- specificity is sufficient"
+      ]
+    }
+  ]
+}
