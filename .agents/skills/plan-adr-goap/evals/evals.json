@@ -1,0 +1,132 @@
+{
+  "skill_name": "plan-adr-goap",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create an implementation plan for adding infinite scroll pagination to the gist list view. Currently it loads the first page of 30 gists. We need to load more as the user scrolls, with a loading skeleton and error state.",
+      "expected_output": "Plan in plans/ directory with goal statement, success criteria (scrolling triggers load, skeleton shown during fetch, error state with retry), implementation steps (intersection observer, API pagination support, loading component, error boundary), files to modify (gist-list component, GitHub API client), testing strategy, and rollback plan.",
+      "files": [],
+      "assertions": [
+        "Plan file created in plans/ directory with sequential numbering",
+        "Goal statement clearly describes infinite scroll feature",
+        "Success criteria are measurable (skeleton visibility, retry button, pagination count)",
+        "Implementation steps are ordered and actionable",
+        "Intersection Observer API mentioned as implementation approach",
+        "Files to create/modify are listed with specific paths",
+        "Testing strategy covers unit, integration, and manual tests",
+        "Rollback plan describes how to revert to page-based loading"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "We need to decide between using Workbox library vs writing our own service worker for the PWA. Create an ADR comparing these two approaches with trade-offs, consequences, and a recommendation.",
+      "expected_output": "ADR in plans/adr-NNN-title.md format with status, date, context section describing the PWA caching needs, decision section recommending one approach, consequences (positive outcomes and trade-offs), alternatives considered (Workbox vs hand-written SW vs no SW), and references. Decision should consider bundle size, maintenance burden, and flexibility.",
+      "files": [],
+      "assertions": [
+        "ADR file created in plans/ with adr-NNN naming",
+        "ADR has Status, Date, and Context metadata fields",
+        "Context describes the specific PWA caching requirements for Gist Hub",
+        "Decision section clearly states the recommended approach",
+        "Consequences list includes both positive outcomes and trade-offs",
+        "At least 2 alternatives are considered with rejection reasoning",
+        "References section links to relevant documentation",
+        "Bundle size and maintenance trade-offs are discussed"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Plan the implementation of the GitHub Gist API client with typed responses, pagination, rate limiting, and conditional requests. This is our core API layer.",
+      "expected_output": "Implementation plan for src/lib/api/github-gist-api.ts with typed client. Covers all gist endpoints (list, get, create, edit, delete, star, fork, revisions). Includes pagination via Link headers, X-RateLimit-* tracking, If-None-Match for conditional requests, and error mapping from HTTP status codes to app error taxonomy. Lists file structure and testing approach.",
+      "files": [],
+      "assertions": [
+        "Plan lists all required gist endpoints (list, get, create, edit, delete, star, fork, revisions)",
+        "Typed response interfaces are planned with explicit types",
+        "Pagination strategy handles Link header parsing",
+        "Rate limit tracking uses X-RateLimit-Remaining and X-RateLimit-Reset headers",
+        "Conditional requests use If-None-Match header",
+        "Error mapping converts HTTP status codes to structured app errors",
+        "Testing strategy includes mock API responses and error scenarios",
+        "Plan respects the 500 line per file limit from AGENTS.md"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We need to implement IndexedDB as our offline-first local storage. Plan the schema design, optimistic write flow, sync queue, conflict detection, and schema migration strategy.",
+      "expected_output": "Comprehensive plan for IndexedDB implementation covering database schema (object stores for gists, sync queue, conflicts), optimistic write pattern (update UI immediately, queue sync), sync queue with exponential backoff, conflict detection comparing local vs remote timestamps, and schema migration with rollback capability. Includes file structure for src/lib/db/.",
+      "files": [],
+      "assertions": [
+        "Schema defines object stores: gists, sync-queue, conflicts",
+        "Optimistic write flow updates UI before background sync",
+        "Sync queue supports exponential backoff retry policy",
+        "Conflict detection compares local vs remote timestamps or etags",
+        "Schema migration strategy includes version numbering and rollback",
+        "Plan respects offline-first: IndexedDB is primary read source",
+        "File structure for src/lib/db/ is outlined",
+        "Bounded retry policy prevents infinite retry loops"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Create a plan for implementing fine-grained PAT authentication flow. Users paste their GitHub PAT, we validate it by making a test API call, store it securely in IndexedDB, and mask it in the UI.",
+      "expected_output": "Plan covering auth flow: PAT input UI with validation, test API call to /user endpoint, secure storage in IndexedDB (not localStorage), masking after save, wipe flow, least-privilege scope documentation. Includes security considerations: never log PAT, never expose in URLs, use Authorization header only.",
+      "files": [],
+      "assertions": [
+        "Plan includes PAT input UI with real-time validation",
+        "Test API call to verify PAT validity before saving",
+        "Storage in IndexedDB (explicitly not localStorage)",
+        "UI masks PAT after initial save",
+        "PAT wipe/revocation flow is documented",
+        "Security rules enforced: no logging, Authorization header only, no URL params",
+        "Minimum required PAT scopes are documented",
+        "Error handling covers expired, revoked, and insufficient-scope tokens"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "We're considering adding a gist search feature that filters locally from IndexedDB. Plan this feature with performance requirements - search should return results in under 200ms.",
+      "expected_output": "Plan for local gist search feature using IndexedDB. Covers index creation for searchable fields, full-text or substring search implementation, debounce on input, performance budget of 200ms latency, empty state and no-results UI. Notes that this is local-only (not searching all GitHub gists).",
+      "files": [],
+      "assertions": [
+        "Plan specifies IndexedDB-based local search (not remote GitHub search)",
+        "Index strategy for searchable fields (title, description, filename, content)",
+        "Debounce strategy prevents excessive searches during typing",
+        "200ms performance budget explicitly stated and measured",
+        "Empty state and no-results UI states are planned",
+        "Search scope is clearly bounded to locally cached gists",
+        "Testing strategy includes performance measurement"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Write an ADR for choosing between Capacitor and Tauri for Android packaging. We currently plan Capacitor but want to document the decision properly.",
+      "expected_output": "ADR comparing Capacitor vs Tauri for Android packaging of the Gist Hub PWA. Decision recommends Capacitor with reasoning: WebView-based approach matches existing PWA, simpler for web-first app, Android-focused tooling. Tauri rejected due to Rust overhead and desktop-first focus. Covers bundle size implications, developer experience, and long-term maintenance.",
+      "files": [],
+      "assertions": [
+        "ADR follows standard format with Status, Date, Context",
+        "Both Capacitor and Tauri are evaluated fairly",
+        "Decision is clearly stated with specific reasoning",
+        "Bundle size implications are compared",
+        "Developer experience trade-offs are documented",
+        "WebView approach is highlighted as key advantage for PWA-first strategy",
+        "At least one alternative (Tauri) is rejected with explicit reasoning",
+        "Decision aligns with project's web-first philosophy from AGENTS.md"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Plan the global error handling implementation. We need structured errors, user-safe messages, error boundaries, recoverable action patterns, and redacted diagnostics. This is foundational for the whole app.",
+      "expected_output": "Foundational plan for global error handling across the app. Covers error taxonomy classification (network, auth, validation, server, fatal), user-safe message templates, error boundary components for graceful degradation, recoverable action patterns with retry/backoff, and diagnostic redaction (no PAT, no PII). Includes integration points with API client and IndexedDB.",
+      "files": [],
+      "assertions": [
+        "Error taxonomy classifies: network, auth, validation, server, and fatal errors",
+        "User-safe messages are human-readable without raw stack traces or technical details",
+        "Error boundary pattern for graceful UI degradation",
+        "Recoverable actions include retry with exponential backoff",
+        "Diagnostic redaction explicitly covers PAT and PII",
+        "Integration points with API client and IndexedDB are specified",
+        "Plan notes no infinite retries - bounded retry policies",
+        "Offline/online transition error states are addressed"
+      ]
+    }
+  ]
+}

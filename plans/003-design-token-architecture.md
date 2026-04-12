@@ -5,7 +5,7 @@
 ### Primitive Tokens
 Raw values without semantic meaning.
 
-### Semantic Tokens  
+### Semantic Tokens
 Meaningful names tied to use cases.
 
 ### Component Tokens
@@ -23,11 +23,12 @@ Specific to UI components.
 
 ## Implementation Plan
 
-1. Extract tokens from do-gemini-ui-ux-skill
-2. Normalize to DTCG-style format
+1. Define token requirements based on UI components
+2. Normalize to DTCG-style format (`$type`, `$value`, `$description`)
 3. Generate CSS custom properties
 4. Create TypeScript type definitions
 5. Document token contracts
+6. Validate accessibility (WCAG AA contrast)
 
 ---
 

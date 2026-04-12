@@ -1,8 +1,8 @@
-# ADR-001: Reuse do-gemini-ui-ux-skill Token System
+# ADR-001: Token Architecture Design
 
-**Status**: Accepted  
-**Date**: 2026  
-**Deciders**: Architect, UI/UX Token Agent  
+**Status**: Accepted
+**Date**: 2026
+**Deciders**: Architect, UI/UX Token Agent
 
 ## Context
 
@@ -12,50 +12,46 @@ We need a design system for the GitHub Gist app that is:
 - Maintainable by AI agents and humans
 - Portable and future-proof
 
-The `do-gemini-ui-ux-skill` repository contains a working semantic token design demo with:
-- Multi-mode architecture (App, Game, Neural, Technical)
-- Atmospheric effects (glassmorphism, blurs)
-- Centralized TOKENS object in TypeScript
-- Automated validation scripts
-
 ## Decision
 
-Reuse the token design approach from `do-gemini-ui-ux-skill` as the visual and structural baseline, but upgrade it to production standards.
+Build a production-ready token architecture aligned with DTCG (Design Tokens Community Group) standards.
 
-### What We Keep
+### Token Layers
+- **Primitive**: Raw values (colors, spacing, typography, radius)
+- **Semantic**: Meaningful names tied to use cases (background, foreground, accent)
+- **Component**: Component-specific tokens (button, card, input)
+- **Responsive**: Breakpoint-aware tokens that scale
+- **Motion**: Animation durations and easing curves
+- **Elevation**: Shadows and z-index layers
+
+### What We Include
 - Semantic token architecture (primitive → semantic → component)
-- Multi-theme support structure
-- TOKENS object pattern for TypeScript access
-- Atmospheric effects where appropriate (subtle glass)
-
-### What We Upgrade
-- DTCG-style naming and structure for portability
+- Multi-theme support structure (light/dark)
+- TypeScript token access patterns
+- CSS custom property generation for framework interoperability
 - Responsive scaling across 7 breakpoints
 - Accessibility (WCAG AA contrast ratios)
 - Motion tokens with reduced-motion support
-- Elevation tokens for layering
-- Layout tokens for consistent spacing
-- Documentation for each token contract
+- DTCG-aligned structure (`$type`, `$value`, `$description`)
 
-### What We Change
-- Remove game/neural/technical modes not needed for this app
-- Simplify atmospheric effects for performance
-- Add CSS custom property generation for framework interoperability
-- Align with Design Tokens Community Group direction
+### What We Exclude
+- Unnecessary modes (game/neural/technical) not needed for this app
+- Heavy atmospheric effects that impact performance
+- Framework-specific bindings (keep tokens portable)
 
 ## Tradeoffs
 
 ### Pros
-- Leverages existing working design
-- Faster initial setup
-- Proven token architecture pattern
-- Clear visual identity foundation
+- Framework-agnostic token storage
+- Consistent visual language
+- Token-driven development enforced
+- Easy theme switching
+- DTCG alignment ensures portability
 
 ### Cons
-- Requires adaptation work for production use
-- May carry over unnecessary complexity
-- Need to verify accessibility compliance
-- Must ensure DTCG alignment for portability
+- Initial setup effort
+- Requires discipline to avoid hardcoded values
+- Must enforce token usage via linting/reviews
 
 ## Consequences
 
@@ -72,18 +68,15 @@ Reuse the token design approach from `do-gemini-ui-ux-skill` as the visual and s
 
 ## Rejected Alternatives
 
-### Alternative 1: Build From Scratch
-**Rejected because**: Unnecessary duplication of effort. The existing token system provides a solid foundation.
-
-### Alternative 2: Use Material Design / Chakra UI
-**Rejected because**: 
+### Alternative 1: Use Material Design / Chakra UI
+**Rejected because**:
 - Too heavy for our bundle budget
 - Less flexible for custom mobile UX
 - Harder to maintain token discipline
 - Not aligned with AI agent workflow
 
-### Alternative 3: Tailwind Config Only
-**Rejected because**: 
+### Alternative 2: Tailwind Config Only
+**Rejected because**:
 - Tied to Tailwind specifically
 - Less portable across frameworks
 - Doesn't enforce semantic naming

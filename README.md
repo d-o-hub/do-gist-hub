@@ -6,7 +6,7 @@ A production-ready, web-first GitHub Gist management app with offline-first beha
 
 - **Full Gist CRUD**: Create, read, update, delete gists
 - **Offline-First**: Read cached gists offline, queue writes for sync
-- **Token-Driven Design**: Production-grade design system from do-gemini-ui-ux-skill
+- **Token-Driven Design**: Production-grade semantic token architecture
 - **Responsive**: Mobile-first UI from 320px to 1536px+
 - **Android Ready**: Packaged via Capacitor for Android devices
 - **Secure**: PAT redaction, CSP headers, safe logging

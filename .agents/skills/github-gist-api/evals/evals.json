@@ -1,0 +1,65 @@
+{
+  "skill_name": "github-gist-api",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Fetch all my gists from GitHub",
+      "expected_output": "Uses typed API client with pagination support, sets Accept and Authorization headers correctly, handles Link headers for pagination",
+      "assertions": ["Uses Authorization: Bearer header, not URL parameter", "Handles pagination via Link header", "Sets Accept: application/vnd.github+json"]
+    },
+    {
+      "id": 2,
+      "prompt": "Create a new gist with a README file",
+      "expected_output": "Uses POST /gists endpoint with proper payload structure including files object, description, and public flag",
+      "assertions": ["Payload includes files object", "Payload includes description field", "Payload includes public boolean"]
+    },
+    {
+      "id": 3,
+      "prompt": "Update the content of my existing gist",
+      "expected_output": "Uses PATCH /gists/{gist_id} with file updates, preserves unchanged files, handles file deletion via null",
+      "assertions": ["Uses PATCH method", "File deletion uses null value", "Updates only specified files"]
+    },
+    {
+      "id": 4,
+      "prompt": "Check if a gist is starred",
+      "expected_output": "Uses GET /gists/{gist_id}/star endpoint, returns boolean based on 204 vs 404 response",
+      "assertions": ["Checks for 204 (starred) vs 404 (not starred)", "No request body for this endpoint", "Handles both response codes"]
+    },
+    {
+      "id": 5,
+      "prompt": "Rate limit tracking for API calls",
+      "expected_output": "Extracts X-RateLimit-Remaining and X-RateLimit-Reset headers, implements backoff when near limit",
+      "assertions": ["Reads X-RateLimit-Remaining header", "Reads X-RateLimit-Reset header", "Implements backoff strategy"]
+    },
+    {
+      "id": 6,
+      "prompt": "Get gist revisions history",
+      "expected_output": "Uses GET /gists/{gist_id}/revisions endpoint, returns array of revision objects with timestamps",
+      "assertions": ["Uses correct revisions endpoint", "Returns array of revisions", "Includes version and timestamps"]
+    },
+    {
+      "id": 7,
+      "prompt": "Cancel a gist fetch when component unmounts",
+      "expected_output": "Uses AbortController for cancellation, passes signal to fetch, cleans up on unmount",
+      "assertions": ["Creates AbortController instance", "Passes signal to fetch options", "Calls abort() on cleanup"]
+    },
+    {
+      "id": 8,
+      "prompt": "Handle 401 unauthorized when listing gists",
+      "expected_output": "Maps 401 to structured auth error, suggests token refresh, does not retry",
+      "assertions": ["Returns structured error for 401", "Does not retry on auth failure", "Suggests token refresh action"]
+    },
+    {
+      "id": 9,
+      "prompt": "Fetch a single gist by ID",
+      "expected_output": "Uses GET /gists/{gist_id}, returns typed Gist object with files, owner, timestamps",
+      "assertions": ["Returns typed response", "Includes files object", "Includes owner information"]
+    },
+    {
+      "id": 10,
+      "prompt": "Fork a gist to my account",
+      "expected_output": "Uses POST /gists/{gist_id}/forks endpoint, returns new gist object with fork reference",
+      "assertions": ["Uses POST to forks endpoint", "Returns new gist object", "Includes fork reference to original"]
+    }
+  ]
+}

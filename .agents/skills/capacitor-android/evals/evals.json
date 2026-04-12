@@ -1,0 +1,109 @@
+{
+  "skill_name": "capacitor-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Package this Vite PWA as an Android app using Capacitor. Set up the initial configuration for the Gist Hub app.",
+      "expected_output": "Created capacitor.config.ts with appId 'com.gisthub.app', appName 'Gist Hub', webDir 'dist', server with androidScheme 'https', and cleartext disabled. Added Capacitor dependencies to package.json. Created Android platform with npx cap add android.",
+      "files": ["package.json"],
+      "assertions": [
+        "capacitor.config.ts contains appId 'com.gisthub.app' and appName 'Gist Hub'",
+        "webDir is set to 'dist' (Vite's default output directory)",
+        "server.androidScheme is set to 'https'",
+        "cleartext traffic is disabled",
+        "Commands include npm install @capacitor/core @capacitor/cli @capacitor/android"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Our Android build needs to be secure. Configure network security to block cleartext traffic and ensure the PAT is stored safely.",
+      "expected_output": "Created network_security_config.xml in android/app/src/main/res/xml/ that disables cleartext traffic. AndroidManifest.xml configured with android:usesCleartextTraffic='false'. PAT storage recommendation points to Android Keystore (not SharedPreferences).",
+      "files": [],
+      "assertions": [
+        "network_security_config.xml is created with cleartextTrafficPermitted='false'",
+        "Trust anchors use system certificates only",
+        "AndroidManifest.xml references the network security config",
+        "android:usesCleartextTraffic='false' is set in AndroidManifest.xml",
+        "Output mentions Android Keystore for PAT storage, not SharedPreferences"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Can you set up Capacitor so we can test this on an Android emulator? I want to be able to run the app from the web build.",
+      "expected_output": "Step-by-step instructions: npm run build (Vite), npx cap sync android, npx cap run android (or npx cap open android). Configuration includes webDir pointing to dist/. Includes npx cap doctor for verification.",
+      "files": [],
+      "assertions": [
+        "Instructions include npm run build before npx cap sync",
+        "npx cap sync android command is included",
+        "npx cap run android or npx cap open android is included",
+        "npx cap doctor command is mentioned for verification",
+        "webDir is correctly set to 'dist' for Vite output"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Update the Capacitor config to use a custom splash screen and change the app ID to com.d-o-hub.gist-hub.",
+      "expected_output": "Updated capacitor.config.ts with new appId 'com.d-o-hub.gist-hub', SplashScreen plugin configuration with launchShowDuration, backgroundColor, and other splash screen settings. Config is valid TypeScript.",
+      "files": [],
+      "assertions": [
+        "appId is updated to 'com.d-o-hub.gist-hub'",
+        "SplashScreen plugin configuration is present under plugins section",
+        "SplashScreen includes launchShowDuration and backgroundColor properties",
+        "Config is valid TypeScript with proper imports",
+        "Existing server and webDir settings are preserved"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "What's the minimum Android SDK we should target for maximum device coverage while still supporting modern features?",
+      "expected_output": "Recommendation for minSdkVersion 22 (Android 5.1) covering ~99% of devices, targetSdkVersion 34, compileSdkVersion 34. Explanation of trade-offs and Capacitor defaults. Note about WebView independence.",
+      "files": [],
+      "assertions": [
+        "Recommends minSdkVersion 22 (Android 5.1)",
+        "Mentions ~99% device coverage claim",
+        "Includes targetSdkVersion 34 recommendation",
+        "Includes compileSdkVersion 34 recommendation",
+        "Notes that Android System WebView updates independently of the app"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I built the web app but the Android app isn't picking up the changes. How do I sync everything?",
+      "expected_output": "Explanation that npx cap sync android must be run after every web build. Full sequence: npm run build, npx cap sync android, npx cap run android. Explanation of what sync does (copies web assets to android/app/src/main/assets/public/).",
+      "files": [],
+      "assertions": [
+        "Explains that sync must be run after every web build",
+        "Provides the full sequence: build -> sync -> run",
+        "Explains that sync copies web assets to the Android project",
+        "Mentions the assets go to android/app/src/main/assets/public/",
+        "Does not suggest modifying Android Studio project files manually"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Set up Playwright tests to do smoke testing on the Android WebView for our Gist Hub app.",
+      "expected_output": "Configuration for Playwright Android WebView testing using the playwright-quality skill. Test script that verifies the app loads, navigates to gist list, and basic WebView rendering. Uses Android API from Playwright.",
+      "files": [],
+      "assertions": [
+        "References the playwright-quality skill for cross-browser testing",
+        "Includes Android WebView test configuration",
+        "Test verifies app loads and renders basic content",
+        "Uses Playwright's Android API (android.launchServer or similar)",
+        "References npm run test:android from package.json scripts"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Add OAuth login support to our Android app using Capacitor plugins.",
+      "expected_output": "This request is out of scope. The response should clarify that OAuth/device flow is a v2 feature per AGENTS.md scope rules, and v1 uses fine-grained PAT authentication. Should NOT implement OAuth. Should redirect to Capacitor Browser plugin if user wants to open GitHub OAuth in a browser instead.",
+      "files": [],
+      "assertions": [
+        "Response identifies OAuth as a v2 feature per AGENTS.md scope rules",
+        "Does NOT implement OAuth login flow",
+        "Clarifies that v1 uses PAT authentication only",
+        "Mentions Capacitor Browser plugin as an alternative if opening GitHub OAuth in browser",
+        "Does not add OAuth-related Capacitor plugins as primary solution"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "skill_name": "playwright-quality",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Set up Playwright for cross-browser testing of the Gist Hub app. Configure Chromium, Firefox, Webkit, and mobile emulation for iPhone 12 and Pixel 5.",
+      "expected_output": "playwright.config.ts with projects for Chromium, Firefox, Webkit, Mobile Chrome (Pixel 5), and Mobile Safari (iPhone 12). Config uses baseURL from preview server, enables tracing on retry, fully parallel tests, and forbids flaky-only tests in CI. Web server configured to run npm run preview on port 4173.",
+      "files": [],
+      "assertions": [
+        "playwright.config.ts created with defineConfig",
+        "Projects configured for Chromium, Firefox, and Webkit",
+        "Mobile Chrome (Pixel 5) and Mobile Safari (iPhone 12) projects added",
+        "Web server config runs npm run preview on port 4173",
+        "Tracing enabled on first retry",
+        "fullyParallel: true and forbidOnly for CI"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Write an end-to-end test for the gist list page that verifies: gists load from IndexedDB first, the list renders with gist titles, clicking a gist opens the detail view, and the back button works.",
+      "expected_output": "tests/browser/gist-list.spec.ts with test.describe('Gist List') block. Tests verify data-testid='gist-list' is visible, gist items have data-testid='gist-item', clicking a gist navigates to detail view, and browser back button returns to list. Uses beforeEach to navigate to '/' and data-testid selectors throughout.",
+      "files": [],
+      "assertions": [
+        "Test file at tests/browser/gist-list.spec.ts",
+        "Uses data-testid selectors (gist-list, gist-item, etc.)",
+        "Tests IndexedDB-first loading behavior",
+        "Navigation to gist detail view tested",
+        "Browser back button behavior verified",
+        "Tests use test.describe grouping and beforeEach navigation"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Create responsive layout tests that verify the gist list renders correctly at 320px, 390px, 768px, 1024px, and 1280px widths. Check that touch targets are at least 44x44px on mobile viewports and there is no horizontal scroll.",
+      "expected_output": "tests/mobile/responsive.spec.ts with device-specific test runs using viewport configurations for 320px, 390px, 768px, 1024px, and 1280px. Tests verify gist list fits viewport width, touch targets meet 44x44px minimum, and no horizontal scroll occurs (document.body.scrollWidth <= viewport width).",
+      "files": [],
+      "assertions": [
+        "Tests run at 320px, 390px, 768px, 1024px, and 1280px viewports",
+        "Touch target minimum of 44x44px is verified on mobile viewports",
+        "Horizontal scroll check compares scrollWidth to viewport width",
+        "Gist list container width is validated against viewport",
+        "Uses test.use({ viewport: ... }) for responsive test runs",
+        "No setTimeout used - all checks use proper Playwright selectors"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Write offline behavior tests: first go online to load gists, then go offline, reload the page, and verify gists still display from IndexedDB. Also test that the offline indicator appears and attempting to save a new gist queues it for later sync.",
+      "expected_output": "tests/offline/offline-read.spec.ts with two test cases. First test: set offline false, load gists, set offline true, reload page, verify gist-list still visible. Second test: go offline, check data-testid='offline-indicator' is visible, attempt to create gist, verify it appears in a queued/pending state with data-testid='sync-pending'.",
+      "files": [],
+      "assertions": [
+        "Uses context.setOffline(true/false) for network simulation",
+        "Page reload after going offline still shows cached gists",
+        "Offline indicator with data-testid='offline-indicator' is verified",
+        "Queued write shows pending state with data-testid='sync-pending'",
+        "Tests are deterministic (no flaky timing)",
+        "Test structure follows tests/offline/ directory convention"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Create an authentication flow test: navigate to the settings page, enter a valid PAT, save it, verify it gets masked in the UI, then test the wipe flow to remove the stored token.",
+      "expected_output": "tests/browser/auth.spec.ts testing PAT authentication flow. Tests: fill PAT input with valid token, click save, verify masked display (asterisks or dots), verify token stored in IndexedDB, then test wipe flow to remove token and verify UI updates to show 'not authenticated' state.",
+      "files": [],
+      "assertions": [
+        "Tests PAT input and save flow end to end",
+        "Verifies PAT is masked in UI after save (not plaintext)",
+        "Verifies token is stored in IndexedDB",
+        "Tests wipe/removal flow updates UI to unauthenticated state",
+        "Uses IndexedDB API to verify storage (not UI inspection)",
+        "Tests include invalid PAT error handling"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Write a smoke test for Android WebView that verifies the app loads, the gist list renders, and basic navigation works when packaged as an Android app via Capacitor.",
+      "expected_output": "tests/android/webview-smoke.spec.ts using Playwright Android API. Test launches Android WebView via Capacitor, verifies gist list loads, clicks a gist item, navigates back. Uses android.devices() and webview() API. Marked as smoke test with minimal scope.",
+      "files": [],
+      "assertions": [
+        "Uses Playwright Android API (android.devices, webview)",
+        "Verifies app loads in Android WebView context",
+        "Tests basic gist list rendering",
+        "Tests navigation (open gist, go back)",
+        "Test is scoped as smoke (minimal, fast)",
+        "Test handles Android-specific setup and teardown"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Add an accessibility smoke test that checks the gist list page for proper ARIA labels, heading hierarchy, keyboard navigation, and color contrast. Focus on the list, individual gist items, and the search input.",
+      "expected_output": "tests/a11y/accessibility.spec.ts testing: heading hierarchy (single h1, proper h2/h3 nesting), ARIA labels on interactive elements (buttons, links, search input), keyboard navigation (tab order through list items, Enter to open gist, Escape to go back), and minimum color contrast. Uses axe-core integration or manual ARIA checks.",
+      "files": [],
+      "assertions": [
+        "Tests heading hierarchy (single h1, proper nesting)",
+        "Verifies ARIA labels on buttons, links, and search input",
+        "Tests keyboard navigation: tab order, Enter key, Escape key",
+        "Checks minimum color contrast compliance",
+        "Tests focus management when navigating between views",
+        "Uses data-testid or semantic HTML selectors"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Write a visual regression test that takes screenshots of the gist list, gist detail, and new gist form at desktop (1280px) and mobile (390px) breakpoints. Flag any pixel differences from the baseline.",
+      "expected_output": "tests/visual/regression.spec.ts with screenshot captures at 1280px and 390px viewports for gist list, gist detail, and new gist form pages. Uses expect(page).toHaveScreenshot() with named snapshots. Configured with acceptable pixel difference threshold. Generates HTML report for visual review.",
+      "files": [],
+      "assertions": [
+        "Screenshots captured at 1280px (desktop) viewport",
+        "Screenshots captured at 390px (mobile) viewport",
+        "Tests cover gist list, gist detail, and new gist form",
+        "Uses expect(page).toHaveSnapshot() or similar Playwright visual assertion",
+        "Named snapshots for easy identification",
+        "HTML report generation configured for visual review"
+      ]
+    }
+  ]
+}

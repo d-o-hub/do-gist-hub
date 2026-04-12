@@ -1,0 +1,117 @@
+{
+  "skill_name": "pwa-shell",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Configure the Gist Hub app as an installable PWA. Set up the web app manifest with proper name, icons, start_url, display mode, and theme color. The app should be installable on both Android and desktop browsers.",
+      "expected_output": "public/manifest.json with name 'Gist Hub', short_name 'GistHub', start_url '/', display 'standalone', theme_color matching the app brand, and icons at 192x192 and 512x512 with 'any maskable' purpose. Also includes categories and shortcuts for 'New Gist'. Vite PWA plugin configured in vite.config.ts to generate the manifest.",
+      "files": ["vite.config.ts"],
+      "assertions": [
+        "public/manifest.json created with required PWA fields",
+        "Manifest includes icons at 192x192 and 512x512 with maskable purpose",
+        "start_url is '/' and display is 'standalone'",
+        "Theme color and background color are set",
+        "App shortcuts configured for 'New Gist' action",
+        "Vite PWA plugin (vite-plugin-pwa) configured in vite.config.ts"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Implement the service worker with Workbox for the Gist Hub app. Use Network First for the app shell, Stale While Revalidate for GitHub API responses, and Cache First for static assets like icons and fonts. Set appropriate expiration limits for each strategy.",
+      "expected_output": "Service worker configuration with three caching strategies: Network First for navigation/pages (maxEntries: 50, maxAge: 30 days), Stale While Revalidate for api.github.com requests (maxEntries: 100, maxAge: 24 hours), Cache First for images/fonts (maxEntries: 50, maxAge: 30 days). Either via workbox in sw.ts or via Vite PWA plugin runtimeCaching config.",
+      "files": [],
+      "assertions": [
+        "Network First strategy configured for app shell/navigation",
+        "Stale While Revalidate configured for api.github.com URLs",
+        "Cache First configured for images and fonts",
+        "ExpirationPlugin used with maxEntries and maxAgeSeconds for each strategy",
+        "API cache limited to 100 entries with 24-hour max age",
+        "Page cache limited to 50 entries with 30-day max age"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Set up service worker registration with update detection. When a new service worker is available, show a notification to the user with a 'Refresh' button. Handle the case where the user ignores the notification and continues using the old version.",
+      "expected_output": "src/lib/pwa/register-sw.ts with registration function that handles updatefound event. Shows UI notification when new service worker is installed with 'Refresh' button. Uses skipWaiting() on user confirmation. Gracefully handles user ignoring the notification (continues with old version until next navigation or manual refresh).",
+      "files": [],
+      "assertions": [
+        "registerServiceWorker function handles registration lifecycle",
+        "updatefound event listener detects new service worker",
+        "UI notification shown with 'Refresh' or 'Update' button",
+        "User confirmation triggers skipWaiting() and page reload",
+        "Graceful handling when user ignores the notification",
+        "Registration returns null with warning if service worker not supported"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add offline fallback to the service worker. When the user is offline and tries to navigate to a page not in cache, show a custom offline page instead of the browser's default error. Also cache the offline fallback page during service worker installation.",
+      "expected_output": "Service worker with offline fallback: precaches an offline.html fallback page during install event. Navigation requests that fail and are not in cache serve the offline.html fallback. Offline page includes helpful message about offline state and a retry button. Falls back gracefully if offline page itself is not cached.",
+      "files": [],
+      "assertions": [
+        "Offline fallback page (offline.html) is precached during install",
+        "Navigation failures serve the cached offline page",
+        "Double fallback: if offline page not cached, shows minimal HTML response",
+        "Offline page includes retry/reload functionality",
+        "Offline page is user-friendly (not a raw error message)",
+        "Fallback strategy does not break online navigation"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Configure the Vite PWA plugin for the Gist Hub project. The plugin should handle manifest generation, service worker precaching, and runtime caching for the GitHub API. Also configure the includeAssets for favicon and apple-touch-icon.",
+      "expected_output": "vite.config.ts with VitePWA plugin configured: registerType 'autoUpdate', manifest with app metadata, workbox globPatterns for static assets, runtimeCaching array with GitHub API pattern using StaleWhileRevalidate handler. includeAssets configured for favicon.ico and apple-touch-icon.png. devOptions enabled for local testing.",
+      "files": ["vite.config.ts"],
+      "assertions": [
+        "VitePWA plugin imported and added to plugins array",
+        "registerType set to 'autoUpdate' or 'prompt' with handling logic",
+        "Manifest object includes name, short_name, icons, theme_color",
+        "workbox.globPatterns configured for js, css, html, ico, png, svg files",
+        "runtimeCaching includes api.github.com pattern with StaleWhileRevalidate",
+        "includeAssets lists favicon.ico and apple-touch-icon.png"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Add PWA install prompt logic. Detect when the browser fires the beforeinstallprompt event, capture it, and expose a function that the UI can call to trigger the install prompt. Handle cases where the app is already installed or the browser doesn't support install prompts.",
+      "expected_output": "src/lib/pwa/install-prompt.ts with event listener for beforeinstallprompt that captures and stores the event. Exposes showInstallPrompt() async function that calls prompt() on the captured event. Returns false/null if app is already installed (display-mode: standalone check) or if beforeinstallprompt never fired. Includes appInstalled boolean based on matchMedia('(display-mode: standalone)').",
+      "files": [],
+      "assertions": [
+        "beforeinstallprompt event is captured and stored",
+        "showInstallPrompt() function calls prompt() on stored event",
+        "Checks if app is already installed via display-mode: standalone",
+        "Returns appropriate boolean/null for unsupported browsers",
+        "Event listener is cleaned up to prevent memory leaks",
+        "Works with Capacitor (detects native app context and skips prompt)"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Verify the PWA is correctly configured by running a Lighthouse audit. What PWA-specific checks should pass, and what common failures should we watch for in a Vite + PWA setup?",
+      "expected_output": "List of Lighthouse PWA audit checks that must pass: has manifest, manifest has valid icons, has registered service worker, works offline, redirect HTTP to HTTPS, has meta viewport, address bar matches theme color. Common failures to watch for: manifest icons too small, service worker scope mismatch, offline page not precached, missing apple-touch-icon, display-mode not standalone. Includes command to run Lighthouse audit.",
+      "files": [],
+      "assertions": [
+        "Lists key Lighthouse PWA audit checks",
+        "Identifies common failure modes for Vite + PWA setups",
+        "Includes Lighthouse CLI command for automated auditing",
+        "Covers manifest validation checks",
+        "Covers service worker registration and scope checks",
+        "Mentions offline functionality verification"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "We're packaging the PWA with Capacitor for Android. What PWA-specific settings need to be adjusted before running npx cap add android? Cover manifest adjustments, service worker scope, and Capacitor config for PWA compatibility.",
+      "expected_output": "Guidance on PWA-to-Capacitor transition: manifest start_url should match Capacitor serverOrigin, service worker scope must cover app paths, Capacitor capacitor.config.json server.url should point to local dist (not remote), android/ permissions for internet access. Notes that service workers work in Capacitor WebView on Android 5.0+. Warns about potential CORS issues with remote API calls from WebView.",
+      "files": ["capacitor.config.json"],
+      "assertions": [
+        "Addresses manifest start_url alignment with Capacitor serverOrigin",
+        "Service worker scope covers all app paths in WebView",
+        "capacitor.config.json server configuration is documented",
+        "Android internet permission is mentioned",
+        "WebView service worker compatibility on Android is addressed",
+        "CORS considerations for remote API calls from WebView are noted"
+      ]
+    }
+  ]
+}

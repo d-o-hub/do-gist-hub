@@ -5,13 +5,108 @@
       "id": 1,
       "prompt": "Initialize a new repository with the standard AI agent workflow structure. Need .agents/skills, plans/, agents-docs/, and proper symlinks for Claude, Gemini, and Qwen.",
       "expected_output": "Created complete directory structure (.agents/skills, plans, agents-docs, scripts, src/ subdirectories), setup-skills.sh script for creating symlinks, quality_gate.sh for pre-commit validation, and working symlinks in .claude/skills, .gemini/skills, .qwen/skills.",
-      "files": []
+      "files": [],
+      "assertions": [
+        ".agents/skills/ directory is created",
+        "plans/ directory is created",
+        "setup-skills.sh script is created and executable",
+        "quality_gate.sh script is created",
+        "Symlinks exist in .claude/skills, .gemini/skills, and .qwen/skills"
+      ]
     },
     {
       "id": 2,
       "prompt": "Set up pre-commit hooks and quality gates for this repo. Should validate skills, run typecheck, and lint before commits.",
       "expected_output": "Created pre-commit-hook.sh with global hooks check, quality_gate.sh running typecheck/lint/validate-skills, validate-skills.sh checking SKILL.md frontmatter. All scripts are executable and quality gate fails fast on first error.",
-      "files": ["evals/files/package.json"]
+      "files": ["evals/files/package.json"],
+      "assertions": [
+        "pre-commit-hook.sh is created in scripts/ and is executable",
+        "quality_gate.sh runs typecheck, lint, and validate-skills",
+        "validate-skills.sh checks SKILL.md frontmatter validity",
+        "All shell scripts include set -euo pipefail",
+        "Quality gate uses fail-fast behavior (exits on first error)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Bootstrap a Vite + TypeScript project for a GitHub Gist CRUD app. Include proper tsconfig, vite.config, and project structure with src/ subdirectories.",
+      "expected_output": "Configured vite.config.ts with TypeScript support, tsconfig.json with strict mode, src/ directory with subdirectories (components, lib, styles, tokens), index.html entry point, and package.json with Vite and TypeScript dependencies.",
+      "files": [],
+      "assertions": [
+        "vite.config.ts is created with TypeScript plugin",
+        "tsconfig.json has strict mode enabled (strict: true, noImplicitAny: true)",
+        "src/ has subdirectories: components, lib, styles, tokens",
+        "index.html is the Vite entry point",
+        "package.json includes vite, typescript, and @types packages"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Create the AGENTS.md file for this project following the standard template. It should include mission, stack, skills, code style rules, and reference docs.",
+      "expected_output": "A comprehensive AGENTS.md at repo root with frontmatter, mission statement, stack table, skills discovery rules, code style and naming rules, setup/dev/test/build commands, and reference docs section. Follows agents.md specification format.",
+      "files": [],
+      "assertions": [
+        "AGENTS.md exists at repository root",
+        "Contains mission statement describing the app purpose",
+        "Stack table lists technologies with rationale",
+        "Includes code style rules (naming, file limits, conventions)",
+        "Contains reference docs section with official documentation links",
+        "Follows agents.md specification format"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Set up the scripts directory with all utility scripts needed for the project: setup-skills.sh, quality_gate.sh, and validate-skills.sh. Make them all shellcheck compliant.",
+      "expected_output": "Scripts directory with setup-skills.sh (creates agent symlinks), quality_gate.sh (runs typecheck, lint, tests), validate-skills.sh (checks all SKILL.md files for valid frontmatter). All scripts start with #!/usr/bin/env bash and set -euo pipefail, pass shellcheck.",
+      "files": [],
+      "assertions": [
+        "scripts/setup-skills.sh exists and is executable",
+        "scripts/quality_gate.sh exists and is executable",
+        "scripts/validate-skills.sh exists and is executable",
+        "All scripts start with #!/usr/bin/env bash",
+        "All scripts include set -euo pipefail",
+        "All scripts are shellcheck compliant"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Initialize the plans/ directory with a project charter and initial v1 scope document. The charter should define the project vision, v1 vs v2 boundaries, and success metrics.",
+      "expected_output": "plans/ directory with 000-project-charter.md containing project vision, success metrics, and v1/v2 scope boundaries. A v1 scope plan file detailing what features are in scope for v1 (PAT auth, IndexedDB, gist CRUD, PWA, Capacitor) and what is deferred to v2 (OAuth, backend, real-time).",
+      "files": [],
+      "assertions": [
+        "plans/000-project-charter.md exists with project vision",
+        "Charter defines v1 vs v2 scope boundaries",
+        "Success metrics are documented",
+        "A v1 scope plan details in-scope features",
+        "v2 features are explicitly deferred"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Set up a .gitignore appropriate for a Vite + TypeScript + Capacitor + Node.js project. Include all generated files, build artifacts, and IDE files.",
+      "expected_output": "A .gitignore covering node_modules/, dist/, .vite/, *.tsbuildinfo, .DS_Store, IDE files (.vscode/, .idea/), Capacitor native platforms (android/), environment files (.env), and OS-generated files.",
+      "files": [],
+      "assertions": [
+        ".gitignore includes node_modules/",
+        ".gitignore includes dist/ build output",
+        ".gitignore includes TypeScript build artifacts (*.tsbuildinfo)",
+        ".gitignore includes IDE directories (.vscode/, .idea/)",
+        ".gitignore includes Capacitor platform directories",
+        ".gitignore includes environment files (.env*)"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Add a README.md that documents the project for both humans and AI agents. Should include project description, tech stack, setup instructions, how AI agents should use AGENTS.md, and links to official docs.",
+      "expected_output": "README.md with project description, badge section, tech stack summary, quick start commands (npm install, npm run dev), link to AGENTS.md for AI agents, and links to Vite, GitHub API, Capacitor, and Playwright documentation.",
+      "files": [],
+      "assertions": [
+        "README.md includes project description and tech stack",
+        "Quick start commands are documented (install, dev, build)",
+        "AGENTS.md is linked for AI agent workflow",
+        "Links to official docs for Vite, GitHub API, Capacitor",
+        "README mentions PWA and offline-first capabilities"
+      ]
     }
   ]
 }

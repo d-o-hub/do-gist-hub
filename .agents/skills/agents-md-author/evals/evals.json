@@ -1,0 +1,110 @@
+{
+  "skill_name": "agents-md-author",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create an AGENTS.md file for this repo. It's a Vite + TypeScript PWA app that stores gists locally with IndexedDB and talks to the GitHub Gist API.",
+      "expected_output": "A well-structured AGENTS.md at the repository root with header, mission, stack table, source-of-truth rules, setup commands, code style rules, and references to the .agents/skills/ directory. Includes actual commands for npm, Vite, and the project's tech stack.",
+      "files": [],
+      "assertions": [
+        "Output is a complete AGENTS.md markdown document, not a template or outline",
+        "Includes a mission section describing a GitHub Gist CRUD app",
+        "Includes a stack/technology table mentioning Vite, TypeScript, IndexedDB, and GitHub API",
+        "References .agents/skills/ directory and at least 3 specific skills",
+        "Contains setup and dev commands using npm run scripts",
+        "No TODO or placeholder markers in the output"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Update our AGENTS.md to add the new memory-leak-prevention and security-hardening skills we just added. Also add a section about our 7 responsive breakpoints.",
+      "expected_output": "Updated AGENTS.md that adds entries for memory-leak-prevention and security-hardening skills in the Available Skills section. Adds responsive design rules referencing the 7 breakpoints (phone-small through desktop-wide). Maintains consistency with existing file structure.",
+      "files": [],
+      "assertions": [
+        "Memory-leak-prevention skill is listed in the Available Skills section with a description",
+        "Security-hardening skill is listed in the Available Skills section with a description",
+        "Responsive design rules mention the 7 breakpoints (320px, 390px, 480px, 768px, 1024px, 1280px, 1536px)",
+        "Existing AGENTS.md sections are preserved and not removed",
+        "The file remains valid markdown"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our AGENTS.md is getting really long. Can you review it and tell me if there are any sections that could be split out into separate skill files or reference docs? Also check if any links are broken.",
+      "expected_output": "An analysis of AGENTS.md identifying overly long sections, suggesting which content belongs in skills vs. the main file. A link audit results. The AGENTS.md file itself is NOT modified by this request, but recommendations are provided.",
+      "files": [],
+      "assertions": [
+        "Output identifies specific sections that could be moved to skill files",
+        "Output provides a link audit or checks referenced URLs",
+        "Output does NOT modify AGENTS.md directly (analytical task)",
+        "Recommendations reference actual .agents/skills/ directory structure",
+        "Distinguishes between content that belongs in AGENTS.md vs. skill-specific SKILL.md files"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I need the AGENTS.md to document our conventional commit format and the quality gate script. Include examples specific to this gist app.",
+      "expected_output": "AGENTS.md updated with a Conventional Commit Rules section including format, types, and gist-specific examples (e.g., 'feat(gist-list): add infinite scroll'). Also documents the quality gate script at ./scripts/quality_gate.sh and what it verifies.",
+      "files": [],
+      "assertions": [
+        "Conventional commit format section includes the pattern <type>(<scope>): <subject>",
+        "Includes at least 3 commit examples relevant to the gist app domain",
+        "Documents the quality gate script path ./scripts/quality_gate.sh",
+        "Lists what the quality gate checks (lint, typecheck, build, tests)",
+        "Commit examples use scopes that match the project (auth, gist-list, tokens, etc.)"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add v1 vs v2 scope boundaries to the AGENTS.md so agents don't accidentally implement future features like OAuth or a backend server.",
+      "expected_output": "A new Scope Rules section in AGENTS.md clearly delineating v1 features (PAT auth, IndexedDB, PWA, Capacitor, gist CRUD) from v2 features (OAuth device flow, backend sync server, real-time collaboration, multi-account). Agents are instructed not to implement v2 features.",
+      "files": [],
+      "assertions": [
+        "Scope Rules section clearly separates v1 and v2 features",
+        "v1 list includes PAT auth, IndexedDB, PWA, Capacitor Android, gist CRUD",
+        "v2 list includes OAuth, backend sync, real-time collaboration, multi-account",
+        "Contains explicit instruction to not implement v2 features in v1",
+        "Section uses clear list or table format for readability"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Hey, can you set up the AGENTS.md thingy for this project? We use that ai-agents template format.",
+      "expected_output": "A complete AGENTS.md following the github-template-ai-agents format, with all standard sections: header with tech stack, mission, source-of-truth rules, setup commands, code style, available skills, and reference docs. Written for a Gist Hub project with Vite/TypeScript/PWA/Capacitor stack.",
+      "files": [],
+      "assertions": [
+        "Output is a complete AGENTS.md following the template format",
+        "Includes all required sections: header, mission, source-of-truth, setup, code style, skills, references",
+        "Tech stack correctly identifies Vite, TypeScript, PWA, Capacitor, IndexedDB, GitHub Gist API",
+        "References the github-template-ai-agents as the template source",
+        "Lists skills that exist in the .agents/skills/ directory of this project"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Make the AGENTS.md include our design token rules. Specifically: no hardcoded color values, everything must use semantic tokens, and dark/light theme support. Keep it concise.",
+      "expected_output": "AGENTS.md updated with a Token Architecture Rules section (or added to existing one) that enforces: all styles derive from semantic tokens, no magic numbers/hardcoded colors when a token should exist, dark/light theme support via token variants, and DTCG-aligned naming. Section is concise (not overly verbose).",
+      "files": [],
+      "assertions": [
+        "Token rules prohibit hardcoded color values and magic numbers",
+        "Requires styles to derive from semantic tokens",
+        "Mentions dark/light theme support via token variants",
+        "References DTCG alignment for token naming",
+        "Section is concise and actionable, not a full token tutorial"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Add Android packaging commands and Capacitor setup instructions to the AGENTS.md setup section. Include the npx cap commands we need.",
+      "expected_output": "AGENTS.md updated with Android packaging commands in the setup or a dedicated Android section. Includes: npm install @capacitor/core @capacitor/cli @capacitor/android, npx cap init, npx cap add android, npx cap sync android, npx cap open android. Also references the capacitor-android skill.",
+      "files": [],
+      "assertions": [
+        "Includes npm install command for Capacitor dependencies",
+        "Includes npx cap init, npx cap add android, npx cap sync, npx cap open android commands",
+        "References the capacitor-android skill in available skills or cross-references",
+        "Commands are in a setup or build commands section",
+        "Does not include OAuth or backend features (v2 scope)"
+      ]
+    }
+  ]
+}
