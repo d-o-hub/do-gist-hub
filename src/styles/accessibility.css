@@ -1,0 +1,106 @@
+/**
+ * Accessibility Styles
+ * WCAG AA compliance: focus indicators, skip links, reduced motion, high contrast
+ */
+
+/* ===== Focus Indicators ===== */
+:focus-visible {
+  outline: 2px solid var(--color-accent-primary, #2563EB);
+  outline-offset: 2px;
+}
+
+/* Remove default outline for mouse users, keep for keyboard */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Enhanced focus for interactive elements */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-accent-primary, #2563EB);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--color-interactive-focus, rgba(37, 99, 235, 0.2));
+}
+
+/* ===== Skip Links ===== */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-background-inverse, #111827);
+  color: var(--color-foreground-inverse, #FFFFFF);
+  padding: var(--spacing-2, 0.5rem) var(--spacing-3, 0.75rem);
+  z-index: var(--z-index-modal, 50);
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: var(--font-weight-medium, 500);
+  text-decoration: none;
+  border-radius: 0 0 var(--radius-md, 0.375rem) 0;
+  transition: top var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== High Contrast Mode ===== */
+@media (forced-colors: active) {
+  button,
+  .btn,
+  .primary-btn,
+  .secondary-btn,
+  .icon-button,
+  .nav-item,
+  .filter-btn {
+    border: 1px solid ButtonText;
+  }
+
+  .status-dot {
+    border: 1px solid ButtonText;
+  }
+
+  /* Ensure focus rings remain visible */
+  :focus-visible {
+    outline: 2px solid Highlight;
+  }
+}
+
+/* ===== Screen Reader Only ===== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ===== Touch Target Sizes ===== */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  .btn,
+  .icon-button,
+  .nav-item,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

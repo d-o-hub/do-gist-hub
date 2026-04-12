@@ -1,0 +1,180 @@
+/**
+ * Motion and Transitions
+ * Animation tokens, state transitions, loading indicators
+ */
+
+/* ===== Motion Token Usage ===== */
+/* All durations and easings derive from CSS custom properties */
+
+/* ===== Button Transitions ===== */
+.primary-btn,
+.secondary-btn,
+.icon-button {
+  transition:
+    background-color var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease),
+    transform var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease),
+    box-shadow var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+}
+
+.primary-btn:active,
+.secondary-btn:active {
+  transform: scale(0.98);
+}
+
+/* ===== Form Input Transitions ===== */
+.form-input,
+.search-input,
+.filename-input,
+.content-editor {
+  transition:
+    border-color var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease),
+    box-shadow var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+}
+
+/* ===== Card Entrance Animation ===== */
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-enter-active {
+  animation: card-enter var(--motion-duration-normal, 250ms) var(--motion-easing-ease-out, ease);
+}
+
+/* ===== Page Transition ===== */
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.app-main {
+  animation: page-fade-in var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+}
+
+/* ===== Loading Spinner ===== */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--color-border-default, #E5E7EB);
+  border-top-color: var(--color-accent-primary, #2563EB);
+  border-radius: var(--radius-full, 9999px);
+  animation: spin var(--motion-duration-slow, 400ms) var(--motion-easing-linear, linear) infinite;
+}
+
+/* ===== Status Indicator Pulse ===== */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.status-indicator.offline .status-dot {
+  animation: pulse var(--motion-duration-slow, 400ms) var(--motion-easing-ease-in-out, ease-in-out) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-indicator.offline .status-dot {
+    animation: none;
+  }
+}
+
+/* ===== Toast Slide In ===== */
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toast-slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.toast-enter {
+  animation: toast-slide-in var(--motion-duration-normal, 250ms) var(--motion-easing-ease-out, ease);
+}
+
+.toast-exit {
+  animation: toast-slide-out var(--motion-duration-fast, 150ms) var(--motion-easing-ease-in, ease-in);
+}
+
+/* ===== High-Motion Elements ===== */
+/* Hardware acceleration for animated elements */
+.animate-transform {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* ===== Nav Item Active State ===== */
+.nav-item {
+  position: relative;
+}
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 2px;
+  background-color: var(--color-accent-primary, #2563EB);
+  border-radius: var(--radius-full, 9999px);
+  transition: transform var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+}
+
+/* ===== Filter Button Active State ===== */
+.filter-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.filter-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-accent-primary, #2563EB);
+  opacity: 0;
+  transition: opacity var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+  border-radius: inherit;
+}
+
+.filter-btn.active::before {
+  opacity: 1;
+}
+
+.filter-btn.active {
+  color: var(--color-foreground-inverse, #FFFFFF);
+  border-color: var(--color-accent-primary, #2563EB);
+}

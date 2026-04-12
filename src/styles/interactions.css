@@ -1,0 +1,224 @@
+/**
+ * Mobile-First Interactions
+ * Touch targets, hover removal on touch, smooth scrolling, double-tap prevention
+ */
+
+/* ===== Smooth Scrolling ===== */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== Horizontal Scroll Containers ===== */
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Root containers must not scroll horizontally */
+.app-shell {
+  overflow-x: hidden;
+}
+
+/* ===== Scroll Stability ===== */
+.scroll-y {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent nested double scrollbars */
+.scroll-y > * {
+  min-height: 100%;
+}
+
+/* ===== Touch Device Optimizations ===== */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  .icon-button:hover,
+  .nav-item:hover,
+  .filter-btn:hover,
+  .primary-btn:hover,
+  .secondary-btn:hover {
+    background-color: transparent;
+  }
+
+  /* Active state for touch feedback */
+  .icon-button:active {
+    background-color: var(--color-interactive-active, #E5E7EB);
+  }
+
+  .nav-item:active {
+    background-color: var(--color-interactive-hover, #F3F4F6);
+  }
+
+  .filter-btn:active {
+    background-color: var(--color-interactive-hover, #F3F4F6);
+  }
+
+  /* Prevent double-tap zoom on interactive elements */
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  [role="button"],
+  .nav-item,
+  .icon-button,
+  .filter-btn {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* ===== Safe Area Support ===== */
+.app-header {
+  padding-top: calc(var(--spacing-4, 1rem) + env(safe-area-inset-top, 0px));
+  padding-left: calc(var(--spacing-4, 1rem) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--spacing-4, 1rem) + env(safe-area-inset-right, 0px));
+}
+
+.bottom-nav {
+  padding-bottom: calc(var(--spacing-2, 0.5rem) + env(safe-area-inset-bottom, 0px));
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+.app-main {
+  padding-left: calc(var(--spacing-container, var(--spacing-4, 1rem)) + env(safe-area-inset-left, 0px));
+  padding-right: calc(var(--spacing-container, var(--spacing-4, 1rem)) + env(safe-area-inset-right, 0px));
+}
+
+/* ===== Card Hover Effects (Desktop Only) ===== */
+@media (hover: hover) and (pointer: fine) {
+  .gist-card {
+    transition: box-shadow var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease),
+                transform var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+  }
+
+  .gist-card:hover {
+    box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
+    transform: translateY(-1px);
+  }
+}
+
+/* ===== List Items ===== */
+.gist-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3, 0.75rem);
+}
+
+/* ===== Gist Card ===== */
+.gist-card {
+  padding: var(--spacing-4, 1rem);
+  border: 1px solid var(--color-border-default, #E5E7EB);
+  border-radius: var(--radius-md, 0.375rem);
+  background-color: var(--color-background-primary, #FFFFFF);
+  transition: background-color var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+}
+
+.gist-card:active {
+  background-color: var(--color-background-secondary, #F9FAFB);
+}
+
+.gist-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--spacing-3, 0.75rem);
+  margin-bottom: var(--spacing-2, 0.5rem);
+}
+
+.gist-card-title {
+  font-size: var(--font-size-base, 1rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-accent-primary, #2563EB);
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.gist-card-title:hover {
+  text-decoration: underline;
+}
+
+.gist-card-description {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-foreground-secondary, #374151);
+  margin-bottom: var(--spacing-2, 0.5rem);
+  word-break: break-word;
+}
+
+.gist-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3, 0.75rem);
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-foreground-muted, #6B7280);
+}
+
+.gist-card-file-count {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-0-5, 0.125rem) var(--spacing-2, 0.5rem);
+  background-color: var(--color-background-secondary, #F9FAFB);
+  border-radius: var(--radius-full, 9999px);
+  font-weight: var(--font-weight-medium, 500);
+}
+
+/* ===== Card Actions ===== */
+.gist-card-actions {
+  display: flex;
+  gap: var(--spacing-2, 0.5rem);
+}
+
+.gist-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md, 0.375rem);
+  cursor: pointer;
+  color: var(--color-foreground-muted, #6B7280);
+  transition: all var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+}
+
+.gist-action-btn:hover {
+  background-color: var(--color-interactive-hover, #F3F4F6);
+  color: var(--color-foreground-secondary, #374151);
+}
+
+.gist-action-btn.starred {
+  color: var(--color-accent-primary, #2563EB);
+}
+
+/* ===== Loading State ===== */
+.loading-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-background-secondary, #F9FAFB) 25%,
+    var(--color-background-tertiary, #F3F4F6) 50%,
+    var(--color-background-secondary, #F9FAFB) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md, 0.375rem);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-skeleton {
+    animation: none;
+    background: var(--color-background-secondary, #F9FAFB);
+  }
+}
