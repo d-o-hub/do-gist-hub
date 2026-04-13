@@ -21,6 +21,7 @@
     "test:visual": "playwright test --update-snapshots",
     "test:a11y": "playwright test tests/accessibility/",
     "init:design": "node scripts/init-design-tokens.js",
+    "generate:icons": "node scripts/generate-icons.mjs",
     "cap:sync": "npx cap sync android",
     "cap:android:open": "npx cap open android",
     "build:android": "npm run build && npm run cap:sync"
@@ -35,6 +36,7 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.45.0",
     "@types/node": "^22.0.0",
+    "canvas": "^3.2.3",
     "eslint": "^9.0.0",
     "prettier": "^3.3.0",
     "typescript": "^5.5.0",

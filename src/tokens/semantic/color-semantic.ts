@@ -42,27 +42,28 @@ export const colorSemantic = {
   },
   dark: {
     background: {
-      primary: '#09090B',
-      secondary: '#18181B',
-      tertiary: '#27272A',
-      elevated: '#27272A',
+      primary: '#09090B',      // zinc.950 - base surface
+      secondary: '#0C0C0F',    // slightly elevated
+      tertiary: '#131317',     // more elevated
+      elevated: '#1A1A1F',     // highest surface (cards, modals)
     },
     foreground: {
-      primary: '#FAFAFA',
-      secondary: '#D4D4D8',
-      muted: '#A1A1AA',
-      inverse: '#09090B',
+      primary: '#FAFAFA',      // zinc.50
+      secondary: '#D4D4D8',    // zinc.300
+      muted: '#A1A1AA',        // zinc.400
+      inverse: '#09090B',      // zinc.950
     },
     accent: {
-      primary: '#3B82F6',
-      hover: '#60A5FA',
-      active: '#93C5FD',
-      subtle: '#1E3A8A',
+      // 2026: Desaturated accents for dark mode (reduced vibration)
+      primary: '#60A5FA',      // blue.400 (lighter, less saturated)
+      hover: '#93C5FD',        // blue.300
+      active: '#BFDBFE',       // blue.200
+      subtle: 'rgba(96, 165, 250, 0.12)',  // translucent blue
     },
     border: {
-      default: '#3F3F46',
-      emphasis: '#52525B',
-      strong: '#71717A',
+      default: '#3F3F46',      // zinc.700
+      emphasis: '#52525B',     // zinc.600
+      strong: '#71717A',       // zinc.500
     },
     status: {
       success: { bg: '#14532D', fg: '#86EFAC', border: '#166534' },

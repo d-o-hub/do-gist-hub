@@ -186,40 +186,51 @@ export function generateCSSVariables(): string {
   --color-background-secondary: ${colorSemantic.dark.background.secondary};
   --color-background-tertiary: ${colorSemantic.dark.background.tertiary};
   --color-background-elevated: ${colorSemantic.dark.background.elevated};
-  
+
   --color-foreground-primary: ${colorSemantic.dark.foreground.primary};
   --color-foreground-secondary: ${colorSemantic.dark.foreground.secondary};
   --color-foreground-muted: ${colorSemantic.dark.foreground.muted};
   --color-foreground-inverse: ${colorSemantic.dark.foreground.inverse};
-  
+
   --color-accent-primary: ${colorSemantic.dark.accent.primary};
   --color-accent-hover: ${colorSemantic.dark.accent.hover};
   --color-accent-active: ${colorSemantic.dark.accent.active};
   --color-accent-subtle: ${colorSemantic.dark.accent.subtle};
-  
+
   --color-border-default: ${colorSemantic.dark.border.default};
   --color-border-emphasis: ${colorSemantic.dark.border.emphasis};
   --color-border-strong: ${colorSemantic.dark.border.strong};
-  
+
   --color-status-success-bg: ${colorSemantic.dark.status.success.bg};
   --color-status-success-fg: ${colorSemantic.dark.status.success.fg};
   --color-status-success-border: ${colorSemantic.dark.status.success.border};
-  
+
   --color-status-error-bg: ${colorSemantic.dark.status.error.bg};
   --color-status-error-fg: ${colorSemantic.dark.status.error.fg};
   --color-status-error-border: ${colorSemantic.dark.status.error.border};
-  
+
   --color-status-warning-bg: ${colorSemantic.dark.status.warning.bg};
   --color-status-warning-fg: ${colorSemantic.dark.status.warning.fg};
   --color-status-warning-border: ${colorSemantic.dark.status.warning.border};
-  
+
   --color-status-info-bg: ${colorSemantic.dark.status.info.bg};
   --color-status-info-fg: ${colorSemantic.dark.status.info.fg};
   --color-status-info-border: ${colorSemantic.dark.status.info.border};
-  
+
   --color-interactive-hover: ${colorSemantic.dark.interactive.hover};
   --color-interactive-active: ${colorSemantic.dark.interactive.active};
   --color-interactive-focus: ${colorSemantic.dark.interactive.focus};
+
+  /* 2026: Tonal shadows for dark mode */
+  --shadow-sm: ${shadowTokens['sm-dark']};
+  --shadow-md: ${shadowTokens['md-dark']};
+  --shadow-lg: ${shadowTokens['lg-dark']};
+
+  /* 2026: Dark mode typography adjustments (optical correction for light-on-dark) */
+  --font-weight-semibold: 500; /* reduce from 600 */
+  --font-weight-bold: 600;     /* reduce from 700 */
+  --line-height-normal: 1.6;   /* increase from 1.5 */
+  --letter-spacing-normal: 0.01em; /* slight increase */
 }
 
 /* ===== Responsive Container Spacing ===== */

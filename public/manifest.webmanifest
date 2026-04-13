@@ -8,7 +8,10 @@
   "scope": "/",
   "start_url": "/",
   "orientation": "any",
-  "categories": ["productivity", "developer tools"],
+  "categories": [
+    "productivity",
+    "developer tools"
+  ],
   "icons": [
     {
       "src": "/pwa-192x192.png",

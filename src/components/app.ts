@@ -58,9 +58,36 @@ export class App {
   private render(): void {
     if (!this.container) return;
     this.container.innerHTML = `<div class="app-shell" data-testid="app-shell">
+        <!-- 2026: Desktop sidebar navigation -->
+        <nav class="sidebar-nav" data-testid="sidebar-nav">
+          <button class="sidebar-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="sidebar-home">
+            <span class="sidebar-icon">📋</span>
+            <span class="sidebar-label">Gists</span>
+          </button>
+          <button class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" data-testid="sidebar-starred">
+            <span class="sidebar-icon">⭐</span>
+            <span class="sidebar-label">Starred</span>
+          </button>
+          <button class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="sidebar-create">
+            <span class="sidebar-icon">➕</span>
+            <span class="sidebar-label">New Gist</span>
+          </button>
+          <button class="sidebar-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="sidebar-offline">
+            <span class="sidebar-icon">📴</span>
+            <span class="sidebar-label">Offline</span>
+          </button>
+          <button class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="sidebar-settings">
+            <span class="sidebar-icon">⚙️</span>
+            <span class="sidebar-label">Settings</span>
+          </button>
+        </nav>
         <header class="app-header">
           <h1 class="app-title" data-testid="app-title">GitHub Gist Manager</h1>
           <div class="header-actions">
+            <!-- 2026: Sync status indicator -->
+            <span id="sync-indicator" class="sync-indicator" aria-live="polite" aria-label="Sync status">
+              <span class="sync-dot"></span>
+            </span>
             <button id="theme-toggle" class="icon-button" aria-label="Toggle theme" data-testid="theme-toggle"><span class="icon">🌓</span></button>
             <button id="settings-btn" class="icon-button" aria-label="Settings" data-testid="settings-btn"><span class="icon">⚙️</span></button>
           </div>
@@ -74,6 +101,7 @@ export class App {
         </nav>
       </div>`;
     this.initializeThemeToggle();
+    this.updateSyncIndicator();
   }
 
   private getRouteContent(): string {
@@ -188,47 +216,68 @@ export class App {
       <div class="route-settings">
         <h2>Settings</h2>
         <div class="settings-panel">
-          <div class="settings-section">
-            <h3>Authentication</h3>
-            <div class="form-group">
-              <label for="pat-input">GitHub Personal Access Token</label>
-              <input type="password" id="pat-input" class="form-input" placeholder="ghp_xxxxxxxxxxxx" />
-              <p class="help-text">Enter a fine-grained PAT with gist permissions.</p>
+          <!-- 2026: Progressive disclosure with collapsible sections -->
+          <details class="settings-section" open>
+            <summary class="settings-section-header">
+              <h3>Authentication</h3>
+              <span class="section-toggle-icon">▼</span>
+            </summary>
+            <div class="settings-section-content">
+              <div class="form-group">
+                <label for="pat-input">GitHub Personal Access Token</label>
+                <input type="password" id="pat-input" class="form-input" placeholder="ghp_xxxxxxxxxxxx" />
+                <p class="help-text">Enter a fine-grained PAT with gist permissions.</p>
+              </div>
+              <div class="form-actions">
+                <button id="save-token-btn" class="primary-btn">Save Token</button>
+                <button id="remove-token-btn" class="secondary-btn">Remove Token</button>
+              </div>
+              <div id="token-status" class="token-status"></div>
             </div>
-            <div class="form-actions">
-              <button id="save-token-btn" class="primary-btn">Save Token</button>
-              <button id="remove-token-btn" class="secondary-btn">Remove Token</button>
-            </div>
-            <div id="token-status" class="token-status"></div>
-          </div>
+          </details>
 
-          <div class="settings-section">
-            <h3>Appearance</h3>
-            <div class="form-group">
-              <label for="theme-select">Theme</label>
-              <select id="theme-select" class="form-input">
-                <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>Light</option>
-                <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>Dark</option>
-                <option value="auto" ${currentTheme === 'auto' ? 'selected' : ''}>Auto (System)</option>
-              </select>
+          <details class="settings-section" open>
+            <summary class="settings-section-header">
+              <h3>Appearance</h3>
+              <span class="section-toggle-icon">▼</span>
+            </summary>
+            <div class="settings-section-content">
+              <div class="form-group">
+                <label for="theme-select">Theme</label>
+                <select id="theme-select" class="form-input">
+                  <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>Light</option>
+                  <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>Dark</option>
+                  <option value="auto" ${currentTheme === 'auto' ? 'selected' : ''}>Auto (System)</option>
+                </select>
+              </div>
             </div>
-          </div>
+          </details>
 
-          <div class="settings-section">
-            <h3>Data Management</h3>
-            <div class="form-actions">
-              <button id="export-data-btn" class="secondary-btn">Export Data (JSON)</button>
-              <button id="reset-app-btn" class="secondary-btn">Reset App (Clear All Data)</button>
+          <details class="settings-section">
+            <summary class="settings-section-header">
+              <h3>Data Management</h3>
+              <span class="section-toggle-icon">▼</span>
+            </summary>
+            <div class="settings-section-content">
+              <div class="form-actions">
+                <button id="export-data-btn" class="secondary-btn">Export Data (JSON)</button>
+                <button id="reset-app-btn" class="secondary-btn">Reset App (Clear All Data)</button>
+              </div>
             </div>
-          </div>
+          </details>
 
-          <div class="settings-section">
-            <h3>Diagnostics</h3>
-            <div class="form-actions">
-              <button id="export-diagnostics-btn" class="secondary-btn">Export Diagnostics</button>
+          <details class="settings-section">
+            <summary class="settings-section-header">
+              <h3>Diagnostics</h3>
+              <span class="section-toggle-icon">▼</span>
+            </summary>
+            <div class="settings-section-content">
+              <div class="form-actions">
+                <button id="export-diagnostics-btn" class="secondary-btn">Export Diagnostics</button>
+              </div>
+              <div id="diagnostics-info" class="diagnostics-info"></div>
             </div>
-            <div id="diagnostics-info" class="diagnostics-info"></div>
-          </div>
+          </details>
         </div>
       </div>
     `;
@@ -274,6 +323,12 @@ export class App {
       </div>
     `).join('');
   }
+
+  /**
+   * 2026: Skeleton screen methods - reserved for future async loading integration
+   * To use: Call _renderDetailSkeleton() before async operations
+   */
+  // Skeleton screens disabled until async loading is implemented
 
   /**
    * Render error banner
@@ -451,7 +506,16 @@ export class App {
   private setupNavigation(): void {
     if (!this.container) return;
 
+    // Mobile bottom nav handlers (existing)
     this.container.querySelectorAll('.nav-item').forEach((item) => {
+      item.addEventListener('click', (e) => {
+        const route = (e.currentTarget as HTMLElement).dataset.route as Route;
+        if (route) this.navigate(route);
+      });
+    });
+
+    // 2026: Desktop sidebar nav handlers
+    this.container.querySelectorAll('.sidebar-item').forEach((item) => {
       item.addEventListener('click', (e) => {
         const route = (e.currentTarget as HTMLElement).dataset.route as Route;
         if (route) this.navigate(route);
@@ -779,5 +843,28 @@ export class App {
         <p>Theme: ${info.theme}</p>
       </div>
     `;
+  }
+
+  /**
+   * 2026: Update sync status indicator in header
+   */
+  private async updateSyncIndicator(): Promise<void> {
+    if (!this.container) return;
+    const dot = this.container.querySelector('.sync-dot');
+    if (!dot) return;
+
+    const online = networkMonitor.isOnline();
+    const pendingCount = await syncQueue.getQueueLength();
+
+    // Update sync status classes
+    const indicator = this.container.querySelector('#sync-indicator');
+    indicator?.classList.toggle('syncing', pendingCount > 0 && online);
+    indicator?.classList.toggle('offline', !online);
+
+    // Update aria label
+    const statusText = pendingCount > 0
+      ? `${pendingCount} pending sync`
+      : online ? 'Synced' : 'Offline';
+    indicator?.setAttribute('aria-label', `Sync status: ${statusText}`);
   }
 }

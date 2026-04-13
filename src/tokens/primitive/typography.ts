@@ -1,28 +1,30 @@
 /**
  * Primitive Typography Tokens
  * Raw typography values without semantic meaning
+ * 2026 Update: Fluid typography with clamp() for smooth scaling
  */
 
 export const fontFamily = {
   sans: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
   serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
-  mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+  mono: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
 } as const;
 
 export const fontSize = {
-  xs: '0.75rem',      // 12px
-  sm: '0.875rem',     // 14px
-  base: '1rem',       // 16px
-  lg: '1.125rem',     // 18px
-  xl: '1.25rem',      // 20px
-  '2xl': '1.5rem',    // 24px
-  '3xl': '1.875rem',  // 30px
-  '4xl': '2.25rem',   // 36px
-  '5xl': '3rem',      // 48px
-  '6xl': '3.75rem',   // 60px
-  '7xl': '4.5rem',    // 72px
-  '8xl': '6rem',      // 96px
-  '9xl': '8rem',      // 128px
+  // Fluid typography with clamp() - scales smoothly from 320px to 1536px
+  xs: 'clamp(0.6875rem, 0.625rem + 0.25vw, 0.75rem)',       // 11-12px
+  sm: 'clamp(0.75rem, 0.6875rem + 0.3125vw, 0.875rem)',     // 12-14px
+  base: 'clamp(0.875rem, 0.8rem + 0.375vw, 1rem)',           // 14-16px
+  lg: 'clamp(1rem, 0.875rem + 0.5vw, 1.125rem)',             // 16-18px
+  xl: 'clamp(1.125rem, 0.9375rem + 0.75vw, 1.25rem)',        // 18-20px
+  '2xl': 'clamp(1.25rem, 1rem + 1vw, 1.5rem)',               // 20-24px
+  '3xl': 'clamp(1.5rem, 1.125rem + 1.5vw, 1.875rem)',        // 24-30px
+  '4xl': 'clamp(1.875rem, 1.25rem + 2.5vw, 2.25rem)',        // 30-36px
+  '5xl': 'clamp(2.25rem, 1.5rem + 3.75vw, 3rem)',            // 36-48px
+  '6xl': 'clamp(2.75rem, 1.75rem + 5vw, 3.75rem)',           // 44-60px
+  '7xl': 'clamp(3.25rem, 2rem + 6.25vw, 4.5rem)',            // 52-72px
+  '8xl': 'clamp(4rem, 2.5rem + 7.5vw, 6rem)',                // 64-96px
+  '9xl': 'clamp(5rem, 3rem + 10vw, 8rem)',                   // 80-128px
 } as const;
 
 export const fontWeight = {
