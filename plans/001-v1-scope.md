@@ -2,7 +2,7 @@
 
 ## Primary Goal
 
-Ship a production-ready GitHub Gist CRUD app with offline-first behavior and Android packaging.
+Ship **d.o. Gist Hub**, a production-ready GitHub Gist management app with offline-first behavior and Android packaging.
 
 ## Feature List v1
 

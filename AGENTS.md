@@ -1,9 +1,26 @@
 # AGENTS.md
 
-> Single source of truth for all AI coding agents in this GitHub Gist CRUD app repository.
+> **d.o. Gist Hub** — single source of truth for all AI coding agents in this repository.
 > Built with: Vite, TypeScript, PWA, Capacitor Android, IndexedDB, GitHub REST API
 > Design System: Token-driven, mobile-first, responsive from 320px to 1536px+
 > Version: 1.0.0
+
+## App Identity
+
+The canonical app identity lives in **`src/config/app.config.ts`**.
+All files below must derive their values from that single source of truth:
+
+| File | Field | Source constant |
+|------|-------|----------------|
+| `package.json` | `name` | `APP.id` |
+| `package.json` | `description` | `APP.description` |
+| `index.html` | `<title>`, `<meta description>`, `theme-color` | `APP.name`, `APP.description`, `APP.themeColor` (via Vite plugin) |
+| `public/manifest.webmanifest` | `name`, `short_name`, `description` | `APP.name`, `APP.shortName`, `APP.description` (via Vite plugin) |
+| `capacitor.config.ts` | `appId`, `appName` | `APP.appId`, `APP.name` |
+| `src/services/db.ts` | `DB_NAME` | `APP.dbName` |
+| `public/sw.js` | `CACHE_NAME`, `STATIC_CACHE`, `API_CACHE` | `APP.cacheName`, `APP.staticCacheName`, `APP.apiCacheName` |
+
+When changing the app name, edit **only** `src/config/app.config.ts` and the Vite plugins will propagate the values automatically.
 
 ## Constants
 
@@ -18,7 +35,7 @@ readonly RETRY_BACKOFF_MS=1000
 
 ## Mission
 
-Build a production-ready, web-first GitHub Gist CRUD app with:
+Build **d.o. Gist Hub**, a production-ready, web-first GitHub Gist management app with:
 - Offline-first behavior using IndexedDB as v1 local source of truth
 - Fine-grained GitHub PAT authentication (no OAuth/device flow for v1)
 - Full gist CRUD and related actions (star/unstar/fork/revisions)

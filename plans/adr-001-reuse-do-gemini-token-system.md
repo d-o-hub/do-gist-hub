@@ -6,7 +6,7 @@
 
 ## Context
 
-We need a design system for the GitHub Gist app that is:
+We need a design system for d.o. Gist Hub that is:
 - Mobile-first and responsive
 - Themeable (dark/light modes)
 - Maintainable by AI agents and humans

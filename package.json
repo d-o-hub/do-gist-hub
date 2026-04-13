@@ -1,6 +1,7 @@
 {
-  "name": "gist-app",
+  "name": "d-o-gist-hub",
   "version": "0.1.0",
+  "description": "d.o. Gist Hub — offline-first GitHub Gist management app with token-driven design and Android support",
   "private": true,
   "type": "module",
   "scripts": {

@@ -1,4 +1,4 @@
-# Project Charter: GitHub Gist CRUD App
+# Project Charter: d.o. Gist Hub
 
 ## Vision
 
@@ -6,7 +6,7 @@ Build the easiest serious production path for a personal GitHub Gist management 
 
 ## Mission Statement
 
-Create a web-first PWA that provides full GitHub Gist CRUD operations with offline support, polished mobile UX, and measurable performance discipline.
+Create **d.o. Gist Hub**, a web-first PWA that provides full GitHub Gist CRUD operations with offline support, polished mobile UX, and measurable performance discipline.
 
 ## Success Criteria
 

@@ -6,7 +6,7 @@
 
 ## Context
 
-We need to deliver a GitHub Gist app that works on:
+We need to deliver d.o. Gist Hub that works on:
 - Modern web browsers (desktop and mobile)
 - Android devices (via native packaging)
 

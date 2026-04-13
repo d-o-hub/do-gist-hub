@@ -1,7 +1,7 @@
 {
-  "name": "GitHub Gist Manager",
-  "short_name": "GistManager",
-  "description": "Manage your GitHub Gists with offline-first support",
+  "name": "d.o. Gist Hub",
+  "short_name": "d.o. Gists",
+  "description": "d.o. Gist Hub — offline-first GitHub Gist management app with token-driven design and Android support",
   "theme_color": "#2563eb",
   "background_color": "#ffffff",
   "display": "standalone",

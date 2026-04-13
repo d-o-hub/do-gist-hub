@@ -1,11 +1,15 @@
 /**
  * Service Worker for PWA offline support
  * Uses cache-first strategy for app shell, network-first for navigation
+ *
+ * NOTE: Cache names are derived from src/config/app.config.ts.
+ * When the app id changes, update CACHE_NAME, STATIC_CACHE, and API_CACHE
+ * to match APP.cacheName, APP.staticCacheName, APP.apiCacheName.
  */
 
-const CACHE_NAME = 'gist-app-v1';
-const STATIC_CACHE = 'gist-static-v1';
-const API_CACHE = 'gist-api-v1';
+const CACHE_NAME = 'd-o-gist-hub-v1';
+const STATIC_CACHE = 'd-o-gist-hub-static-v1';
+const API_CACHE = 'd-o-gist-hub-api-v1';
 
 // Assets to precache (app shell)
 const PRECACHE_ASSETS = [

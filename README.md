@@ -1,4 +1,4 @@
-# GitHub Gist CRUD App
+# d.o. Gist Hub
 
 A production-ready, web-first GitHub Gist management app with offline-first behavior, token-driven design, and Android packaging via Capacitor.
 

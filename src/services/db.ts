@@ -4,10 +4,11 @@
  */
 
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { APP } from '@/config/app.config';
 
 // Schema version
 const DB_VERSION = 1;
-const DB_NAME = 'gist-app-db';
+const DB_NAME = APP.dbName;
 
 /**
  * Database Schema Definition
