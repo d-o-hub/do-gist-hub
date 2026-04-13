@@ -106,9 +106,9 @@ class GistStore {
 
         // Merge and deduplicate
         const starredIds = new Set(starredGists.map(g => g.id));
-        
+
         const mergedGists = [...userGists, ...starredGists.filter(g => !starredIds.has(g.id))]
-          .map(this.githubGistToRecord);
+          .map(gist => this.githubGistToRecord(gist, starredIds.has(gist.id)));
 
         // Save to cache
         for (const gist of mergedGists) {
@@ -376,7 +376,7 @@ class GistStore {
   /**
    * Convert GitHub API gist to local record
    */
-  private githubGistToRecord(gist: GitHubGist): GistRecord {
+  private githubGistToRecord(gist: GitHubGist, starred = false): GistRecord {
     return {
       id: gist.id,
       description: gist.description,
@@ -398,7 +398,7 @@ class GistStore {
       gitPushUrl: gist.git_push_url,
       createdAt: gist.created_at,
       updatedAt: gist.updated_at,
-      starred: false, // Will be updated separately
+      starred,
       public: gist.public,
       owner: gist.owner ? {
         login: gist.owner.login,

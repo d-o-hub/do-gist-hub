@@ -5,6 +5,7 @@ import { isAuthenticated } from './services/github/auth';
 import networkMonitor from './services/network/offline-monitor';
 import syncQueue from './services/sync/queue';
 import gistStore from './stores/gist-store';
+import { registerServiceWorker } from './services/pwa/register-sw';
 import './styles/base.css';
 import './styles/accessibility.css';
 import './styles/interactions.css';
@@ -38,6 +39,9 @@ async function bootstrap(): Promise<void> {
   // Mount app
   const app = new App();
   app.mount(document.getElementById('app')!);
+
+  // Register service worker for PWA support
+  await registerServiceWorker();
 }
 
 bootstrap().catch((error) => {

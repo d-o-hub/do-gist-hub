@@ -100,7 +100,20 @@ export function renderCard(gist: GistRecord): string {
 /**
  * Attach event listeners to a card element
  */
-export function bindCardEvents(container: HTMLElement): void {
+export function bindCardEvents(container: HTMLElement, onCardClick?: (id: string) => void): void {
+  // Card click for detail view
+  container.querySelectorAll('.gist-card').forEach((card) => {
+    card.addEventListener('click', (e) => {
+      // Don't navigate if clicking a button or link
+      const target = e.target as HTMLElement;
+      if (target.closest('button') || target.closest('a') || target.closest('.gist-card-actions')) {
+        return;
+      }
+      const id = card.getAttribute('data-gist-id');
+      if (id && onCardClick) onCardClick(id);
+    });
+  });
+
   // Star buttons
   container.querySelectorAll('.star-btn').forEach((btn) => {
     btn.addEventListener('click', async (e) => {

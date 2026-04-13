@@ -11,9 +11,14 @@ import { renderCard, bindCardEvents } from './gist-card';
 import networkMonitor from '../services/network/offline-monitor';
 import syncQueue from '../services/sync/queue';
 import { saveToken, getToken, removeToken } from '../services/github/auth';
+import { loadGistDetail, renderRevisionsList } from './gist-detail';
+import { loadEditForm } from './gist-edit';
+import * as GitHub from '../services/github';
 
-type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings';
+type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings' | 'detail' | 'edit' | 'revisions';
 type Filter = 'all' | 'mine' | 'starred';
+type SortKey = 'updated' | 'created' | 'title';
+type SortOrder = 'asc' | 'desc';
 
 export class App {
   private container: HTMLElement | null = null;
@@ -23,6 +28,8 @@ export class App {
   private unsubStore?: () => void;
   private displayedGists: GistRecord[] = [];
   private searchTimeout?: number;
+  private currentSortKey: SortKey = 'updated';
+  private currentSortOrder: SortOrder = 'desc';
 
   mount(container: HTMLElement): void {
     if (!container) throw new Error('App container not found');
@@ -30,9 +37,6 @@ export class App {
     this.render();
     this.setupNavigation();
     this.subscribeStore();
-    networkMonitor.init();
-    syncQueue.init();
-    gistStore.init();
   }
 
   private subscribeStore(): void {
@@ -48,6 +52,7 @@ export class App {
       this.updateGistList();
     }
     if (this.currentRoute === 'offline') this.updateOfflineStatus();
+    // Don't update detail/edit/revisions views on store changes
   }
 
   private render(): void {
@@ -78,6 +83,9 @@ export class App {
       case 'create': return this.getCreateRoute();
       case 'offline': return this.getOfflineRoute();
       case 'settings': return this.getSettingsRoute();
+      case 'detail': return this.getDetailRoute();
+      case 'edit': return this.getEditRoute();
+      case 'revisions': return this.getRevisionsRoute();
       default: return this.getHomeRoute();
     }
   }
@@ -91,6 +99,17 @@ export class App {
             <button class="filter-btn ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">All</button>
             <button class="filter-btn ${this.currentFilter === 'mine' ? 'active' : ''}" data-filter="mine">Mine</button>
             <button class="filter-btn ${this.currentFilter === 'starred' ? 'active' : ''}" data-filter="starred">Starred</button>
+          </div>
+          <div class="sort-controls">
+            <label for="sort-select">Sort by:</label>
+            <select id="sort-select" class="sort-select">
+              <option value="updated-desc" ${this.currentSortKey === 'updated' && this.currentSortOrder === 'desc' ? 'selected' : ''}>Last Updated (Newest)</option>
+              <option value="updated-asc" ${this.currentSortKey === 'updated' && this.currentSortOrder === 'asc' ? 'selected' : ''}>Last Updated (Oldest)</option>
+              <option value="created-desc" ${this.currentSortKey === 'created' && this.currentSortOrder === 'desc' ? 'selected' : ''}>Created (Newest)</option>
+              <option value="created-asc" ${this.currentSortKey === 'created' && this.currentSortOrder === 'asc' ? 'selected' : ''}>Created (Oldest)</option>
+              <option value="title-asc" ${this.currentSortKey === 'title' ? 'selected' : ''}>Title (A-Z)</option>
+              <option value="title-desc" ${this.currentSortKey === 'title' && this.currentSortOrder === 'desc' ? 'selected' : ''}>Title (Z-A)</option>
+            </select>
           </div>
         </div>
         <div class="gist-list" id="gist-list">${this.renderGistList()}</div>
@@ -164,23 +183,67 @@ export class App {
   }
 
   private getSettingsRoute(): string {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     return `
       <div class="route-settings">
         <h2>Settings</h2>
         <div class="settings-panel">
-          <div class="form-group">
-            <label for="pat-input">GitHub Personal Access Token</label>
-            <input type="password" id="pat-input" class="form-input" placeholder="ghp_xxxxxxxxxxxx" />
-            <p class="help-text">Enter a fine-grained PAT with gist permissions.</p>
+          <div class="settings-section">
+            <h3>Authentication</h3>
+            <div class="form-group">
+              <label for="pat-input">GitHub Personal Access Token</label>
+              <input type="password" id="pat-input" class="form-input" placeholder="ghp_xxxxxxxxxxxx" />
+              <p class="help-text">Enter a fine-grained PAT with gist permissions.</p>
+            </div>
+            <div class="form-actions">
+              <button id="save-token-btn" class="primary-btn">Save Token</button>
+              <button id="remove-token-btn" class="secondary-btn">Remove Token</button>
+            </div>
+            <div id="token-status" class="token-status"></div>
           </div>
-          <div class="form-actions">
-            <button id="save-token-btn" class="primary-btn">Save Token</button>
-            <button id="remove-token-btn" class="secondary-btn">Remove Token</button>
+
+          <div class="settings-section">
+            <h3>Appearance</h3>
+            <div class="form-group">
+              <label for="theme-select">Theme</label>
+              <select id="theme-select" class="form-input">
+                <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>Light</option>
+                <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>Dark</option>
+                <option value="auto" ${currentTheme === 'auto' ? 'selected' : ''}>Auto (System)</option>
+              </select>
+            </div>
           </div>
-          <div id="token-status" class="token-status"></div>
+
+          <div class="settings-section">
+            <h3>Data Management</h3>
+            <div class="form-actions">
+              <button id="export-data-btn" class="secondary-btn">Export Data (JSON)</button>
+              <button id="reset-app-btn" class="secondary-btn">Reset App (Clear All Data)</button>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3>Diagnostics</h3>
+            <div class="form-actions">
+              <button id="export-diagnostics-btn" class="secondary-btn">Export Diagnostics</button>
+            </div>
+            <div id="diagnostics-info" class="diagnostics-info"></div>
+          </div>
         </div>
       </div>
     `;
+  }
+
+  private getDetailRoute(): string {
+    return `<div id="gist-detail-container" data-testid="gist-detail"></div>`;
+  }
+
+  private getEditRoute(): string {
+    return `<div id="gist-edit-container" data-testid="gist-edit"></div>`;
+  }
+
+  private getRevisionsRoute(): string {
+    return `<div id="gist-revisions-container" data-testid="gist-revisions"></div>`;
   }
 
   private renderGistList(): string {
@@ -247,12 +310,14 @@ export class App {
     const listEl = this.container.querySelector('#gist-list') as HTMLElement | null;
     if (!listEl) return;
 
-    const gists = this.currentRoute === 'starred'
+    let gists = this.currentRoute === 'starred'
       ? gistStore.filterGists('starred')
       : this.searchQuery
         ? gistStore.searchGists(this.searchQuery)
         : gistStore.filterGists(this.currentFilter);
 
+    // Apply sorting
+    gists = this.sortGists(gists);
     this.displayedGists = gists;
 
     if (gists.length === 0) {
@@ -261,7 +326,109 @@ export class App {
     }
 
     listEl.innerHTML = gists.map(renderCard).join('');
-    bindCardEvents(listEl);
+    bindCardEvents(listEl, (id) => this.navigateToDetail(id));
+  }
+
+  /**
+   * Sort gists by specified criteria
+   */
+  private sortGists(gists: GistRecord[]): GistRecord[] {
+    return [...gists].sort((a, b) => {
+      let comparison = 0;
+
+      switch (this.currentSortKey) {
+        case 'updated':
+          comparison = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+          break;
+        case 'created':
+          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+        case 'title': {
+          const titleA = (a.description || Object.values(a.files)[0]?.filename || '').toLowerCase();
+          const titleB = (b.description || Object.values(b.files)[0]?.filename || '').toLowerCase();
+          comparison = titleA.localeCompare(titleB);
+          break;
+        }
+      }
+
+      return this.currentSortOrder === 'desc' ? -comparison : comparison;
+    });
+  }
+
+  /**
+   * Navigate to gist detail view
+   */
+  private async navigateToDetail(gistId: string): Promise<void> {
+    this.currentRoute = 'detail';
+    this.render();
+    this.setupNavigation();
+    window.history.pushState({ route: 'detail', gistId }, '', `#detail/${gistId}`);
+
+    const container = this.container?.querySelector('#gist-detail-container');
+    if (container) {
+      await loadGistDetail(
+        gistId,
+        container as HTMLElement,
+        () => this.navigate('home'),
+        (id) => this.navigateToEdit(id),
+        (id) => this.navigateToRevisions(id)
+      );
+    }
+  }
+
+  /**
+   * Navigate to edit view
+   */
+  private async navigateToEdit(gistId: string): Promise<void> {
+    this.currentRoute = 'edit';
+    this.render();
+    this.setupNavigation();
+    window.history.pushState({ route: 'edit', gistId }, '', `#edit/${gistId}`);
+
+    const container = this.container?.querySelector('#gist-edit-container');
+    if (container) {
+      await loadEditForm(
+        gistId,
+        container as HTMLElement,
+        () => this.navigateToDetail(gistId)
+      );
+    }
+  }
+
+  /**
+   * Navigate to revisions view
+   */
+  private async navigateToRevisions(gistId: string): Promise<void> {
+    this.currentRoute = 'revisions';
+    this.render();
+    this.setupNavigation();
+    window.history.pushState({ route: 'revisions', gistId }, '', `#revisions/${gistId}`);
+
+    const container = this.container?.querySelector('#gist-revisions-container');
+    if (container) {
+      await this.loadRevisions(gistId, container as HTMLElement);
+    }
+  }
+
+  /**
+   * Load and display revisions
+   */
+  private async loadRevisions(gistId: string, container: HTMLElement): Promise<void> {
+    try {
+      const revisions = await GitHub.listGistRevisions(gistId);
+      container.innerHTML = renderRevisionsList(revisions, gistId);
+
+      // Bind back button
+      container.querySelector('#gist-back-btn')?.addEventListener('click', () => this.navigateToDetail(gistId));
+    } catch (err) {
+      container.innerHTML = `
+        <div class="error-state">
+          <p>Failed to load revisions: ${this.escapeHtml(err instanceof Error ? err.message : 'Unknown error')}</p>
+          <button class="back-btn" id="revisions-back-btn">← Back</button>
+        </div>
+      `;
+      container.querySelector('#revisions-back-btn')?.addEventListener('click', () => this.navigateToDetail(gistId));
+    }
   }
 
   /**
@@ -321,6 +488,15 @@ export class App {
       });
     });
 
+    // Sort control
+    this.container.querySelector('#sort-select')?.addEventListener('change', (e) => {
+      const select = e.target as HTMLSelectElement;
+      const [sortKey, sortOrder] = select.value.split('-') as [SortKey, SortOrder];
+      this.currentSortKey = sortKey;
+      this.currentSortOrder = sortOrder;
+      this.updateGistList();
+    });
+
     // Create form
     this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => this.handleCreateGist(e));
     this.container.querySelector('#add-file-btn')?.addEventListener('click', () => this.addFileEditor());
@@ -333,9 +509,16 @@ export class App {
     // Settings actions
     this.container.querySelector('#save-token-btn')?.addEventListener('click', () => this.handleSaveToken());
     this.container.querySelector('#remove-token-btn')?.addEventListener('click', () => this.handleRemoveToken());
+    this.container.querySelector('#theme-select')?.addEventListener('change', (e) => this.handleThemeChange(e));
+    this.container.querySelector('#export-data-btn')?.addEventListener('click', () => this.handleExportData());
+    this.container.querySelector('#reset-app-btn')?.addEventListener('click', () => this.handleResetApp());
+    this.container.querySelector('#export-diagnostics-btn')?.addEventListener('click', () => this.handleExportDiagnostics());
 
     // Load token info on settings page
-    if (this.currentRoute === 'settings') this.loadTokenInfo();
+    if (this.currentRoute === 'settings') {
+      this.loadTokenInfo();
+      this.loadDiagnostics();
+    }
 
     // Bind card events
     const listEl = this.container.querySelector('#gist-list');
@@ -366,7 +549,13 @@ export class App {
 
   private initializeThemeToggle(): void {
     const stored = localStorage.getItem('theme-preference');
-    if (stored) document.documentElement.setAttribute('data-theme', stored);
+    if (stored) {
+      document.documentElement.setAttribute('data-theme', stored);
+    } else {
+      // Use system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    }
   }
 
   private async handleCreateGist(e: Event): Promise<void> {
@@ -484,5 +673,111 @@ export class App {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+  }
+
+  private handleThemeChange(e: Event): void {
+    const select = e.target as HTMLSelectElement;
+    const theme = select.value;
+
+    if (theme === 'auto') {
+      // Use system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      localStorage.removeItem('theme-preference');
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme-preference', theme);
+    }
+  }
+
+  private async handleExportData(): Promise<void> {
+    try {
+      const { exportData } = await import('../services/db');
+      const data = await exportData();
+
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success('Data exported successfully');
+    } catch {
+      toast.error('Failed to export data');
+    }
+  }
+
+  private async handleResetApp(): Promise<void> {
+    if (!confirm('Reset the app? This will delete all local data and cannot be undone.')) return;
+
+    try {
+      await clearAllData();
+      toast.success('App reset successfully');
+      this.navigate('home');
+    } catch {
+      toast.error('Failed to reset app');
+    }
+  }
+
+  private async handleExportDiagnostics(): Promise<void> {
+    const diagnostics = await this.collectDiagnostics();
+    const blob = new Blob([JSON.stringify(diagnostics, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gist-hub-diagnostics-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast.success('Diagnostics exported');
+  }
+
+  private async collectDiagnostics(): Promise<Record<string, unknown>> {
+    const { getDB } = await import('../services/db');
+    const token = await getToken();
+
+    return {
+      timestamp: new Date().toISOString(),
+      version: '0.1.0',
+      userAgent: navigator.userAgent,
+      online: navigator.onLine,
+      authenticated: !!token,
+      theme: document.documentElement.getAttribute('data-theme'),
+      gistsCount: gistStore.getGists().length,
+      isLoading: gistStore.getIsLoading(),
+      error: gistStore.getError(),
+      serviceWorker: navigator.serviceWorker?.controller ? 'registered' : 'not registered',
+      indexedDB: 'indexedDB' in window ? 'supported' : 'not supported',
+      storageEstimate: await navigator.storage?.estimate(),
+      dbSize: (() => {
+        try {
+          const db = getDB();
+          return db ? 'initialized' : 'not initialized';
+        } catch {
+          return 'not initialized';
+        }
+      })(),
+    };
+  }
+
+  private async loadDiagnostics(): Promise<void> {
+    const container = this.container?.querySelector('#diagnostics-info');
+    if (!container) return;
+
+    const info = await this.collectDiagnostics();
+    container.innerHTML = `
+      <div class="diagnostics-content">
+        <p>Online: ${info.online ? 'Yes' : 'No'}</p>
+        <p>Gists: ${info.gistsCount}</p>
+        <p>Service Worker: ${info.serviceWorker}</p>
+        <p>Theme: ${info.theme}</p>
+      </div>
+    `;
   }
 }
