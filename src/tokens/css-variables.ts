@@ -34,6 +34,7 @@ export function generateCSSVariables(): string {
   --color-accent-hover: ${colorSemantic.light.accent.hover};
   --color-accent-active: ${colorSemantic.light.accent.active};
   --color-accent-subtle: ${colorSemantic.light.accent.subtle};
+  --color-accent-glow: ${colorSemantic.light.accent.glow};
   
   --color-border-default: ${colorSemantic.light.border.default};
   --color-border-emphasis: ${colorSemantic.light.border.emphasis};
@@ -196,6 +197,7 @@ export function generateCSSVariables(): string {
   --color-accent-hover: ${colorSemantic.dark.accent.hover};
   --color-accent-active: ${colorSemantic.dark.accent.active};
   --color-accent-subtle: ${colorSemantic.dark.accent.subtle};
+  --color-accent-glow: ${colorSemantic.dark.accent.glow};
 
   --color-border-default: ${colorSemantic.dark.border.default};
   --color-border-emphasis: ${colorSemantic.dark.border.emphasis};

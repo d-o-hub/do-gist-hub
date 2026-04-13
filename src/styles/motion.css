@@ -1,6 +1,7 @@
 /**
  * Motion and Transitions
  * Animation tokens, state transitions, loading indicators
+ * Modernized 2026: Refined easing, subtle glow animations
  */
 
 /* ===== Motion Token Usage ===== */
@@ -11,14 +12,15 @@
 .secondary-btn,
 .icon-button {
   transition:
-    background-color var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease),
-    transform var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease),
-    box-shadow var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+    background-color var(--motion-duration-fast) var(--motion-easing-ease-out),
+    transform var(--motion-duration-fast) var(--motion-easing-ease-out),
+    box-shadow var(--motion-duration-fast) var(--motion-easing-ease-out);
+  will-change: transform;
 }
 
 .primary-btn:active,
 .secondary-btn:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 
 /* ===== Form Input Transitions ===== */
@@ -27,15 +29,57 @@
 .filename-input,
 .content-editor {
   transition:
-    border-color var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease),
-    box-shadow var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+    border-color var(--motion-duration-fast) var(--motion-easing-ease-out),
+    box-shadow var(--motion-duration-fast) var(--motion-easing-ease-out),
+    background-color var(--motion-duration-fast) var(--motion-easing-ease-out);
 }
 
 /* ===== Card Entrance Animation ===== */
 @keyframes card-enter {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.gist-card {
+  animation: card-enter var(--motion-duration-normal) var(--motion-easing-ease-out) backwards;
+}
+
+.gist-card:nth-child(1) { animation-delay: 0ms; }
+.gist-card:nth-child(2) { animation-delay: 40ms; }
+.gist-card:nth-child(3) { animation-delay: 80ms; }
+.gist-card:nth-child(4) { animation-delay: 120ms; }
+.gist-card:nth-child(5) { animation-delay: 160ms; }
+.gist-card:nth-child(n+6) { animation-delay: 200ms; }
+
+/* ===== Glow Pulse for Active Elements ===== */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 2px 8px var(--color-accent-glow);
+  }
+  50% {
+    box-shadow: 0 4px 16px var(--color-accent-glow), 0 0 24px var(--color-accent-subtle);
+  }
+}
+
+.nav-item.active {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.filter-btn.active {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* ===== Page Transition ===== */
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -43,22 +87,8 @@
   }
 }
 
-.card-enter-active {
-  animation: card-enter var(--motion-duration-normal, 250ms) var(--motion-easing-ease-out, ease);
-}
-
-/* ===== Page Transition ===== */
-@keyframes page-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 .app-main {
-  animation: page-fade-in var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+  animation: page-fade-in var(--motion-duration-normal) var(--motion-easing-ease-out);
 }
 
 /* ===== Loading Spinner ===== */
@@ -71,61 +101,57 @@
 .spinner {
   width: 24px;
   height: 24px;
-  border: 2px solid var(--color-border-default, #E5E7EB);
-  border-top-color: var(--color-accent-primary, #2563EB);
-  border-radius: var(--radius-full, 9999px);
-  animation: spin var(--motion-duration-slow, 400ms) var(--motion-easing-linear, linear) infinite;
+  border: 2px solid var(--color-border-default);
+  border-top-color: var(--color-accent-primary);
+  border-radius: var(--radius-full);
+  animation: spin var(--motion-duration-slow) var(--motion-easing-linear) infinite;
 }
 
 /* ===== Status Indicator Pulse ===== */
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.6;
+    transform: scale(1.15);
   }
 }
 
 .status-indicator.offline .status-dot {
-  animation: pulse var(--motion-duration-slow, 400ms) var(--motion-easing-ease-in-out, ease-in-out) infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .status-indicator.offline .status-dot {
-    animation: none;
-  }
+  animation: pulse var(--motion-duration-slow) var(--motion-easing-ease-in-out) infinite;
 }
 
 /* ===== Toast Slide In ===== */
 @keyframes toast-slide-in {
   from {
     opacity: 0;
-    transform: translateX(100%);
+    transform: translateX(100%) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
   }
 }
 
 @keyframes toast-slide-out {
   from {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
   }
   to {
     opacity: 0;
-    transform: translateX(100%);
+    transform: translateX(100%) scale(0.95);
   }
 }
 
 .toast-enter {
-  animation: toast-slide-in var(--motion-duration-normal, 250ms) var(--motion-easing-ease-out, ease);
+  animation: toast-slide-in var(--motion-duration-normal) var(--motion-easing-ease-out);
 }
 
 .toast-exit {
-  animation: toast-slide-out var(--motion-duration-fast, 150ms) var(--motion-easing-ease-in, ease-in);
+  animation: toast-slide-out var(--motion-duration-fast) var(--motion-easing-ease-in);
 }
 
 /* ===== High-Motion Elements ===== */
@@ -136,45 +162,44 @@
   backface-visibility: hidden;
 }
 
-/* ===== Nav Item Active State ===== */
-.nav-item {
-  position: relative;
+/* ===== Skeleton Loading Enhancement ===== */
+.loading-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-background-secondary) 25%,
+    var(--color-background-tertiary) 50%,
+    var(--color-background-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.8s ease-in-out infinite;
+  border-radius: var(--radius-md);
 }
 
-.nav-item.active::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 24px;
-  height: 2px;
-  background-color: var(--color-accent-primary, #2563EB);
-  border-radius: var(--radius-full, 9999px);
-  transition: transform var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-/* ===== Filter Button Active State ===== */
-.filter-btn {
-  position: relative;
-  overflow: hidden;
-}
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 
-.filter-btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-color: var(--color-accent-primary, #2563EB);
-  opacity: 0;
-  transition: opacity var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
-  border-radius: inherit;
-}
+  .status-indicator.offline .status-dot {
+    animation: none;
+  }
 
-.filter-btn.active::before {
-  opacity: 1;
-}
+  .nav-item.active,
+  .filter-btn.active {
+    animation: none;
+  }
 
-.filter-btn.active {
-  color: var(--color-foreground-inverse, #FFFFFF);
-  border-color: var(--color-accent-primary, #2563EB);
+  .gist-card {
+    animation: none;
+  }
 }
