@@ -4,6 +4,7 @@
  */
 
 import type { PendingWrite } from '../../types';
+import type { CreateGistRequest, UpdateGistRequest } from '../../types/api';
 import { 
   getPendingWrites, 
   queueWrite as dbQueueWrite, 
@@ -67,7 +68,7 @@ class SyncQueue {
   async queueOperation(
     gistId: string,
     action: SyncAction,
-    payload: any
+    payload: unknown
   ): Promise<number> {
     const write: Omit<PendingWrite, 'id' | 'createdAt' | 'retryCount'> = {
       gistId,
@@ -193,8 +194,8 @@ class SyncQueue {
   /**
    * Sync create operation
    */
-  private async syncCreate(_gistId: string, payload: any): Promise<SyncResult> {
-    const gist = await GitHub.createGist(payload);
+  private async syncCreate(_gistId: string, payload: unknown): Promise<SyncResult> {
+    const gist = await GitHub.createGist(payload as CreateGistRequest);
     
     // Update local cache with server response
     await saveGist({
@@ -224,8 +225,8 @@ class SyncQueue {
   /**
    * Sync update operation
    */
-  private async syncUpdate(gistId: string, payload: any): Promise<SyncResult> {
-    const gist = await GitHub.updateGist(gistId, payload);
+  private async syncUpdate(gistId: string, payload: unknown): Promise<SyncResult> {
+    const gist = await GitHub.updateGist(gistId, payload as UpdateGistRequest);
     
     // Update local cache
     await saveGist({

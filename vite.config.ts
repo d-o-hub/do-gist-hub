@@ -24,6 +24,41 @@ function appConfigHtmlPlugin(): Plugin {
 }
 
 /**
+ * Injects Content-Security-Policy meta tag into index.html.
+ * CSP restricts resource loading to prevent XSS and data injection attacks.
+ */
+function cspPlugin(): Plugin {
+  // Strict CSP policy for production
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https: blob:",
+    "font-src 'self'",
+    "connect-src 'self' https://api.github.com",
+    "media-src 'self'",
+    "object-src 'none'",
+    "frame-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "upgrade-insecure-requests",
+  ].join('; ');
+
+  return {
+    name: 'csp-inject',
+    transformIndexHtml(html, ctx) {
+      // Only inject CSP in production build
+      if (ctx.server) return html;
+
+      // Add CSP as meta tag in <head>
+      const metaTag = `<meta http-equiv="Content-Security-Policy" content="${csp}" />`;
+      return html.replace('<head>', `<head>\n    ${metaTag}`);
+    },
+  };
+}
+
+/**
  * Generates manifest.webmanifest from src/config/app.config.ts
  * so the PWA manifest always matches the single source of truth.
  */
@@ -72,10 +107,89 @@ function manifestPlugin(): Plugin {
   };
 }
 
+/**
+ * Enforces performance budgets during build.
+ * Fails the build if bundle sizes exceed defined limits.
+ */
+function performanceBudgetPlugin(): Plugin {
+  const BUDGETS = {
+    initialJS: 150 * 1024,    // 150KB gzipped (we check raw size as proxy)
+    routeChunk: 50 * 1024,    // 50KB per chunk
+  };
+
+  return {
+    name: 'performance-budget',
+    closeBundle() {
+      const distDir = path.resolve(__dirname, 'dist');
+      if (!fs.existsSync(distDir)) return;
+
+      const warnings: string[] = [];
+
+      // Walk through all JS files in dist
+      const walkDir = (dir: string): string[] => {
+        const files: string[] = [];
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            files.push(...walkDir(fullPath));
+          } else if (entry.name.endsWith('.js')) {
+            files.push(fullPath);
+          }
+        }
+        return files;
+      };
+
+      const jsFiles = walkDir(distDir);
+      let totalJSSize = 0;
+
+      for (const file of jsFiles) {
+        const stats = fs.statSync(file);
+        totalJSSize += stats.size;
+
+        // Check individual chunk size
+        if (stats.size > BUDGETS.routeChunk) {
+          const relativePath = path.relative(distDir, file);
+          const sizeKB = (stats.size / 1024).toFixed(1);
+          warnings.push(
+            `Route chunk exceeds budget: ${relativePath} (${sizeKB}KB > ${(BUDGETS.routeChunk / 1024).toFixed(0)}KB)`
+          );
+        }
+      }
+
+      // Check total JS size (rough proxy for gzipped size)
+      if (totalJSSize > BUDGETS.initialJS * 2.5) { // Raw size ~2.5x gzipped
+        const totalKB = (totalJSSize / 1024).toFixed(1);
+        warnings.push(
+          `Total JS exceeds budget: ${totalKB}KB raw (~${(totalKB / 2.5).toFixed(1)}KB gzipped > ${(BUDGETS.initialJS / 1024).toFixed(0)}KB)`
+        );
+      }
+
+      // Log warnings
+      if (warnings.length > 0) {
+        console.warn('\n⚠️  Performance Budget Warnings:');
+        for (const warning of warnings) {
+          console.warn(`  - ${warning}`);
+        }
+        console.warn('');
+
+        // In CI, fail the build
+        if (process.env.CI) {
+          throw new Error('Performance budgets exceeded (see warnings above)');
+        }
+      } else {
+        console.log('\n✓ Performance budgets passed');
+      }
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     appConfigHtmlPlugin(),
+    cspPlugin(),
     manifestPlugin(),
+    performanceBudgetPlugin(),
   ],
   resolve: {
     alias: {

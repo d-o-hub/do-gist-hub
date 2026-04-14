@@ -9,7 +9,7 @@ import * as GitHub from '../services/github';
 import { toast } from './ui/toast';
 import gistStore from '../stores/gist-store';
 import networkMonitor from '../services/network/offline-monitor';
-import type { GitHubGist, GistRevision } from '../types/api';
+import type { GitHubGist, GistRevision, GistFile } from '../types/api';
 
 /**
  * Escape HTML
@@ -284,7 +284,10 @@ export function bindDetailEvents(
 /**
  * Convert GitHub API gist to local record
  */
-function apiGistToRecord(apiGist: GitHubGist, filesWithContent: Record<string, any>): GistRecord {
+function apiGistToRecord(
+  apiGist: GitHubGist,
+  filesWithContent: Record<string, GistFile & { content?: string }>
+): GistRecord {
   return {
     id: apiGist.id,
     description: apiGist.description,
@@ -320,7 +323,7 @@ export async function loadGistDetail(
       const apiGist = await GitHub.getGist(gistId);
 
       // Fetch file content from raw URLs
-      const filesWithContent: Record<string, any> = {};
+      const filesWithContent: Record<string, GistFile & { content?: string }> = {};
       await Promise.all(
         Object.entries(apiGist.files).map(async ([key, file]) => {
           if (file.raw_url && (!file.size || file.size < 1024 * 1024)) {

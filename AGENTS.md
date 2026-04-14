@@ -3,7 +3,7 @@
 > **d.o. Gist Hub** — single source of truth for all AI coding agents in this repository.
 > Built with: Vite, TypeScript, PWA, Capacitor Android, IndexedDB, GitHub REST API
 > Design System: Token-driven, mobile-first, responsive from 320px to 1536px+
-> Version: 1.0.0
+> Version: 0.1.0
 
 ## App Identity
 

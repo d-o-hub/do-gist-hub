@@ -287,7 +287,22 @@ export class App {
   }
 
   private getDetailRoute(): string {
-    return `<div id="gist-detail-container" data-testid="gist-detail"></div>`;
+    return `<div id="gist-detail-container" data-testid="gist-detail">
+      <div class="gist-detail-skeleton" aria-label="Loading gist detail">
+        <div class="skeleton-header">
+          <div class="skeleton-line skeleton-title"></div>
+          <div class="skeleton-line skeleton-meta"></div>
+        </div>
+        <div class="skeleton-content">
+          <div class="skeleton-line skeleton-file-tab"></div>
+          <div class="skeleton-code-lines">
+            ${Array(8).fill('').map(() => 
+              `<div class="skeleton-code-line" style="width: ${60 + Math.random() * 40}%"></div>`
+            ).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
   }
 
   private getEditRoute(): string {

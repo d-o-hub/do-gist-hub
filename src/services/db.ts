@@ -10,6 +10,9 @@ import { APP } from '@/config/app.config';
 const DB_VERSION = 1;
 const DB_NAME = APP.dbName;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DBSchemaIndex = any;
+
 /**
  * Database Schema Definition
  */
@@ -35,7 +38,7 @@ export interface GistDBSchema extends DBSchema {
     key: string;
     value: MetadataRecord;
   };
-  [key: string]: any;
+  [key: string]: DBSchemaIndex;
 }
 
 /**
@@ -90,7 +93,7 @@ export interface PendingWrite {
   id?: number;
   gistId: string;
   action: 'create' | 'update' | 'delete' | 'star' | 'unstar' | 'fork';
-  payload: any;
+  payload: unknown;
   createdAt: number;
   retryCount: number;
   lastAttemptAt?: number;
@@ -102,7 +105,7 @@ export interface PendingWrite {
  */
 export interface MetadataRecord {
   key: string;
-  value: any;
+  value: unknown;
   updatedAt: number;
 }
 
@@ -266,7 +269,7 @@ export async function updatePendingWriteError(id: number, error: string): Promis
 /**
  * Store metadata
  */
-export async function setMetadata(key: string, value: any): Promise<void> {
+export async function setMetadata(key: string, value: unknown): Promise<void> {
   const db = getDB();
   await db.put('metadata', {
     key,
