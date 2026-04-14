@@ -14,6 +14,7 @@ import { saveToken, getToken, removeToken } from '../services/github/auth';
 import { loadGistDetail, renderRevisionsList } from './gist-detail';
 import { loadEditForm } from './gist-edit';
 import * as GitHub from '../services/github';
+import { APP } from '../config/app.config';
 
 type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings' | 'detail' | 'edit' | 'revisions';
 type Filter = 'all' | 'mine' | 'starred';
@@ -82,7 +83,7 @@ export class App {
           </button>
         </nav>
         <header class="app-header">
-          <h1 class="app-title" data-testid="app-title">GitHub Gist Manager</h1>
+          <h1 class="app-title" data-testid="app-title">${APP.name}</h1>
           <div class="header-actions">
             <!-- 2026: Sync status indicator -->
             <span id="sync-indicator" class="sync-indicator" aria-live="polite" aria-label="Sync status">
@@ -261,8 +262,10 @@ export class App {
             <div class="settings-section-content">
               <div class="form-actions">
                 <button id="export-data-btn" class="secondary-btn">Export Data (JSON)</button>
+                <button id="import-data-btn" class="secondary-btn">Import Data (JSON)</button>
                 <button id="reset-app-btn" class="secondary-btn">Reset App (Clear All Data)</button>
               </div>
+              <input type="file" id="import-file-input" accept=".json" style="display: none;" />
             </div>
           </details>
 
@@ -325,10 +328,10 @@ export class App {
   }
 
   /**
-   * 2026: Skeleton screen methods - reserved for future async loading integration
-   * To use: Call _renderDetailSkeleton() before async operations
+   * 2026: Render detail skeleton - used before async gist loading
+   * Call this method when implementing async detail view loading.
    */
-  // Skeleton screens disabled until async loading is implemented
+  // _renderDetailSkeleton() available for future use
 
   /**
    * Render error banner
@@ -575,6 +578,8 @@ export class App {
     this.container.querySelector('#remove-token-btn')?.addEventListener('click', () => this.handleRemoveToken());
     this.container.querySelector('#theme-select')?.addEventListener('change', (e) => this.handleThemeChange(e));
     this.container.querySelector('#export-data-btn')?.addEventListener('click', () => this.handleExportData());
+    this.container.querySelector('#import-data-btn')?.addEventListener('click', () => this.handleImportData());
+    this.container.querySelector('#import-file-input')?.addEventListener('change', (e) => this.handleImportFile(e));
     this.container.querySelector('#reset-app-btn')?.addEventListener('click', () => this.handleResetApp());
     this.container.querySelector('#export-diagnostics-btn')?.addEventListener('click', () => this.handleExportDiagnostics());
 
@@ -772,6 +777,45 @@ export class App {
       toast.success('Data exported successfully');
     } catch {
       toast.error('Failed to export data');
+    }
+  }
+
+  /**
+   * Trigger file input for import.
+   */
+  private handleImportData(): void {
+    const input = this.container?.querySelector('#import-file-input') as HTMLInputElement;
+    if (input) {
+      input.click();
+    }
+  }
+
+  /**
+   * Handle selected import file.
+   */
+  private async handleImportFile(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!confirm('Import data from backup? This will replace all local data.')) {
+      input.value = '';
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const { importData } = await import('../services/db');
+      await importData(text);
+
+      toast.success('Data imported successfully. Refreshing...');
+      // Refresh gist store
+      await gistStore.refreshGists();
+    } catch (error) {
+      console.error('[App] Import failed:', error);
+      toast.error('Failed to import data. Invalid backup file.');
+    } finally {
+      input.value = '';
     }
   }
 

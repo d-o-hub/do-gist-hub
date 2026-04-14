@@ -1,0 +1,60 @@
+{
+  "skill_name": "triz-solver",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm stuck on a problem: adding caching to improve performance but it makes the code harder to maintain. How do I resolve this using TRIZ?",
+      "expected_output": "TRIZ-based solution with contradiction identified and principle applied",
+      "files": [],
+      "assertions": [
+        "States contradiction: Performance (improve) vs Maintainability (worsen)",
+        "Maps to TRIZ principle #1 (Segmentation) or similar",
+        "Proposes specific solution approach"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My authentication system needs strong security but it's hurting user experience with too many prompts. Apply TRIZ to solve this.",
+      "expected_output": "TRIZ resolution for security vs usability contradiction",
+      "files": [],
+      "assertions": [
+        "Identifies contradiction type",
+        "Applies principle #12 (Inversion) or #4 (Asymmetry)",
+        "Proposes risk-based or adaptive approach"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We need more complete agent instructions for reliability but we're running into token limits. How can TRIZ help?",
+      "expected_output": "TRIZ solution for completeness vs token efficiency",
+      "files": [],
+      "assertions": [
+        "Contradiction: Completeness (improve) vs Token limits (worsen)",
+        "Applies #4 Asymmetry (heavy in references/, light in skill)",
+        "Solution includes lazy loading or separation strategy"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "The build pipeline is too slow (improving speed hurts reliability with fewer checks). Use TRIZ to find a solution.",
+      "expected_output": "TRIZ analysis with separation principle applied",
+      "files": [],
+      "assertions": [
+        "Contradiction explicitly stated",
+        "Identifies separation strategy (time/space/condition)",
+        "Proposes actionable resolution"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to add comprehensive error handling (improves robustness) but it adds too much code bloat (hurts simplicity). TRIZ solve this please.",
+      "expected_output": "TRIZ solution for robustness vs simplicity trade-off",
+      "files": [],
+      "assertions": [
+        "Contradiction: Robustness vs Simplicity",
+        "Uses IFR approach (ideal final result)",
+        "Solution minimizes added complexity"
+      ]
+    }
+  ]
+}

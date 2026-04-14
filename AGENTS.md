@@ -209,18 +209,23 @@ git config --global --unset core.hooksPath
 ## Scope Rules v1 vs v2
 
 ### v1 (This Project)
-- Fine-grained PAT authentication
-- IndexedDB local storage
-- Web-first PWA
-- Capacitor Android packaging
+- Fine-grained PAT authentication with token redaction in logs
+- IndexedDB local storage with conflict detection and auto-resolution
+- Web-first PWA with Web Vitals measurement
+- Capacitor Android packaging (platform initialized)
 - Full gist CRUD, star/unstar/fork/revisions
-- Offline read, queued writes
+- Offline read, queued writes, sync conflict tracking
+- Rate limit tracking via `X-RateLimit-*` headers
+- Data export/import (JSON backup/restore)
+- Interaction timing via `performance.measure()` API
 
 ### v2 (Future, Not Now)
 - OAuth device flow
 - Backend sync server
 - Real-time collaboration
 - Multi-account support
+- Manual conflict resolution UI (conflicts detected but auto-resolved)
+- Detail view skeleton loading (placeholder exists but not wired to async load)
 
 **Do not implement v2 features in v1. Keep scope tight.**
 
@@ -304,5 +309,8 @@ Key skills for this project:
 - `reviewer-evaluator` - Code review quality gates
 - `skill-creator` - Create and improve skills with evals
 - `skill-evaluator` - Evaluate skill structure and performance
+- `task-decomposition` - Break down complex tasks into atomic goals
+- `triz-analysis` - Run systematic TRIZ contradiction audit
+- `triz-solver` - Systematic problem-solving with TRIZ principles
 
 **Note**: `plan-adr-go` directory is deprecated, use `plan-adr-goap` instead.

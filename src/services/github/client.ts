@@ -2,6 +2,7 @@
  * GitHub API Client
  * Handles all REST API calls to GitHub Gist API
  * All requests support AbortController for cancellation
+ * Tracks rate limits via X-RateLimit-* headers
  */
 
 import type {
@@ -12,6 +13,8 @@ import type {
   TokenInfo,
   GitHubError
 } from '../../types/api';
+import { trackRateLimit } from './rate-limiter';
+import { safeError } from '../security/logger';
 
 const BASE_URL = 'https://api.github.com';
 
@@ -43,7 +46,8 @@ async function buildHeaders(): Promise<HeadersInit> {
   const token = await getAuthToken();
 
   return {
-    'Accept': 'application/vnd.github.v3+json',
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
     'Content-Type': 'application/json',
     ...(token ? { 'Authorization': `token ${token}` } : {}),
   };
@@ -72,7 +76,7 @@ function handleApiError(error: unknown, context: string): never {
     throw new Error(`Request cancelled: ${context}`);
   }
 
-  console.error(`[GitHub API] ${context}:`, error);
+  safeError(`[GitHub API] ${context}:`, error);
 
   if (error instanceof Response) {
     throw new Error(`GitHub API Error: ${error.status} ${error.statusText}`);
@@ -92,7 +96,8 @@ export async function validateToken(token: string): Promise<TokenInfo> {
   try {
     const response = await fetch(`${BASE_URL}/user`, {
       headers: {
-        'Accept': 'application/vnd.github.v3+json',
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
         'Authorization': `token ${token}`,
       },
     });
@@ -143,6 +148,7 @@ export async function listGists(
       handleApiError(response, 'listGists');
     }
 
+    trackRateLimit(response);
     return response.json() as Promise<GitHubGist[]>;
   } catch (error) {
     return handleApiError(error, 'listGists');
@@ -172,6 +178,7 @@ export async function listStarredGists(
       handleApiError(response, 'listStarredGists');
     }
 
+    trackRateLimit(response);
     return response.json() as Promise<GitHubGist[]>;
   } catch (error) {
     return handleApiError(error, 'listStarredGists');
@@ -192,6 +199,7 @@ export async function getGist(id: string): Promise<GitHubGist> {
       handleApiError(response, 'getGist');
     }
 
+    trackRateLimit(response);
     return response.json() as Promise<GitHubGist>;
   } catch (error) {
     return handleApiError(error, 'getGist');
@@ -212,6 +220,7 @@ export async function createGist(payload: CreateGistRequest): Promise<GitHubGist
       handleApiError(response, 'createGist');
     }
 
+    trackRateLimit(response);
     return response.json() as Promise<GitHubGist>;
   } catch (error) {
     return handleApiError(error, 'createGist');
@@ -235,6 +244,7 @@ export async function updateGist(
       handleApiError(response, 'updateGist');
     }
 
+    trackRateLimit(response);
     return response.json() as Promise<GitHubGist>;
   } catch (error) {
     return handleApiError(error, 'updateGist');
@@ -254,6 +264,8 @@ export async function deleteGist(id: string): Promise<void> {
     if (!response.ok) {
       handleApiError(response, 'deleteGist');
     }
+
+    trackRateLimit(response);
   } catch (error) {
     handleApiError(error, 'deleteGist');
   }
@@ -272,6 +284,8 @@ export async function starGist(id: string): Promise<void> {
     if (!response.ok) {
       handleApiError(response, 'starGist');
     }
+
+    trackRateLimit(response);
   } catch (error) {
     handleApiError(error, 'starGist');
   }
@@ -290,6 +304,8 @@ export async function unstarGist(id: string): Promise<void> {
     if (!response.ok) {
       handleApiError(response, 'unstarGist');
     }
+
+    trackRateLimit(response);
   } catch (error) {
     handleApiError(error, 'unstarGist');
   }
@@ -305,9 +321,10 @@ export async function checkIfStarred(id: string): Promise<boolean> {
       await buildOptions()
     );
 
+    trackRateLimit(response);
     return response.status === 204;
   } catch (error) {
-    console.error('[GitHub API] checkIfStarred:', error);
+    safeError('[GitHub API] checkIfStarred:', error);
     return false;
   }
 }
@@ -326,6 +343,7 @@ export async function forkGist(id: string): Promise<GitHubGist> {
       handleApiError(response, 'forkGist');
     }
 
+    trackRateLimit(response);
     return response.json() as Promise<GitHubGist>;
   } catch (error) {
     return handleApiError(error, 'forkGist');
@@ -346,6 +364,7 @@ export async function listGistRevisions(id: string): Promise<GistRevision[]> {
       handleApiError(response, 'listGistRevisions');
     }
 
+    trackRateLimit(response);
     return response.json() as Promise<GistRevision[]>;
   } catch (error) {
     return handleApiError(error, 'listGistRevisions');
@@ -370,7 +389,8 @@ async function getCurrentUsername(): Promise<string> {
   try {
     const response = await fetch(`${BASE_URL}/user`, {
       headers: {
-        'Accept': 'application/vnd.github.v3+json',
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
         'Authorization': `token ${token}`,
       },
     });

@@ -1,0 +1,60 @@
+{
+  "skill_name": "triz-analysis",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Perform a TRIZ analysis on the src/services directory to identify technical contradictions in the current architecture.",
+      "expected_output": "Analysis document in analysis/ directory with identified contradictions mapped to TRIZ principles",
+      "files": [],
+      "assertions": [
+        "Output saved to analysis/triz-services-YYYY-MM-DD.md",
+        "At least 3 contradictions identified",
+        "Each contradiction mapped to at least one TRIZ principle number"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Run a contradiction audit on our CI/CD pipeline workflow in .github/workflows/",
+      "expected_output": "TRIZ audit report identifying trade-offs in the pipeline",
+      "files": [],
+      "assertions": [
+        "Analysis saved to analysis/ directory",
+        "Identifies contradiction: Improving X causes Y to worsen",
+        "References at least one TRIZ principle from references/principles.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need to audit the IndexedDB schema in src/services/db.ts for performance vs maintainability trade-offs using TRIZ methodology.",
+      "expected_output": "TRIZ analysis report with specific contradictions and resolutions",
+      "files": ["src/services/db.ts"],
+      "assertions": [
+        "Contradiction explicitly stated in format: Improving X vs Worsening Y",
+        "Uses separation principles (time/space/condition/system-level)",
+        "Recommendations include principle numbers"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Analyze the error handling system for the contradiction between security (strong validation) vs usability (developer experience). Use TRIZ.",
+      "expected_output": "Analysis identifying security vs usability contradiction with TRIZ resolution",
+      "files": [],
+      "assertions": [
+        "Identifies contradiction type as Technical or Physical",
+        "Maps to TRIZ principle #12 (Inversion) or #4 (Asymmetry)",
+        "Proposes actionable resolution"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Audit the authentication flow in src/auth/ for token storage security vs offline functionality trade-offs.",
+      "expected_output": "TRIZ audit document with security vs offline contradiction analysis",
+      "files": [],
+      "assertions": [
+        "Contradiction clearly stated",
+        "References Ideal Final Result (IFR)",
+        "At least one resolution strategy proposed"
+      ]
+    }
+  ]
+}

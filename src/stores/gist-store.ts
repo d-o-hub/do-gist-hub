@@ -9,6 +9,8 @@ import { getAllGists, saveGist as dbSaveGist, deleteGist as dbDeleteGist } from 
 import * as GitHub from '../services/github';
 import syncQueue from '../services/sync/queue';
 import networkMonitor from '../services/network/offline-monitor';
+import { detectConflict, storeConflict, resolveConflict } from '../services/sync/conflict-detector';
+import { safeError } from '../services/security/logger';
 
 type GistListener = (gists: GistRecord[]) => void;
 
@@ -107,21 +109,35 @@ class GistStore {
         // Merge and deduplicate
         const starredIds = new Set(starredGists.map(g => g.id));
 
-        const mergedGists = [...userGists, ...starredGists.filter(g => !starredIds.has(g.id))]
-          .map(gist => this.githubGistToRecord(gist, starredIds.has(gist.id)));
+        const mergedGists = [...userGists, ...starredGists.filter(g => !starredIds.has(g.id))];
 
-        // Save to cache
+        // Detect conflicts with cached data
         for (const gist of mergedGists) {
-          await dbSaveGist(gist);
+          const cached = cachedGists.find(c => c.id === gist.id);
+          if (cached && cached.syncStatus === 'synced') {
+            const conflict = detectConflict(cached, gist);
+            if (conflict) {
+              await storeConflict(conflict);
+              // Auto-resolve with remote-wins for now
+              const resolved = resolveConflict(conflict, 'remote-wins');
+              await dbSaveGist(resolved);
+              this.mergeGistRecord(resolved, starredIds.has(gist.id));
+            } else {
+              const record = this.githubGistToRecord(gist, starredIds.has(gist.id));
+              await dbSaveGist(record);
+              this.mergeGistRecord(record, starredIds.has(gist.id));
+            }
+          } else {
+            const record = this.githubGistToRecord(gist, starredIds.has(gist.id));
+            await dbSaveGist(record);
+            this.mergeGistRecord(record, starredIds.has(gist.id));
+          }
         }
 
-        this.gists = mergedGists.sort((a, b) => 
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        );
         this.notifyListeners();
       }
     } catch (err) {
-      console.error('[GistStore] Failed to load gists:', err);
+      safeError('[GistStore] Failed to load gists:', err);
       this.error = err instanceof Error ? err.message : 'Failed to load gists';
       this.notifyListeners();
     } finally {
@@ -197,7 +213,7 @@ class GistStore {
         return optimisticRecord;
       }
     } catch (err) {
-      console.error('[GistStore] Failed to create gist:', err);
+      safeError('[GistStore] Failed to create gist:', err);
       this.error = err instanceof Error ? err.message : 'Failed to create gist';
       this.notifyListeners();
       return null;
@@ -259,7 +275,7 @@ class GistStore {
         return true;
       }
     } catch (err) {
-      console.error('[GistStore] Failed to update gist:', err);
+      safeError('[GistStore] Failed to update gist:', err);
       this.error = err instanceof Error ? err.message : 'Failed to update gist';
       this.notifyListeners();
       return false;
@@ -289,7 +305,7 @@ class GistStore {
         return true;
       }
     } catch (err) {
-      console.error('[GistStore] Failed to delete gist:', err);
+      safeError('[GistStore] Failed to delete gist:', err);
       this.error = err instanceof Error ? err.message : 'Failed to delete gist';
       this.notifyListeners();
       return false;
@@ -333,7 +349,7 @@ class GistStore {
         return true;
       }
     } catch (err) {
-      console.error('[GistStore] Failed to toggle star:', err);
+      safeError('[GistStore] Failed to toggle star:', err);
       this.error = err instanceof Error ? err.message : 'Failed to toggle star';
       this.notifyListeners();
       return false;
@@ -416,6 +432,28 @@ class GistStore {
    */
   private notifyListeners(): void {
     this.listeners.forEach(listener => listener(this.gists));
+  }
+
+  /**
+   * Merge a gist record into the local list.
+   * Updates existing or adds new, maintains sort order.
+   */
+  private mergeGistRecord(record: GistRecord, starred: boolean): void {
+    const finalRecord = starred ? { ...record, starred } : record;
+    const existingIndex = this.gists.findIndex(g => g.id === record.id);
+
+    if (existingIndex >= 0) {
+      // Preserve local starred status if not from starred list
+      finalRecord.starred = this.gists[existingIndex].starred || starred;
+      this.gists[existingIndex] = finalRecord;
+    } else {
+      this.gists.push(finalRecord);
+    }
+
+    // Re-sort by updated_at
+    this.gists.sort((a, b) =>
+      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
   }
 }
 

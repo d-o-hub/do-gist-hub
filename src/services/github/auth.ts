@@ -4,7 +4,9 @@
  */
 
 import { validateToken, clearUsernameCache } from './client';
+import { resetRateLimit } from './rate-limiter';
 import { setMetadata, getMetadata } from '../db';
+import { safeLog, safeError, redactToken } from '../security/logger';
 
 /**
  * Save GitHub PAT to secure storage
@@ -25,11 +27,11 @@ export async function saveToken(token: string): Promise<{ success: boolean; erro
     await setMetadata('github-pat', token);
     await setMetadata('github-username', result.username || '');
     await setMetadata('token-saved-at', Date.now());
-    
-    console.log('[Auth] Token saved successfully');
+
+    safeLog(`[Auth] Token saved successfully: ${redactToken(token)}`);
     return { success: true };
   } catch (error) {
-    console.error('[Auth] Failed to save token:', error);
+    safeError('[Auth] Failed to save token:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -72,7 +74,8 @@ export async function removeToken(): Promise<void> {
   await setMetadata('github-username', null);
   await setMetadata('token-saved-at', null);
   clearUsernameCache();
-  console.log('[Auth] Token removed');
+  resetRateLimit();
+  safeLog('[Auth] Token removed');
 }
 
 /**
