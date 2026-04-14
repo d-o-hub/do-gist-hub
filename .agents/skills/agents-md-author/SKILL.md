@@ -19,6 +19,7 @@ Create and maintain AGENTS.md files as the single source of truth for AI coding 
 ### Step 1: Analyze Current State
 
 Review existing AGENTS.md and identify gaps:
+
 ```bash
 # Check current structure
 ls -la .agents/skills/
@@ -26,16 +27,21 @@ ls -la plans/
 wc -l AGENTS.md
 ```
 
-### Step 2: Reference Template
+### Step 2: Reference Templates
 
-Use `github-template-ai-agents` as reference:
-- https://github.com/d-o-hub/github-template-ai-agents
-- https://agents.md/
-- https://agentskills.io/specification
+1. **Local reference files** in `agents-docs/`:
+   - `agents-docs/structure-reference.md` - Required sections
+   - `agents-docs/formatting-rules.md` - Conventions and syntax
+
+2. **External templates**:
+   - https://github.com/d-o-hub/github-template-ai-agents
+   - https://agents.md/
+   - https://agentskills.io/specification
 
 ### Step 3: Create or Update AGENTS.md
 
 Include these sections:
+
 1. **Header**: Project description and tech stack
 2. **Constants**: Named limits and configurations
 3. **Mission**: What the project builds
