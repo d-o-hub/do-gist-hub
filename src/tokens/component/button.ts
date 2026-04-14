@@ -3,11 +3,11 @@
  * Button-specific tokens derived from semantic tokens
  */
 
-import { spacing } from "../primitive/spacing";
-import { fontSize } from "../primitive/typography";
-import { fontWeight } from "../primitive/typography";
-import { radius } from "../primitive/radius";
-import { motionTokens } from "../motion/motion";
+import { spacing } from '../primitive/spacing';
+import { fontSize } from '../primitive/typography';
+import { fontWeight } from '../primitive/typography';
+import { radius } from '../primitive/radius';
+import { motionTokens } from '../motion/motion';
 
 export const buttonTokens = {
   // Padding by size
@@ -38,8 +38,8 @@ export const buttonTokens = {
 
   // Min height for touch targets (accessibility)
   minHeight: {
-    sm: "36px",
-    md: "44px", // WCAG minimum touch target
-    lg: "48px",
+    sm: '36px',
+    md: '44px', // WCAG minimum touch target
+    lg: '48px',
   },
 } as const;

@@ -2,18 +2,22 @@
 
 ## Required Sections
 
-### 1. Header
+### 1. Header + Identity
 
 ```
 # AGENTS.md
 
-> [One-line description]
+> **App Name** — single source of truth for AI coding agents.
+> Built with: [tech stack]
+> Version: [version]
 ```
 
 ### 2. App Identity
 
-- Project name, description, tech stack
-- Version info
+Source-of-truth table mapping config constants to derived files:
+
+| File | Field | Source constant |
+|------|-------|----------------|
 
 ### 3. Constants
 
@@ -21,67 +25,67 @@
 readonly VARIABLE_NAME=value
 ```
 
-Named limits for:
-
-- File size limits
-- Character limits
-- Retry limits
+Named limits for file sizes, character limits, retry limits.
 
 ### 4. Mission
 
-What the project builds
+One paragraph: what the project builds and key features.
 
 ### 5. Source-of-Truth Rules
 
-File precedence order
+File precedence order (repository files > AGENTS.md > skills > plans > official docs).
 
-### 6. Setup Commands
+### 6. Setup and Quality Gate
 
-```bash
-# Install
-npm install
+Combined section with setup commands and quality gate requirements.
 
-# Setup skills
-./scripts/setup-skills.sh
-```
+### 7. Code Style
 
-### 7. Quality Gate
+Naming conventions, max lines per file type, TypeScript rules, import ordering.
 
-Pre-commit requirements and scripts
+### 8. Repository Structure
 
-### 8. Code Style
+Directory purposes in table format.
 
-- Naming conventions
-- Max lines per file type
-- TypeScript rules
+### 9. Domain Rules (Consolidated)
 
-### 9. Repository Structure
+Each domain rule as a concise bullet list:
 
-Directory purposes in table format
+- **Token Architecture**: Tokens First → No hardcoded → Layered → Themeable → Responsive → DTCG
+- **Responsive Design**: Mobile-first → 7 breakpoints → clamp() → touch targets → safe areas
+- **Error Handling**: Structured → User-safe → Recoverable → No silent → Bounded → Redacted
+- **Security**: No PAT logs → Auth header → CSP → Validation → HTTPS → No secrets
+- **Memory Prevention**: Cleanup → AbortController → Route cleanup → No retained bodies
+- **Performance**: Budget limits → Cold start → Interactions → Code splitting
+- **Offline-First**: IndexedDB → Optimistic writes → Pending queue → Backoff → Conflicts
+- **GitHub API**: Typed → Pagination → Rate limits → Accept header → Bearer auth
 
-### 10. Domain Rules
+### 10. Scope Rules
 
-- Token architecture
-- Responsive design
-- Error handling
-- Security
-- Memory leak prevention
+v1 (now) vs v2 (future) feature boundaries.
 
-### 11. Scope Rules
+### 11. Agent Guidance
 
-v1 vs v2 boundaries
+TRIZ-first workflow: `triz-analysis` → `triz-solver` → atomic commits → context discipline.
 
-### 12. Agent Guidance
+### 12. Plans/ADR Workflow
 
-Workflow conventions
+1. Analyze contradictions with `triz-analysis`
+2. Solve with `triz-solver` (define IFR)
+3. Write ADR in `plans/adr-*.md`
+4. Implement and revise as needed
 
-### 13. Available Skills
+### 13. Validation-Before-Commit
 
-Skill list with descriptions
+Quality gate, type check, tests, lint, responsive, memory stable.
 
-### 14. Reference Docs
+### 14. Available Skills
 
-Official documentation links
+Skill list with one-line descriptions.
+
+### 15. Reference Docs
+
+Official documentation links only.
 
 ## Line Count Targets
 
@@ -91,8 +95,15 @@ Official documentation links
 | AGENTS.md    | < 150  | 150 (exceed for completeness) |
 | Source files | < 400  | 500                           |
 
+## TRIZ Integration
+
+- **Replace GOAP**: Use TRIZ contradiction analysis instead of GOAP planning
+- **Contradiction-First**: Identify "improving X worsens Y" before implementing
+- **IFR**: Define Ideal Final Result before solution design
+- **ADR Documentation**: Document resolved contradictions in ADRs
+
 ## Template Locations
 
-- Template repo: https://github.com/d-o-hub/github-template-ai-agents
-- Specification: https://agents.md/
-- Skills spec: https://agentskills.io/specification
+- Template: https://github.com/d-o-hub/github-template-ai-agents
+- Spec: https://agents.md/
+- Skills: https://agentskills.io/home

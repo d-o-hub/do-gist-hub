@@ -25,7 +25,7 @@ class GistStore {
    */
   async init(): Promise<void> {
     await this.loadGists();
-    
+
     // Listen for network changes to refresh when back online
     networkMonitor.subscribe((status) => {
       if (status === 'online') {
@@ -41,7 +41,7 @@ class GistStore {
     this.listeners.add(listener);
     // Immediately call with current state
     listener(this.gists);
-    
+
     return () => {
       this.listeners.delete(listener);
     };
@@ -58,7 +58,7 @@ class GistStore {
    * Get a single gist by ID
    */
   getGist(id: string): GistRecord | undefined {
-    return this.gists.find(g => g.id === id);
+    return this.gists.find((g) => g.id === id);
   }
 
   /**
@@ -91,10 +91,10 @@ class GistStore {
 
       // First, load from IndexedDB (offline-first)
       const cachedGists = await getAllGists();
-      
+
       if (cachedGists.length > 0) {
-        this.gists = cachedGists.sort((a, b) => 
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        this.gists = cachedGists.sort(
+          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
         );
         this.notifyListeners();
       }
@@ -107,13 +107,13 @@ class GistStore {
         ]);
 
         // Merge and deduplicate
-        const starredIds = new Set(starredGists.map(g => g.id));
+        const starredIds = new Set(starredGists.map((g) => g.id));
 
-        const mergedGists = [...userGists, ...starredGists.filter(g => !starredIds.has(g.id))];
+        const mergedGists = [...userGists, ...starredGists.filter((g) => !starredIds.has(g.id))];
 
         // Detect conflicts with cached data
         for (const gist of mergedGists) {
-          const cached = cachedGists.find(c => c.id === gist.id);
+          const cached = cachedGists.find((c) => c.id === gist.id);
           if (cached && cached.syncStatus === 'synced') {
             const conflict = detectConflict(cached, gist);
             if (conflict) {
@@ -177,7 +177,7 @@ class GistStore {
         const gist = await GitHub.createGist(payload);
         const record = this.githubGistToRecord(gist);
         await dbSaveGist(record);
-        
+
         // Add to local list
         this.gists.unshift(record);
         this.notifyListeners();
@@ -185,14 +185,11 @@ class GistStore {
       } else {
         // Queue for later sync
         await syncQueue.queueOperation('pending', 'create', payload);
-        
+
         // Create optimistic record
         const tempId = `temp_${Date.now()}`;
         const filesRecord: Record<string, GistFile> = Object.fromEntries(
-          Object.entries(files).map(([filename, content]) => [
-            filename,
-            { filename, content }
-          ])
+          Object.entries(files).map(([filename, content]) => [filename, { filename, content }])
         );
         const optimisticRecord: GistRecord = {
           id: tempId,
@@ -235,10 +232,7 @@ class GistStore {
         ...(updates.public !== undefined && { public: updates.public }),
         ...(updates.files !== undefined && {
           files: Object.fromEntries(
-            Object.entries(updates.files).map(([filename, content]) => [
-              filename,
-              { content }
-            ])
+            Object.entries(updates.files).map(([filename, content]) => [filename, { content }])
           ),
         }),
       };
@@ -247,9 +241,9 @@ class GistStore {
         const gist = await GitHub.updateGist(id, payload);
         const record = this.githubGistToRecord(gist);
         await dbSaveGist(record);
-        
+
         // Update in local list
-        const index = this.gists.findIndex(g => g.id === id);
+        const index = this.gists.findIndex((g) => g.id === id);
         if (index !== -1) {
           this.gists[index] = record;
           this.notifyListeners();
@@ -258,12 +252,13 @@ class GistStore {
       } else {
         // Queue for later sync
         await syncQueue.queueOperation(id, 'update', payload);
-        
+
         // Optimistic update
-        const index = this.gists.findIndex(g => g.id === id);
-        if (index !== -1) {
+        const index = this.gists.findIndex((g) => g.id === id);
+        const existingGist = this.gists[index];
+        if (index !== -1 && existingGist) {
           const updatedGist: GistRecord = {
-            ...this.gists[index],
+            ...existingGist,
             ...(updates.description !== undefined && { description: updates.description }),
             ...(updates.public !== undefined && { public: updates.public }),
             syncStatus: 'pending' as const,
@@ -290,17 +285,17 @@ class GistStore {
       if (networkMonitor.isOnline()) {
         await GitHub.deleteGist(id);
         await dbDeleteGist(id);
-        
+
         // Remove from local list
-        this.gists = this.gists.filter(g => g.id !== id);
+        this.gists = this.gists.filter((g) => g.id !== id);
         this.notifyListeners();
         return true;
       } else {
         // Queue for later sync
         await syncQueue.queueOperation(id, 'delete', {});
-        
+
         // Optimistic delete
-        this.gists = this.gists.filter(g => g.id !== id);
+        this.gists = this.gists.filter((g) => g.id !== id);
         this.notifyListeners();
         return true;
       }
@@ -316,7 +311,7 @@ class GistStore {
    * Star/unstar a gist
    */
   async toggleStar(id: string): Promise<boolean> {
-    const gist = this.gists.find(g => g.id === id);
+    const gist = this.gists.find((g) => g.id === id);
     if (!gist) return false;
 
     try {
@@ -328,7 +323,7 @@ class GistStore {
         } else {
           await GitHub.unstarGist(id);
         }
-        
+
         // Update local record
         gist.starred = shouldStar;
         await dbSaveGist(gist);
@@ -336,12 +331,8 @@ class GistStore {
         return true;
       } else {
         // Queue for later sync
-        await syncQueue.queueOperation(
-          id,
-          shouldStar ? 'star' : 'unstar',
-          {}
-        );
-        
+        await syncQueue.queueOperation(id, shouldStar ? 'star' : 'unstar', {});
+
         // Optimistic update
         gist.starred = shouldStar;
         gist.syncStatus = 'pending';
@@ -362,9 +353,9 @@ class GistStore {
   filterGists(filter: 'all' | 'mine' | 'starred'): GistRecord[] {
     switch (filter) {
       case 'starred':
-        return this.gists.filter(g => g.starred);
+        return this.gists.filter((g) => g.starred);
       case 'mine':
-        return this.gists.filter(g => !g.starred);
+        return this.gists.filter((g) => !g.starred);
       default:
         return this.gists;
     }
@@ -379,11 +370,12 @@ class GistStore {
     }
 
     const lowerQuery = query.toLowerCase();
-    return this.gists.filter(gist => {
+    return this.gists.filter((gist) => {
       const descriptionMatch = gist.description?.toLowerCase().includes(lowerQuery);
-      const fileMatch = Object.values(gist.files).some(file =>
-        file.filename.toLowerCase().includes(lowerQuery) ||
-        file.content?.toLowerCase().includes(lowerQuery)
+      const fileMatch = Object.values(gist.files).some(
+        (file) =>
+          file.filename.toLowerCase().includes(lowerQuery) ||
+          file.content?.toLowerCase().includes(lowerQuery)
       );
       return descriptionMatch || fileMatch;
     });
@@ -406,7 +398,7 @@ class GistStore {
             rawUrl: file.raw_url,
             size: file.size,
             truncated: file.truncated,
-          }
+          },
         ])
       ),
       htmlUrl: gist.html_url,
@@ -416,12 +408,14 @@ class GistStore {
       updatedAt: gist.updated_at,
       starred,
       public: gist.public,
-      owner: gist.owner ? {
-        login: gist.owner.login,
-        id: gist.owner.id,
-        avatarUrl: gist.owner.avatar_url,
-        htmlUrl: gist.owner.html_url,
-      } : undefined,
+      owner: gist.owner
+        ? {
+            login: gist.owner.login,
+            id: gist.owner.id,
+            avatarUrl: gist.owner.avatar_url,
+            htmlUrl: gist.owner.html_url,
+          }
+        : undefined,
       syncStatus: 'synced',
       lastSyncedAt: new Date().toISOString(),
     };
@@ -431,7 +425,7 @@ class GistStore {
    * Notify all listeners
    */
   private notifyListeners(): void {
-    this.listeners.forEach(listener => listener(this.gists));
+    this.listeners.forEach((listener) => listener(this.gists));
   }
 
   /**
@@ -440,20 +434,19 @@ class GistStore {
    */
   private mergeGistRecord(record: GistRecord, starred: boolean): void {
     const finalRecord = starred ? { ...record, starred } : record;
-    const existingIndex = this.gists.findIndex(g => g.id === record.id);
+    const existingIndex = this.gists.findIndex((g) => g.id === record.id);
 
     if (existingIndex >= 0) {
       // Preserve local starred status if not from starred list
-      finalRecord.starred = this.gists[existingIndex].starred || starred;
+      const existingGist = this.gists[existingIndex];
+      finalRecord.starred = (existingGist?.starred ?? false) || starred;
       this.gists[existingIndex] = finalRecord;
     } else {
       this.gists.push(finalRecord);
     }
 
     // Re-sort by updated_at
-    this.gists.sort((a, b) =>
-      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    );
+    this.gists.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   }
 }
 

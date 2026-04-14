@@ -6,7 +6,13 @@
 // Primitive tokens
 export { colors } from './primitive/colors';
 export { spacing } from './primitive/spacing';
-export { fontFamily, fontSize, fontWeight, lineHeight, letterSpacing } from './primitive/typography';
+export {
+  fontFamily,
+  fontSize,
+  fontWeight,
+  lineHeight,
+  letterSpacing,
+} from './primitive/typography';
 export { radius } from './primitive/radius';
 
 // Semantic tokens

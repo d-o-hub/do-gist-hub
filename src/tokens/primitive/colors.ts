@@ -7,7 +7,7 @@ export const colors = {
   // Neutral colors
   black: '#000000',
   white: '#FFFFFF',
-  
+
   // Gray scale
   gray: {
     50: '#f9fafb',
@@ -22,7 +22,7 @@ export const colors = {
     900: '#111827',
     950: '#030712',
   },
-  
+
   // Zinc (cooler grays for dark mode)
   zinc: {
     50: '#fafafa',
@@ -37,7 +37,7 @@ export const colors = {
     900: '#18181b',
     950: '#09090b',
   },
-  
+
   // Blue (primary accent)
   blue: {
     50: '#eff6ff',
@@ -52,7 +52,7 @@ export const colors = {
     900: '#1e3a8a',
     950: '#172554',
   },
-  
+
   // Green (success states)
   green: {
     50: '#f0fdf4',
@@ -66,7 +66,7 @@ export const colors = {
     800: '#166534',
     900: '#14532d',
   },
-  
+
   // Red (error/destructive states)
   red: {
     50: '#fef2f2',
@@ -80,7 +80,7 @@ export const colors = {
     800: '#991b1b',
     900: '#7f1d1d',
   },
-  
+
   // Yellow (warning states)
   yellow: {
     50: '#fefce8',
@@ -94,7 +94,7 @@ export const colors = {
     800: '#854d0e',
     900: '#713f12',
   },
-  
+
   // Orange (secondary accent)
   orange: {
     50: '#fff7ed',

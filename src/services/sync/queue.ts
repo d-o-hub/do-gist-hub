@@ -5,9 +5,9 @@
 
 import type { PendingWrite } from '../../types';
 import type { CreateGistRequest, UpdateGistRequest } from '../../types/api';
-import { 
-  getPendingWrites, 
-  queueWrite as dbQueueWrite, 
+import {
+  getPendingWrites,
+  queueWrite as dbQueueWrite,
   removePendingWrite,
   updatePendingWriteError,
   saveGist,
@@ -65,11 +65,7 @@ class SyncQueue {
   /**
    * Queue a write operation
    */
-  async queueOperation(
-    gistId: string,
-    action: SyncAction,
-    payload: unknown
-  ): Promise<number> {
+  async queueOperation(gistId: string, action: SyncAction, payload: unknown): Promise<number> {
     const write: Omit<PendingWrite, 'id' | 'createdAt' | 'retryCount'> = {
       gistId,
       action,
@@ -107,7 +103,7 @@ class SyncQueue {
 
     try {
       const pendingWrites = await getPendingWrites();
-      
+
       if (pendingWrites.length === 0) {
         console.log('[SyncQueue] No pending operations');
         return;
@@ -116,9 +112,7 @@ class SyncQueue {
       console.log(`[SyncQueue] Processing ${pendingWrites.length} pending operations`);
 
       // Sort by creation time (oldest first)
-      const sortedWrites = pendingWrites.sort(
-        (a, b) => a.createdAt - b.createdAt
-      );
+      const sortedWrites = pendingWrites.sort((a, b) => a.createdAt - b.createdAt);
 
       for (const write of sortedWrites) {
         if (!write.id) continue;
@@ -131,11 +125,15 @@ class SyncQueue {
         } else {
           if (result.shouldRetry && write.retryCount < MAX_RETRIES) {
             await updatePendingWriteError(write.id, result.error || 'Unknown error');
-            console.log(`[SyncQueue] Will retry operation ${write.id} (attempt ${write.retryCount + 1}/${MAX_RETRIES})`);
+            console.log(
+              `[SyncQueue] Will retry operation ${write.id} (attempt ${write.retryCount + 1}/${MAX_RETRIES})`
+            );
           } else {
             // Max retries reached or non-retryable error
             await updatePendingWriteError(write.id, result.error || 'Max retries reached');
-            console.error(`[SyncQueue] Failed operation ${write.id} after ${write.retryCount} retries`);
+            console.error(
+              `[SyncQueue] Failed operation ${write.id} after ${write.retryCount} retries`
+            );
           }
         }
 
@@ -159,22 +157,22 @@ class SyncQueue {
       switch (write.action) {
         case 'create':
           return await this.syncCreate(write.gistId, write.payload);
-        
+
         case 'update':
           return await this.syncUpdate(write.gistId, write.payload);
-        
+
         case 'delete':
           return await this.syncDelete(write.gistId);
-        
+
         case 'star':
           return await this.syncStar(write.gistId);
-        
+
         case 'unstar':
           return await this.syncUnstar(write.gistId);
-        
+
         case 'fork':
           return await this.syncFork(write.gistId);
-        
+
         default:
           return {
             success: false,
@@ -196,7 +194,7 @@ class SyncQueue {
    */
   private async syncCreate(_gistId: string, payload: unknown): Promise<SyncResult> {
     const gist = await GitHub.createGist(payload as CreateGistRequest);
-    
+
     // Update local cache with server response
     await saveGist({
       id: gist.id,
@@ -209,12 +207,14 @@ class SyncQueue {
       updatedAt: gist.updated_at,
       starred: false,
       public: gist.public,
-      owner: gist.owner ? {
-        login: gist.owner.login,
-        id: gist.owner.id,
-        avatarUrl: gist.owner.avatar_url,
-        htmlUrl: gist.owner.html_url,
-      } : undefined,
+      owner: gist.owner
+        ? {
+            login: gist.owner.login,
+            id: gist.owner.id,
+            avatarUrl: gist.owner.avatar_url,
+            htmlUrl: gist.owner.html_url,
+          }
+        : undefined,
       syncStatus: 'synced',
       lastSyncedAt: new Date().toISOString(),
     });
@@ -227,7 +227,7 @@ class SyncQueue {
    */
   private async syncUpdate(gistId: string, payload: unknown): Promise<SyncResult> {
     const gist = await GitHub.updateGist(gistId, payload as UpdateGistRequest);
-    
+
     // Update local cache
     await saveGist({
       id: gist.id,
@@ -240,12 +240,14 @@ class SyncQueue {
       updatedAt: gist.updated_at,
       starred: false,
       public: gist.public,
-      owner: gist.owner ? {
-        login: gist.owner.login,
-        id: gist.owner.id,
-        avatarUrl: gist.owner.avatar_url,
-        htmlUrl: gist.owner.html_url,
-      } : undefined,
+      owner: gist.owner
+        ? {
+            login: gist.owner.login,
+            id: gist.owner.id,
+            avatarUrl: gist.owner.avatar_url,
+            htmlUrl: gist.owner.html_url,
+          }
+        : undefined,
       syncStatus: 'synced',
       lastSyncedAt: new Date().toISOString(),
     });
@@ -283,7 +285,7 @@ class SyncQueue {
    */
   private async syncFork(gistId: string): Promise<SyncResult> {
     const gist = await GitHub.forkGist(gistId);
-    
+
     // Save forked gist to local cache
     await saveGist({
       id: gist.id,
@@ -296,12 +298,14 @@ class SyncQueue {
       updatedAt: gist.updated_at,
       starred: false,
       public: gist.public,
-      owner: gist.owner ? {
-        login: gist.owner.login,
-        id: gist.owner.id,
-        avatarUrl: gist.owner.avatar_url,
-        htmlUrl: gist.owner.html_url,
-      } : undefined,
+      owner: gist.owner
+        ? {
+            login: gist.owner.login,
+            id: gist.owner.id,
+            avatarUrl: gist.owner.avatar_url,
+            htmlUrl: gist.owner.html_url,
+          }
+        : undefined,
       syncStatus: 'synced',
       lastSyncedAt: new Date().toISOString(),
     });

@@ -200,12 +200,41 @@ export default defineConfig({
     },
   },
   build: {
+    // Target modern browsers for smaller bundles
     target: 'esnext',
+    // Use esbuild for fast minification
     minify: 'esbuild',
+    // Generate sourcemaps for debugging
     sourcemap: true,
+    // Chunk splitting strategy for better caching
+    rollupOptions: {
+      output: {
+        // Separate vendor chunks
+        manualChunks: {
+          vendor: ['idb'],
+        },
+        // Consistent file naming
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+      },
+    },
+    // Report compressed sizes
+    reportCompressedSize: true,
+    // Chunk size warnings
+    chunkSizeWarningLimit: 500,
   },
   server: {
     port: 3000,
+    host: true,
+  },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: ['idb'],
+  },
+  // Preview server for testing production builds
+  preview: {
+    port: 4173,
     host: true,
   },
 });

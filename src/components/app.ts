@@ -15,8 +15,17 @@ import { loadGistDetail, renderRevisionsList } from './gist-detail';
 import { loadEditForm } from './gist-edit';
 import * as GitHub from '../services/github';
 import { APP } from '../config/app.config';
+import { withViewTransition } from '../utils/view-transitions';
 
-type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings' | 'detail' | 'edit' | 'revisions';
+type Route =
+  | 'home'
+  | 'starred'
+  | 'create'
+  | 'offline'
+  | 'settings'
+  | 'detail'
+  | 'edit'
+  | 'revisions';
 type Filter = 'all' | 'mine' | 'starred';
 type SortKey = 'updated' | 'created' | 'title';
 type SortOrder = 'asc' | 'desc';
@@ -107,15 +116,24 @@ export class App {
 
   private getRouteContent(): string {
     switch (this.currentRoute) {
-      case 'home': return this.getHomeRoute();
-      case 'starred': return this.getStarredRoute();
-      case 'create': return this.getCreateRoute();
-      case 'offline': return this.getOfflineRoute();
-      case 'settings': return this.getSettingsRoute();
-      case 'detail': return this.getDetailRoute();
-      case 'edit': return this.getEditRoute();
-      case 'revisions': return this.getRevisionsRoute();
-      default: return this.getHomeRoute();
+      case 'home':
+        return this.getHomeRoute();
+      case 'starred':
+        return this.getStarredRoute();
+      case 'create':
+        return this.getCreateRoute();
+      case 'offline':
+        return this.getOfflineRoute();
+      case 'settings':
+        return this.getSettingsRoute();
+      case 'detail':
+        return this.getDetailRoute();
+      case 'edit':
+        return this.getEditRoute();
+      case 'revisions':
+        return this.getRevisionsRoute();
+      default:
+        return this.getHomeRoute();
     }
   }
 
@@ -296,9 +314,13 @@ export class App {
         <div class="skeleton-content">
           <div class="skeleton-line skeleton-file-tab"></div>
           <div class="skeleton-code-lines">
-            ${Array(8).fill('').map(() => 
-              `<div class="skeleton-code-line" style="width: ${60 + Math.random() * 40}%"></div>`
-            ).join('')}
+            ${Array(8)
+              .fill('')
+              .map(
+                () =>
+                  `<div class="skeleton-code-line" style="width: ${60 + Math.random() * 40}%"></div>`
+              )
+              .join('')}
           </div>
         </div>
       </div>
@@ -316,8 +338,10 @@ export class App {
   private renderGistList(): string {
     if (this.displayedGists.length === 0) {
       const hasGists = gistStore.getGists().length > 0;
-      if (!hasGists && !gistStore.getIsLoading()) return '<div class="empty-state"><p>No gists yet. Create your first gist!</p></div>';
-      if (this.searchQuery) return '<div class="empty-state"><p>No gists match your search.</p></div>';
+      if (!hasGists && !gistStore.getIsLoading())
+        return '<div class="empty-state"><p>No gists yet. Create your first gist!</p></div>';
+      if (this.searchQuery)
+        return '<div class="empty-state"><p>No gists match your search.</p></div>';
       return '<div class="empty-state"><p>No gists found.</p></div>';
     }
     return this.displayedGists.map(renderCard).join('');
@@ -331,7 +355,10 @@ export class App {
     const listEl = this.container.querySelector('#gist-list');
     if (!listEl) return;
 
-    listEl.innerHTML = Array(3).fill('').map(() => `
+    listEl.innerHTML = Array(3)
+      .fill('')
+      .map(
+        () => `
       <div class="gist-card">
         <div class="gist-card-header">
           <div class="loading-skeleton" style="height:20px;flex:1;"></div>
@@ -339,7 +366,9 @@ export class App {
         <div class="loading-skeleton" style="height:14px;width:60%;margin-bottom:8px;"></div>
         <div class="loading-skeleton" style="height:12px;width:40%;"></div>
       </div>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   /**
@@ -383,11 +412,12 @@ export class App {
     const listEl = this.container.querySelector('#gist-list') as HTMLElement | null;
     if (!listEl) return;
 
-    let gists = this.currentRoute === 'starred'
-      ? gistStore.filterGists('starred')
-      : this.searchQuery
-        ? gistStore.searchGists(this.searchQuery)
-        : gistStore.filterGists(this.currentFilter);
+    let gists =
+      this.currentRoute === 'starred'
+        ? gistStore.filterGists('starred')
+        : this.searchQuery
+          ? gistStore.searchGists(this.searchQuery)
+          : gistStore.filterGists(this.currentFilter);
 
     // Apply sorting
     gists = this.sortGists(gists);
@@ -429,13 +459,16 @@ export class App {
   }
 
   /**
-   * Navigate to gist detail view
+   * Navigate to gist detail view with View Transition
    */
   private async navigateToDetail(gistId: string): Promise<void> {
     this.currentRoute = 'detail';
-    this.render();
-    this.setupNavigation();
-    window.history.pushState({ route: 'detail', gistId }, '', `#detail/${gistId}`);
+
+    await withViewTransition(async () => {
+      this.render();
+      this.setupNavigation();
+      window.history.pushState({ route: 'detail', gistId }, '', `#detail/${gistId}`);
+    });
 
     const container = this.container?.querySelector('#gist-detail-container');
     if (container) {
@@ -460,11 +493,7 @@ export class App {
 
     const container = this.container?.querySelector('#gist-edit-container');
     if (container) {
-      await loadEditForm(
-        gistId,
-        container as HTMLElement,
-        () => this.navigateToDetail(gistId)
-      );
+      await loadEditForm(gistId, container as HTMLElement, () => this.navigateToDetail(gistId));
     }
   }
 
@@ -492,7 +521,9 @@ export class App {
       container.innerHTML = renderRevisionsList(revisions, gistId);
 
       // Bind back button
-      container.querySelector('#gist-back-btn')?.addEventListener('click', () => this.navigateToDetail(gistId));
+      container
+        .querySelector('#gist-back-btn')
+        ?.addEventListener('click', () => this.navigateToDetail(gistId));
     } catch (err) {
       container.innerHTML = `
         <div class="error-state">
@@ -500,7 +531,9 @@ export class App {
           <button class="back-btn" id="revisions-back-btn">← Back</button>
         </div>
       `;
-      container.querySelector('#revisions-back-btn')?.addEventListener('click', () => this.navigateToDetail(gistId));
+      container
+        .querySelector('#revisions-back-btn')
+        ?.addEventListener('click', () => this.navigateToDetail(gistId));
     }
   }
 
@@ -540,8 +573,12 @@ export class App {
       });
     });
 
-    this.container.querySelector('#theme-toggle')?.addEventListener('click', () => this.toggleTheme());
-    this.container.querySelector('#settings-btn')?.addEventListener('click', () => this.navigate('settings'));
+    this.container
+      .querySelector('#theme-toggle')
+      ?.addEventListener('click', () => this.toggleTheme());
+    this.container
+      .querySelector('#settings-btn')
+      ?.addEventListener('click', () => this.navigate('settings'));
     this.setupRouteHandlers();
   }
 
@@ -563,7 +600,9 @@ export class App {
     this.container.querySelectorAll('.filter-btn').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         const target = e.currentTarget as HTMLElement;
-        this.container!.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('active'));
+        this.container!.querySelectorAll('.filter-btn').forEach((b) =>
+          b.classList.remove('active')
+        );
         target.classList.add('active');
         this.currentFilter = (target.dataset.filter as Filter) || 'all';
         this.updateGistList();
@@ -580,23 +619,47 @@ export class App {
     });
 
     // Create form
-    this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => this.handleCreateGist(e));
-    this.container.querySelector('#add-file-btn')?.addEventListener('click', () => this.addFileEditor());
-    this.container.querySelector('#cancel-create-btn')?.addEventListener('click', () => this.navigate('home'));
+    this.container
+      .querySelector('#create-gist-form')
+      ?.addEventListener('submit', (e) => this.handleCreateGist(e));
+    this.container
+      .querySelector('#add-file-btn')
+      ?.addEventListener('click', () => this.addFileEditor());
+    this.container
+      .querySelector('#cancel-create-btn')
+      ?.addEventListener('click', () => this.navigate('home'));
 
     // Offline actions
     this.container.querySelector('#sync-now-btn')?.addEventListener('click', () => this.syncNow());
-    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', () => this.clearCache());
+    this.container
+      .querySelector('#clear-cache-btn')
+      ?.addEventListener('click', () => this.clearCache());
 
     // Settings actions
-    this.container.querySelector('#save-token-btn')?.addEventListener('click', () => this.handleSaveToken());
-    this.container.querySelector('#remove-token-btn')?.addEventListener('click', () => this.handleRemoveToken());
-    this.container.querySelector('#theme-select')?.addEventListener('change', (e) => this.handleThemeChange(e));
-    this.container.querySelector('#export-data-btn')?.addEventListener('click', () => this.handleExportData());
-    this.container.querySelector('#import-data-btn')?.addEventListener('click', () => this.handleImportData());
-    this.container.querySelector('#import-file-input')?.addEventListener('change', (e) => this.handleImportFile(e));
-    this.container.querySelector('#reset-app-btn')?.addEventListener('click', () => this.handleResetApp());
-    this.container.querySelector('#export-diagnostics-btn')?.addEventListener('click', () => this.handleExportDiagnostics());
+    this.container
+      .querySelector('#save-token-btn')
+      ?.addEventListener('click', () => this.handleSaveToken());
+    this.container
+      .querySelector('#remove-token-btn')
+      ?.addEventListener('click', () => this.handleRemoveToken());
+    this.container
+      .querySelector('#theme-select')
+      ?.addEventListener('change', (e) => this.handleThemeChange(e));
+    this.container
+      .querySelector('#export-data-btn')
+      ?.addEventListener('click', () => this.handleExportData());
+    this.container
+      .querySelector('#import-data-btn')
+      ?.addEventListener('click', () => this.handleImportData());
+    this.container
+      .querySelector('#import-file-input')
+      ?.addEventListener('change', (e) => this.handleImportFile(e));
+    this.container
+      .querySelector('#reset-app-btn')
+      ?.addEventListener('click', () => this.handleResetApp());
+    this.container
+      .querySelector('#export-diagnostics-btn')
+      ?.addEventListener('click', () => this.handleExportDiagnostics());
 
     // Load token info on settings page
     if (this.currentRoute === 'settings') {
@@ -618,10 +681,14 @@ export class App {
       this.currentFilter = 'starred';
       this.searchQuery = '';
     }
-    this.render();
-    this.setupNavigation();
-    window.history.pushState({ route }, '', `#${route}`);
-    this.updateGistList();
+
+    // 2026: Use View Transitions API for smooth navigation
+    withViewTransition(() => {
+      this.render();
+      this.setupNavigation();
+      window.history.pushState({ route }, '', `#${route}`);
+      this.updateGistList();
+    });
   }
 
   private toggleTheme(): void {
@@ -659,8 +726,10 @@ export class App {
       return;
     }
 
-    const description = (this.container?.querySelector('#gist-description') as HTMLInputElement)?.value.trim() || '';
-    const public_ = (this.container?.querySelector('#gist-public') as HTMLInputElement)?.checked ?? true;
+    const description =
+      (this.container?.querySelector('#gist-description') as HTMLInputElement)?.value.trim() || '';
+    const public_ =
+      (this.container?.querySelector('#gist-public') as HTMLInputElement)?.checked ?? true;
 
     if (btn) {
       btn.disabled = true;
@@ -921,9 +990,8 @@ export class App {
     indicator?.classList.toggle('offline', !online);
 
     // Update aria label
-    const statusText = pendingCount > 0
-      ? `${pendingCount} pending sync`
-      : online ? 'Synced' : 'Offline';
+    const statusText =
+      pendingCount > 0 ? `${pendingCount} pending sync` : online ? 'Synced' : 'Offline';
     indicator?.setAttribute('aria-label', `Sync status: ${statusText}`);
   }
 }

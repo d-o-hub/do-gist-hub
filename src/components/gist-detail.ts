@@ -35,11 +35,13 @@ function renderFileContent(content: string, language?: string): string {
   const lines = content.split('\n');
   const langClass = getLanguageClass(language);
 
-  const linesHtml = lines.map((line, i) => {
-    const lineNum = i + 1;
-    const escapedLine = esc(line);
-    return `<tr><td class="line-number" data-line="${lineNum}">${lineNum}</td><td class="line-content ${langClass}">${escapedLine || ' '}</td></tr>`;
-  }).join('');
+  const linesHtml = lines
+    .map((line, i) => {
+      const lineNum = i + 1;
+      const escapedLine = esc(line);
+      return `<tr><td class="line-number" data-line="${lineNum}">${lineNum}</td><td class="line-content ${langClass}">${escapedLine || ' '}</td></tr>`;
+    })
+    .join('');
 
   return `<table class="code-table"><tbody>${linesHtml}</tbody></table>`;
 }
@@ -47,17 +49,25 @@ function renderFileContent(content: string, language?: string): string {
 /**
  * Render file tabs
  */
-function renderFileTabs(files: Record<string, { filename: string; language?: string }>, activeIndex: number): string {
+function renderFileTabs(
+  files: Record<string, { filename: string; language?: string }>,
+  activeIndex: number
+): string {
   const entries = Object.entries(files);
   if (entries.length === 1) {
-    return `<div class="file-tabs single-file"><span class="file-tab active">${esc(entries[0][1].filename)}</span></div>`;
+    const firstEntry = entries[0];
+    return `<div class="file-tabs single-file"><span class="file-tab active">${esc(firstEntry?.[1]?.filename ?? 'unknown')}</span></div>`;
   }
 
-  return `<div class="file-tabs">${entries.map(([key, file], index) => `
+  return `<div class="file-tabs">${entries
+    .map(
+      ([key, file], index) => `
     <button class="file-tab ${index === activeIndex ? 'active' : ''}" data-file-key="${esc(key)}" data-file-index="${index}">
       ${esc(file.filename)}
     </button>
-  `).join('')}</div>`;
+  `
+    )
+    .join('')}</div>`;
 }
 
 /**
@@ -75,7 +85,9 @@ function formatSize(bytes?: number): string {
  */
 export function renderGistDetail(gist: GistRecord): string {
   const title = esc(gist.description || Object.values(gist.files)[0]?.filename || 'Untitled Gist');
-  const description = gist.description ? `<p class="gist-description">${esc(gist.description)}</p>` : '';
+  const description = gist.description
+    ? `<p class="gist-description">${esc(gist.description)}</p>`
+    : '';
   const fileCount = Object.keys(gist.files).length;
   const visibility = gist.public ? '🌐 Public' : '🔒 Private';
   const starIcon = gist.starred ? '★' : '☆';
@@ -83,7 +95,9 @@ export function renderGistDetail(gist: GistRecord): string {
 
   const fileTabs = renderFileTabs(gist.files, 0);
   const firstFile = Object.values(gist.files)[0];
-  const content = firstFile?.content ? renderFileContent(firstFile.content || '', firstFile.language) : '<p class="empty-content">No content available</p>';
+  const content = firstFile?.content
+    ? renderFileContent(firstFile.content || '', firstFile.language)
+    : '<p class="empty-content">No content available</p>';
 
   return `
     <div class="gist-detail" data-gist-id="${esc(gist.id)}">
@@ -147,15 +161,18 @@ export function renderRevisionsList(revisions: GistRevision[], gistId: string): 
     `;
   }
 
-  const revisionsHtml = revisions.map(rev => {
-    const date = new Date(rev.committed_at).toLocaleString();
-    const changes = Object.entries(rev.change_summary || {}).map(([file, change]) => {
-      const status = change.status;
-      const icon = status === 'added' ? '➕' : status === 'deleted' ? '❌' : '✏️';
-      return `${icon} ${esc(file)}`;
-    }).join(', ');
+  const revisionsHtml = revisions
+    .map((rev) => {
+      const date = new Date(rev.committed_at).toLocaleString();
+      const changes = Object.entries(rev.change_summary || {})
+        .map(([file, change]) => {
+          const status = change.status;
+          const icon = status === 'added' ? '➕' : status === 'deleted' ? '❌' : '✏️';
+          return `${icon} ${esc(file)}`;
+        })
+        .join(', ');
 
-    return `
+      return `
       <div class="revision-item">
         <div class="revision-meta">
           <span class="revision-user">${esc(rev.user.login)}</span>
@@ -166,7 +183,8 @@ export function renderRevisionsList(revisions: GistRevision[], gistId: string): 
         <a href="${esc(rev.url)}" target="_blank" rel="noopener noreferrer" class="revision-link">View on GitHub</a>
       </div>
     `;
-  }).join('');
+    })
+    .join('');
 
   return `
     <div class="revisions-list" data-gist-id="${esc(gistId)}">
@@ -188,7 +206,9 @@ export function bindDetailEvents(
   onEdit: (id: string) => void,
   onRevisions: (id: string) => void
 ): void {
-  const gistId = container.getAttribute('data-gist-id') || container.querySelector('[data-gist-id]')?.getAttribute('data-gist-id');
+  const gistId =
+    container.getAttribute('data-gist-id') ||
+    container.querySelector('[data-gist-id]')?.getAttribute('data-gist-id');
 
   // Back button
   container.querySelector('#gist-back-btn')?.addEventListener('click', onBack);
@@ -363,9 +383,11 @@ export async function loadGistDetail(
         <button class="back-btn" id="retry-back-btn">← Back</button>
       </div>
     `;
-    container.querySelector('#retry-load-gist')?.addEventListener('click', () =>
-      loadGistDetail(gistId, container, onBack, onEdit, onRevisions)
-    );
+    container
+      .querySelector('#retry-load-gist')
+      ?.addEventListener('click', () =>
+        loadGistDetail(gistId, container, onBack, onEdit, onRevisions)
+      );
     container.querySelector('#retry-back-btn')?.addEventListener('click', onBack);
   }
 }

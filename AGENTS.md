@@ -5,6 +5,26 @@
 > Design: DTCG-aligned tokens, mobile-first, 7 breakpoints (320px–1536px+)
 > Version: 0.2.0
 
+## Quick Reference
+
+```bash
+# Start development
+npm install && ./scripts/setup-skills.sh && npm run dev
+
+# Before every commit
+./scripts/quality_gate.sh
+
+# Full analysis with auto-fix
+./scripts/analyze-codebase.sh --fix --validate
+
+# Common tasks
+npm run check        # typecheck + lint + format:check
+npm run lint:fix     # auto-fix issues
+npm run cap:sync     # sync Capacitor after build
+```
+
+**Critical Rules**: No unstyled elements | Mobile-first CSS | Tokens only | Validate before commit
+
 ## App Identity
 
 Canonical config: **`src/config/app.config.ts`**. All derived values flow from this single source:
@@ -114,17 +134,16 @@ Typed client → Pagination via `Link` headers → Rate limit tracking → `Acce
 
 **Principles**: One logical change per commit → Fix pre-existing issues first → `/clear` between tasks → Delegate to sub-agents
 
-## Temp Output Directory
+## Validation-Before-Commit
 
-All temporary outputs (screenshots, diffs, captures) MUST use `analysis/` as the root:
+1. `./scripts/quality_gate.sh` passes
+2. Type check, lint, format check pass (`npm run check`)
+3. No console errors, responsive on 2+ viewports
+4. Memory profile stable, no leaks
 
-```bash
-# CORRECT: Relative to project root
-agent-browser screenshot analysis/responsive/320px.png
+## Output Directory
 
-# WRONG: Absolute path from workspace root
-agent-browser screenshot /workspaces/do-gist-hub/320px-check.png
-```
+All outputs (screenshots, diffs, captures) MUST use `analysis/`:
 
 | Output Type            | Location               |
 | ---------------------- | ---------------------- |
@@ -133,12 +152,7 @@ agent-browser screenshot /workspaces/do-gist-hub/320px-check.png
 | Capture recordings     | `analysis/captures/`   |
 | Test artifacts         | `analysis/tests/`      |
 
-**Rule**: Never use `/workspaces/...` for any output files.
-
-1. `./scripts/quality_gate.sh` passes
-2. Type check, lint, format check pass (`npm run check`)
-3. No console errors, responsive on 2+ viewports
-4. Memory profile stable, no leaks
+**Rule**: Never use `/workspaces/...` for output files.
 
 ## Stop Conditions
 
@@ -195,104 +209,45 @@ npm run cap:sync     # sync Capacitor after build
 
 ## UI/UX Production Standards
 
-### Critical Rule: No Unstyled Elements
+### Critical Rules
 
-Every interactive element MUST have explicit styling. Default browser styles are not acceptable.
+1. **No Unstyled Elements** - Every interactive element MUST have explicit CSS styling
+2. **Mobile-First** - Base styles for mobile, enhance for desktop
+3. **Tokens Only** - No hardcoded px/hex values outside token definitions
+4. **Validate Before Commit** - Screenshots at 320px, 768px, 1536px
 
-**Pre-commit UI verification:**
+### Mobile-First CSS Patterns
 
-1. Screenshot at 320px, 768px, 1536px → store in `analysis/responsive/`
-2. Check for default browser buttons, unstyled inputs
-3. Verify sidebar: hidden on mobile, visible on desktop
-4. Touch targets ≥ 44x44px on mobile
-
-### Navigation Pattern (Mobile-First)
-
+**Navigation (Dual-mode)**
 ```css
-.sidebar-nav {
-  display: none;
-}
+/* Base: Mobile - hide sidebar, show bottom nav */
+.sidebar-nav { display: none; }
+.bottom-nav { display: flex; }
+
+/* Desktop: show sidebar, hide bottom nav */
 @media (min-width: 768px) {
-  .sidebar-nav {
-    display: flex;
-    flex-direction: column;
-  }
-  .bottom-nav {
-    display: none;
-  }
-}
-.sidebar-item {
-  /* styled, not default buttons */
-}
-.sidebar-item.active {
-  background: var(--color-accent-primary);
+  .sidebar-nav { display: flex; }
+  .bottom-nav { display: none; }
 }
 ```
 
-### Common Regressions to Prevent
-
-1. Sidebar visible on mobile → base style `display: none`
-2. Unstyled nav items → use `.sidebar-item` / `.nav-item` classes
-3. Missing active states → always define `.active` style
-4. Hardcoded values → no px/hex colors outside token definitions
-
-### View Transition API
-
-Wrap navigation in `withViewTransition()` for smooth transitions. Always check `document.startViewTransition` support for fallback.
-
-### Container Queries (2026 Card Pattern)
-
+**Layout (No Gaps)**
 ```css
-.gist-card {
-  container-type: inline-size;
-  container-name: gist-card;
-}
-.gist-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-```
-
-### Reduced Motion
-
-Always include `@media (prefers-reduced-motion: reduce)` to disable animations for accessibility.
-
----
-
-## 2026 Mobile Layout Standards
-
-### Critical: No Gaps Between Header and Content
-
-**The Problem**: Extra spacing between header and content creates unprofessional appearance.
-
-**The Solution**: Use proper flexbox patterns with `min-height: 0` on flex children.
-
-```css
-/* WRONG: Creates unwanted gap */
-.app-main {
-  flex: 1;
-  margin-top: var(--spacing-4);
+/* App shell with dynamic viewport */
+.app-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
-/* CORRECT: Seamless flow from header */
+/* Flex child with proper scrolling */
 .app-main {
   flex: 1 0 auto;
+  min-height: 0;
   padding: var(--spacing-4);
-  min-height: 0; /* Critical for scrolling */
 }
 ```
 
-### 100dvh for Mobile Viewport Stability
-
-```css
-.app-shell {
-  min-height: 100vh; /* Fallback */
-  min-height: 100dvh; /* Dynamic viewport height */
-}
-```
-
-### Safe Area Insets (Notch/Dynamic Island Support)
-
+**Safe Areas (Notch Support)**
 ```css
 :root {
   --safe-area-top: env(safe-area-inset-top, 0px);
@@ -302,137 +257,73 @@ Always include `@media (prefers-reduced-motion: reduce)` to disable animations f
 .app-header {
   padding-top: calc(var(--spacing-3) + var(--safe-area-top));
 }
+```
 
-.bottom-nav {
-  height: calc(72px + var(--safe-area-bottom));
-  padding-bottom: calc(var(--spacing-2) + var(--safe-area-bottom));
+### Common Regressions to Prevent
+
+| Issue | Prevention |
+|-------|------------|
+| Sidebar visible on mobile | Base style `display: none` |
+| Unstyled buttons | Always use `.btn` / `.nav-item` classes |
+| Layout gaps | Use `flex: 1 0 auto` + `min-height: 0` |
+| Missing active states | Define `.active` for all interactive elements |
+| Hardcoded values | Use CSS custom properties only |
+
+### 2026 Patterns
+
+**View Transitions**
+```typescript
+import { withViewTransition } from '../utils/view-transitions';
+withViewTransition(() => { /* navigation */ });
+```
+
+**Container Queries**
+```css
+.gist-card {
+  container-type: inline-size;
+  container-name: gist-card;
 }
 ```
 
-### Layout Validation Commands
+**Reduced Motion**
+```css
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+```
+
+### Validation
 
 ```bash
-# Check for gap issues in screenshots
+# Screenshot validation
 agent-browser open http://localhost:5173
 agent-browser set viewport 390 844
-agent-browser screenshot analysis/responsive/layout-check.png
+agent-browser screenshot analysis/responsive/390px.png
 
-# Verify no horizontal overflow
+# Check for overflow
 agent-browser eval "document.documentElement.scrollWidth <= window.innerWidth"
 ```
 
-### Self-Learning: Layout Gap Fix
+### References
 
-**Issue**: Visible gap between header and content on mobile screenshots.
-
-**Root Cause**: Improper flexbox configuration and missing `min-height: 0` on flex children.
-
-**Fix Applied**:
-
-1. Updated `.app-shell` to use `min-height: 100dvh`
-2. Changed `.app-main` from `flex: 1` to `flex: 1 0 auto`
-3. Added `min-height: 0` to `.app-main` for proper scrolling
-4. Updated bottom nav to include safe area insets
-
-**Reference**: See `.agents/skills/design-token-system/references/mobile-layout-2026.md`
+- `.agents/skills/design-token-system/references/mobile-layout-2026.md`
+- `.agents/skills/design-token-system/references/production-ui-standards.md`
 
 ---
 
-## Autonomous Optimization System
+## Autonomous Optimization
 
-### Self-Learning Workflow
+Self-learning system that analyzes, detects, fixes, and documents issues automatically.
 
-The codebase includes autonomous analysis and self-fixing capabilities:
-
-```
-Analyze → Detect → Fix → Validate → Learn → Document
-```
-
-### Available Scripts
+### Scripts
 
 | Script | Purpose | Usage |
 |--------|---------|-------|
-| `analyze-codebase.sh` | Full analysis with optional auto-fix | `./scripts/analyze-codebase.sh --fix --validate` |
-| `autosearch-issues.sh` | Pattern-based issue detection | `./scripts/autosearch-issues.sh` |
-| `self-fix.sh` | Apply known fixes automatically | `./scripts/self-fix.sh --dry-run` |
-| `quality_gate.sh` | Pre-commit validation | `./scripts/quality_gate.sh` |
+| `analyze-codebase.sh` | Full analysis with auto-fix | `--fix --validate --watch` |
+| `autosearch-issues.sh` | Pattern-based detection | Detects CSS/TS/HTML issues |
+| `self-fix.sh` | Apply known fixes | `--dry-run` to preview |
 
-### Quick Commands
-
-```bash
-# Full analysis cycle
-./scripts/analyze-codebase.sh --fix --validate
-
-# Watch mode - continuous monitoring
-./scripts/analyze-codebase.sh --watch
-
-# Pattern detection only
-./scripts/autosearch-issues.sh
-
-# Preview fixes without applying
-./scripts/self-fix.sh --dry-run
-
-# Apply fixes and verify
-./scripts/self-fix.sh && ./scripts/quality_gate.sh
-```
-
-### Detection Categories
-
-The system automatically detects:
-
-**Visual/CSS Issues**
-- Unstyled elements (missing CSS classes)
-- Layout gaps (header/content spacing)
-- Missing responsive breakpoints
-- Missing safe area insets
-- Default browser styles visible
-
-**Code Structure Issues**
-- Missing base styles before media queries
-- Hardcoded values instead of tokens
-- TypeScript `any` types
-- Console.log statements
-- Missing error boundaries
-
-**Performance Issues**
-- Unused CSS/JS
-- Missing lazy loading patterns
-- Inefficient re-renders
-
-### Self-Learning Database
-
-Issues and fixes are stored in `agent-docs/`:
-
-```
-agent-docs/
-├── patterns/           # Extracted patterns (good and bad)
-├── issues/            # Documented issues with context
-├── fixes/             # Applied fixes with verification
-└── references/        # Auto-generated best practices
-```
-
-### Pre-Commit Integration
-
-Add to `.git/hooks/pre-commit`:
-
-```bash
-#!/bin/bash
-./scripts/analyze-codebase.sh --pre-commit || exit 1
-./scripts/quality_gate.sh || exit 1
-```
-
-### Continuous Improvement
-
-Each fix updates:
-1. **agent-docs/issues/** - Issue documentation
-2. **agent-docs/fixes/** - Fix verification
-3. **agent-docs/patterns/** - Extracted patterns
-4. **AGENTS.md** - Prevention rules (this section)
-5. **Skill references** - Updated best practices
-
-### Autosearch Patterns
-
-The system searches for these patterns automatically:
+### Detection Patterns
 
 | Pattern | Issue | Severity |
 |---------|-------|----------|
@@ -440,20 +331,26 @@ The system searches for these patterns automatically:
 | `css_no_dvh` | Using 100vh instead of 100dvh | Medium |
 | `css_hardcoded_colors` | Hardcoded hex colors | Low |
 | `ts_any_type` | TypeScript `any` usage | Medium |
-| `ts_console_log` | Console statements in code | Low |
 | `html_unstyled_button` | Button without CSS class | High |
 
-### Skill: codebase-optimizer
+### Self-Learning Database
 
-Use the `codebase-optimizer` skill for complex optimization tasks:
-
-```bash
-# The skill provides:
-# - Autonomous analysis loop
-# - Pattern extraction
-# - Fix application
-# - Documentation updates
-# - Regression prevention
+```
+agent-docs/
+├── patterns/     # Good/bad patterns
+├── issues/       # Documented issues
+├── fixes/        # Verified fixes
+└── detected/     # Auto-detected issues
 ```
 
-See `.agents/skills/codebase-optimizer/SKILL.md` for detailed usage.
+### Pre-Commit Hook
+
+```bash
+#!/bin/bash
+./scripts/analyze-codebase.sh --pre-commit || exit 1
+./scripts/quality_gate.sh || exit 1
+```
+
+See `.agents/skills/codebase-optimizer/SKILL.md` for details.
+
+

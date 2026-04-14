@@ -28,10 +28,7 @@ export type ResolutionStrategy = 'local-wins' | 'remote-wins' | 'manual';
  * Detect conflicts between local and remote gist.
  * Returns conflict object if differences found, null otherwise.
  */
-export function detectConflict(
-  local: GistRecord,
-  remote: GitHubGist
-): GistConflict | null {
+export function detectConflict(local: GistRecord, remote: GitHubGist): GistConflict | null {
   const conflictingFields: string[] = [];
 
   // Compare timestamps - if remote is newer than local's last sync, potential conflict
@@ -81,7 +78,7 @@ function hasContentChanged(local: GistRecord, remote: GitHubGist): boolean {
   }
 
   // File names changed
-  if (!localFiles.every(f => remoteFiles.includes(f))) {
+  if (!localFiles.every((f) => remoteFiles.includes(f))) {
     return true;
   }
 
@@ -90,7 +87,7 @@ function hasContentChanged(local: GistRecord, remote: GitHubGist): boolean {
     const localFile = local.files[filename];
     const remoteFile = remote.files[filename];
 
-    if (localFile.size !== remoteFile.size) {
+    if (localFile?.size !== remoteFile?.size) {
       return true;
     }
   }
@@ -102,10 +99,7 @@ function hasContentChanged(local: GistRecord, remote: GitHubGist): boolean {
  * Resolve a conflict using the specified strategy.
  * Returns the resolved gist record.
  */
-export function resolveConflict(
-  conflict: GistConflict,
-  strategy: ResolutionStrategy
-): GistRecord {
+export function resolveConflict(conflict: GistConflict, strategy: ResolutionStrategy): GistRecord {
   switch (strategy) {
     case 'local-wins':
       // Keep local version, update sync status
@@ -147,7 +141,7 @@ function githubGistToResolvedRecord(remote: GitHubGist, starred: boolean): GistR
           rawUrl: file.raw_url,
           size: file.size,
           truncated: file.truncated,
-        }
+        },
       ])
     ),
     htmlUrl: remote.html_url,
@@ -157,12 +151,14 @@ function githubGistToResolvedRecord(remote: GitHubGist, starred: boolean): GistR
     updatedAt: remote.updated_at,
     starred,
     public: remote.public,
-    owner: remote.owner ? {
-      login: remote.owner.login,
-      id: remote.owner.id,
-      avatarUrl: remote.owner.avatar_url,
-      htmlUrl: remote.owner.html_url,
-    } : undefined,
+    owner: remote.owner
+      ? {
+          login: remote.owner.login,
+          id: remote.owner.id,
+          avatarUrl: remote.owner.avatar_url,
+          htmlUrl: remote.owner.html_url,
+        }
+      : undefined,
     syncStatus: 'synced',
     lastSyncedAt: new Date().toISOString(),
   };
@@ -173,8 +169,8 @@ function githubGistToResolvedRecord(remote: GitHubGist, starred: boolean): GistR
  */
 export async function storeConflict(conflict: GistConflict): Promise<void> {
   const { getMetadata, setMetadata } = await import('../db');
-  const conflicts = await getMetadata<GistConflict[]>('sync-conflicts') || [];
-  const existingIndex = conflicts.findIndex(c => c.gistId === conflict.gistId);
+  const conflicts = (await getMetadata<GistConflict[]>('sync-conflicts')) || [];
+  const existingIndex = conflicts.findIndex((c) => c.gistId === conflict.gistId);
 
   if (existingIndex >= 0) {
     conflicts[existingIndex] = conflict;
@@ -190,7 +186,7 @@ export async function storeConflict(conflict: GistConflict): Promise<void> {
  */
 export async function getConflicts(): Promise<GistConflict[]> {
   const { getMetadata } = await import('../db');
-  return await getMetadata<GistConflict[]>('sync-conflicts') || [];
+  return (await getMetadata<GistConflict[]>('sync-conflicts')) || [];
 }
 
 /**
@@ -198,8 +194,8 @@ export async function getConflicts(): Promise<GistConflict[]> {
  */
 export async function clearConflict(gistId: string): Promise<void> {
   const { getMetadata, setMetadata } = await import('../db');
-  const conflicts = await getMetadata<GistConflict[]>('sync-conflicts') || [];
-  const filtered = conflicts.filter(c => c.gistId !== gistId);
+  const conflicts = (await getMetadata<GistConflict[]>('sync-conflicts')) || [];
+  const filtered = conflicts.filter((c) => c.gistId !== gistId);
   await setMetadata('sync-conflicts', filtered);
 }
 

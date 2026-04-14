@@ -21,7 +21,9 @@ function esc(text: string): string {
  * Render edit form HTML
  */
 export function renderEditForm(gist: GistRecord): string {
-  const filesHtml = Object.entries(gist.files).map(([key, file]) => `
+  const filesHtml = Object.entries(gist.files)
+    .map(
+      ([key, file]) => `
     <div class="file-editor" data-file-key="${esc(key)}">
       <div class="file-header">
         <input type="text" class="filename-input" value="${esc(file.filename)}" placeholder="Filename" />
@@ -29,7 +31,9 @@ export function renderEditForm(gist: GistRecord): string {
       </div>
       <textarea class="content-editor" placeholder="File content...">${esc(file.content || '')}</textarea>
     </div>
-  `).join('');
+  `
+    )
+    .join('');
 
   return `
     <div class="route-edit" data-gist-id="${esc(gist.id)}">
@@ -63,10 +67,7 @@ export function renderEditForm(gist: GistRecord): string {
 /**
  * Bind edit form events
  */
-export function bindEditEvents(
-  container: HTMLElement,
-  onBack: () => void
-): void {
+export function bindEditEvents(container: HTMLElement, onBack: () => void): void {
   const gistId = (container.querySelector('.route-edit') as HTMLElement | null)?.dataset.gistId;
 
   // Back button
@@ -81,7 +82,7 @@ export function bindEditEvents(
     if (!section) return;
 
     const editors = section.querySelectorAll('.file-editor');
-    const hasEmptyKey = Array.from(editors).some(ed => !(ed as HTMLElement).dataset.fileKey);
+    const hasEmptyKey = Array.from(editors).some((ed) => !(ed as HTMLElement).dataset.fileKey);
 
     if (hasEmptyKey) {
       toast.error('Please fill in the filename for the previous file');
@@ -149,7 +150,8 @@ export function bindEditEvents(
       return;
     }
 
-    const description = (container.querySelector('#edit-description') as HTMLInputElement)?.value.trim() || undefined;
+    const description =
+      (container.querySelector('#edit-description') as HTMLInputElement)?.value.trim() || undefined;
     const public_ = (container.querySelector('#edit-public') as HTMLInputElement)?.checked ?? true;
 
     if (btn) {

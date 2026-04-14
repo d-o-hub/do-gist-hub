@@ -23,11 +23,11 @@ export function redactSecrets(input: string): string {
 
   // GitHub token patterns
   const patterns = [
-    /(ghp_[A-Za-z0-9_]{36,})/g,         // Personal Access Token (classic)
-    /(github_pat_[A-Za-z0-9_]{22,})/g,   // Fine-grained PAT
-    /(gho_[A-Za-z0-9_]{36,})/g,         // OAuth token
-    /(Bearer [A-Za-z0-9._-]{20,})/g,     // Bearer token
-    /(token [A-Za-z0-9_]{20,})/g,        // Token header value
+    /(ghp_[A-Za-z0-9_]{36,})/g, // Personal Access Token (classic)
+    /(github_pat_[A-Za-z0-9_]{22,})/g, // Fine-grained PAT
+    /(gho_[A-Za-z0-9_]{36,})/g, // OAuth token
+    /(Bearer [A-Za-z0-9._-]{20,})/g, // Bearer token
+    /(token [A-Za-z0-9_]{20,})/g, // Token header value
   ];
 
   let result = input;
@@ -43,7 +43,7 @@ export function redactSecrets(input: string): string {
  * Use instead of console.log for any output that might contain tokens.
  */
 export function safeLog(...args: unknown[]): void {
-  const redacted = args.map(arg => {
+  const redacted = args.map((arg) => {
     if (typeof arg === 'string') {
       return redactSecrets(arg);
     }
@@ -59,7 +59,7 @@ export function safeLog(...args: unknown[]): void {
  * Safe console.error that redacts secrets.
  */
 export function safeError(...args: unknown[]): void {
-  const redacted = args.map(arg => {
+  const redacted = args.map((arg) => {
     if (typeof arg === 'string') {
       return redactSecrets(arg);
     }
@@ -75,7 +75,7 @@ export function safeError(...args: unknown[]): void {
  * Safe console.warn that redacts secrets.
  */
 export function safeWarn(...args: unknown[]): void {
-  const redacted = args.map(arg => {
+  const redacted = args.map((arg) => {
     if (typeof arg === 'string') {
       return redactSecrets(arg);
     }

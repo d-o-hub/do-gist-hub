@@ -51,12 +51,9 @@ function categorizeStatus(status: number): ErrorCategory {
 /**
  * Convert GitHub API error to user-friendly message
  */
-export function handleGitHubError(
-  error: unknown,
-  context: string
-): AppError {
+export function handleGitHubError(error: unknown, context: string): AppError {
   console.error(`[Error Handler] ${context}:`, error);
-  
+
   // Network errors
   if (error instanceof TypeError && error.message.includes('fetch')) {
     return {
@@ -65,12 +62,12 @@ export function handleGitHubError(
       recoveryAction: 'Retry when online',
     };
   }
-  
+
   // Response errors
   if (error instanceof Response) {
     const status = error.status;
     const category = categorizeStatus(status);
-    
+
     switch (category) {
       case ErrorCategory.AUTH:
         return {
@@ -79,7 +76,7 @@ export function handleGitHubError(
           recoveryAction: 'Re-enter token in Settings',
           technicalDetails: `HTTP ${status}`,
         };
-      
+
       case ErrorCategory.NOT_FOUND:
         return {
           category: ErrorCategory.NOT_FOUND,
@@ -87,7 +84,7 @@ export function handleGitHubError(
           recoveryAction: 'Refresh the list',
           technicalDetails: `HTTP ${status}`,
         };
-      
+
       case ErrorCategory.RATE_LIMIT:
         return {
           category: ErrorCategory.RATE_LIMIT,
@@ -95,7 +92,7 @@ export function handleGitHubError(
           recoveryAction: 'Wait a few minutes and retry',
           technicalDetails: `HTTP ${status}`,
         };
-      
+
       case ErrorCategory.VALIDATION:
         return {
           category: ErrorCategory.VALIDATION,
@@ -103,7 +100,7 @@ export function handleGitHubError(
           recoveryAction: 'Review and correct the form',
           technicalDetails: `HTTP ${status}`,
         };
-      
+
       default:
         return {
           category: ErrorCategory.UNKNOWN,
@@ -113,11 +110,11 @@ export function handleGitHubError(
         };
     }
   }
-  
+
   // GitHub API error response
   if (error && typeof error === 'object' && 'message' in error) {
     const ghError = error as GitHubError;
-    
+
     if (ghError.message.includes('bad credentials')) {
       return {
         category: ErrorCategory.AUTH,
@@ -126,7 +123,7 @@ export function handleGitHubError(
         technicalDetails: ghError.message,
       };
     }
-    
+
     if (ghError.message.includes('rate limit')) {
       return {
         category: ErrorCategory.RATE_LIMIT,
@@ -135,7 +132,7 @@ export function handleGitHubError(
         technicalDetails: ghError.message,
       };
     }
-    
+
     return {
       category: ErrorCategory.VALIDATION,
       message: ghError.message || 'An error occurred',
@@ -143,7 +140,7 @@ export function handleGitHubError(
       technicalDetails: ghError.documentation_url,
     };
   }
-  
+
   // Generic error
   return {
     category: ErrorCategory.UNKNOWN,

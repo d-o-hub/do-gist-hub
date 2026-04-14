@@ -63,7 +63,9 @@ function syncBadge(gist: GistRecord): string {
  */
 export function renderCard(gist: GistRecord): string {
   const title = esc(getTitle(gist));
-  const desc = gist.description ? `<p class="gist-card-description">${esc(gist.description)}</p>` : '';
+  const desc = gist.description
+    ? `<p class="gist-card-description">${esc(gist.description)}</p>`
+    : '';
   const fileCount = Object.keys(gist.files).length;
   const starIcon = gist.starred ? '★' : '☆';
   const starClass = gist.starred ? 'starred' : '';

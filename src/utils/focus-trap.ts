@@ -19,10 +19,10 @@ export class FocusTrap {
 
     const focusable = this.getFocusableElements();
     if (focusable.length > 0) {
-      focusable[0].focus();
+      focusable[0]?.focus();
     }
 
-    container.addEventListener("keydown", this.handleKeyDown, {
+    container.addEventListener('keydown', this.handleKeyDown, {
       signal: this.abortController.signal,
     });
   }
@@ -42,7 +42,7 @@ export class FocusTrap {
   }
 
   private handleKeyDown = (e: KeyboardEvent): void => {
-    if (e.key !== "Tab" || !this.container) return;
+    if (e.key !== 'Tab' || !this.container) return;
 
     const focusable = this.getFocusableElements();
     if (focusable.length === 0) return;
@@ -50,10 +50,10 @@ export class FocusTrap {
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
 
-    if (e.shiftKey && document.activeElement === first) {
+    if (e.shiftKey && document.activeElement === first && last) {
       e.preventDefault();
       last.focus();
-    } else if (!e.shiftKey && document.activeElement === last) {
+    } else if (!e.shiftKey && document.activeElement === last && first) {
       e.preventDefault();
       first.focus();
     }
@@ -64,13 +64,13 @@ export class FocusTrap {
 
     return Array.from(
       this.container.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      ),
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
     ).filter((el): el is HTMLElement => {
       if (!(el instanceof HTMLElement)) return false;
-      if (el.hasAttribute("hidden")) return false;
+      if (el.hasAttribute('hidden')) return false;
       if (el.offsetParent === null) return false;
-      if ("disabled" in el && (el as HTMLButtonElement).disabled) return false;
+      if ('disabled' in el && (el as HTMLButtonElement).disabled) return false;
       return true;
     });
   }

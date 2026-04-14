@@ -73,7 +73,7 @@ export interface GistFile {
   rawUrl?: string;
   size?: number;
   truncated?: boolean;
-  content?: string;  // Stored locally for offline access
+  content?: string; // Stored locally for offline access
 }
 
 /**
@@ -118,44 +118,44 @@ export async function initIndexedDB(): Promise<IDBPDatabase<GistDBSchema>> {
   if (dbInstance) {
     return dbInstance;
   }
-  
+
   dbInstance = await openDB<GistDBSchema>(DB_NAME, DB_VERSION, {
     upgrade(db, oldVersion, newVersion) {
       console.log(`[IndexedDB] Upgrading from ${oldVersion} to ${newVersion}`);
-      
+
       // Create gists store
       const gistStore = db.createObjectStore('gists', { keyPath: 'id' });
       gistStore.createIndex('by-updated-at', 'updatedAt');
       gistStore.createIndex('by-starred', 'starred');
       gistStore.createIndex('by-sync-status', 'syncStatus');
-      
+
       // Create pending writes store (queue for offline operations)
-      const pendingStore = db.createObjectStore('pendingWrites', { 
-        keyPath: 'id', 
-        autoIncrement: true 
+      const pendingStore = db.createObjectStore('pendingWrites', {
+        keyPath: 'id',
+        autoIncrement: true,
       });
       pendingStore.createIndex('by-created-at', 'createdAt');
       pendingStore.createIndex('by-gist-id', 'gistId');
-      
+
       // Create metadata store
       db.createObjectStore('metadata', { keyPath: 'key' });
     },
-    
+
     blocked() {
       console.warn('[IndexedDB] Database blocked by another connection');
     },
-    
+
     blocking() {
       console.warn('[IndexedDB] Database blocking upgrade');
       dbInstance?.close();
     },
-    
+
     terminated() {
       console.warn('[IndexedDB] Database connection terminated');
       dbInstance = null;
     },
   });
-  
+
   console.log('[IndexedDB] Initialized successfully');
   return dbInstance;
 }
@@ -222,7 +222,9 @@ export async function deleteGist(id: string): Promise<void> {
 /**
  * Queue a write operation for later sync
  */
-export async function queueWrite(write: Omit<PendingWrite, 'id' | 'createdAt' | 'retryCount'>): Promise<number> {
+export async function queueWrite(
+  write: Omit<PendingWrite, 'id' | 'createdAt' | 'retryCount'>
+): Promise<number> {
   const db = getDB();
   const id = await db.add('pendingWrites', {
     ...write,
@@ -308,7 +310,7 @@ export async function exportData(): Promise<string> {
   const gists = await db.getAll('gists');
   const pendingWrites = await db.getAll('pendingWrites');
   const metadata = await db.getAll('metadata');
-  
+
   const data = {
     version: DB_VERSION,
     exportedAt: new Date().toISOString(),
@@ -316,7 +318,7 @@ export async function exportData(): Promise<string> {
     pendingWrites,
     metadata,
   };
-  
+
   return JSON.stringify(data);
 }
 
@@ -326,29 +328,29 @@ export async function exportData(): Promise<string> {
 export async function importData(json: string): Promise<void> {
   const db = getDB();
   const data = JSON.parse(json);
-  
+
   const tx = db.transaction(['gists', 'pendingWrites', 'metadata'], 'readwrite');
-  
+
   // Clear existing data
   await tx.objectStore('gists').clear();
   await tx.objectStore('pendingWrites').clear();
   await tx.objectStore('metadata').clear();
-  
+
   // Import gists
   for (const gist of data.gists) {
     await tx.objectStore('gists').put(gist);
   }
-  
+
   // Import pending writes
   for (const write of data.pendingWrites) {
     await tx.objectStore('pendingWrites').put(write);
   }
-  
+
   // Import metadata
   for (const meta of data.metadata) {
     await tx.objectStore('metadata').put(meta);
   }
-  
+
   await tx.done;
   console.log('[IndexedDB] Data imported successfully');
 }

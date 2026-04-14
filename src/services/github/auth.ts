@@ -15,14 +15,14 @@ export async function saveToken(token: string): Promise<{ success: boolean; erro
   try {
     // Validate token before saving
     const result = await validateToken(token);
-    
+
     if (!result.isValid) {
       return {
         success: false,
         error: result.error || 'Invalid token',
       };
     }
-    
+
     // Store token in IndexedDB (encrypted at rest would be ideal, but browser limitations)
     await setMetadata('github-pat', token);
     await setMetadata('github-username', result.username || '');
@@ -54,7 +54,7 @@ export async function isAuthenticated(): Promise<boolean> {
   if (!token) {
     return false;
   }
-  
+
   // Quick validation without full API call
   return token.length > 0;
 }
@@ -91,11 +91,11 @@ export async function getTokenInfo(): Promise<{
     getUsername(),
     getMetadata<number>('token-saved-at'),
   ]);
-  
+
   if (!hasToken) {
     return null;
   }
-  
+
   return {
     hasToken: true,
     username,
@@ -108,18 +108,18 @@ export async function getTokenInfo(): Promise<{
  */
 export async function revalidateToken(): Promise<{ valid: boolean; error?: string }> {
   const token = await getToken();
-  
+
   if (!token) {
     return { valid: false, error: 'No token found' };
   }
-  
+
   const result = await validateToken(token);
-  
+
   if (!result.isValid) {
     // Auto-remove invalid token
     await removeToken();
     return { valid: false, error: result.error };
   }
-  
+
   return { valid: true };
 }

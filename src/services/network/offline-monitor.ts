@@ -54,7 +54,7 @@ class NetworkMonitor {
    */
   subscribe(handler: NetworkChangeHandler): () => void {
     this.listeners.add(handler);
-    
+
     // Return unsubscribe function
     return () => {
       this.listeners.delete(handler);
@@ -67,12 +67,12 @@ class NetworkMonitor {
   private handleOnline(): void {
     const oldStatus = this.status;
     this.status = 'online';
-    
+
     console.log('[NetworkMonitor] Status changed: offline → online');
-    
+
     if (oldStatus !== this.status) {
       this.notifyListeners();
-      
+
       // Dispatch custom event for other parts of the app
       window.dispatchEvent(new CustomEvent('app:online'));
     }
@@ -84,12 +84,12 @@ class NetworkMonitor {
   private handleOffline(): void {
     const oldStatus = this.status;
     this.status = 'offline';
-    
+
     console.log('[NetworkMonitor] Status changed: online → offline');
-    
+
     if (oldStatus !== this.status) {
       this.notifyListeners();
-      
+
       // Dispatch custom event for other parts of the app
       window.dispatchEvent(new CustomEvent('app:offline'));
     }

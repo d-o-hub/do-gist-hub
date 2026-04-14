@@ -95,10 +95,14 @@ export class ToastManager {
     toast.classList.add('toast-exit');
 
     // Remove after animation
-    toast.addEventListener('animationend', () => {
-      toast.remove();
-      this.toasts.delete(id);
-    }, { once: true });
+    toast.addEventListener(
+      'animationend',
+      () => {
+        toast.remove();
+        this.toasts.delete(id);
+      },
+      { once: true }
+    );
 
     // Fallback removal
     setTimeout(() => {
@@ -111,7 +115,7 @@ export class ToastManager {
 
   dismissAll(): void {
     const ids = Array.from(this.toasts.keys());
-    ids.forEach(id => this.dismiss(id));
+    ids.forEach((id) => this.dismiss(id));
   }
 
   private escapeHtml(text: string): string {

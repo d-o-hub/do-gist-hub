@@ -15,15 +15,15 @@ export function initDesignTokens(): void {
   if (styleElement) {
     return;
   }
-  
+
   // Create style element
   styleElement = document.createElement('style');
   styleElement.id = 'design-tokens';
   styleElement.textContent = generateCSSVariables();
-  
+
   // Inject into document head
   document.head.appendChild(styleElement);
-  
+
   console.log('[Design Tokens] Initialized');
 }
 
@@ -32,7 +32,7 @@ export function initDesignTokens(): void {
  */
 export function setTheme(theme: 'light' | 'dark'): void {
   document.documentElement.setAttribute('data-theme', theme);
-  
+
   // Persist preference
   localStorage.setItem('theme-preference', theme);
 }
@@ -42,16 +42,16 @@ export function setTheme(theme: 'light' | 'dark'): void {
  */
 export function getTheme(): 'light' | 'dark' {
   const stored = localStorage.getItem('theme-preference') as 'light' | 'dark' | null;
-  
+
   if (stored) {
     return stored;
   }
-  
+
   // Fall back to system preference
   if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
     return 'dark';
   }
-  
+
   return 'light';
 }
 

@@ -11,7 +11,7 @@ import type {
   UpdateGistRequest,
   GistRevision,
   TokenInfo,
-  GitHubError
+  GitHubError,
 } from '../../types/api';
 import { trackRateLimit } from './rate-limiter';
 import { safeError } from '../security/logger';
@@ -46,20 +46,17 @@ async function buildHeaders(): Promise<HeadersInit> {
   const token = await getAuthToken();
 
   return {
-    'Accept': 'application/vnd.github+json',
+    Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
     'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `token ${token}` } : {}),
+    ...(token ? { Authorization: `token ${token}` } : {}),
   };
 }
 
 /**
  * Build request options with signal and headers
  */
-async function buildOptions(
-  method: string = 'GET',
-  body?: string
-): Promise<RequestInit> {
+async function buildOptions(method: string = 'GET', body?: string): Promise<RequestInit> {
   return {
     method,
     headers: await buildHeaders(),
@@ -96,14 +93,14 @@ export async function validateToken(token: string): Promise<TokenInfo> {
   try {
     const response = await fetch(`${BASE_URL}/user`, {
       headers: {
-        'Accept': 'application/vnd.github+json',
+        Accept: 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
-        'Authorization': `token ${token}`,
+        Authorization: `token ${token}`,
       },
     });
 
     if (!response.ok) {
-      const error = await response.json() as GitHubError;
+      const error = (await response.json()) as GitHubError;
       return {
         isValid: false,
         error: error.message || 'Invalid token',
@@ -169,10 +166,7 @@ export async function listStarredGists(
   });
 
   try {
-    const response = await fetch(
-      `${BASE_URL}/gists/starred?${params}`,
-      await buildOptions()
-    );
+    const response = await fetch(`${BASE_URL}/gists/starred?${params}`, await buildOptions());
 
     if (!response.ok) {
       handleApiError(response, 'listStarredGists');
@@ -190,10 +184,7 @@ export async function listStarredGists(
  */
 export async function getGist(id: string): Promise<GitHubGist> {
   try {
-    const response = await fetch(
-      `${BASE_URL}/gists/${id}`,
-      await buildOptions()
-    );
+    const response = await fetch(`${BASE_URL}/gists/${id}`, await buildOptions());
 
     if (!response.ok) {
       handleApiError(response, 'getGist');
@@ -230,10 +221,7 @@ export async function createGist(payload: CreateGistRequest): Promise<GitHubGist
 /**
  * Update an existing gist
  */
-export async function updateGist(
-  id: string,
-  payload: UpdateGistRequest
-): Promise<GitHubGist> {
+export async function updateGist(id: string, payload: UpdateGistRequest): Promise<GitHubGist> {
   try {
     const response = await fetch(
       `${BASE_URL}/gists/${id}`,
@@ -256,10 +244,7 @@ export async function updateGist(
  */
 export async function deleteGist(id: string): Promise<void> {
   try {
-    const response = await fetch(
-      `${BASE_URL}/gists/${id}`,
-      await buildOptions('DELETE')
-    );
+    const response = await fetch(`${BASE_URL}/gists/${id}`, await buildOptions('DELETE'));
 
     if (!response.ok) {
       handleApiError(response, 'deleteGist');
@@ -276,10 +261,7 @@ export async function deleteGist(id: string): Promise<void> {
  */
 export async function starGist(id: string): Promise<void> {
   try {
-    const response = await fetch(
-      `${BASE_URL}/gists/${id}/star`,
-      await buildOptions('PUT')
-    );
+    const response = await fetch(`${BASE_URL}/gists/${id}/star`, await buildOptions('PUT'));
 
     if (!response.ok) {
       handleApiError(response, 'starGist');
@@ -296,10 +278,7 @@ export async function starGist(id: string): Promise<void> {
  */
 export async function unstarGist(id: string): Promise<void> {
   try {
-    const response = await fetch(
-      `${BASE_URL}/gists/${id}/star`,
-      await buildOptions('DELETE')
-    );
+    const response = await fetch(`${BASE_URL}/gists/${id}/star`, await buildOptions('DELETE'));
 
     if (!response.ok) {
       handleApiError(response, 'unstarGist');
@@ -316,10 +295,7 @@ export async function unstarGist(id: string): Promise<void> {
  */
 export async function checkIfStarred(id: string): Promise<boolean> {
   try {
-    const response = await fetch(
-      `${BASE_URL}/gists/${id}/star`,
-      await buildOptions()
-    );
+    const response = await fetch(`${BASE_URL}/gists/${id}/star`, await buildOptions());
 
     trackRateLimit(response);
     return response.status === 204;
@@ -334,10 +310,7 @@ export async function checkIfStarred(id: string): Promise<boolean> {
  */
 export async function forkGist(id: string): Promise<GitHubGist> {
   try {
-    const response = await fetch(
-      `${BASE_URL}/gists/${id}/forks`,
-      await buildOptions('POST')
-    );
+    const response = await fetch(`${BASE_URL}/gists/${id}/forks`, await buildOptions('POST'));
 
     if (!response.ok) {
       handleApiError(response, 'forkGist');
@@ -355,10 +328,7 @@ export async function forkGist(id: string): Promise<GitHubGist> {
  */
 export async function listGistRevisions(id: string): Promise<GistRevision[]> {
   try {
-    const response = await fetch(
-      `${BASE_URL}/gists/${id}/revisions`,
-      await buildOptions()
-    );
+    const response = await fetch(`${BASE_URL}/gists/${id}/revisions`, await buildOptions());
 
     if (!response.ok) {
       handleApiError(response, 'listGistRevisions');
@@ -389,9 +359,9 @@ async function getCurrentUsername(): Promise<string> {
   try {
     const response = await fetch(`${BASE_URL}/user`, {
       headers: {
-        'Accept': 'application/vnd.github+json',
+        Accept: 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
-        'Authorization': `token ${token}`,
+        Authorization: `token ${token}`,
       },
     });
 

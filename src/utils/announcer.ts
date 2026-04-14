@@ -8,23 +8,22 @@ export class Announcer {
   private assertiveRegion: HTMLElement | null = null;
 
   constructor() {
-    if (typeof document !== "undefined") {
-      this.politeRegion = this.createRegion("polite");
-      this.assertiveRegion = this.createRegion("assertive");
+    if (typeof document !== 'undefined') {
+      this.politeRegion = this.createRegion('polite');
+      this.assertiveRegion = this.createRegion('assertive');
     }
   }
 
   /**
    * Announce a message to screen readers
    */
-  announce(message: string, priority: "polite" | "assertive" = "polite"): void {
-    const region =
-      priority === "assertive" ? this.assertiveRegion : this.politeRegion;
+  announce(message: string, priority: 'polite' | 'assertive' = 'polite'): void {
+    const region = priority === 'assertive' ? this.assertiveRegion : this.politeRegion;
 
     if (!region) return;
 
     // Clear previous content and set new message
-    region.textContent = "";
+    region.textContent = '';
 
     // Use requestAnimationFrame for better screen reader support
     requestAnimationFrame(() => {
@@ -33,7 +32,7 @@ export class Announcer {
 
     // Clear after announcement (screen readers typically announce within 1s)
     setTimeout(() => {
-      region.textContent = "";
+      region.textContent = '';
     }, 1000);
   }
 
@@ -41,28 +40,28 @@ export class Announcer {
    * Announce success message
    */
   success(message: string): void {
-    this.announce(`Success: ${message}`, "polite");
+    this.announce(`Success: ${message}`, 'polite');
   }
 
   /**
    * Announce error message (assertive)
    */
   error(message: string): void {
-    this.announce(`Error: ${message}`, "assertive");
+    this.announce(`Error: ${message}`, 'assertive');
   }
 
   /**
    * Announce loading state
    */
-  loading(message: string = "Loading"): void {
-    this.announce(`${message}...`, "polite");
+  loading(message: string = 'Loading'): void {
+    this.announce(`${message}...`, 'polite');
   }
 
   private createRegion(priority: string): HTMLElement {
-    const region = document.createElement("div");
-    region.setAttribute("aria-live", priority);
-    region.setAttribute("aria-atomic", "true");
-    region.className = "sr-only";
+    const region = document.createElement('div');
+    region.setAttribute('aria-live', priority);
+    region.setAttribute('aria-atomic', 'true');
+    region.className = 'sr-only';
     document.body.appendChild(region);
     return region;
   }

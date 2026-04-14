@@ -20,7 +20,7 @@ function reportMetric(metric: Metric): void {
     const level = budgetExceeded ? 'warn' : 'log';
     console[level](
       `[Web Vitals] ${name}: ${value.toFixed(2)}ms (rating: ${rating})` +
-      (budgetExceeded ? ` [BUDGET EXCEEDED: ${budget}ms]` : '')
+        (budgetExceeded ? ` [BUDGET EXCEEDED: ${budget}ms]` : '')
     );
   }
 
@@ -40,7 +40,7 @@ async function storeMetric(name: string, value: number, rating: string): Promise
     const db = getDB();
     if (!db) return;
 
-    const metrics = await getMetadata<Record<string, unknown>>('perf-metrics') || {};
+    const metrics = (await getMetadata<Record<string, unknown>>('perf-metrics')) || {};
     metrics[name] = { value, rating, timestamp: Date.now() };
     await setMetadata('perf-metrics', metrics);
   } catch {
@@ -72,7 +72,7 @@ export function initWebVitals(): void {
 export async function getStoredMetrics(): Promise<Record<string, unknown>> {
   try {
     const { getMetadata } = await import('../db');
-    return await getMetadata<Record<string, unknown>>('perf-metrics') || {};
+    return (await getMetadata<Record<string, unknown>>('perf-metrics')) || {};
   } catch {
     return {};
   }

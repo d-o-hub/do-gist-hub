@@ -44,29 +44,29 @@ export const colorSemantic = {
   },
   dark: {
     background: {
-      primary: '#030712',      // near-black base
-      secondary: '#0A0F1A',    // slightly elevated surface
-      tertiary: '#111827',     // card surfaces
-      elevated: '#1A2332',     // modals, overlays
+      primary: '#030712', // near-black base
+      secondary: '#0A0F1A', // slightly elevated surface
+      tertiary: '#111827', // card surfaces
+      elevated: '#1A2332', // modals, overlays
     },
     foreground: {
-      primary: '#F8FAFC',      // near-white text
-      secondary: '#CBD5E1',    // secondary text
-      muted: '#64748B',        // muted/disabled
-      inverse: '#030712',      // dark text on light
+      primary: '#F8FAFC', // near-white text
+      secondary: '#CBD5E1', // secondary text
+      muted: '#64748B', // muted/disabled
+      inverse: '#030712', // dark text on light
     },
     accent: {
       // Modern blue with subtle glow effect
-      primary: '#60A5FA',      // bright blue for dark mode
-      hover: '#93C5FD',        // lighter on hover
-      active: '#BFDBFE',       // active state
-      subtle: 'rgba(96, 165, 250, 0.10)',  // translucent background
-      glow: 'rgba(96, 165, 250, 0.35)',    // glow effect
+      primary: '#60A5FA', // bright blue for dark mode
+      hover: '#93C5FD', // lighter on hover
+      active: '#BFDBFE', // active state
+      subtle: 'rgba(96, 165, 250, 0.10)', // translucent background
+      glow: 'rgba(96, 165, 250, 0.35)', // glow effect
     },
     border: {
-      default: '#1E293B',      // subtle borders
-      emphasis: '#334155',     // emphasized borders
-      strong: '#475569',       // strong borders
+      default: '#1E293B', // subtle borders
+      emphasis: '#334155', // emphasized borders
+      strong: '#475569', // strong borders
     },
     status: {
       success: { bg: 'rgba(34, 197, 94, 0.10)', fg: '#4ADE80', border: '#22C55E' },

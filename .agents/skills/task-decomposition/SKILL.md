@@ -125,7 +125,11 @@ Strategy: Multi-phase hybrid
 
 ## Integration
 
-GOAP Phase 1: Decomposition → Execution Plan → Monitor → Report
+Use with TRIZ workflow:
+1. `triz-analysis` → identify contradictions in the problem space
+2. `triz-solver` → define IFR and resolution strategy
+3. `task-decomposition` → break resolved solution into atomic tasks
+4. Execute tasks in dependency order
 
 ## Tips
 
@@ -138,8 +142,8 @@ GOAP Phase 1: Decomposition → Execution Plan → Monitor → Report
 
 ## Summary
 
-Good decomposition enables optimal execution, clear validation, and higher quality.
+Good decomposition enables optimal execution, clear validation, and higher quality. Use TRIZ first to ensure you're solving the right problem.
 
 ## Reference Files
 
-- **[references/guide.md](references/guide.md)** - Complete guide with detailed framework, process, patterns, examples, and GOAP integration
+- **[references/guide.md](references/guide.md)** - Complete guide with detailed framework, process, patterns, examples, and TRIZ integration

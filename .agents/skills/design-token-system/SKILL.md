@@ -86,6 +86,77 @@ See `references/token-examples.md` for TypeScript type definitions.
 - **Theme Consistency**: Dark and light themes must have equivalent tokens
 - **Accessibility**: Ensure WCAG AA contrast ratios in all themes
 - **DTCG Alignment**: Use `$type`, `$value`, `$description` for portability
+- **2026 Easing Functions**: Use `--ease-out-expo`, `--ease-in-expo`, `--ease-elastic`, `--ease-smooth` for professional motion
+- **Safe Area Support**: Include `env(safe-area-inset-*)` for notched devices
+- **View Transitions**: Support `::view-transition` pseudo-elements for smooth navigation
+
+## Production-Ready UI Checklist
+
+Before considering UI work complete, verify:
+
+### Visual Consistency
+- [ ] All interactive elements have consistent styling (buttons, nav items, inputs)
+- [ ] No unstyled default browser elements visible at any breakpoint
+- [ ] Active/hover/focus states defined for all interactive elements
+- [ ] Typography uses token values, no hardcoded font sizes
+
+### Responsive Behavior
+- [ ] Mobile (< 768px): Sidebar hidden, bottom nav visible
+- [ ] Desktop (>= 768px): Sidebar visible, bottom nav hidden
+- [ ] All 7 breakpoints tested with screenshots
+- [ ] No horizontal overflow at any width
+
+### Navigation Patterns
+- [ ] Sidebar items styled with `.sidebar-item` class (not default buttons)
+- [ ] Bottom nav items use `.nav-item` with proper touch targets (44x44px min)
+- [ ] Active state visually distinct on both navigation types
+- [ ] Icons and labels aligned consistently
+
+### CSS Structure
+```css
+/* Base: Hide sidebar on mobile */
+.sidebar-nav {
+  display: none;
+}
+
+/* Desktop: Show sidebar */
+@media (min-width: 768px) {
+  .sidebar-nav {
+    display: flex;
+    /* ... sidebar styles ... */
+  }
+}
+
+/* Sidebar items - styled like buttons */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-2-5) var(--spacing-3);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  color: var(--color-foreground-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  min-height: 40px;
+  width: 100%;
+  transition: all var(--motion-duration-fast) var(--ease-out-expo);
+}
+
+.sidebar-item:hover {
+  background-color: var(--color-interactive-hover);
+  color: var(--color-foreground-primary);
+}
+
+.sidebar-item.active {
+  background-color: var(--color-accent-primary);
+  color: var(--color-foreground-inverse);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: 0 2px 8px var(--color-accent-glow);
+}
+```
 
 ## Required Outputs
 
@@ -113,8 +184,27 @@ npm run build:tokens
 npm run typecheck
 ```
 
+## Layout Best Practices (2026)
+
+See `references/mobile-layout-2026.md` for complete mobile layout patterns including:
+- `100dvh` usage for mobile viewport stability
+- Safe area inset handling for notched devices
+- Flexbox patterns that prevent gaps between header/content
+- Common layout pitfalls and solutions
+
+### Quick Layout Checklist
+
+- [ ] App shell uses `min-height: 100dvh` (with `100vh` fallback)
+- [ ] Flex children with overflow have `min-height: 0`
+- [ ] Header uses `env(safe-area-inset-top)` for notch support
+- [ ] Bottom nav uses `env(safe-area-inset-bottom)`
+- [ ] No gaps between header and content areas
+- [ ] Layout tested at 320px, 390px, 768px, 1536px
+
 ## References
 
 - https://www.designtokens.org/ - Design Tokens Community Group
 - https://github.com/design-tokens/community-group - DTCG GitHub
+- `references/mobile-layout-2026.md` - Mobile layout best practices
+- `references/production-ui-standards.md` - Production UI standards
 - `AGENTS.md` - Token architecture rules

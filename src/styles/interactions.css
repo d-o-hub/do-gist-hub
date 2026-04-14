@@ -70,7 +70,7 @@ html {
   input,
   select,
   textarea,
-  [role="button"],
+  [role='button'],
   .nav-item,
   .icon-button,
   .filter-btn,
@@ -101,8 +101,9 @@ html {
 /* ===== Card Hover Effects (Desktop Only) ===== */
 @media (hover: hover) and (pointer: fine) {
   .gist-card {
-    transition: box-shadow var(--motion-duration-fast) var(--motion-easing-ease-out),
-                transform var(--motion-duration-fast) var(--motion-easing-ease-out);
+    transition:
+      box-shadow var(--motion-duration-fast) var(--motion-easing-ease-out),
+      transform var(--motion-duration-fast) var(--motion-easing-ease-out);
   }
 }
 

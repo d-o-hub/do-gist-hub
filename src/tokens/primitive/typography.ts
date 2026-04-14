@@ -12,19 +12,19 @@ export const fontFamily = {
 
 export const fontSize = {
   // Fluid typography with clamp() - scales smoothly from 320px to 1536px
-  xs: 'clamp(0.6875rem, 0.625rem + 0.25vw, 0.75rem)',       // 11-12px
-  sm: 'clamp(0.75rem, 0.6875rem + 0.3125vw, 0.875rem)',     // 12-14px
-  base: 'clamp(0.875rem, 0.8rem + 0.375vw, 1rem)',           // 14-16px
-  lg: 'clamp(1rem, 0.875rem + 0.5vw, 1.125rem)',             // 16-18px
-  xl: 'clamp(1.125rem, 0.9375rem + 0.75vw, 1.25rem)',        // 18-20px
-  '2xl': 'clamp(1.25rem, 1rem + 1vw, 1.5rem)',               // 20-24px
-  '3xl': 'clamp(1.5rem, 1.125rem + 1.5vw, 1.875rem)',        // 24-30px
-  '4xl': 'clamp(1.875rem, 1.25rem + 2.5vw, 2.25rem)',        // 30-36px
-  '5xl': 'clamp(2.25rem, 1.5rem + 3.75vw, 3rem)',            // 36-48px
-  '6xl': 'clamp(2.75rem, 1.75rem + 5vw, 3.75rem)',           // 44-60px
-  '7xl': 'clamp(3.25rem, 2rem + 6.25vw, 4.5rem)',            // 52-72px
-  '8xl': 'clamp(4rem, 2.5rem + 7.5vw, 6rem)',                // 64-96px
-  '9xl': 'clamp(5rem, 3rem + 10vw, 8rem)',                   // 80-128px
+  xs: 'clamp(0.6875rem, 0.625rem + 0.25vw, 0.75rem)', // 11-12px
+  sm: 'clamp(0.75rem, 0.6875rem + 0.3125vw, 0.875rem)', // 12-14px
+  base: 'clamp(0.875rem, 0.8rem + 0.375vw, 1rem)', // 14-16px
+  lg: 'clamp(1rem, 0.875rem + 0.5vw, 1.125rem)', // 16-18px
+  xl: 'clamp(1.125rem, 0.9375rem + 0.75vw, 1.25rem)', // 18-20px
+  '2xl': 'clamp(1.25rem, 1rem + 1vw, 1.5rem)', // 20-24px
+  '3xl': 'clamp(1.5rem, 1.125rem + 1.5vw, 1.875rem)', // 24-30px
+  '4xl': 'clamp(1.875rem, 1.25rem + 2.5vw, 2.25rem)', // 30-36px
+  '5xl': 'clamp(2.25rem, 1.5rem + 3.75vw, 3rem)', // 36-48px
+  '6xl': 'clamp(2.75rem, 1.75rem + 5vw, 3.75rem)', // 44-60px
+  '7xl': 'clamp(3.25rem, 2rem + 6.25vw, 4.5rem)', // 52-72px
+  '8xl': 'clamp(4rem, 2.5rem + 7.5vw, 6rem)', // 64-96px
+  '9xl': 'clamp(5rem, 3rem + 10vw, 8rem)', // 80-128px
 } as const;
 
 export const fontWeight = {

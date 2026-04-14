@@ -5,10 +5,10 @@
 export * from './api';
 
 // Re-export database types from db service
-export type { 
-  GistRecord, 
-  GistFile as GistFileRecord, 
+export type {
+  GistRecord,
+  GistFile as GistFileRecord,
   GistOwner as GistOwnerRecord,
-  PendingWrite, 
-  MetadataRecord 
+  PendingWrite,
+  MetadataRecord,
 } from '../services/db';

@@ -61,8 +61,7 @@
 }
 
 .gist-card {
-  animation: card-enter var(--motion-duration-normal)
-    var(--motion-easing-ease-out) backwards;
+  animation: card-enter var(--motion-duration-normal) var(--motion-easing-ease-out) backwards;
 }
 
 .gist-card:nth-child(1) {
@@ -118,8 +117,7 @@
 }
 
 .app-main {
-  animation: page-fade-in var(--motion-duration-normal)
-    var(--motion-easing-ease-out);
+  animation: page-fade-in var(--motion-duration-normal) var(--motion-easing-ease-out);
 }
 
 /* ===== Loading Spinner ===== */
@@ -135,8 +133,7 @@
   border: 2px solid var(--color-border-default);
   border-top-color: var(--color-accent-primary);
   border-radius: var(--radius-full);
-  animation: spin var(--motion-duration-slow) var(--motion-easing-linear)
-    infinite;
+  animation: spin var(--motion-duration-slow) var(--motion-easing-linear) infinite;
 }
 
 /* ===== Status Indicator Pulse ===== */
@@ -153,8 +150,7 @@
 }
 
 .status-indicator.offline .status-dot {
-  animation: pulse var(--motion-duration-slow) var(--motion-easing-ease-in-out)
-    infinite;
+  animation: pulse var(--motion-duration-slow) var(--motion-easing-ease-in-out) infinite;
 }
 
 /* ===== Toast Slide In ===== */
@@ -181,13 +177,11 @@
 }
 
 .toast-enter {
-  animation: toast-slide-in var(--motion-duration-normal)
-    var(--motion-easing-ease-out);
+  animation: toast-slide-in var(--motion-duration-normal) var(--motion-easing-ease-out);
 }
 
 .toast-exit {
-  animation: toast-slide-out var(--motion-duration-fast)
-    var(--motion-easing-ease-in);
+  animation: toast-slide-out var(--motion-duration-fast) var(--motion-easing-ease-in);
 }
 
 /* ===== High-Motion Elements ===== */

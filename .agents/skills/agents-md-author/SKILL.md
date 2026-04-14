@@ -21,10 +21,7 @@ Create and maintain AGENTS.md files as the single source of truth for AI coding 
 Review existing AGENTS.md and identify gaps:
 
 ```bash
-# Check current structure
-ls -la .agents/skills/
-ls -la plans/
-wc -l AGENTS.md
+ls -la .agents/skills/ && ls -la plans/ && wc -l AGENTS.md
 ```
 
 ### Step 2: Reference Templates
@@ -40,39 +37,37 @@ wc -l AGENTS.md
 
 ### Step 3: Create or Update AGENTS.md
 
-Include these sections:
+Include these sections in order:
 
 1. **Header**: Project description and tech stack
-2. **Constants**: Named limits and configurations
-3. **Mission**: What the project builds
-4. **Source-of-Truth Rules**: File precedence
-5. **Setup Commands**: How to get started
-6. **Quality Gate**: Pre-commit requirements
-7. **Code Style**: Naming, formatting, limits
+2. **App Identity**: Source-of-truth for app constants
+3. **Constants**: Named limits and configurations
+4. **Mission**: What the project builds
+5. **Source-of-Truth Rules**: File precedence
+6. **Setup and Quality Gate**: Commands and scripts
+7. **Code Style Rules**: Naming, formatting, limits
 8. **Repository Structure**: Directory purposes
-9. **Domain Rules**: Token, responsive, error, security rules
+9. **Domain Rules**: Token, responsive, error, security, memory, performance, offline, API
 10. **Scope Rules**: v1 vs v2 boundaries
-11. **Agent Guidance**: Workflow conventions
-12. **Available Skills**: Skill list and descriptions
+11. **Agent Guidance**: TRIZ-first workflow, atomic commits
+12. **Plans/ADR Workflow**: TRIZ analysis → TRIZ solver → ADR
+13. **Validation-Before-Commit**: Quality gate steps
+14. **Available Skills**: Skill list with descriptions
 
 ### Step 4: Validate
 
 ```bash
-# Check line count (target: < 150, may exceed for completeness)
-wc -l AGENTS.md
-
-# Verify skills directory
-ls .agents/skills/
+wc -l AGENTS.md && ls .agents/skills/
 ```
 
 ## AGENTS.md Structure Rules
 
-1. **Start with header**: `# AGENTS.md` with description
-2. **Define constants**: Use `readonly` bash syntax for limits
-3. **Be specific**: Include actual commands, not placeholders
-4. **Domain rules**: Capture project-specific conventions
-5. **Reference docs**: Link to official documentation
-6. **Keep current**: Update as project evolves
+1. **Header first**: `# AGENTS.md` with description in blockquote
+2. **Constants**: Use `readonly` bash syntax for named limits
+3. **Specific commands**: Real commands, no placeholders
+4. **Domain rules**: Capture project-specific conventions concisely
+5. **TRIZ-first**: Emphasize `triz-analysis` and `triz-solver` over planning
+6. **Reference docs**: Link to official documentation only
 
 ## Gotchas
 
@@ -91,16 +86,11 @@ ls .agents/skills/
 ## Verification
 
 ```bash
-# Validate format
-markdownlint AGENTS.md
-
-# Check skill references match actual skills
-ls .agents/skills/ | sort
+markdownlint AGENTS.md && ls .agents/skills/ | sort
 ```
 
 ## References
 
-- https://github.com/d-o-hub/github-template-ai-agents - Template repository
-- https://agents.md/ - Agent skills specification
-- https://agentskills.io/specification - Skills specification
-- `AGENTS.md` - Current file being maintained
+- https://github.com/d-o-hub/github-template-ai-agents
+- https://agents.md/
+- https://agentskills.io/specification
