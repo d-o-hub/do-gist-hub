@@ -1,17 +1,35 @@
 /**
- * Accessibility Styles
- * WCAG AA compliance: focus indicators, skip links, reduced motion, high contrast
+ * Accessibility Styles (2026)
+ * WCAG 2.2 AA compliance: focus indicators, skip links, reduced motion, high contrast
+ * Enhanced with focus-visible and logical properties
  */
 
-/* ===== Focus Indicators ===== */
+/* ===== Focus Indicators (2026) ===== */
+/* Modern :focus-visible for keyboard-only focus */
 :focus-visible {
-  outline: 2px solid var(--color-accent-primary, #2563EB);
+  outline: 2px solid var(--color-accent-primary, #2563eb);
   outline-offset: 2px;
+  border-radius: 2px;
 }
 
 /* Remove default outline for mouse users, keep for keyboard */
 :focus:not(:focus-visible) {
   outline: none;
+}
+
+/* Enhanced focus states with transition */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-accent-primary, #2563eb);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--color-interactive-focus, rgba(37, 99, 235, 0.2));
+  transition:
+    outline-offset 150ms ease,
+    box-shadow 150ms ease;
 }
 
 /* Enhanced focus for interactive elements */
@@ -21,7 +39,7 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--color-accent-primary, #2563EB);
+  outline: 2px solid var(--color-accent-primary, #2563eb);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px var(--color-interactive-focus, rgba(37, 99, 235, 0.2));
 }
@@ -32,14 +50,15 @@ select:focus-visible,
   top: -40px;
   left: 0;
   background: var(--color-background-inverse, #111827);
-  color: var(--color-foreground-inverse, #FFFFFF);
+  color: var(--color-foreground-inverse, #ffffff);
   padding: var(--spacing-2, 0.5rem) var(--spacing-3, 0.75rem);
   z-index: var(--z-index-modal, 50);
   font-size: var(--font-size-sm, 0.875rem);
   font-weight: var(--font-weight-medium, 500);
   text-decoration: none;
   border-radius: 0 0 var(--radius-md, 0.375rem) 0;
-  transition: top var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+  transition: top var(--motion-duration-fast, 150ms)
+    var(--motion-easing-ease-out, ease);
 }
 
 .skip-link:focus {
@@ -58,7 +77,26 @@ select:focus-visible,
   }
 }
 
-/* ===== High Contrast Mode ===== */
+/* ===== High Contrast & Forced Colors (2026) ===== */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border-default: currentColor;
+    --color-border-emphasis: currentColor;
+  }
+
+  .gist-card,
+  .button,
+  .input,
+  .nav-item {
+    border-width: 2px;
+  }
+
+  :focus-visible {
+    outline-width: 3px;
+    outline-offset: 3px;
+  }
+}
+
 @media (forced-colors: active) {
   button,
   .btn,
@@ -67,7 +105,8 @@ select:focus-visible,
   .icon-button,
   .nav-item,
   .filter-btn {
-    border: 1px solid ButtonText;
+    border: 2px solid ButtonText;
+    forced-color-adjust: none;
   }
 
   .status-dot {
@@ -76,7 +115,15 @@ select:focus-visible,
 
   /* Ensure focus rings remain visible */
   :focus-visible {
-    outline: 2px solid Highlight;
+    outline: 3px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  /* Respect user color choices */
+  .gist-card {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
   }
 }
 

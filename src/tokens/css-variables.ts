@@ -3,13 +3,19 @@
  * Generates CSS custom properties from design tokens
  */
 
-import { colorSemantic } from './semantic/color-semantic';
-import { spacing } from './primitive/spacing';
-import { fontSize, fontFamily, fontWeight, lineHeight, letterSpacing } from './primitive/typography';
-import { radius } from './primitive/radius';
-import { motionTokens } from './motion/motion';
-import { shadowTokens } from './elevation/shadows';
-import { breakpoints } from './responsive/breakpoints';
+import { colorSemantic } from "./semantic/color-semantic";
+import { spacing } from "./primitive/spacing";
+import {
+  fontSize,
+  fontFamily,
+  fontWeight,
+  lineHeight,
+  letterSpacing,
+} from "./primitive/typography";
+import { radius } from "./primitive/radius";
+import { motionTokens } from "./motion/motion";
+import { shadowTokens } from "./elevation/shadows";
+import { breakpoints } from "./responsive/breakpoints";
 
 export function generateCSSVariables(): string {
   return `
@@ -105,14 +111,14 @@ export function generateCSSVariables(): string {
   --font-size-base: ${fontSize.base};
   --font-size-lg: ${fontSize.lg};
   --font-size-xl: ${fontSize.xl};
-  --font-size-2xl: ${fontSize['2xl']};
-  --font-size-3xl: ${fontSize['3xl']};
-  --font-size-4xl: ${fontSize['4xl']};
-  --font-size-5xl: ${fontSize['5xl']};
-  --font-size-6xl: ${fontSize['6xl']};
-  --font-size-7xl: ${fontSize['7xl']};
-  --font-size-8xl: ${fontSize['8xl']};
-  --font-size-9xl: ${fontSize['9xl']};
+  --font-size-2xl: ${fontSize["2xl"]};
+  --font-size-3xl: ${fontSize["3xl"]};
+  --font-size-4xl: ${fontSize["4xl"]};
+  --font-size-5xl: ${fontSize["5xl"]};
+  --font-size-6xl: ${fontSize["6xl"]};
+  --font-size-7xl: ${fontSize["7xl"]};
+  --font-size-8xl: ${fontSize["8xl"]};
+  --font-size-9xl: ${fontSize["9xl"]};
   
   --font-weight-thin: ${fontWeight.thin};
   --font-weight-extralight: ${fontWeight.extralight};
@@ -145,22 +151,31 @@ export function generateCSSVariables(): string {
   --radius-md: ${radius.md};
   --radius-lg: ${radius.lg};
   --radius-xl: ${radius.xl};
-  --radius-2xl: ${radius['2xl']};
-  --radius-3xl: ${radius['3xl']};
+  --radius-2xl: ${radius["2xl"]};
+  --radius-3xl: ${radius["3xl"]};
   --radius-full: ${radius.full};
   
-  /* ===== Motion Tokens ===== */
+  /* ===== Motion Tokens (2026) ===== */
   --motion-duration-instant: ${motionTokens.duration.instant};
   --motion-duration-fast: ${motionTokens.duration.fast};
   --motion-duration-normal: ${motionTokens.duration.normal};
   --motion-duration-slow: ${motionTokens.duration.slow};
-  --motion-duration-slower: ${motionTokens.duration.slower};
-  
-  --motion-easing-ease-in-out: ${motionTokens.easing.easeInOut};
-  --motion-easing-ease-out: ${motionTokens.easing.easeOut};
-  --motion-easing-ease-in: ${motionTokens.easing.easeIn};
-  --motion-easing-spring: ${motionTokens.easing.spring};
+  --motion-duration-deliberate: ${motionTokens.duration.deliberate};
+
   --motion-easing-linear: ${motionTokens.easing.linear};
+  --motion-easing-smooth: ${motionTokens.easing.smooth};
+  --motion-easing-out: ${motionTokens.easing.out};
+  --motion-easing-in: ${motionTokens.easing.in};
+  --motion-easing-out-expo: ${motionTokens.easing.outExpo};
+  --motion-easing-in-expo: ${motionTokens.easing.inExpo};
+  --motion-easing-elastic: ${motionTokens.easing.elastic};
+  --motion-easing-spring: ${motionTokens.easing.spring};
+
+  /* Legacy aliases for backward compatibility */
+  --motion-easing-ease-in-out: ${motionTokens.easing.smooth};
+  --motion-easing-ease-out: ${motionTokens.easing.out};
+  --motion-easing-ease-in: ${motionTokens.easing.in};
+  --motion-duration-slower: ${motionTokens.duration.deliberate};
   
   /* ===== Shadow Tokens ===== */
   --shadow-none: ${shadowTokens.none};
@@ -168,17 +183,17 @@ export function generateCSSVariables(): string {
   --shadow-md: ${shadowTokens.md};
   --shadow-lg: ${shadowTokens.lg};
   --shadow-xl: ${shadowTokens.xl};
-  --shadow-2xl: ${shadowTokens['2xl']};
+  --shadow-2xl: ${shadowTokens["2xl"]};
   --shadow-inner: ${shadowTokens.inner};
   
   /* ===== Breakpoint Tokens ===== */
-  --bp-phone-small: ${breakpoints['phone-small']};
+  --bp-phone-small: ${breakpoints["phone-small"]};
   --bp-phone: ${breakpoints.phone};
-  --bp-phone-large: ${breakpoints['phone-large']};
-  --bp-tablet-portrait: ${breakpoints['tablet-portrait']};
-  --bp-tablet-landscape: ${breakpoints['tablet-landscape']};
+  --bp-phone-large: ${breakpoints["phone-large"]};
+  --bp-tablet-portrait: ${breakpoints["tablet-portrait"]};
+  --bp-tablet-landscape: ${breakpoints["tablet-landscape"]};
   --bp-desktop: ${breakpoints.desktop};
-  --bp-desktop-wide: ${breakpoints['desktop-wide']};
+  --bp-desktop-wide: ${breakpoints["desktop-wide"]};
 }
 
 /* ===== Dark Theme Override ===== */
@@ -224,9 +239,9 @@ export function generateCSSVariables(): string {
   --color-interactive-focus: ${colorSemantic.dark.interactive.focus};
 
   /* 2026: Tonal shadows for dark mode */
-  --shadow-sm: ${shadowTokens['sm-dark']};
-  --shadow-md: ${shadowTokens['md-dark']};
-  --shadow-lg: ${shadowTokens['lg-dark']};
+  --shadow-sm: ${shadowTokens["sm-dark"]};
+  --shadow-md: ${shadowTokens["md-dark"]};
+  --shadow-lg: ${shadowTokens["lg-dark"]};
 
   /* 2026: Dark mode typography adjustments (optical correction for light-on-dark) */
   --font-weight-semibold: 500; /* reduce from 600 */
@@ -236,7 +251,7 @@ export function generateCSSVariables(): string {
 }
 
 /* ===== Responsive Container Spacing ===== */
-@media (min-width: ${breakpoints['phone-small']}) {
+@media (min-width: ${breakpoints["phone-small"]}) {
   :root {
     --spacing-container: ${spacing[4]};
   }
@@ -248,19 +263,19 @@ export function generateCSSVariables(): string {
   }
 }
 
-@media (min-width: ${breakpoints['phone-large']}) {
+@media (min-width: ${breakpoints["phone-large"]}) {
   :root {
     --spacing-container: ${spacing[5]};
   }
 }
 
-@media (min-width: ${breakpoints['tablet-portrait']}) {
+@media (min-width: ${breakpoints["tablet-portrait"]}) {
   :root {
     --spacing-container: ${spacing[6]};
   }
 }
 
-@media (min-width: ${breakpoints['tablet-landscape']}) {
+@media (min-width: ${breakpoints["tablet-landscape"]}) {
   :root {
     --spacing-container: ${spacing[8]};
   }
@@ -272,20 +287,46 @@ export function generateCSSVariables(): string {
   }
 }
 
-@media (min-width: ${breakpoints['desktop-wide']}) {
+@media (min-width: ${breakpoints["desktop-wide"]}) {
   :root {
     --spacing-container: ${spacing[12]};
   }
 }
 
-/* ===== Reduced Motion ===== */
+/* ===== Reduced Motion (2026) ===== */
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
   :root {
     --motion-duration-instant: 0ms;
     --motion-duration-fast: 0ms;
     --motion-duration-normal: 0ms;
     --motion-duration-slow: 0ms;
+    --motion-duration-deliberate: 0ms;
     --motion-duration-slower: 0ms;
+  }
+}
+
+/* ===== High Contrast Mode Support ===== */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border-default: currentColor;
+    --color-border-emphasis: currentColor;
+  }
+}
+
+/* ===== Container Query Support Check ===== */
+@supports not (container-type: inline-size) {
+  /* Fallback for browsers without container query support */
+  .gist-list-item {
+    display: block;
   }
 }
 `;

@@ -1,26 +1,40 @@
 /**
- * Motion and Transitions
+ * Motion and Transitions (2026)
  * Animation tokens, state transitions, loading indicators
- * Modernized 2026: Refined easing, subtle glow animations
+ * Modernized with: View Transitions, refined easing, micro-interactions
  */
 
-/* ===== Motion Token Usage ===== */
+/* ===== 2026 Motion Token Usage ===== */
 /* All durations and easings derive from CSS custom properties */
+/* New easings: out-expo, in-expo, elastic for sophisticated motion */
 
-/* ===== Button Transitions ===== */
+/* ===== Micro-Interaction Transitions ===== */
+/* Hover: 150ms ease-out-expo - feels responsive yet smooth */
+/* Active: 100ms ease-in - immediate tactile feedback */
+/* Focus: 200ms ease - visible but not jarring */
+
 .primary-btn,
 .secondary-btn,
 .icon-button {
   transition:
-    background-color var(--motion-duration-fast) var(--motion-easing-ease-out),
-    transform var(--motion-duration-fast) var(--motion-easing-ease-out),
-    box-shadow var(--motion-duration-fast) var(--motion-easing-ease-out);
+    background-color var(--motion-duration-fast) var(--motion-easing-out),
+    transform 100ms var(--motion-easing-out),
+    box-shadow var(--motion-duration-fast) var(--motion-easing-out);
   will-change: transform;
+}
+
+.primary-btn:hover,
+.secondary-btn:hover {
+  transform: translateY(-1px);
+  transition-duration: 150ms;
+  transition-timing-function: var(--motion-easing-out-expo);
 }
 
 .primary-btn:active,
 .secondary-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.98) translateY(0);
+  transition-duration: 100ms;
+  transition-timing-function: var(--motion-easing-in);
 }
 
 /* ===== Form Input Transitions ===== */
@@ -47,23 +61,39 @@
 }
 
 .gist-card {
-  animation: card-enter var(--motion-duration-normal) var(--motion-easing-ease-out) backwards;
+  animation: card-enter var(--motion-duration-normal)
+    var(--motion-easing-ease-out) backwards;
 }
 
-.gist-card:nth-child(1) { animation-delay: 0ms; }
-.gist-card:nth-child(2) { animation-delay: 40ms; }
-.gist-card:nth-child(3) { animation-delay: 80ms; }
-.gist-card:nth-child(4) { animation-delay: 120ms; }
-.gist-card:nth-child(5) { animation-delay: 160ms; }
-.gist-card:nth-child(n+6) { animation-delay: 200ms; }
+.gist-card:nth-child(1) {
+  animation-delay: 0ms;
+}
+.gist-card:nth-child(2) {
+  animation-delay: 40ms;
+}
+.gist-card:nth-child(3) {
+  animation-delay: 80ms;
+}
+.gist-card:nth-child(4) {
+  animation-delay: 120ms;
+}
+.gist-card:nth-child(5) {
+  animation-delay: 160ms;
+}
+.gist-card:nth-child(n + 6) {
+  animation-delay: 200ms;
+}
 
 /* ===== Glow Pulse for Active Elements ===== */
 @keyframes glow-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 2px 8px var(--color-accent-glow);
   }
   50% {
-    box-shadow: 0 4px 16px var(--color-accent-glow), 0 0 24px var(--color-accent-subtle);
+    box-shadow:
+      0 4px 16px var(--color-accent-glow),
+      0 0 24px var(--color-accent-subtle);
   }
 }
 
@@ -88,7 +118,8 @@
 }
 
 .app-main {
-  animation: page-fade-in var(--motion-duration-normal) var(--motion-easing-ease-out);
+  animation: page-fade-in var(--motion-duration-normal)
+    var(--motion-easing-ease-out);
 }
 
 /* ===== Loading Spinner ===== */
@@ -104,12 +135,14 @@
   border: 2px solid var(--color-border-default);
   border-top-color: var(--color-accent-primary);
   border-radius: var(--radius-full);
-  animation: spin var(--motion-duration-slow) var(--motion-easing-linear) infinite;
+  animation: spin var(--motion-duration-slow) var(--motion-easing-linear)
+    infinite;
 }
 
 /* ===== Status Indicator Pulse ===== */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -120,7 +153,8 @@
 }
 
 .status-indicator.offline .status-dot {
-  animation: pulse var(--motion-duration-slow) var(--motion-easing-ease-in-out) infinite;
+  animation: pulse var(--motion-duration-slow) var(--motion-easing-ease-in-out)
+    infinite;
 }
 
 /* ===== Toast Slide In ===== */
@@ -147,11 +181,13 @@
 }
 
 .toast-enter {
-  animation: toast-slide-in var(--motion-duration-normal) var(--motion-easing-ease-out);
+  animation: toast-slide-in var(--motion-duration-normal)
+    var(--motion-easing-ease-out);
 }
 
 .toast-exit {
-  animation: toast-slide-out var(--motion-duration-fast) var(--motion-easing-ease-in);
+  animation: toast-slide-out var(--motion-duration-fast)
+    var(--motion-easing-ease-in);
 }
 
 /* ===== High-Motion Elements ===== */
@@ -176,11 +212,41 @@
 }
 
 @keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
-/* ===== Reduced Motion ===== */
+/* ===== View Transitions API (2026) ===== */
+/* Smooth page transitions where supported */
+@supports (view-transition-name: none) {
+  ::view-transition-old(root) {
+    animation: fade-out 200ms var(--motion-easing-in) forwards;
+  }
+
+  ::view-transition-new(root) {
+    animation: fade-in 300ms var(--motion-easing-out-expo) forwards;
+  }
+
+  /* Gist card morphing transition */
+  ::view-transition-group(gist-card) {
+    animation-duration: 400ms;
+    animation-timing-function: var(--motion-easing-out-expo);
+  }
+}
+
+/* ===== Container Query Support Check ===== */
+@supports not (container-type: inline-size) {
+  /* Fallback for browsers without container query support */
+  .gist-list-item {
+    display: block;
+  }
+}
+
+/* ===== Reduced Motion (2026) ===== */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -188,6 +254,7 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 
   .status-indicator.offline .status-dot {

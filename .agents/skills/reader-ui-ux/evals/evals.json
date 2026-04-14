@@ -3,57 +3,93 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Build a responsive reader layout with a mobile drawer navigation and desktop side panel.",
-      "expected_output": "The agent implements viewport-specific layout rules: mobile drawer, tablet hybrid, desktop persistent sidebar. Uses deliberate spacing and backgrounds.",
+      "prompt": "Build a responsive gist card component with container queries that adapts its layout based on available space, not viewport width. Include hover micro-interactions.",
+      "expected_output": "The agent implements container queries for component-level responsiveness, adds hover effects with transform and shadow, uses semantic design tokens, and respects reduced motion preferences.",
       "files": [],
       "assertions": [
-        "The agent implements different layouts for mobile/tablet/desktop viewports",
-        "The agent uses responsive breakpoints deliberately",
-        "The agent addresses spacing and background styling (not flat white default)"
+        "The agent uses container-type and container-name CSS properties",
+        "The agent implements @container queries for layout changes",
+        "The agent includes hover micro-interactions (transform, shadow)",
+        "The agent uses CSS custom properties from design tokens",
+        "The agent includes @media (prefers-reduced-motion) support"
       ]
     },
     {
       "id": 2,
-      "prompt": "Add localization support to our reader app with English, German, and French.",
-      "expected_output": "The agent adds strings to locale catalogs (en/de/fr), ensures fallback behavior, implements locale switcher UI, and updates Accept-Language header.",
+      "prompt": "Implement View Transitions API for smooth page navigation between gist list and gist detail views with fallback for unsupported browsers.",
+      "expected_output": "The agent checks for document.startViewTransition support, wraps content updates in view transition calls, provides graceful fallback, and adds view-transition-name CSS properties.",
       "files": [],
       "assertions": [
-        "The agent uses a locale catalog system for translations",
-        "The agent includes fallback handling for missing translations",
-        "The agent mentions a locale switcher UI component"
+        "The agent checks if document.startViewTransition exists",
+        "The agent wraps DOM updates in startViewTransition()",
+        "The agent provides fallback for unsupported browsers",
+        "The agent uses view-transition-name CSS property",
+        "The agent handles transition lifecycle (finished promise)"
       ]
     },
     {
       "id": 3,
-      "prompt": "Make our comment panel accessible for keyboard-only users and screen readers.",
-      "expected_output": "The agent implements focus management with focus traps, ARIA labels on interactive elements, keyboard navigation, and screen reader announcements.",
+      "prompt": "Create a professional bottom sheet component for mobile with drag-to-dismiss, backdrop, focus trap, and ARIA attributes for accessibility.",
+      "expected_output": "The agent implements a bottom sheet with touch drag handling, backdrop click to close, focus trap for keyboard users, and proper ARIA attributes (role, aria-modal, aria-labelledby).",
       "files": [],
       "assertions": [
-        "The agent implements focus trap within the comment panel",
-        "The agent adds ARIA labels to interactive elements",
-        "The agent implements keyboard navigation (tab, escape, enter)"
+        "The agent implements touch drag gesture handling",
+        "The agent includes backdrop with click-to-close",
+        "The agent implements focus trap for accessibility",
+        "The agent adds ARIA attributes (role=dialog, aria-modal)",
+        "The agent handles safe area insets for notched devices"
       ]
     },
     {
       "id": 4,
-      "prompt": "Optimize a reader component that re-renders too frequently when scrolling through a document.",
-      "expected_output": "The agent uses React.memo/useMemo, implements selector pattern to avoid prop drilling, and uses AbortController for async cleanup on unmount.",
+      "prompt": "Build a navigation system that shows bottom tab bar on mobile, rail navigation on tablet, and persistent sidebar on desktop with smooth transitions between breakpoints.",
+      "expected_output": "The agent implements responsive navigation with mobile bottom nav (72px), tablet rail (72px width), desktop sidebar (240px), using CSS grid for layout, and media queries for breakpoints.",
       "files": [],
       "assertions": [
-        "The agent uses React.memo or useMemo for render optimization",
-        "The agent implements selector pattern to avoid unnecessary re-renders",
-        "The agent mentions AbortController for async cleanup on unmount"
+        "The agent implements bottom nav for mobile (< 768px)",
+        "The agent implements rail nav for tablet (768-1023px)",
+        "The agent implements sidebar for desktop (>= 1024px)",
+        "The agent uses CSS grid for app shell layout",
+        "The agent includes current route visual indicator"
       ]
     },
     {
       "id": 5,
-      "prompt": "Add error handling to our reader UI so users see friendly messages instead of blank screens when something goes wrong.",
-      "expected_output": "The agent implements ErrorBoundary wrapper, inline user-friendly error alerts, error state UI components, and trace ID logging for observability.",
+      "prompt": "Implement skeleton loading screens with shimmer animation for gist cards while data is loading, respecting reduced motion preferences.",
+      "expected_output": "The agent creates skeleton placeholders with CSS gradient animation, uses prefers-reduced-motion media query to disable animation, and matches the structure of loaded content.",
       "files": [],
       "assertions": [
-        "The agent implements a Global ErrorBoundary wrapper",
-        "The agent shows user-friendly inline error alerts",
-        "The agent mentions trace ID logging for error observability"
+        "The agent implements CSS gradient shimmer animation",
+        "The agent respects prefers-reduced-motion media query",
+        "The agent matches skeleton structure to content layout",
+        "The agent uses design tokens for colors",
+        "The agent provides fade transition between skeleton and content"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Create an accessible command palette with keyboard navigation (Cmd+K to open, arrow keys to navigate, Enter to select, Escape to close), search filtering, and ARIA live regions.",
+      "expected_output": "The agent implements a command palette with keyboard shortcuts, filtered search results, keyboard navigation between items, and screen reader announcements via aria-live.",
+      "files": [],
+      "assertions": [
+        "The agent implements Cmd/Ctrl+K keyboard shortcut",
+        "The agent supports arrow key navigation",
+        "The agent implements search filtering",
+        "The agent uses aria-live for result announcements",
+        "The agent traps focus while open"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Modernize an existing gist list UI with 2026 best practices: semantic HTML, focus-visible states, reduced motion support, and sophisticated hover effects using CSS custom properties.",
+      "expected_output": "The agent updates HTML to use semantic elements (article, header, main), adds focus-visible styles, implements reduced motion media query, and creates smooth hover transitions with tokens.",
+      "files": [],
+      "assertions": [
+        "The agent uses semantic HTML5 elements",
+        "The agent implements focus-visible (not just focus)",
+        "The agent includes prefers-reduced-motion support",
+        "The agent uses CSS custom properties for theming",
+        "The agent creates sophisticated hover micro-interactions"
       ]
     }
   ]
