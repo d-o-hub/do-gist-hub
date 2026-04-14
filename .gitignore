@@ -41,8 +41,7 @@ Thumbs.db
 *.swp
 *.swo
 
-# Agent system docs
-agents-docs/
+
 
 # Coverage reports
 coverage/

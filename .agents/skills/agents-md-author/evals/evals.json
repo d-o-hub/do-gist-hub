@@ -105,6 +105,19 @@
         "Commands are in a setup or build commands section",
         "Does not include OAuth or backend features (v2 scope)"
       ]
+    },
+    {
+      "id": 9,
+      "prompt": "Use the agents-docs/ folder reference files to create our AGENTS.md. I put structure_reference.md and formatting_rules.md in there for you.",
+      "expected_output": "An AGENTS.md that follows the structure and formatting rules from the agents-docs/ folder. Should reference those local files as primary sources instead of just external templates. The output should cite the local files as references.",
+      "files": [],
+      "assertions": [
+        "Output references agents-docs/structure_reference.md as a source",
+        "Output references agents-docs/formatting_rules.md as a source",
+        "AGENTS.md follows the section order from structure_reference.md",
+        "Constants use readonly bash syntax per formatting_rules.md",
+        "Contains setup commands section as specified in structure reference"
+      ]
     }
   ]
 }
