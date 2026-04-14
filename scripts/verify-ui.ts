@@ -6,7 +6,7 @@ import { chromium } from 'playwright';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const SCREENSHOT_DIR = '/workspaces/do-gist-hub/temp';
+const SCREENSHOT_DIR = 'analysis/tests';
 const BASE_URL = 'http://localhost:5173';
 
 const BREAKPOINTS = [
@@ -28,7 +28,7 @@ interface Findings {
   errors: string[];
 }
 
-async function verifyBreakpoint(browser: any, bp: typeof BREAKPOINTS[0]): Promise<Findings> {
+async function verifyBreakpoint(browser: any, bp: (typeof BREAKPOINTS)[0]): Promise<Findings> {
   const page = await browser.newPage({ viewport: { width: bp.width, height: bp.height } });
   const findings: Findings = {
     breakpoint: bp.label,
@@ -72,13 +72,14 @@ async function verifyBreakpoint(browser: any, bp: typeof BREAKPOINTS[0]): Promis
       const overlaps = await page.evaluate(() => {
         const elements = document.querySelectorAll('.gist-card');
         const rects: DOMRect[] = [];
-        elements.forEach(el => {
+        elements.forEach((el) => {
           const r = el.getBoundingClientRect();
           if (r.height > 0) rects.push(r);
         });
         for (let i = 0; i < rects.length; i++) {
           for (let j = i + 1; j < rects.length; j++) {
-            const a = rects[i], b = rects[j];
+            const a = rects[i],
+              b = rects[j];
             const ox = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
             const oy = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
             if (ox > 10 && oy > 10) return true;
@@ -93,9 +94,11 @@ async function verifyBreakpoint(browser: any, bp: typeof BREAKPOINTS[0]): Promis
     // Touch target check (mobile only)
     if (bp.width < 768) {
       findings.smallTouchTargets = await page.evaluate(() => {
-        const elements = document.querySelectorAll('button, .nav-item, .icon-button, .filter-btn, .gist-action-btn');
+        const elements = document.querySelectorAll(
+          'button, .nav-item, .icon-button, .filter-btn, .gist-action-btn'
+        );
         const small: { tag: string; w: number; h: number }[] = [];
-        elements.forEach(el => {
+        elements.forEach((el) => {
           const r = el.getBoundingClientRect();
           if (r.width > 0 && r.height > 0 && (r.width < 44 || r.height < 44)) {
             small.push({ tag: el.tagName, w: Math.round(r.width), h: Math.round(r.height) });
@@ -111,7 +114,7 @@ async function verifyBreakpoint(browser: any, bp: typeof BREAKPOINTS[0]): Promis
     // Active nav pill style check
     const activeSelector = bp.width >= 768 ? '.sidebar-item.active' : '.nav-item.active';
     const activeEl = await page.locator(activeSelector).first();
-    if (await activeEl.count() > 0) {
+    if ((await activeEl.count()) > 0) {
       findings.activeNavPillStyle = await page.evaluate((sel) => {
         const el = document.querySelector(sel) as HTMLElement | null;
         if (!el) return null;
@@ -132,7 +135,6 @@ async function verifyBreakpoint(browser: any, bp: typeof BREAKPOINTS[0]): Promis
     const screenshotPath = path.join(SCREENSHOT_DIR, `screenshot-${bp.name}.png`);
     await page.screenshot({ path: screenshotPath, fullPage: true });
     console.log(`  ✓ Screenshot saved: ${screenshotPath}`);
-
   } catch (err: any) {
     findings.errors.push(`Exception: ${err.message}`);
   } finally {
@@ -157,7 +159,9 @@ async function main() {
     console.log(`Checking ${bp.label}...`);
     const findings = await verifyBreakpoint(browser, bp);
     results.push(findings);
-    console.log(`  Cards: ${findings.cardCount} | Nav: ${findings.navType} | Overflow: ${findings.horizontalOverflow}`);
+    console.log(
+      `  Cards: ${findings.cardCount} | Nav: ${findings.navType} | Overflow: ${findings.horizontalOverflow}`
+    );
     if (findings.errors.length > 0) {
       console.log(`  ⚠ Issues: ${findings.errors.join('; ')}`);
     } else {
@@ -177,7 +181,7 @@ async function main() {
     const status = r.errors.length === 0 ? '✓ PASS' : `✗ FAIL (${r.errors.length} issues)`;
     console.log(`  ${r.breakpoint}: ${status}`);
     if (r.errors.length > 0) {
-      r.errors.forEach(e => console.log(`    - ${e}`));
+      r.errors.forEach((e) => console.log(`    - ${e}`));
       totalIssues += r.errors.length;
     }
   }
@@ -190,7 +194,7 @@ async function main() {
   }
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err);
   process.exit(1);
 });

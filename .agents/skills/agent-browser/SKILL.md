@@ -424,20 +424,20 @@ agent-browser set media dark
 ```bash
 # Set a custom viewport size (default is 1280x720)
 agent-browser set viewport 1920 1080
-agent-browser screenshot desktop.png
+agent-browser screenshot analysis/responsive/desktop.png
 
 # Test mobile-width layout
 agent-browser set viewport 375 812
-agent-browser screenshot mobile.png
+agent-browser screenshot analysis/responsive/mobile.png
 
 # Retina/HiDPI: same CSS layout at 2x pixel density
 # Screenshots stay at logical viewport size, but content renders at higher DPI
 agent-browser set viewport 1920 1080 2
-agent-browser screenshot retina.png
+agent-browser screenshot analysis/responsive/retina.png
 
 # Device emulation (sets viewport + user agent in one step)
 agent-browser set device "iPhone 14"
-agent-browser screenshot device.png
+agent-browser screenshot analysis/responsive/device.png
 ```
 
 The `scale` parameter (3rd argument) sets `window.devicePixelRatio` without changing CSS layout. Use it when testing retina rendering or capturing higher-resolution screenshots.
@@ -461,7 +461,7 @@ Use `AGENT_BROWSER_HEADED=1` to enable headed mode via environment variable. Bro
 # Open local files with file:// URLs
 agent-browser --allow-file-access open file:///path/to/document.pdf
 agent-browser --allow-file-access open file:///path/to/page.html
-agent-browser screenshot output.png
+agent-browser screenshot analysis/captures/output.png
 ```
 
 ### iOS Simulator (Mobile Safari)
@@ -477,6 +477,7 @@ agent-browser -p ios --device "iPhone 16 Pro" open https://example.com
 agent-browser -p ios snapshot -i
 agent-browser -p ios tap @e1          # Tap (alias for click)
 agent-browser -p ios fill @e2 "text"
+agent-browser -p ios screenshot analysis/responsive/ios-mobile.png
 agent-browser -p ios swipe up         # Mobile-specific gesture
 
 # Take screenshot
@@ -556,9 +557,9 @@ For visual regression testing or monitoring:
 
 ```bash
 # Save a baseline screenshot, then compare later
-agent-browser screenshot baseline.png
+agent-browser screenshot analysis/diffs/baseline.png
 # ... time passes or changes are made ...
-agent-browser diff screenshot --baseline baseline.png
+agent-browser diff screenshot --baseline analysis/diffs/baseline.png
 
 # Compare staging vs production
 agent-browser diff url https://staging.example.com https://prod.example.com --screenshot
@@ -779,6 +780,7 @@ agent-browser --engine lightpanda --executable-path /path/to/lightpanda open exa
 ```
 
 Supported engines:
+
 - `chrome` (default) -- Chrome/Chromium via CDP
 - `lightpanda` -- Lightpanda headless browser via CDP (10x faster, 10x less memory than Chrome)
 

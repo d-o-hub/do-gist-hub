@@ -1,26 +1,24 @@
 # AGENTS.md
 
-> **d.o. Gist Hub** — single source of truth for all AI coding agents in this repository.
-> Built with: Vite, TypeScript, PWA, Capacitor Android, IndexedDB, GitHub REST API
-> Design System: Token-driven, mobile-first, responsive from 320px to 1536px+
-> Version: 0.1.0
+> **d.o. Gist Hub** — offline-first GitHub Gist management app with token-driven responsive UI, PAT authentication, and Capacitor Android packaging.
+> Stack: Vite, TypeScript (strict), PWA, IndexedDB, GitHub REST API, Capacitor 6
+> Design: DTCG-aligned tokens, mobile-first, 7 breakpoints (320px–1536px+)
+> Version: 0.2.0
 
 ## App Identity
 
-The canonical app identity lives in **`src/config/app.config.ts`**.
-All files below must derive their values from that single source of truth:
+Canonical config: **`src/config/app.config.ts`**. All derived values flow from this single source:
 
-| File | Field | Source constant |
-|------|-------|----------------|
-| `package.json` | `name` | `APP.id` |
-| `package.json` | `description` | `APP.description` |
-| `index.html` | `<title>`, `<meta description>`, `theme-color` | `APP.name`, `APP.description`, `APP.themeColor` (via Vite plugin) |
-| `public/manifest.webmanifest` | `name`, `short_name`, `description` | `APP.name`, `APP.shortName`, `APP.description` (via Vite plugin) |
-| `capacitor.config.ts` | `appId`, `appName` | `APP.appId`, `APP.name` |
-| `src/services/db.ts` | `DB_NAME` | `APP.dbName` |
-| `public/sw.js` | `CACHE_NAME`, `STATIC_CACHE`, `API_CACHE` | `APP.cacheName`, `APP.staticCacheName`, `APP.apiCacheName` |
+| File                          | Derived From                                               |
+| ----------------------------- | ---------------------------------------------------------- |
+| `package.json`                | `APP.id`, `APP.description`                                |
+| `index.html`                  | `APP.name`, `APP.description`, `APP.themeColor`            |
+| `public/manifest.webmanifest` | `APP.name`, `APP.shortName`                                |
+| `capacitor.config.ts`         | `APP.appId`, `APP.name`                                    |
+| `src/services/db.ts`          | `APP.dbName`                                               |
+| `public/sw.js`                | `APP.cacheName`, `APP.staticCacheName`, `APP.apiCacheName` |
 
-When changing the app name, edit **only** `src/config/app.config.ts` and the Vite plugins will propagate the values automatically.
+**Rule**: Edit only `src/config/app.config.ts` — Vite plugins propagate automatically.
 
 ## Constants
 
@@ -33,284 +31,429 @@ readonly RETRY_MAX_ATTEMPTS=3
 readonly RETRY_BACKOFF_MS=1000
 ```
 
-## Mission
-
-Build **d.o. Gist Hub**, a production-ready, web-first GitHub Gist management app with:
-- Offline-first behavior using IndexedDB as v1 local source of truth
-- Fine-grained GitHub PAT authentication (no OAuth/device flow for v1)
-- Full gist CRUD and related actions (star/unstar/fork/revisions)
-- Token-driven design system with semantic tokens, themes, and responsive scaling
-- Full responsive support from small phones to large desktop screens
-- Complete global error handling with user-safe messages
-- Security hardening with CSP, token redaction, input validation
-- Memory-leak prevention via AbortController and lifecycle cleanup
-- Performance budgets with Web Vitals measurement
-- Android packaging via Capacitor
-
-## Project Overview
-
-**Stack**: Vite, TypeScript, Vanilla TS, CSS Custom Properties, IndexedDB, Fetch API, PWA, Capacitor Android, Playwright
-
-**Architecture**: Mobile-first, offline-first, token-driven UI with layered error handling and optimistic writes
-
-## Source-of-Truth Rules
-
-1. **Repository files** take precedence over all other sources
-2. **AGENTS.md** is the single source of truth for agent instructions
-3. **`.agents/skills/`** contains canonical skill definitions
-4. **`plans/` and ADRs** document architecture decisions
-5. **Official documentation** over blogs or community sources
-6. **Token system**: Own semantic token architecture (see `design-token-system` skill)
-
-## Setup and Version Management
+## Setup & Quality Gate
 
 ```bash
-# Install dependencies
-npm install
-
-# Create skill symlinks
-./scripts/setup-skills.sh
-
-# Install git pre-commit hook
+npm install && ./scripts/setup-skills.sh
 cp scripts/pre-commit-hook.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
-
-# Initialize design system
-npm run init:design
-
-# Start dev server
-npm run dev
+npm run init:design && npm run dev
 ```
 
-Edit `VERSION` file at root only. Pre-commit hook auto-propagates to docs.
+**MANDATORY**: Run `./scripts/quality_gate.sh` before every commit. If blocked: `git config --global --unset core.hooksPath`
 
-## Quality Gate
+## Code Style
 
-**MANDATORY**: Run `./scripts/quality_gate.sh` before every commit.
-
-Pre-commit hook blocks commits if quality gates fail. If blocked by global hooks:
-```bash
-git config --global --unset core.hooksPath
-```
-
-## Code Style and Naming Rules
-
-- **Max lines per source file**: 500
-- **Max lines per SKILL.md**: 250
-- **Max lines AGENTS.md**: 150 (this file may exceed for completeness)
-- **Conventional Commits**: `feat:`, `fix:`, `docs:`, `ci:`, `test:`, `refactor:`, `chore:`
-- **TypeScript**: Strict mode, no `any`, explicit return types on public APIs
-- **Naming**: camelCase for variables/functions, PascalCase for types/components, UPPER_SNAKE_CASE for constants
-- **Files**: kebab-case for filenames, e.g., `design-system.ts`, `error-boundary.ts`
-- **Imports**: Absolute paths from `src/`, group imports (stdlib, external, internal)
-- **Shell scripts**: `shellcheck` compliant, use `set -euo pipefail`
-- **No Magic Numbers**: Use named constants instead
+- **TypeScript**: strict mode, no `any`, explicit return types on public APIs
+- **Naming**: camelCase (functions), PascalCase (types), UPPER_SNAKE_CASE (constants), kebab-case (files)
+- **Imports**: absolute from `src/`, grouped (stdlib → external → internal)
+- **Commits**: conventional (`feat:`, `fix:`, `docs:`, `ci:`, `test:`, `refactor:`, `chore:`)
+- **Shell**: `shellcheck` compliant, `set -euo pipefail`
+- **Max lines**: source=500, SKILL.md=250, AGENTS.md=150 (may exceed for completeness)
 
 ## Repository Structure
 
-| Path | Purpose |
-|------|---------|
-| `AGENTS.md` | Agent instructions (single source of truth) |
-| `.agents/skills/` | Canonical skill definitions |
-| `plans/` | Architecture decisions and plans |
-| `scripts/` | Build, setup, quality gate scripts |
-| `src/` | Application source code |
-| `public/` | Static assets |
-| `tests/` | Playwright tests |
-| `docs/` | Documentation |
+| Path              | Purpose                         |
+| ----------------- | ------------------------------- |
+| `.agents/skills/` | Skill definitions               |
+| `plans/`          | ADRs and architecture decisions |
+| `scripts/`        | Build/setup/quality scripts     |
+| `src/`            | Application code                |
+| `public/`         | Static assets (manifest, sw.js) |
+| `tests/`          | Playwright E2E tests            |
+| `analysis/`       | Generated reports, screenshots  |
 
-**Rules**:
-- Generated outputs go to `dist/` or `analysis/`, never root
-- Each skill has its own directory with `SKILL.md`
-- Plans and ADRs live in `plans/`
+**Rules**: Generated outputs → `dist/` or `analysis/`. Plans/ADRs → `plans/`.
 
-## Testing Rules
+## Domain Rules
 
-- Tests must be deterministic
-- Silent on success, surface on failure
-- Mobile emulation for key breakpoints
-- Offline behavior tests
-- Android/WebView smoke tests
+### Token Architecture
 
-## PR Instructions
+Tokens First → No hardcoded values → Primitive → Semantic → Component → Themeable → Responsive → DTCG-aligned
 
-- **Title Format**: `feat(scope): description` (Conventional Commits)
-- **Branch per Feature**: One branch per feature/fix
-- **Single Concern**: Each PR should address one concern
-- **Title Limit**: 72 characters max
+### Responsive Design
 
-## Security Rules
+Mobile-first (320px) → 7 breakpoints (320/390/480/768/1024/1280/1536) → `clamp()` typography → 44x44px touch targets → `env(safe-area-inset-*)`
 
-- **Never Log PAT**: Redact all authorization data
-- **Never Expose PAT in UI**: Mask after save, provide wipe flow
-- **Never Place PAT in URLs**: Use Authorization header only
-- **CSP Configuration**: Strict Content-Security-Policy headers
-- **Input Validation**: Sanitize all user-provided fields
-- **HTTPS Only**: All remote endpoints use HTTPS
-- **No Secrets in Commits**: Use `.env` files, add to `.gitignore`
-- **Pin Dependencies**: Pin GitHub Actions to full SHA with version comments
+### Error Handling
 
-## Token Architecture Rules
+Structured errors → User-safe messages → Recoverable actions → No silent failures → Bounded retries → Redacted diagnostics
 
-1. **Tokens First**: All styles must derive from semantic tokens
-2. **No Hardcoded Values**: No magic numbers when a token should exist
-3. **Layered Architecture**: Primitive → Semantic → Component
-4. **Themeable**: Support dark/light modes via token variants
-5. **Responsive**: Tokens scale across 7 breakpoints
-6. **DTCG Alignment**: Follow Design Tokens Community Group standards
+### Security
 
-## Responsive Design Rules
+Never log/expose PAT → Bearer auth only → Strict CSP → Input validation → HTTPS only → No secrets in commits
 
-1. **Mobile-First**: Design for 320px first, scale up
-2. **7 Breakpoints**: 320px, 390px, 480px, 768px, 1024px, 1280px, 1536px
-3. **Fluid Typography**: Use `clamp()` for smooth scaling
-4. **Touch Targets**: Minimum 44x44px on mobile
-5. **Safe Areas**: Respect `env(safe-area-inset-*)` for notched devices
+### Memory Prevention
 
-## Global Error Handling Rules
+AbortController for fetch → Route-scoped cleanup → No retained gist bodies → Bounded listener arrays
 
-1. **Structured Errors**: Every async path returns structured errors
-2. **User-Safe Messages**: Human-readable messages, no raw stack traces
-3. **Recoverable Actions**: Offer next steps for recoverable errors
-4. **No Silent Failures**: Every promise rejection handled
-5. **No Infinite Retries**: Bounded retry policies with backoff
-6. **Redacted Diagnostics**: No secrets in logs or diagnostics
+### Performance Budgets
 
-## Memory Leak Prevention Rules
+Initial JS <150KB gz → Route chunks <50KB → Cold start <2s → Interactions <100ms → Lazy-load heavy features
 
-1. **Cleanup Mandatory**: All timers, listeners, observers must be cleaned up
-2. **AbortController Required**: Cancelable fetch for all async requests
-3. **Route Cleanup**: Clear route-scoped resources on navigation
-4. **No Retained Bodies**: Avoid keeping large gist file bodies in dead views
+### Offline-First
 
-## Performance Budget Rules
+IndexedDB = source of truth → Optimistic writes → Pending sync queue → Exponential backoff → Conflict tracking
 
-1. **Initial JS Budget**: < 150KB gzipped
-2. **Route Chunk Budget**: < 50KB gzipped per route
-3. **Cold Start Target**: < 2s on mid-tier mobile
-4. **Interaction Target**: < 100ms for gist list interactions
-5. **Code Splitting**: Lazy-load heavy features (editor, revisions)
+### GitHub API
 
-## Offline-First Rules
+Typed client → Pagination via `Link` headers → Rate limit tracking → `Accept: application/vnd.github+json`
 
-1. **IndexedDB Source of Truth**: Local DB is primary read source
-2. **Optimistic Writes**: Update UI immediately, sync in background
-3. **Pending Queue**: Queue writes when offline
-4. **Retry Policy**: Exponential backoff for failed syncs
-5. **Conflict State**: Track and surface sync conflicts
+## Scope v1 vs v2
 
-## GitHub API Rules
+**v1 (now)**: PAT auth, IndexedDB, PWA, Capacitor Android, gist CRUD, offline read/writes, rate limits, export/import
+**v2 (future)**: OAuth device flow, backend sync, real-time collab, multi-account, conflict resolution UI, skeleton loading
 
-1. **Typed Client**: All requests typed, validated responses
-2. **Pagination**: Handle `Link` headers for paginated results
-3. **Rate Limits**: Track `X-RateLimit-*` headers, back off when near limit
-4. **API Version**: Set `Accept: application/vnd.github+json`
-5. **Auth Header**: `Authorization: Bearer <PAT>`
+**Do not implement v2 features in v1.**
 
-## Scope Rules v1 vs v2
+## Agent Workflow
 
-### v1 (This Project)
-- Fine-grained PAT authentication with token redaction in logs
-- IndexedDB local storage with conflict detection and auto-resolution
-- Web-first PWA with Web Vitals measurement
-- Capacitor Android packaging (platform initialized)
-- Full gist CRUD, star/unstar/fork/revisions
-- Offline read, queued writes, sync conflict tracking
-- Rate limit tracking via `X-RateLimit-*` headers
-- Data export/import (JSON backup/restore)
-- Interaction timing via `performance.measure()` API
+1. **Analyze**: `triz-analysis` identifies contradictions before implementation
+2. **Solve**: `triz-solver` resolves trade-offs systematically
+3. **Document**: Write ADR in `plans/adr-*.md` for architectural decisions
+4. **Implement**: Follow ADR, atomic commits, validate before commit
 
-### v2 (Future, Not Now)
-- OAuth device flow
-- Backend sync server
-- Real-time collaboration
-- Multi-account support
-- Manual conflict resolution UI (conflicts detected but auto-resolved)
-- Detail view skeleton loading (placeholder exists but not wired to async load)
+**Principles**: One logical change per commit → Fix pre-existing issues first → `/clear` between tasks → Delegate to sub-agents
 
-**Do not implement v2 features in v1. Keep scope tight.**
+## Temp Output Directory
 
-## Agent Guidance
+All temporary outputs (screenshots, diffs, captures) MUST use `analysis/` as the root:
 
-- **Plan First**: Use `plan-adr-goap` skill before implementation
-- **Atomic Commits**: One logical change per commit
-- **Resolve Pre-existing Issues**: Fix or document existing problems before new work
-- **Post-Task Learning**: Append non-obvious insights to nearest `AGENTS.md`
-- **Context Discipline**: Use `/clear` between tasks, delegate research to sub-agents
-- **Monorepo Scoping**: Nearest `AGENTS.md` takes precedence
+```bash
+# CORRECT: Relative to project root
+agent-browser screenshot analysis/responsive/320px.png
 
-## Skills Discovery and Usage Rules
+# WRONG: Absolute path from workspace root
+agent-browser screenshot /workspaces/do-gist-hub/320px-check.png
+```
 
-1. **List Skills**: `ls .agents/skills/` to see available skills
-2. **Run Skill**: Reference skill by name in agent prompt
-3. **Skill Structure**: Each skill has `SKILL.md` with frontmatter starting with `---`
-4. **Progressive Disclosure**: Load skills on demand, not all at once
-5. **Sub-Agent Pattern**: Delegate isolated tasks to sub-agents
-6. **Create Skill**: `.agents/skills/<name>/SKILL.md` then run `./scripts/setup-skills.sh`
+| Output Type            | Location               |
+| ---------------------- | ---------------------- |
+| Responsive screenshots | `analysis/responsive/` |
+| Visual diffs           | `analysis/diffs/`      |
+| Capture recordings     | `analysis/captures/`   |
+| Test artifacts         | `analysis/tests/`      |
 
-## Plans/ADR Workflow
+**Rule**: Never use `/workspaces/...` for any output files.
 
-1. **Create Plan**: Use `plan-adr-goap` skill to generate plans
-2. **Write ADR**: Document significant decisions in `plans/adr-*.md`
-3. **Implement**: Follow ADR decision during implementation
-4. **Update**: Revise ADR if decision changes
+1. `./scripts/quality_gate.sh` passes
+2. Type check, lint, format check pass (`npm run check`)
+3. No console errors, responsive on 2+ viewports
+4. Memory profile stable, no leaks
 
-## Validation-Before-Commit Rule
+## Stop Conditions
 
-Before committing:
-1. Run `./scripts/quality_gate.sh`
-2. Verify type check, tests, and lint pass
-3. Verify no console errors in dev tools
-4. Verify responsive behavior on 2+ viewports
-5. Verify memory profile stable
+Docs contradict assumptions → Stop → Document → Propose correction → Wait for confirmation → Update docs. **Never guess. Verify.**
 
-## Stop Conditions When Docs Contradict Assumptions
+## Key npm Scripts
 
-Stop immediately and:
-1. Document the contradiction in relevant plan/ADR
-2. Propose corrected approach based on official docs
-3. Wait for confirmation before proceeding
-4. Update any misleading documentation
-
-**Never guess. Never assume. Verify against official docs.**
-
-## Reference Docs
-
-### Repo and Agent Workflow
-- https://github.com/d-o-hub/github-template-ai-agents - Template repository
-- https://agents.md/ - Agent skills specification
-- https://agentskills.io/home - Agent Skills documentation
-
-### Platform and APIs
-- https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB
-- https://capacitorjs.com/docs/ - Capacitor documentation
-- https://docs.github.com/en/rest/gists/gists - GitHub Gists API
-- https://playwright.dev/docs/emulation - Playwright emulation
+```bash
+npm run check        # typecheck + lint + format:check
+npm run lint:fix     # auto-fix issues
+npm run test:debug   # Playwright debug mode
+npm run quality      # run quality_gate.sh
+npm run cap:sync     # sync Capacitor after build
+```
 
 ## Available Skills
 
-See `.agents/skills/` directory for all available skills. Run `ls .agents/skills/` to list.
+| Skill                    | Purpose                               |
+| ------------------------ | ------------------------------------- |
+| `repo-bootstrap`         | Initialize repo from template         |
+| `agents-md-author`       | Create/update AGENTS.md               |
+| `triz-analysis`          | TRIZ contradiction audit              |
+| `triz-solver`            | TRIZ problem-solving                  |
+| `task-decomposition`     | Break complex tasks into atomic goals |
+| `design-token-system`    | DTCG-aligned token architecture       |
+| `responsive-system`      | 7-breakpoint responsive design        |
+| `ui-ux-optimize`         | UI/UX research with tokens            |
+| `reader-ui-ux`           | Reader UI implementation              |
+| `global-error-handling`  | Error strategy & boundaries           |
+| `security-hardening`     | CSP, validation, redaction            |
+| `performance-budgeting`  | Performance measurement               |
+| `memory-leak-prevention` | Cleanup patterns                      |
+| `offline-indexeddb`      | IndexedDB schema & operations         |
+| `github-gist-api`        | Gist API client with pagination       |
+| `pwa-shell`              | Service worker & offline caching      |
+| `capacitor-android`      | Android packaging                     |
+| `playwright-quality`     | Cross-browser/mobile testing          |
+| `reviewer-evaluator`     | Code review quality gates             |
+| `skill-creator`          | Create/improve skills                 |
+| `skill-evaluator`        | Evaluate skill performance            |
+| `shell-script-quality`   | ShellCheck/BATS for scripts           |
+| `agent-browser`          | Browser automation CLI                |
 
-Key skills for this project:
-- `repo-bootstrap` - Initialize repo structure from template
-- `agents-md-author` - Create/update AGENTS.md following spec
-- `plan-adr-goap` - Generate plans and ADRs using GOAP methodology
-- `design-token-system` - Productionize token architecture (DTCG-aligned)
-- `responsive-system` - Define responsive behavior with 7 breakpoints
-- `ui-ux-optimize` - Optimize UI/UX with tokens and accessibility
-- `global-error-handling` - Error handling strategy and boundaries
-- `security-hardening` - Security implementation (CSP, validation, redaction)
-- `performance-budgeting` - Performance measurement and enforcement
-- `memory-leak-prevention` - Leak prevention patterns and cleanup
-- `offline-indexeddb` - IndexedDB schema and offline operations
-- `github-gist-api` - GitHub Gist API client with pagination and rate limits
-- `pwa-shell` - PWA setup with service worker and offline caching
-- `capacitor-android` - Android packaging via Capacitor
-- `playwright-quality` - Cross-browser and mobile testing coverage
-- `reviewer-evaluator` - Code review quality gates
-- `skill-creator` - Create and improve skills with evals
-- `skill-evaluator` - Evaluate skill structure and performance
-- `task-decomposition` - Break down complex tasks into atomic goals
-- `triz-analysis` - Run systematic TRIZ contradiction audit
-- `triz-solver` - Systematic problem-solving with TRIZ principles
+## Reference Docs
 
-**Note**: `plan-adr-go` directory is deprecated, use `plan-adr-goap` instead.
+- Template: https://github.com/d-o-hub/github-template-ai-agents
+- Spec: https://agents.md/ | https://agentskills.io/home
+- IndexedDB: https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API/Using_IndexedDB
+- Capacitor: https://capacitorjs.com/docs/
+- GitHub Gists: https://docs.github.com/en/rest/gists/gists
+- Playwright: https://playwright.dev/docs/emulation
+
+---
+
+## UI/UX Production Standards
+
+### Critical Rule: No Unstyled Elements
+
+Every interactive element MUST have explicit styling. Default browser styles are not acceptable.
+
+**Pre-commit UI verification:**
+
+1. Screenshot at 320px, 768px, 1536px → store in `analysis/responsive/`
+2. Check for default browser buttons, unstyled inputs
+3. Verify sidebar: hidden on mobile, visible on desktop
+4. Touch targets ≥ 44x44px on mobile
+
+### Navigation Pattern (Mobile-First)
+
+```css
+.sidebar-nav {
+  display: none;
+}
+@media (min-width: 768px) {
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+  }
+  .bottom-nav {
+    display: none;
+  }
+}
+.sidebar-item {
+  /* styled, not default buttons */
+}
+.sidebar-item.active {
+  background: var(--color-accent-primary);
+}
+```
+
+### Common Regressions to Prevent
+
+1. Sidebar visible on mobile → base style `display: none`
+2. Unstyled nav items → use `.sidebar-item` / `.nav-item` classes
+3. Missing active states → always define `.active` style
+4. Hardcoded values → no px/hex colors outside token definitions
+
+### View Transition API
+
+Wrap navigation in `withViewTransition()` for smooth transitions. Always check `document.startViewTransition` support for fallback.
+
+### Container Queries (2026 Card Pattern)
+
+```css
+.gist-card {
+  container-type: inline-size;
+  container-name: gist-card;
+}
+.gist-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+```
+
+### Reduced Motion
+
+Always include `@media (prefers-reduced-motion: reduce)` to disable animations for accessibility.
+
+---
+
+## 2026 Mobile Layout Standards
+
+### Critical: No Gaps Between Header and Content
+
+**The Problem**: Extra spacing between header and content creates unprofessional appearance.
+
+**The Solution**: Use proper flexbox patterns with `min-height: 0` on flex children.
+
+```css
+/* WRONG: Creates unwanted gap */
+.app-main {
+  flex: 1;
+  margin-top: var(--spacing-4);
+}
+
+/* CORRECT: Seamless flow from header */
+.app-main {
+  flex: 1 0 auto;
+  padding: var(--spacing-4);
+  min-height: 0; /* Critical for scrolling */
+}
+```
+
+### 100dvh for Mobile Viewport Stability
+
+```css
+.app-shell {
+  min-height: 100vh; /* Fallback */
+  min-height: 100dvh; /* Dynamic viewport height */
+}
+```
+
+### Safe Area Insets (Notch/Dynamic Island Support)
+
+```css
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.app-header {
+  padding-top: calc(var(--spacing-3) + var(--safe-area-top));
+}
+
+.bottom-nav {
+  height: calc(72px + var(--safe-area-bottom));
+  padding-bottom: calc(var(--spacing-2) + var(--safe-area-bottom));
+}
+```
+
+### Layout Validation Commands
+
+```bash
+# Check for gap issues in screenshots
+agent-browser open http://localhost:5173
+agent-browser set viewport 390 844
+agent-browser screenshot analysis/responsive/layout-check.png
+
+# Verify no horizontal overflow
+agent-browser eval "document.documentElement.scrollWidth <= window.innerWidth"
+```
+
+### Self-Learning: Layout Gap Fix
+
+**Issue**: Visible gap between header and content on mobile screenshots.
+
+**Root Cause**: Improper flexbox configuration and missing `min-height: 0` on flex children.
+
+**Fix Applied**:
+
+1. Updated `.app-shell` to use `min-height: 100dvh`
+2. Changed `.app-main` from `flex: 1` to `flex: 1 0 auto`
+3. Added `min-height: 0` to `.app-main` for proper scrolling
+4. Updated bottom nav to include safe area insets
+
+**Reference**: See `.agents/skills/design-token-system/references/mobile-layout-2026.md`
+
+---
+
+## Autonomous Optimization System
+
+### Self-Learning Workflow
+
+The codebase includes autonomous analysis and self-fixing capabilities:
+
+```
+Analyze → Detect → Fix → Validate → Learn → Document
+```
+
+### Available Scripts
+
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `analyze-codebase.sh` | Full analysis with optional auto-fix | `./scripts/analyze-codebase.sh --fix --validate` |
+| `autosearch-issues.sh` | Pattern-based issue detection | `./scripts/autosearch-issues.sh` |
+| `self-fix.sh` | Apply known fixes automatically | `./scripts/self-fix.sh --dry-run` |
+| `quality_gate.sh` | Pre-commit validation | `./scripts/quality_gate.sh` |
+
+### Quick Commands
+
+```bash
+# Full analysis cycle
+./scripts/analyze-codebase.sh --fix --validate
+
+# Watch mode - continuous monitoring
+./scripts/analyze-codebase.sh --watch
+
+# Pattern detection only
+./scripts/autosearch-issues.sh
+
+# Preview fixes without applying
+./scripts/self-fix.sh --dry-run
+
+# Apply fixes and verify
+./scripts/self-fix.sh && ./scripts/quality_gate.sh
+```
+
+### Detection Categories
+
+The system automatically detects:
+
+**Visual/CSS Issues**
+- Unstyled elements (missing CSS classes)
+- Layout gaps (header/content spacing)
+- Missing responsive breakpoints
+- Missing safe area insets
+- Default browser styles visible
+
+**Code Structure Issues**
+- Missing base styles before media queries
+- Hardcoded values instead of tokens
+- TypeScript `any` types
+- Console.log statements
+- Missing error boundaries
+
+**Performance Issues**
+- Unused CSS/JS
+- Missing lazy loading patterns
+- Inefficient re-renders
+
+### Self-Learning Database
+
+Issues and fixes are stored in `agent-docs/`:
+
+```
+agent-docs/
+├── patterns/           # Extracted patterns (good and bad)
+├── issues/            # Documented issues with context
+├── fixes/             # Applied fixes with verification
+└── references/        # Auto-generated best practices
+```
+
+### Pre-Commit Integration
+
+Add to `.git/hooks/pre-commit`:
+
+```bash
+#!/bin/bash
+./scripts/analyze-codebase.sh --pre-commit || exit 1
+./scripts/quality_gate.sh || exit 1
+```
+
+### Continuous Improvement
+
+Each fix updates:
+1. **agent-docs/issues/** - Issue documentation
+2. **agent-docs/fixes/** - Fix verification
+3. **agent-docs/patterns/** - Extracted patterns
+4. **AGENTS.md** - Prevention rules (this section)
+5. **Skill references** - Updated best practices
+
+### Autosearch Patterns
+
+The system searches for these patterns automatically:
+
+| Pattern | Issue | Severity |
+|---------|-------|----------|
+| `css_missing_base_display` | Element visible when should be hidden | High |
+| `css_no_dvh` | Using 100vh instead of 100dvh | Medium |
+| `css_hardcoded_colors` | Hardcoded hex colors | Low |
+| `ts_any_type` | TypeScript `any` usage | Medium |
+| `ts_console_log` | Console statements in code | Low |
+| `html_unstyled_button` | Button without CSS class | High |
+
+### Skill: codebase-optimizer
+
+Use the `codebase-optimizer` skill for complex optimization tasks:
+
+```bash
+# The skill provides:
+# - Autonomous analysis loop
+# - Pattern extraction
+# - Fix application
+# - Documentation updates
+# - Regression prevention
+```
+
+See `.agents/skills/codebase-optimizer/SKILL.md` for detailed usage.
