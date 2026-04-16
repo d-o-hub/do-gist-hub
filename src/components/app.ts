@@ -338,10 +338,22 @@ export class App {
   private renderGistList(): string {
     if (this.displayedGists.length === 0) {
       const hasGists = gistStore.getGists().length > 0;
-      if (!hasGists && !gistStore.getIsLoading())
-        return '<div class="empty-state"><p>No gists yet. Create your first gist!</p></div>';
-      if (this.searchQuery)
-        return '<div class="empty-state"><p>No gists match your search.</p></div>';
+      if (!hasGists && !gistStore.getIsLoading()) {
+        return `
+          <div class="empty-state">
+            <p>No gists yet. Create your first gist!</p>
+            <button class="primary-btn empty-state-action" data-action="create" style="margin-top: var(--spacing-4)">Create Gist</button>
+          </div>
+        `;
+      }
+      if (this.searchQuery) {
+        return `
+          <div class="empty-state">
+            <p>No gists match your search.</p>
+            <button class="secondary-btn empty-state-action" data-action="clear-search" style="margin-top: var(--spacing-4)">Clear Search</button>
+          </div>
+        `;
+      }
       return '<div class="empty-state"><p>No gists found.</p></div>';
     }
     return this.displayedGists.map(renderCard).join('');
@@ -425,11 +437,33 @@ export class App {
 
     if (gists.length === 0) {
       listEl.innerHTML = this.renderGistList();
+      this.bindEmptyStateEvents(listEl);
       return;
     }
 
     listEl.innerHTML = gists.map(renderCard).join('');
     bindCardEvents(listEl, (id) => this.navigateToDetail(id));
+  }
+
+  /**
+   * Bind events for empty state actions
+   */
+  private bindEmptyStateEvents(container: HTMLElement): void {
+    container.querySelectorAll('.empty-state-action').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const action = (btn as HTMLElement).dataset.action;
+        if (action === 'create') {
+          this.navigate('create');
+        } else if (action === 'clear-search') {
+          this.searchQuery = '';
+          const searchInput = this.container?.querySelector(
+            '.search-input'
+          ) as HTMLInputElement | null;
+          if (searchInput) searchInput.value = '';
+          this.updateGistList();
+        }
+      });
+    });
   }
 
   /**
@@ -668,8 +702,14 @@ export class App {
     }
 
     // Bind card events
-    const listEl = this.container.querySelector('#gist-list');
-    if (listEl) bindCardEvents(listEl as HTMLElement);
+    const listEl = this.container.querySelector('#gist-list') as HTMLElement | null;
+    if (listEl) {
+      if (this.displayedGists.length === 0) {
+        this.bindEmptyStateEvents(listEl);
+      } else {
+        bindCardEvents(listEl);
+      }
+    }
   }
 
   private navigate(route: Route): void {
