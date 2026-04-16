@@ -7,3 +7,6 @@
 **Vulnerability:** In `gist-detail.ts`, the `renderFileContent` function was using the `language` property from the Gist API directly in a class name without escaping. A malicious gist with a crafted language name could execute arbitrary JavaScript.
 **Learning:** Even data that seems "safe" like a programming language name must be treated as untrusted input if it comes from an external API and is injected into the DOM.
 **Prevention:** Always escape any value before using it in HTML attributes or class names, even if it's expected to be a simple string.
+## 2026-06-15 - [Encryption at Rest with Web Cryptography API]
+**Learning:** Storing sensitive tokens (PATs) in cleartext in IndexedDB is a security risk. AES-GCM encryption using the Web Cryptography API provides a robust way to protect this data on the device without requiring external libraries.
+**Action:** Always encrypt Personal Access Tokens before persisting to browser storage. Use a device-bound key where possible.

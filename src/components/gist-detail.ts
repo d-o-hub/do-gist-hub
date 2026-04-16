@@ -1,3 +1,4 @@
+import { EmptyState } from './ui/empty-state';
 /**
  * Gist Detail Component
  * Renders full gist content with file tabs and actions
@@ -156,7 +157,7 @@ export function renderRevisionsList(revisions: GistRevision[], gistId: string): 
           <button class="back-btn" id="gist-back-btn" aria-label="Go back">← Back</button>
           <h2>Revisions</h2>
         </div>
-        <div class="empty-state"><p>No revisions found</p></div>
+        ${EmptyState.render({ title: 'No Revisions', description: "This gist doesn't have any previous versions.", icon: '📜' })}
       </div>
     `;
   }
@@ -367,7 +368,13 @@ export async function loadGistDetail(
     }
 
     if (!gist) {
-      container.innerHTML = '<div class="empty-state"><p>Gist not found</p></div>';
+      container.innerHTML = EmptyState.render({
+        title: 'Gist Not Found',
+        description: 'The gist you are looking for might have been deleted or is inaccessible.',
+        actionLabel: 'Go Home',
+        actionRoute: 'home',
+        icon: '🔍',
+      });
       return;
     }
 

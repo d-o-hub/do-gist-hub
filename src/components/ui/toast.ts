@@ -3,6 +3,8 @@
  * Accessible, non-blocking user feedback with success/error/info variants
  */
 
+import { sanitizeHtml } from '../../services/security';
+
 export type ToastType = 'success' | 'error' | 'info';
 
 export class ToastManager {
@@ -26,7 +28,7 @@ export class ToastManager {
         position: fixed;
         bottom: var(--spacing-4, 1rem);
         right: var(--spacing-4, 1rem);
-        z-index: var(--z-index-modal, 50);
+        z-index: var(--z-index-modal, 1050);
         display: flex;
         flex-direction: column;
         gap: var(--spacing-2, 0.5rem);
@@ -54,7 +56,7 @@ export class ToastManager {
 
     toast.innerHTML = `
       <span class="toast-icon" aria-hidden="true">${icon}</span>
-      <span class="toast-message">${this.escapeHtml(message)}</span>
+      <span class="toast-message">${sanitizeHtml(message)}</span>
       <button class="toast-close" aria-label="Dismiss notification" type="button">×</button>
     `;
 
@@ -116,12 +118,6 @@ export class ToastManager {
   dismissAll(): void {
     const ids = Array.from(this.toasts.keys());
     ids.forEach((id) => this.dismiss(id));
-  }
-
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
   }
 }
 

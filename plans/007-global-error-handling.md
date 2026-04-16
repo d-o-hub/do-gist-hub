@@ -2,16 +2,18 @@
 
 ## Error Taxonomy
 
-Fatal, Recoverable, Auth, Validation.
+Implemented structured error classes: Fatal, Recoverable, Auth, Validation.
 
 ## Boundaries
 
-Global, Route, Async.
+- **GlobalErrorBoundary**: Catches uncaught UI errors.
+- **RouteBoundary**: Integrated into navigation to clear state and catch routing errors.
+- **AsyncErrorBoundary**: Wrapped around GitHub API calls.
 
 ## User Messages
 
-Safe, actionable, no stack traces.
+Safe, actionable messages via Toast and ErrorBoundary UI. Stack traces redacted.
 
 ---
 
-*Created: 2026. Status: Draft.*
+*Created: 2026. Status: Completed.*

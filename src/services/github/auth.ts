@@ -1,12 +1,14 @@
 /**
  * Authentication Service
  * Manages GitHub PAT storage and validation
+ * 2026: Encrypted at rest using Web Cryptography API
  */
 
 import { validateToken, clearUsernameCache } from './client';
 import { resetRateLimit } from './rate-limiter';
 import { setMetadata, getMetadata } from '../db';
 import { safeLog, safeError, redactToken } from '../security/logger';
+import { encrypt, decrypt } from '../security/crypto';
 
 /**
  * Save GitHub PAT to secure storage
@@ -23,12 +25,14 @@ export async function saveToken(token: string): Promise<{ success: boolean; erro
       };
     }
 
-    // Store token in IndexedDB (encrypted at rest would be ideal, but browser limitations)
-    await setMetadata('github-pat', token);
+    // 2026: Encrypt token before storing
+    const encrypted = await encrypt(token);
+    await setMetadata('github-pat-enc', encrypted);
+
     await setMetadata('github-username', result.username || '');
     await setMetadata('token-saved-at', Date.now());
 
-    safeLog(`[Auth] Token saved successfully: ${redactToken(token)}`);
+    safeLog(`[Auth] Token saved and encrypted: ${redactToken(token)}`);
     return { success: true };
   } catch (error) {
     safeError('[Auth] Failed to save token:', error);
@@ -43,7 +47,25 @@ export async function saveToken(token: string): Promise<{ success: boolean; erro
  * Get stored token (returns null if not found)
  */
 export async function getToken(): Promise<string | null> {
-  return (await getMetadata<string>('github-pat')) || null;
+  const enc = await getMetadata<{ data: string; iv: string }>('github-pat-enc');
+  if (!enc) {
+    // Fallback for legacy tokens (migration)
+    const legacy = await getMetadata<string>('github-pat');
+    if (legacy) {
+      safeLog('[Auth] Migrating legacy token to encrypted storage');
+      await saveToken(legacy);
+      await setMetadata('github-pat', null); // Clear legacy
+      return legacy;
+    }
+    return null;
+  }
+
+  try {
+    return await decrypt(enc.data, enc.iv);
+  } catch (err) {
+    safeError('[Auth] Failed to decrypt token:', err);
+    return null;
+  }
 }
 
 /**
@@ -51,12 +73,7 @@ export async function getToken(): Promise<string | null> {
  */
 export async function isAuthenticated(): Promise<boolean> {
   const token = await getToken();
-  if (!token) {
-    return false;
-  }
-
-  // Quick validation without full API call
-  return token.length > 0;
+  return !!token && token.length > 0;
 }
 
 /**
@@ -71,6 +88,7 @@ export async function getUsername(): Promise<string | null> {
  */
 export async function removeToken(): Promise<void> {
   await setMetadata('github-pat', null);
+  await setMetadata('github-pat-enc', null);
   await setMetadata('github-username', null);
   await setMetadata('token-saved-at', null);
   clearUsernameCache();

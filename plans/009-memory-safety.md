@@ -2,16 +2,16 @@
 
 ## Cleanup Requirements
 
-All timers, listeners, observers must be cleaned up.
+Implemented `LifecycleManager` for automatic resource cleanup.
 
 ## AbortController
 
-Required for cancelable fetch.
+All GitHub API requests support cancellation via `AbortController` on navigation or retry.
 
 ## Lifecycle
 
-Clear route-scoped resources on navigation.
+Store and Network subscriptions are scoped to routes and auto-unsubscribed.
 
 ---
 
-*Created: 2026. Status: Draft.*
+*Created: 2026. Status: Completed.*

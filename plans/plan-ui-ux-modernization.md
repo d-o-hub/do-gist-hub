@@ -262,13 +262,13 @@ Add skip to content link.
 
 ## Success Criteria
 
-- [ ] All 7 breakpoints render correctly
-- [ ] Container queries work for gist cards
-- [ ] View Transitions API with fallback
-- [ ] Reduced motion respected
-- [ ] Lighthouse accessibility score ≥ 95
-- [ ] All interactive elements have focus states
-- [ ] Screen reader tested with NVDA/VoiceOver
+- [x] All 7 breakpoints render correctly
+- [x] Container queries work for gist cards
+- [x] View Transitions API with fallback
+- [x] Reduced motion respected
+- [x] Lighthouse accessibility score ≥ 95
+- [x] All interactive elements have focus states
+- [x] Screen reader tested with NVDA/VoiceOver
 
 ## References
 

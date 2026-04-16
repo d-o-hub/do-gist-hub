@@ -56,9 +56,9 @@ function getTitle(gist: GistRecord): string {
 function syncBadge(gist: GistRecord): string {
   if (gist.syncStatus === 'synced') return '';
   const labels: Record<string, string> = {
-    pending: '⏳ Sync pending',
-    conflict: '⚠ Conflict',
-    error: '❌ Sync error',
+    pending: '🕒 Sync pending...',
+    conflict: '⚠️ Conflict detected',
+    error: '❌ Sync failed',
   };
   return `<span class="sync-status status-${gist.syncStatus}">${labels[gist.syncStatus] || ''}</span>`;
 }
