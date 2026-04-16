@@ -39,19 +39,69 @@ export function redactSecrets(input: string): string {
 }
 
 /**
+ * Recursively redact secrets in any value.
+ * Handles strings, Errors, arrays, and nested objects.
+ * Implements cycle detection and depth limiting.
+ */
+export function redactAny(arg: unknown, depth = 0, seen = new WeakSet()): unknown {
+  // Bounded recursion
+  if (depth > 10) return '[DEPTH_EXCEEDED]';
+
+  if (typeof arg === 'string') {
+    return redactSecrets(arg);
+  }
+
+  if (arg instanceof Error) {
+    // Preserve error prototype and custom properties while redacting messages
+    const redactedMessage = redactSecrets(arg.message);
+    const redactedStack = arg.stack ? redactSecrets(arg.stack) : undefined;
+
+    // Create a proxy-like object or a shallow copy that redacts key properties
+    const redactedError = Object.create(Object.getPrototypeOf(arg));
+    Object.getOwnPropertyNames(arg).forEach((prop) => {
+      const val = (arg as unknown as Record<string, unknown>)[prop];
+      if (prop === 'message') {
+        redactedError.message = redactedMessage;
+      } else if (prop === 'stack') {
+        redactedError.stack = redactedStack;
+      } else {
+        redactedError[prop] = redactAny(val, depth + 1, seen);
+      }
+    });
+    return redactedError;
+  }
+
+  if (arg !== null && typeof arg === 'object') {
+    if (seen.has(arg)) return '[CIRCULAR]';
+    seen.add(arg);
+
+    if (Array.isArray(arg)) {
+      return arg.map((item) => redactAny(item, depth + 1, seen));
+    }
+
+    // Avoid redacting complex objects that aren't plain data
+    const proto = Object.getPrototypeOf(arg);
+    if (proto !== null && proto !== Object.prototype) {
+      return arg;
+    }
+
+    const redactedObj: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(arg)) {
+      redactedObj[key] = redactAny(value, depth + 1, seen);
+    }
+    return redactedObj;
+  }
+
+  return arg;
+}
+
+/**
  * Safe console.log that redacts secrets.
  * Use instead of console.log for any output that might contain tokens.
  */
 export function safeLog(...args: unknown[]): void {
-  const redacted = args.map((arg) => {
-    if (typeof arg === 'string') {
-      return redactSecrets(arg);
-    }
-    if (arg instanceof Error) {
-      return new Error(redactSecrets(arg.message));
-    }
-    return arg;
-  });
+  const redacted = args.map((arg) => redactAny(arg));
+  // eslint-disable-next-line no-console
   console.log(...redacted);
 }
 
@@ -59,15 +109,7 @@ export function safeLog(...args: unknown[]): void {
  * Safe console.error that redacts secrets.
  */
 export function safeError(...args: unknown[]): void {
-  const redacted = args.map((arg) => {
-    if (typeof arg === 'string') {
-      return redactSecrets(arg);
-    }
-    if (arg instanceof Error) {
-      return new Error(redactSecrets(arg.message));
-    }
-    return arg;
-  });
+  const redacted = args.map((arg) => redactAny(arg));
   console.error(...redacted);
 }
 
@@ -75,14 +117,6 @@ export function safeError(...args: unknown[]): void {
  * Safe console.warn that redacts secrets.
  */
 export function safeWarn(...args: unknown[]): void {
-  const redacted = args.map((arg) => {
-    if (typeof arg === 'string') {
-      return redactSecrets(arg);
-    }
-    if (arg instanceof Error) {
-      return new Error(redactSecrets(arg.message));
-    }
-    return arg;
-  });
+  const redacted = args.map((arg) => redactAny(arg));
   console.warn(...redacted);
 }
