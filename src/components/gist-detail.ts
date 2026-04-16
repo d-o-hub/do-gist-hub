@@ -33,7 +33,7 @@ function getLanguageClass(language?: string): string {
  */
 function renderFileContent(content: string, language?: string): string {
   const lines = content.split('\n');
-  const langClass = getLanguageClass(language);
+  const langClass = esc(getLanguageClass(language));
 
   const linesHtml = lines
     .map((line, i) => {
