@@ -669,7 +669,9 @@ export class App {
 
     // Bind card events
     const listEl = this.container.querySelector('#gist-list');
-    if (listEl) bindCardEvents(listEl as HTMLElement);
+    if (listEl) {
+      bindCardEvents(listEl as HTMLElement, (id) => this.navigateToDetail(id));
+    }
   }
 
   private navigate(route: Route): void {
