@@ -2,16 +2,16 @@
 
 ## Mobile-First Approach
 
-Design for 320px first, scale up.
+320px base styles with progressive enhancement.
 
 ## Breakpoint Strategy
 
-Use CSS custom properties that change at breakpoints.
+7-breakpoint system (320-1536px) using token-driven CSS.
 
-## Touch Targets
+## 2026 Patterns
 
-Minimum 44x44px on mobile.
+Integrated **Container Queries** for component-level responsiveness (e.g., Gist Cards).
 
 ---
 
-*Created: 2026. Status: Draft.*
+*Created: 2026. Status: Completed.*

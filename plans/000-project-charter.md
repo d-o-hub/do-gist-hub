@@ -87,9 +87,9 @@ Create **d.o. Gist Hub**, a web-first PWA that provides full GitHub Gist CRUD op
 - [ ] All acceptance criteria met
 - [ ] Tests passing (browser, mobile, offline, Android)
 - [ ] Performance budgets verified
-- [ ] Security review complete
-- [ ] Documentation updated
-- [ ] ADRs reviewed and approved
+- [x] Security review complete
+- [x] Documentation updated
+- [x] ADRs reviewed and approved
 
 ---
 
