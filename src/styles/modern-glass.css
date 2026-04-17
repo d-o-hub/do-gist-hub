@@ -1,0 +1,42 @@
+/**
+ * 2026 Modern Glassmorphism & Depth
+ */
+
+.glass-panel {
+  background: var(--ui-glass-bg, rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(var(--ui-backdrop-blur, 8px));
+  border: 1px solid var(--ui-glass-border, rgba(255, 255, 255, 0.1));
+  box-shadow: var(--shadow-lg);
+}
+
+.app-header {
+  backdrop-filter: blur(12px);
+  background-color: var(--color-background-primary-translucent, rgba(255, 255, 255, 0.8));
+}
+
+[data-theme='dark'] .app-header {
+  background-color: rgba(3, 7, 18, 0.8);
+}
+
+.sidebar-nav,
+.rail-nav {
+  background-color: var(--color-background-secondary-translucent, rgba(243, 244, 246, 0.8));
+  backdrop-filter: blur(10px);
+}
+
+[data-theme='dark'] .sidebar-nav,
+[data-theme='dark'] .rail-nav {
+  background-color: rgba(10, 15, 26, 0.8);
+}
+
+.gist-card {
+  transition:
+    transform var(--motion-duration-normal) var(--motion-easing-out-expo),
+    box-shadow var(--motion-duration-normal) var(--motion-easing-out-expo),
+    border-color var(--motion-duration-normal) var(--motion-easing-smooth);
+}
+
+.gist-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: var(--shadow-xl);
+}

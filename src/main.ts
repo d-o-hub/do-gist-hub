@@ -14,6 +14,7 @@ import './styles/accessibility.css';
 import './styles/interactions.css';
 import './styles/motion.css';
 import './styles/navigation.css';
+import './styles/modern-glass.css';
 
 // Initialize design tokens
 initDesignTokens();

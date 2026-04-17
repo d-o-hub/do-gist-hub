@@ -74,7 +74,7 @@
       'rail header'
       'rail main';
     grid-template-columns: auto 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
   }
 }
 
@@ -99,7 +99,7 @@
       'sidebar header'
       'sidebar main';
     grid-template-columns: auto 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
   }
 }
 
