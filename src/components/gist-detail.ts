@@ -8,6 +8,7 @@ import type { GistRecord } from '../services/db';
 import { getGist, saveGist } from '../services/db';
 import * as GitHub from '../services/github';
 import { toast } from './ui/toast';
+import { announcer } from '../utils/announcer';
 import gistStore from '../stores/gist-store';
 import networkMonitor from '../services/network/offline-monitor';
 import type { GitHubGist, GistRevision, GistFile } from '../types/api';
@@ -57,13 +58,19 @@ function renderFileTabs(
   const entries = Object.entries(files);
   if (entries.length === 1) {
     const firstEntry = entries[0];
-    return `<div class="file-tabs single-file"><span class="file-tab active">${esc(firstEntry?.[1]?.filename ?? 'unknown')}</span></div>`;
+    return `<div class="file-tabs single-file" role="tablist"><span class="file-tab active" role="tab" aria-selected="true" id="tab-0">${esc(firstEntry?.[1]?.filename ?? 'unknown')}</span></div>`;
   }
 
-  return `<div class="file-tabs">${entries
+  return `<div class="file-tabs" role="tablist">${entries
     .map(
       ([key, file], index) => `
-    <button class="file-tab ${index === activeIndex ? 'active' : ''}" data-file-key="${esc(key)}" data-file-index="${index}">
+    <button class="file-tab ${index === activeIndex ? 'active' : ''}"
+            role="tab"
+            aria-selected="${index === activeIndex}"
+            aria-controls="file-content-area"
+            id="tab-${index}"
+            data-file-key="${esc(key)}"
+            data-file-index="${index}">
       ${esc(file.filename)}
     </button>
   `
@@ -135,7 +142,7 @@ export function renderGistDetail(gist: GistRecord): string {
 
       ${fileTabs}
 
-      <div class="file-content-area" id="file-content-area">
+      <div class="file-content-area" id="file-content-area" role="tabpanel" aria-labelledby="tab-0">
         ${content}
       </div>
 
@@ -278,8 +285,12 @@ export function bindDetailEvents(
       if (!key || !gistId) return;
 
       // Update active tab
-      container.querySelectorAll('.file-tab').forEach((t) => t.classList.remove('active'));
+      container.querySelectorAll('.file-tab').forEach((t) => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
       tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
 
       // Update content
       const gist = gistStore.getGist(gistId);
@@ -293,6 +304,8 @@ export function bindDetailEvents(
         contentArea.innerHTML = file.content
           ? renderFileContent(file.content, file.language)
           : '<p class="empty-content">No content available</p>';
+        contentArea.setAttribute('aria-labelledby', tab.id);
+        announcer.announce(`Displaying file: ${file.filename}`);
       }
 
       if (fileInfo) {
