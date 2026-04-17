@@ -11,7 +11,7 @@ import syncQueue from '../services/sync/queue';
 import { getToken } from '../services/github/auth';
 import { loadGistDetail } from './gist-detail';
 import { APP } from '../config/app.config';
-import { sanitizeHtml } from '../services/security';
+import { sanitizeHtml, redactToken } from '../services/security';
 import { commandPalette } from './ui/command-palette';
 import { bottomSheet } from './ui/bottom-sheet';
 import { EmptyState } from './ui/empty-state';
@@ -397,7 +397,7 @@ export class App {
     if (!statusEl) return;
     const token = await getToken();
     if (token) {
-      const masked = token.slice(0, 6) + '••••' + token.slice(-4);
+      const masked = redactToken(token);
       statusEl.innerHTML = `<p class="token-saved">Token saved: ${sanitizeHtml(masked)}</p>`;
     } else {
       statusEl.innerHTML = `<p class="token-missing">No token saved.</p>`;

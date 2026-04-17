@@ -8,6 +8,7 @@ import gistStore from './stores/gist-store';
 import { registerServiceWorker } from './services/pwa/register-sw';
 import { initWebVitals } from './services/perf';
 import { isViewTransitionSupported } from './utils/view-transitions';
+import { safeLog, safeError } from './services/security/logger';
 import './styles/base.css';
 import './styles/accessibility.css';
 import './styles/interactions.css';
@@ -20,11 +21,8 @@ initDesignTokens();
 initTheme();
 
 // Log 2026 feature support
-console.log(
-  '[App] View Transitions API:',
-  isViewTransitionSupported() ? 'supported' : 'not supported'
-);
-console.log(
+safeLog('[App] View Transitions API:', isViewTransitionSupported() ? 'supported' : 'not supported');
+safeLog(
   '[App] Container Queries:',
   CSS.supports('container-type', 'inline-size') ? 'supported' : 'not supported'
 );
@@ -41,7 +39,7 @@ async function bootstrap(): Promise<void> {
 
   // Check auth state
   const authenticated = await isAuthenticated();
-  console.log('[App] Authenticated:', authenticated);
+  safeLog('[App] Authenticated:', authenticated);
 
   // Initialize gist store (loads from IndexedDB, then syncs from GitHub if online)
   if (authenticated) {
@@ -60,7 +58,7 @@ async function bootstrap(): Promise<void> {
 }
 
 bootstrap().catch((error) => {
-  console.error('[App] Failed to bootstrap:', error);
+  safeError('[App] Failed to bootstrap:', error);
   // Still mount the app so user can see error state
   const app = new App();
   app.mount(document.getElementById('app')!);
