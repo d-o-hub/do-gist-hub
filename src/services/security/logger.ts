@@ -55,6 +55,9 @@ export function redactAny(arg: unknown, depth = 0, seen = new WeakSet()): unknow
   }
 
   if (arg instanceof Error) {
+    if (seen.has(arg)) return '[CIRCULAR]';
+    seen.add(arg);
+
     // Preserve error prototype and custom properties while redacting messages
     const redactedMessage = redactSecrets(arg.message);
     const redactedStack = arg.stack ? redactSecrets(arg.stack) : undefined;
@@ -80,12 +83,6 @@ export function redactAny(arg: unknown, depth = 0, seen = new WeakSet()): unknow
 
     if (Array.isArray(arg)) {
       return arg.map((item) => redactAny(item, depth + 1, seen));
-    }
-
-    // Avoid redacting complex objects that aren't plain data
-    const proto = Object.getPrototypeOf(arg);
-    if (proto !== null && proto !== Object.prototype) {
-      return arg;
     }
 
     const redactedObj: Record<string, unknown> = {};

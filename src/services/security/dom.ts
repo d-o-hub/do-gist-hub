@@ -5,12 +5,16 @@
 
 /**
  * Sanitize a string for HTML insertion
+ * ⚡ Bolt: Fast regex-based escaping for security and performance
  */
 export function sanitizeHtml(input: string): string {
-  if (!input) return '';
-  const div = document.createElement('div');
-  div.textContent = input;
-  return div.innerHTML;
+  if (input === null || input === undefined) return '';
+  return String(input)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 /**
@@ -24,7 +28,8 @@ export function html(strings: TemplateStringsArray, ...values: unknown[]): strin
     if (value === undefined || value === null) {
       sanitizedValue = '';
     } else if (Array.isArray(value)) {
-      sanitizedValue = value.join('');
+      // ✅ Sentinel: Recursively sanitize array elements
+      sanitizedValue = value.map((v) => sanitizeHtml(String(v))).join('');
     } else {
       sanitizedValue = sanitizeHtml(String(value));
     }

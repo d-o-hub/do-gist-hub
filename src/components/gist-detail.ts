@@ -12,6 +12,7 @@ import { EmptyState } from './ui/empty-state';
 import networkMonitor from '../services/network/offline-monitor';
 import { ErrorBoundary } from './ui/error-boundary';
 import { AppError } from '../services/github/error-handler';
+import { announcer } from '../utils/announcer';
 
 /**
  * Escape HTML
@@ -64,11 +65,16 @@ export function renderGistDetail(gist: GistRecord): string {
   const fileTabs =
     fileCount > 1
       ? `
-    <div class="file-tabs scroll-x">
+    <div class="file-tabs scroll-x" role="tablist">
       ${Object.entries(gist.files)
         .map(
           ([key, file], index) => `
-        <button class="file-tab ${index === 0 ? 'active' : ''}" data-file-key="${esc(key)}">
+        <button class="file-tab ${index === 0 ? 'active' : ''}"
+                data-file-key="${esc(key)}"
+                id="tab-${index}"
+                role="tab"
+                aria-selected="${index === 0}"
+                aria-controls="file-content-area">
           ${esc(file.filename)}
         </button>
       `
@@ -119,7 +125,7 @@ export function renderGistDetail(gist: GistRecord): string {
 
       ${fileTabs}
 
-      <div class="file-content-area" id="file-content-area">
+      <div class="file-content-area" id="file-content-area" role="tabpanel" aria-labelledby="tab-0">
         ${content}
       </div>
 
@@ -259,8 +265,12 @@ export function bindDetailEvents(
       if (!key || !gistId) return;
 
       // Update active tab
-      container.querySelectorAll('.file-tab').forEach((t) => t.classList.remove('active'));
+      container.querySelectorAll('.file-tab').forEach((t) => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
       tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
 
       // Update content
       const gist = gistStore.getGist(gistId);
@@ -274,6 +284,8 @@ export function bindDetailEvents(
         contentArea.innerHTML = file.content
           ? renderFileContent(file.content, file.language)
           : '<p class="empty-content">No content available</p>';
+        contentArea.setAttribute('aria-labelledby', tab.id);
+        announcer.announce(`Displaying file: ${file.filename}`);
       }
 
       if (fileInfo) {
