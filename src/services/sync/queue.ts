@@ -15,6 +15,7 @@ import {
 } from '../db';
 import * as GitHub from '../github';
 import networkMonitor from '../network/offline-monitor';
+import { safeLog, safeError } from '../security/logger';
 
 /**
  * Sync operation types
@@ -51,7 +52,7 @@ class SyncQueue {
     // Listen for network status changes
     this.unsubscribeNetwork = networkMonitor.subscribe((status) => {
       if (status === 'online') {
-        console.log('[SyncQueue] Network online, checking pending operations');
+        safeLog('[SyncQueue] Network online, checking pending operations');
         this.processQueue();
       }
     });
@@ -59,7 +60,7 @@ class SyncQueue {
     // Also listen for custom online event
     window.addEventListener('app:online', () => this.processQueue());
 
-    console.log('[SyncQueue] Initialized');
+    safeLog('[SyncQueue] Initialized');
   }
 
   /**
@@ -75,7 +76,7 @@ class SyncQueue {
     };
 
     const id = await dbQueueWrite(write);
-    console.log(`[SyncQueue] Queued ${action} for gist ${gistId}, queue ID: ${id}`);
+    safeLog(`[SyncQueue] Queued ${action} for gist ${gistId}, queue ID: ${id}`);
 
     // If online, try to sync immediately
     if (networkMonitor.isOnline()) {
@@ -90,12 +91,12 @@ class SyncQueue {
    */
   async processQueue(): Promise<void> {
     if (this.isSyncing) {
-      console.log('[SyncQueue] Already syncing, skipping');
+      safeLog('[SyncQueue] Already syncing, skipping');
       return;
     }
 
     if (!networkMonitor.isOnline()) {
-      console.log('[SyncQueue] Offline, cannot process queue');
+      safeLog('[SyncQueue] Offline, cannot process queue');
       return;
     }
 
@@ -105,11 +106,11 @@ class SyncQueue {
       const pendingWrites = await getPendingWrites();
 
       if (pendingWrites.length === 0) {
-        console.log('[SyncQueue] No pending operations');
+        safeLog('[SyncQueue] No pending operations');
         return;
       }
 
-      console.log(`[SyncQueue] Processing ${pendingWrites.length} pending operations`);
+      safeLog(`[SyncQueue] Processing ${pendingWrites.length} pending operations`);
 
       // Sort by creation time (oldest first)
       const sortedWrites = pendingWrites.sort((a, b) => a.createdAt - b.createdAt);
@@ -121,19 +122,17 @@ class SyncQueue {
 
         if (result.success) {
           await removePendingWrite(write.id);
-          console.log(`[SyncQueue] Successfully synced operation ${write.id}`);
+          safeLog(`[SyncQueue] Successfully synced operation ${write.id}`);
         } else {
           if (result.shouldRetry && write.retryCount < MAX_RETRIES) {
             await updatePendingWriteError(write.id, result.error || 'Unknown error');
-            console.log(
+            safeLog(
               `[SyncQueue] Will retry operation ${write.id} (attempt ${write.retryCount + 1}/${MAX_RETRIES})`
             );
           } else {
             // Max retries reached or non-retryable error
             await updatePendingWriteError(write.id, result.error || 'Max retries reached');
-            console.error(
-              `[SyncQueue] Failed operation ${write.id} after ${write.retryCount} retries`
-            );
+            safeError(`[SyncQueue] Failed operation ${write.id} after ${write.retryCount} retries`);
           }
         }
 
@@ -141,9 +140,9 @@ class SyncQueue {
         await this.delay(RETRY_DELAY_MS);
       }
 
-      console.log('[SyncQueue] Queue processing complete');
+      safeLog('[SyncQueue] Queue processing complete');
     } catch (error) {
-      console.error('[SyncQueue] Error processing queue:', error);
+      safeError('[SyncQueue] Error processing queue:', error);
     } finally {
       this.isSyncing = false;
     }
@@ -352,7 +351,7 @@ class SyncQueue {
     if (this.unsubscribeNetwork) {
       this.unsubscribeNetwork();
     }
-    console.log('[SyncQueue] Destroyed');
+    safeLog('[SyncQueue] Destroyed');
   }
 }
 
