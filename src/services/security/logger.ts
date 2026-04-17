@@ -123,13 +123,13 @@ async function persistLog(
       const toDelete = logs.slice(0, count - MAX_LOGS);
       const tx = db.transaction('logs', 'readwrite');
       for (const id of toDelete) {
-        tx.objectStore('logs').delete(id);
+        void tx.objectStore('logs').delete(id);
       }
       await tx.done;
     }
   } catch (err) {
     // Fallback if DB not ready or failed
-    // eslint-disable-next-line no-console
+    /* eslint-disable no-console */
     console.error('[Logger] Failed to persist log', err);
   }
 }
@@ -141,7 +141,7 @@ export function safeLog(message: string, ...args: unknown[]): void {
   const redactedArgs = args.map((arg) => redactAny(arg));
   const redactedMessage = redactSecrets(message);
 
-  // eslint-disable-next-line no-console
+  /* eslint-disable no-console */
   console.log(redactedMessage, ...redactedArgs);
 
   persistLog('info', redactedMessage, args.length === 1 ? args[0] : args);
@@ -154,7 +154,7 @@ export function safeError(message: string, ...args: unknown[]): void {
   const redactedArgs = args.map((arg) => redactAny(arg));
   const redactedMessage = redactSecrets(message);
 
-  // eslint-disable-next-line no-console
+  /* eslint-disable no-console */
   console.error(redactedMessage, ...redactedArgs);
 
   persistLog('error', redactedMessage, args.length === 1 ? args[0] : args);
@@ -167,7 +167,7 @@ export function safeWarn(message: string, ...args: unknown[]): void {
   const redactedArgs = args.map((arg) => redactAny(arg));
   const redactedMessage = redactSecrets(message);
 
-  // eslint-disable-next-line no-console
+  /* eslint-disable no-console */
   console.warn(redactedMessage, ...redactedArgs);
 
   persistLog('warn', redactedMessage, args.length === 1 ? args[0] : args);

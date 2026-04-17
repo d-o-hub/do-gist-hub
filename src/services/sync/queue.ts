@@ -16,7 +16,6 @@ import {
 } from '../db';
 import * as GitHub from '../github';
 import networkMonitor from '../network/offline-monitor';
-
 /**
  * Sync operation types
  */
