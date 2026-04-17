@@ -15,16 +15,20 @@
     <title>%VITE_APP_NAME%</title>
     
     <!-- Content Security Policy -->
+    <!-- Note: 'unsafe-inline' is used for the design token system injection,
+         but CSP is strictly enforced in production via the vite-plugin-csp.
+         This meta tag serves as a baseline for dev and non-injected environments. -->
     <meta 
       http-equiv="Content-Security-Policy" 
       content="default-src 'self'; 
-               script-src 'self' 'unsafe-inline'; 
-               style-src 'self' 'unsafe-inline'; 
-               img-src 'self' data: https:; 
-               font-src 'self'; 
+               script-src 'self';
+               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+               img-src 'self' data: https: blob:;
+               font-src 'self' https://fonts.gstatic.com;
                connect-src 'self' https://api.github.com; 
                frame-src 'none'; 
-               object-src 'none';"
+               object-src 'none';
+               upgrade-insecure-requests;"
     />
   </head>
   <body>

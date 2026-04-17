@@ -1,13 +1,13 @@
 /**
- * CSS Variable Generator
- * Generates CSS custom properties from design tokens
+ * CSS Variables Generator
+ * Converts design tokens into CSS custom properties
  */
 
-import { colorSemantic } from './semantic/color-semantic';
+import { colors } from './primitive/colors';
 import { spacing } from './primitive/spacing';
 import {
-  fontSize,
   fontFamily,
+  fontSize,
   fontWeight,
   lineHeight,
   letterSpacing,
@@ -15,41 +15,56 @@ import {
 import { radius } from './primitive/radius';
 import { motionTokens } from './motion/motion';
 import { shadowTokens } from './elevation/shadows';
+import { colorSemantic } from './semantic/color-semantic';
 import { breakpoints } from './responsive/breakpoints';
+import { navTokens } from './component/navigation';
+import { uiTokens } from './component/ui';
+import { gistCard } from './component/cards';
 
 export function generateCSSVariables(): string {
   return `
-/* ========================================
-   DESIGN TOKENS - CSS CUSTOM PROPERTIES
-   Auto-generated from design token system
-======================================== */
-
 :root {
-  /* ===== Color Tokens (Light Theme Default) ===== */
+  /* ===== Color Primitives ===== */
+  --color-black: ${colors.black};
+  --color-white: ${colors.white};
+
+  --color-gray-50: ${colors.gray[50]};
+  --color-gray-100: ${colors.gray[100]};
+  --color-gray-200: ${colors.gray[200]};
+  --color-gray-300: ${colors.gray[300]};
+  --color-gray-400: ${colors.gray[400]};
+  --color-gray-500: ${colors.gray[500]};
+  --color-gray-600: ${colors.gray[600]};
+  --color-gray-700: ${colors.gray[700]};
+  --color-gray-800: ${colors.gray[800]};
+  --color-gray-900: ${colors.gray[900]};
+  --color-gray-950: ${colors.gray[950]};
+
+  /* ===== Semantic Colors (Light Mode) ===== */
   --color-background-primary: ${colorSemantic.light.background.primary};
   --color-background-secondary: ${colorSemantic.light.background.secondary};
   --color-background-tertiary: ${colorSemantic.light.background.tertiary};
   --color-background-elevated: ${colorSemantic.light.background.elevated};
-  
+
   --color-foreground-primary: ${colorSemantic.light.foreground.primary};
   --color-foreground-secondary: ${colorSemantic.light.foreground.secondary};
   --color-foreground-muted: ${colorSemantic.light.foreground.muted};
   --color-foreground-inverse: ${colorSemantic.light.foreground.inverse};
-  
+
   --color-accent-primary: ${colorSemantic.light.accent.primary};
   --color-accent-hover: ${colorSemantic.light.accent.hover};
   --color-accent-active: ${colorSemantic.light.accent.active};
   --color-accent-subtle: ${colorSemantic.light.accent.subtle};
   --color-accent-glow: ${colorSemantic.light.accent.glow};
-  
+
   --color-border-default: ${colorSemantic.light.border.default};
   --color-border-emphasis: ${colorSemantic.light.border.emphasis};
   --color-border-strong: ${colorSemantic.light.border.strong};
-  
+
   --color-status-success-bg: ${colorSemantic.light.status.success.bg};
   --color-status-success-fg: ${colorSemantic.light.status.success.fg};
   --color-status-success-border: ${colorSemantic.light.status.success.border};
-  
+
   --color-status-error-bg: ${colorSemantic.light.status.error.bg};
   --color-status-error-fg: ${colorSemantic.light.status.error.fg};
   --color-status-error-border: ${colorSemantic.light.status.error.border};
@@ -194,6 +209,14 @@ export function generateCSSVariables(): string {
   --bp-tablet-landscape: ${breakpoints['tablet-landscape']};
   --bp-desktop: ${breakpoints.desktop};
   --bp-desktop-wide: ${breakpoints['desktop-wide']};
+
+  /* ===== Component Tokens (2026) ===== */
+  --nav-bottom-height: ${navTokens.bottomNav.height};
+  --nav-sidebar-width: ${navTokens.sidebar.width};
+  --ui-backdrop-bg: ${uiTokens.backdrop.background};
+  --ui-backdrop-blur: ${uiTokens.backdrop.blur};
+  --gist-card-bg: ${gistCard.background};
+  --gist-card-shadow: ${gistCard.shadow};
 }
 
 /* ===== Dark Theme Override ===== */
@@ -243,11 +266,10 @@ export function generateCSSVariables(): string {
   --shadow-md: ${shadowTokens['md-dark']};
   --shadow-lg: ${shadowTokens['lg-dark']};
 
-  /* 2026: Dark mode typography adjustments (optical correction for light-on-dark) */
-  --font-weight-semibold: 500; /* reduce from 600 */
-  --font-weight-bold: 600;     /* reduce from 700 */
-  --line-height-normal: 1.6;   /* increase from 1.5 */
-  --letter-spacing-normal: 0.01em; /* slight increase */
+  /* Glass effects for dark mode */
+  --ui-backdrop-bg: rgba(0, 0, 0, 0.7);
+  --ui-glass-bg: ${uiTokens.glass.background};
+  --ui-glass-border: ${uiTokens.glass.border};
 }
 
 /* ===== Responsive Container Spacing ===== */
@@ -319,14 +341,6 @@ export function generateCSSVariables(): string {
   :root {
     --color-border-default: currentColor;
     --color-border-emphasis: currentColor;
-  }
-}
-
-/* ===== Container Query Support Check ===== */
-@supports not (container-type: inline-size) {
-  /* Fallback for browsers without container query support */
-  .gist-list-item {
-    display: block;
   }
 }
 `;

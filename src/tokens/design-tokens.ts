@@ -1,3 +1,4 @@
+import { safeLog } from '../services/security/logger';
 /**
  * Design Token System Initialization
  * Injects CSS custom properties into the document
@@ -24,7 +25,7 @@ export function initDesignTokens(): void {
   // Inject into document head
   document.head.appendChild(styleElement);
 
-  console.log('[Design Tokens] Initialized');
+  safeLog('[Design Tokens] Initialized');
 }
 
 /**

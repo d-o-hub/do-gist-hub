@@ -1,3 +1,4 @@
+import { safeLog, safeError, safeWarn } from '../security/logger';
 /**
  * Service Worker Registration
  * Registers the PWA service worker and handles updates
@@ -8,7 +9,7 @@
  */
 export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!('serviceWorker' in navigator)) {
-    console.warn('[PWA] Service Worker not supported');
+    safeWarn('[PWA] Service Worker not supported');
     return null;
   }
 
@@ -25,16 +26,16 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
       newWorker.addEventListener('statechange', () => {
         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
           // New service worker available, prompt user to refresh
-          console.log('[PWA] New version available');
+          safeLog('[PWA] New version available');
           notifyUpdateAvailable();
         }
       });
     });
 
-    console.log('[PWA] Service Worker registered');
+    safeLog('[PWA] Service Worker registered');
     return registration;
   } catch (error) {
-    console.error('[PWA] Service Worker registration failed:', error);
+    safeError('[PWA] Service Worker registration failed:', error);
     return null;
   }
 }
@@ -72,7 +73,7 @@ export async function clearCaches(): Promise<void> {
  */
 function notifyUpdateAvailable(): void {
   // Could show a toast or banner: "New version available. Refresh to update."
-  console.log('[PWA] Update available - refresh to get latest version');
+  safeLog('[PWA] Update available - refresh to get latest version');
 }
 
 /**

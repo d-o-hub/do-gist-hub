@@ -14,16 +14,17 @@ export class ErrorBoundary {
   static render(error: AppError, onRetry?: () => void): string {
     const isFatal =
       error.category === ErrorCategory.UNKNOWN || error.category === ErrorCategory.NETWORK;
+    const categoryClass = (error.category || 'unknown').toLowerCase();
 
     return `
-      <div class="error-boundary ${error.category.toLowerCase()}" role="alert">
+      <div class="error-boundary ${categoryClass}" role="alert">
         <div class="error-icon">${this.getIcon(error.category)}</div>
-        <h2 class="error-title">${error.message}</h2>
+        <h2 class="error-title">${error.message || 'An error occurred'}</h2>
         ${error.technicalDetails ? `<p class="error-details">${this.escapeHtml(error.technicalDetails)}</p>` : ''}
         <div class="error-actions">
           ${
             onRetry
-              ? `<button class="primary-btn retry-btn" onclick="window.dispatchEvent(new CustomEvent('app:retry'))">
+              ? `<button class="primary-btn retry-btn" id="error-retry-btn">
             ${error.recoveryAction || 'Try Again'}
           </button>`
               : ''
@@ -32,6 +33,17 @@ export class ErrorBoundary {
         </div>
       </div>
     `;
+  }
+
+  /**
+   * Bind event listeners for the error boundary UI
+   */
+  static bindEvents(container: HTMLElement, onRetry?: () => void): void {
+    if (onRetry) {
+      container.querySelector('#error-retry-btn')?.addEventListener('click', () => {
+        onRetry();
+      });
+    }
   }
 
   private static getIcon(category: ErrorCategory): string {

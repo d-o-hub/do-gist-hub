@@ -1,3 +1,4 @@
+import { safeLog, safeError } from '../security/logger';
 /**
  * Network Monitor Service
  * Tracks online/offline status and triggers sync events
@@ -32,7 +33,7 @@ class NetworkMonitor {
     window.addEventListener('offline', this.boundOffline);
 
     this.initialized = true;
-    console.log('[NetworkMonitor] Initialized, current status:', this.status);
+    safeLog('[NetworkMonitor] Initialized, current status:', this.status);
   }
 
   /**
@@ -68,7 +69,7 @@ class NetworkMonitor {
     const oldStatus = this.status;
     this.status = 'online';
 
-    console.log('[NetworkMonitor] Status changed: offline → online');
+    safeLog('[NetworkMonitor] Status changed: offline → online');
 
     if (oldStatus !== this.status) {
       this.notifyListeners();
@@ -85,7 +86,7 @@ class NetworkMonitor {
     const oldStatus = this.status;
     this.status = 'offline';
 
-    console.log('[NetworkMonitor] Status changed: online → offline');
+    safeLog('[NetworkMonitor] Status changed: online → offline');
 
     if (oldStatus !== this.status) {
       this.notifyListeners();
@@ -103,7 +104,7 @@ class NetworkMonitor {
       try {
         handler(this.status);
       } catch (error) {
-        console.error('[NetworkMonitor] Error in listener:', error);
+        safeError('[NetworkMonitor] Error in listener:', error);
       }
     });
   }
@@ -116,7 +117,7 @@ class NetworkMonitor {
     window.removeEventListener('offline', this.boundOffline);
     this.listeners.clear();
     this.initialized = false;
-    console.log('[NetworkMonitor] Destroyed');
+    safeLog('[NetworkMonitor] Destroyed');
   }
 }
 

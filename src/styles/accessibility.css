@@ -7,7 +7,7 @@
 /* ===== Focus Indicators (2026) ===== */
 /* Modern :focus-visible for keyboard-only focus */
 :focus-visible {
-  outline: 2px solid var(--color-accent-primary, #2563eb);
+  outline: 2px solid var(--color-accent-primary);
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -24,9 +24,9 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--color-accent-primary, #2563eb);
+  outline: 2px solid var(--color-accent-primary);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--color-interactive-focus, rgba(37, 99, 235, 0.2));
+  box-shadow: 0 0 0 4px var(--color-interactive-focus);
   transition:
     outline-offset 150ms ease,
     box-shadow 150ms ease;
@@ -39,9 +39,9 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--color-accent-primary, #2563eb);
+  outline: 2px solid var(--color-accent-primary);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--color-interactive-focus, rgba(37, 99, 235, 0.2));
+  box-shadow: 0 0 0 4px var(--color-interactive-focus);
 }
 
 /* ===== Skip Links ===== */
@@ -49,15 +49,15 @@ select:focus-visible,
   position: absolute;
   top: -40px;
   left: 0;
-  background: var(--color-background-inverse, #111827);
-  color: var(--color-foreground-inverse, #ffffff);
-  padding: var(--spacing-2, 0.5rem) var(--spacing-3, 0.75rem);
+  background: var(--color-background-inverse);
+  color: var(--color-foreground-inverse);
+  padding: var(--spacing-2) var(--spacing-3);
   z-index: var(--z-index-modal, 50);
-  font-size: var(--font-size-sm, 0.875rem);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium, 500);
   text-decoration: none;
-  border-radius: 0 0 var(--radius-md, 0.375rem) 0;
-  transition: top var(--motion-duration-fast, 150ms) var(--motion-easing-ease-out, ease);
+  border-radius: 0 0 var(--radius-md) 0;
+  transition: top var(--motion-duration-fast) var(--motion-easing-out);
 }
 
 .skip-link:focus {
