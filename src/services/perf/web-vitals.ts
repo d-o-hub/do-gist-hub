@@ -1,3 +1,4 @@
+import { safeLog } from '../security/logger';
 /**
  * Web Vitals measurement and reporting.
  * Uses the web-vitals library to track Core Web Vitals.
@@ -17,8 +18,8 @@ function reportMetric(metric: Metric): void {
   // Log to console in development
   if (import.meta.env.DEV) {
     const budgetExceeded = typeof budget === 'number' && value > budget;
-    const level = budgetExceeded ? 'warn' : 'log';
-    console[level](
+
+    safeLog(
       `[Web Vitals] ${name}: ${value.toFixed(2)}ms (rating: ${rating})` +
         (budgetExceeded ? ` [BUDGET EXCEEDED: ${budget}ms]` : '')
     );

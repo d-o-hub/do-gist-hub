@@ -44,6 +44,18 @@ export class CommandPalette {
 
     document.body.appendChild(this.backdrop);
     document.body.appendChild(this.container);
+
+    // Click listener for results (event delegation)
+    this.container.addEventListener('click', (e) => {
+      const item = (e.target as HTMLElement).closest('.command-item');
+      if (item) {
+        const index = parseInt(item.getAttribute('data-index') || '-1', 10);
+        if (index >= 0 && this.filteredCommands[index]) {
+          this.filteredCommands[index].action();
+          this.close();
+        }
+      }
+    });
   }
 
   private setupGlobalShortcut(): void {
@@ -138,7 +150,7 @@ export class CommandPalette {
         <div class="command-item ${index === this.selectedIndex ? 'selected' : ''}"
              role="option"
              aria-selected="${index === this.selectedIndex}"
-             onclick="window.dispatchEvent(new CustomEvent('command:execute', { detail: '${cmd.id}' }))">
+             data-index="${index}">
           <span class="command-icon">${cmd.icon || '⚡'}</span>
           <div class="command-info">
             <div class="command-title">${sanitizeHtml(cmd.title)}</div>

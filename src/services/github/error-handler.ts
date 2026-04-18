@@ -1,3 +1,4 @@
+import { safeError } from '../security/logger';
 /**
  * GitHub API Error Handler
  * Converts API errors to user-friendly messages
@@ -52,7 +53,7 @@ function categorizeStatus(status: number): ErrorCategory {
  * Convert GitHub API error to user-friendly message
  */
 export function handleGitHubError(error: unknown, context: string): AppError {
-  console.error(`[Error Handler] ${context}:`, error);
+  safeError(`[Error Handler] ${context}:`, error);
 
   // Network errors
   if (error instanceof TypeError && error.message.includes('fetch')) {

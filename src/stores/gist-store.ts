@@ -1,54 +1,72 @@
 /**
  * Gist Store
- * Centralized state management for gists
+ * Central state management for gists
  */
 
-import type { GistRecord, GistFile } from '../services/db';
-import type { GitHubGist } from '../types/api';
-import { getAllGists, saveGist as dbSaveGist, deleteGist as dbDeleteGist } from '../services/db';
-import * as GitHub from '../services/github';
-import syncQueue from '../services/sync/queue';
-import networkMonitor from '../services/network/offline-monitor';
-import { detectConflict, storeConflict, resolveConflict } from '../services/sync/conflict-detector';
+import {
+  GistRecord,
+  getAllGists as dbGetAllGists,
+  saveGist as dbSaveGist,
+  deleteGist as dbDeleteGist,
+  GistFile,
+} from '../services/db';
 import { safeError } from '../services/security/logger';
+import { listStarredGists } from '../services/github/client';
+import networkMonitor from '../services/network/offline-monitor';
+import syncQueue from '../services/sync/queue';
+import { detectConflict, resolveConflict, storeConflict } from '../services/sync/conflict-detector';
+import { GitHubGist } from '../types/api';
+import { AppError } from '../services/github/error-handler';
 
-type GistListener = (gists: GistRecord[]) => void;
+export type GistStoreListener = (gists: GistRecord[]) => void;
 
 class GistStore {
   private gists: GistRecord[] = [];
-  private listeners: Set<GistListener> = new Set();
+  private listeners: GistStoreListener[] = [];
   private isLoading = false;
   private error: string | null = null;
+  private lastError: AppError | null = null;
 
   /**
-   * Initialize the store
+   * Initialize store - load from IndexedDB and sync from GitHub if online
    */
   async init(): Promise<void> {
-    await this.loadGists();
+    this.isLoading = true;
+    this.notifyListeners();
 
-    // Listen for network changes to refresh when back online
-    networkMonitor.subscribe((status) => {
-      if (status === 'online') {
-        this.refreshGists();
+    try {
+      // Load from local database first (immediate offline availability)
+      this.gists = await dbGetAllGists();
+      this.gists.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      this.notifyListeners();
+
+      // Sync from GitHub if online
+      if (networkMonitor.isOnline()) {
+        await this.loadGists();
       }
-    });
+    } catch (err) {
+      safeError('[GistStore] Initialization failed:', err);
+      this.error = 'Failed to initialize gist store';
+      this.lastError = err as AppError;
+    } finally {
+      this.isLoading = false;
+      this.notifyListeners();
+    }
   }
 
   /**
    * Subscribe to store changes
    */
-  subscribe(listener: GistListener): () => void {
-    this.listeners.add(listener);
-    // Immediately call with current state
+  subscribe(listener: GistStoreListener): () => void {
+    this.listeners.push(listener);
     listener(this.gists);
-
     return () => {
-      this.listeners.delete(listener);
+      this.listeners = this.listeners.filter((l) => l !== listener);
     };
   }
 
   /**
-   * Get current gists
+   * Get all gists
    */
   getGists(): GistRecord[] {
     return this.gists;
@@ -60,67 +78,93 @@ class GistStore {
   getGist(id: string): GistRecord | undefined {
     return this.gists.find((g) => g.id === id);
   }
-
   /**
-   * Check if loading
+   * Get loading state
    */
-  getIsLoading(): boolean {
+  getLoading(): boolean {
     return this.isLoading;
   }
 
   /**
-   * Get current error
+   * Get error state
    */
   getError(): string | null {
     return this.error;
   }
 
   /**
-   * Load gists from local cache or API
+   * Get last AppError object
+   */
+  getLastAppError(): AppError | null {
+    return this.lastError;
+  }
+
+  /**
+   * Load gists from GitHub
    */
   async loadGists(refresh = false): Promise<void> {
+    if (this.isLoading && !refresh) return;
+
     this.isLoading = true;
     this.error = null;
+    this.lastError = null;
     this.notifyListeners();
 
     try {
-      if (!refresh && this.gists.length > 0) {
-        // Return cached gists
-        return;
+      if (!networkMonitor.isOnline()) {
+        throw new AppError('Offline', 'Network is offline');
       }
 
-      // First, load from IndexedDB (offline-first)
-      const cachedGists = await getAllGists();
+      const [ownGists, starredGists] = await Promise.all([
+        GitHub.listGists(),
+        listStarredGists(),
+      ]);
 
-      if (cachedGists.length > 0) {
-        this.gists = cachedGists.sort(
-          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        );
-        this.notifyListeners();
+      const starredIds = new Set(starredGists.map((g) => g.id));
+      const allFetchedGists = [...ownGists, ...starredGists];
+      const uniqueGists = Array.from(
+        new Map(allFetchedGists.map((g) => [g.id, g])).values()
+      );
+
+      const handlers = {
+        add: (g: Gist) => {
+          this.gists.push({ ...g, starred: starredIds.has(g.id) });
+        },
+        update: (g: Gist) => {
+          const existing = this.gists.find((x) => x.id === g.id)!;
+          Object.assign(existing, g);
+          existing.starred = starredIds.has(g.id);
+        },
+        conflict: (g: Gist) => {
+          const existing = this.gists.find((x) => x.id === g.id)!;
+          const conflictError = detectConflict(existing, g)!;
+          existing.merge(conflictError);
+          this.error = conflictError.message;
+          this.lastError = conflictError;
+        },
+      };
+
+      for (const gist of uniqueGists) {
+        const existing = this.gists.find((x) => x.id === gist.id);
+        const conflictError = existing && detectConflict(existing, gist);
+        const action = existing
+          ? conflictError
+            ? 'conflict'
+            : 'update'
+          : 'add';
+        handlers[action](gist);
       }
 
-      // Then, if online, fetch fresh data from GitHub
-      if (networkMonitor.isOnline()) {
-        const [userGists, starredGists] = await Promise.all([
-          GitHub.listGists({ perPage: 100 }),
-          GitHub.listStarredGists({ perPage: 100 }),
-        ]);
-
-        // Merge and deduplicate
-        const starredIds = new Set(starredGists.map((g) => g.id));
-        const mergedGists = [...userGists, ...starredGists.filter((g) => !starredIds.has(g.id))];
-
-        // ⚡ Bolt: Use Map for O(1) lookups instead of O(N) find in loop
-        const cachedMap = new Map(cachedGists.map((c) => [c.id, c]));
-
-        // Process all gists and update in-memory list
-        for (const gist of mergedGists) {
-          const cached = cachedMap.get(gist.id);
-          const isStarred = starredIds.has(gist.id);
-          let record: GistRecord;
-
-          if (cached && cached.syncStatus === 'synced') {
-            const conflict = detectConflict(cached, gist);
+      this.notifyListeners();
+    } catch (err) {
+      this.error = err.message;
+      this.lastError = err;
+      this.notifyListeners();
+    } finally {
+      this.isLoading = false;
+      this.notifyListeners();
+    }
+  }
             if (conflict) {
               await storeConflict(conflict);
               // Auto-resolve with remote-wins for now
@@ -144,6 +188,7 @@ class GistStore {
     } catch (err) {
       safeError('[GistStore] Failed to load gists:', err);
       this.error = err instanceof Error ? err.message : 'Failed to load gists';
+      this.lastError = err as AppError;
       this.notifyListeners();
     } finally {
       this.isLoading = false;
@@ -217,6 +262,7 @@ class GistStore {
     } catch (err) {
       safeError('[GistStore] Failed to create gist:', err);
       this.error = err instanceof Error ? err.message : 'Failed to create gist';
+      this.lastError = err as AppError;
       this.notifyListeners();
       return null;
     } finally {
@@ -232,15 +278,22 @@ class GistStore {
     updates: { description?: string; public?: boolean; files?: Record<string, string> }
   ): Promise<boolean> {
     try {
-      const payload = {
-        ...(updates.description !== undefined && { description: updates.description }),
-        ...(updates.public !== undefined && { public: updates.public }),
-        ...(updates.files !== undefined && {
+      const transformers: Record<string, (value: any) => object> = {
+        description: (value) => ({ description: value }),
+        public: (value) => ({ public: value }),
+        files: (value) => ({
           files: Object.fromEntries(
-            Object.entries(updates.files).map(([filename, content]) => [filename, { content }])
+            Object.entries(value).map(([filename, content]) => [filename, { content }])
           ),
         }),
       };
+
+      const payload = Object.assign(
+        {},
+        ...Object.entries(updates)
+          .filter(([key]) => key in transformers)
+          .map(([key, value]) => transformers[key as keyof typeof transformers](value))
+      );
 
       if (networkMonitor.isOnline()) {
         const gist = await GitHub.updateGist(id, payload);
@@ -277,6 +330,7 @@ class GistStore {
     } catch (err) {
       safeError('[GistStore] Failed to update gist:', err);
       this.error = err instanceof Error ? err.message : 'Failed to update gist';
+      this.lastError = err as AppError;
       this.notifyListeners();
       return false;
     }
@@ -307,6 +361,7 @@ class GistStore {
     } catch (err) {
       safeError('[GistStore] Failed to delete gist:', err);
       this.error = err instanceof Error ? err.message : 'Failed to delete gist';
+      this.lastError = err as AppError;
       this.notifyListeners();
       return false;
     }
@@ -321,32 +376,32 @@ class GistStore {
 
     try {
       const shouldStar = !gist.starred;
+      const isOnline = networkMonitor.isOnline();
+      const operations = isOnline
+        ? {
+            true: () => GitHub.starGist(id),
+            false: () => GitHub.unstarGist(id),
+          }
+        : {
+            true: () => syncQueue.queueOperation(id, 'star', {}),
+            false: () => syncQueue.queueOperation(id, 'unstar', {}),
+          };
 
-      if (networkMonitor.isOnline()) {
-        if (shouldStar) {
-          await GitHub.starGist(id);
-        } else {
-          await GitHub.unstarGist(id);
-        }
+      await operations[shouldStar]();
+      gist.starred = shouldStar;
 
-        // Update local record
-        gist.starred = shouldStar;
+      if (isOnline) {
         await dbSaveGist(gist);
-        this.notifyListeners();
-        return true;
       } else {
-        // Queue for later sync
-        await syncQueue.queueOperation(id, shouldStar ? 'star' : 'unstar', {});
-
-        // Optimistic update
-        gist.starred = shouldStar;
         gist.syncStatus = 'pending';
-        this.notifyListeners();
-        return true;
       }
+
+      this.notifyListeners();
+      return true;
     } catch (err) {
       safeError('[GistStore] Failed to toggle star:', err);
       this.error = err instanceof Error ? err.message : 'Failed to toggle star';
+      this.lastError = err as AppError;
       this.notifyListeners();
       return false;
     }
@@ -389,7 +444,7 @@ class GistStore {
   /**
    * Convert GitHub API gist to local record
    */
-  private githubGistToRecord(gist: GitHubGist, starred = false): GistRecord {
+  private static githubGistToRecord(gist: GitHubGist, starred = false): GistRecord {
     return {
       id: gist.id,
       description: gist.description,

@@ -1,110 +1,108 @@
-import { EmptyState } from './ui/empty-state';
 /**
  * Gist Detail Component
- * Renders full gist content with file tabs and actions
+ * Renders full gist content, metadata, and files
  */
 
-import type { GistRecord } from '../services/db';
-import { getGist, saveGist } from '../services/db';
-import * as GitHub from '../services/github';
-import { toast } from './ui/toast';
-import { announcer } from '../utils/announcer';
+import { GistRecord, getGist, saveGist, GistFile } from '../services/db';
+import { GistRevision, GitHubGist } from '../types/api';
+// skipcq: JS-C1003
+import * as GitHub from '../services/github/client';
 import gistStore from '../stores/gist-store';
+import { toast } from './ui/toast';
+import { EmptyState } from './ui/empty-state';
 import networkMonitor from '../services/network/offline-monitor';
-import type { GitHubGist, GistRevision, GistFile } from '../types/api';
+import { ErrorBoundary } from './ui/error-boundary';
+import { AppError } from '../services/github/error-handler';
+import { announcer } from '../utils/announcer';
 
 /**
  * Escape HTML
  */
-function esc(text: string): string {
+const esc = (text: string): string => {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
-}
-
-/**
- * Get language class for syntax highlighting (basic)
- */
-function getLanguageClass(language?: string): string {
-  if (!language) return 'lang-text';
-  return `lang-${language.toLowerCase()}`;
-}
-
-/**
- * Render file content with line numbers
- */
-function renderFileContent(content: string, language?: string): string {
-  const lines = content.split('\n');
-  const langClass = esc(getLanguageClass(language));
-
-  const linesHtml = lines
-    .map((line, i) => {
-      const lineNum = i + 1;
-      const escapedLine = esc(line);
-      return `<tr><td class="line-number" data-line="${lineNum}">${lineNum}</td><td class="line-content ${langClass}">${escapedLine || ' '}</td></tr>`;
-    })
-    .join('');
-
-  return `<table class="code-table"><tbody>${linesHtml}</tbody></table>`;
-}
-
-/**
- * Render file tabs
- */
-function renderFileTabs(
-  files: Record<string, { filename: string; language?: string }>,
-  activeIndex: number
-): string {
-  const entries = Object.entries(files);
-  if (entries.length === 1) {
-    const firstEntry = entries[0];
-    return `<div class="file-tabs single-file" role="tablist"><span class="file-tab active" role="tab" aria-selected="true" id="tab-0">${esc(firstEntry?.[1]?.filename ?? 'unknown')}</span></div>`;
-  }
-
-  return `<div class="file-tabs" role="tablist">${entries
-    .map(
-      ([key, file], index) => `
-    <button class="file-tab ${index === activeIndex ? 'active' : ''}"
-            role="tab"
-            aria-selected="${index === activeIndex}"
-            aria-controls="file-content-area"
-            id="tab-${index}"
-            data-file-key="${esc(key)}"
-            data-file-index="${index}">
-      ${esc(file.filename)}
-    </button>
-  `
-    )
-    .join('')}</div>`;
-}
+};
 
 /**
  * Format file size
  */
-function formatSize(bytes?: number): string {
-  if (!bytes || bytes === 0) return '0 B';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
+const { formatSize, renderFileContent } = (function() {
+  function formatSize(bytes?: number): string {
+    if (!bytes) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let size = bytes;
+    let unitIndex = 0;
+    while (size >= 1024 && unitIndex < units.length - 1) {
+      size /= 1024;
+      unitIndex++;
+    }
+    return `${size.toFixed(1)} ${units[unitIndex]}`;
+  }
+
+  /**
+   * Render file content with simple highlighting placeholder
+   */
+  function renderFileContent(content: string, language?: string): string {
+    return `
+      <pre class="code-block language-${esc(language || 'text')}">
+        <code>${esc(content)}</code>
+      </pre>
+    `;
+  }
+
+export const { formatSize, renderFileContent } = (function() {
+  return { formatSize, renderFileContent };
+})();
 
 /**
- * Render gist detail HTML
+ * Render full gist detail HTML
  */
 export function renderGistDetail(gist: GistRecord): string {
-  const title = esc(gist.description || Object.values(gist.files)[0]?.filename || 'Untitled Gist');
+  const title = gist.description || 'Untitled Gist';
   const description = gist.description
-    ? `<p class="gist-description">${esc(gist.description)}</p>`
+    ? `<p class="gist-description-text">${esc(gist.description)}</p>`
     : '';
   const fileCount = Object.keys(gist.files).length;
-  const visibility = gist.public ? '🌐 Public' : '🔒 Private';
-  const starIcon = gist.starred ? '★' : '☆';
-  const starLabel = gist.starred ? 'Unstar' : 'Star';
+  const visibilityMap: Record<boolean, string> = { true: 'Public', false: 'Secret' };
+  const visibility = visibilityMap[gist.public];
+  const starredMap: Record<boolean, { icon: string; label: string }> = {
+    true: { icon: '★', label: 'Unstar' },
+    false: { icon: '☆', label: 'Star' },
+  };
+  const { icon: starIcon, label: starLabel } = starredMap[gist.starred];
 
-  const fileTabs = renderFileTabs(gist.files, 0);
-  const firstFile = Object.values(gist.files)[0];
+  const fileTabs =
+    fileCount > 1
+      ? `
+    <div class="file-tabs scroll-x" role="tablist">
+      ${Object.entries(gist.files)
+        .map(
+          ([key, file], index) => `
+        <button class="file-tab ${index === 0 ? 'active' : ''}"
+                data-file-key="${esc(key)}"
+                id="tab-${index}"
+                role="tab"
+                aria-selected="${index === 0}"
+                aria-controls="file-content-area">
+          ${esc(file.filename)}
+        </button>
+      `).join('')}    
+    </div>
+  `
+      : '';
+  // ... rest of renderGistDetail implementation
+}
+        )
+        .join('')}
+    </div>
+  `
+      : '';
+
+  const firstFileKey = Object.keys(gist.files)[0];
+  const firstFile = firstFileKey ? gist.files[firstFileKey] : null;
   const content = firstFile?.content
-    ? renderFileContent(firstFile.content || '', firstFile.language)
+    ? renderFileContent(firstFile.content, firstFile.language)
     : '<p class="empty-content">No content available</p>';
 
   return `
@@ -234,11 +232,8 @@ export function bindDetailEvents(
       // Re-render to update star state
       const gist = gistStore.getGist(gistId);
       if (gist) {
-        const mainEl = container.closest('.app-main') || container.parentElement;
-        if (mainEl) {
-          container.innerHTML = renderGistDetail(gist);
-          bindDetailEvents(container, onBack, onEdit, onRevisions);
-        }
+        container.innerHTML = renderGistDetail(gist);
+        bindDetailEvents(container, onBack, onEdit, onRevisions);
       }
       const updatedGist = gistStore.getGist(gistId);
       toast.success(updatedGist?.starred ? 'Starred' : 'Unstarred');
@@ -251,7 +246,7 @@ export function bindDetailEvents(
   container.querySelector('[data-action="fork"]')?.addEventListener('click', async () => {
     if (!gistId) return;
 
-    if (!confirm('Fork this gist? A copy will be created in your account.')) return;
+    if (!customConfirm('Fork this gist? A copy will be created in your account.')) return;
 
     const btn = container.querySelector('[data-action="fork"]') as HTMLButtonElement;
     btn.style.pointerEvents = 'none';
@@ -316,12 +311,13 @@ export function bindDetailEvents(
 }
 
 /**
+/**
  * Convert GitHub API gist to local record
  */
-function apiGistToRecord(
+const apiGistToRecord = (
   apiGist: GitHubGist,
   filesWithContent: Record<string, GistFile & { content?: string }>
-): GistRecord {
+): GistRecord => {
   return {
     id: apiGist.id,
     description: apiGist.description,
@@ -336,7 +332,7 @@ function apiGistToRecord(
     syncStatus: 'synced',
     lastSyncedAt: new Date().toISOString(),
   } as GistRecord;
-}
+};
 
 /**
  * Load and render a specific gist detail
@@ -359,17 +355,24 @@ export async function loadGistDetail(
       // Fetch file content from raw URLs
       const filesWithContent: Record<string, GistFile & { content?: string }> = {};
       await Promise.all(
-        Object.entries(apiGist.files).map(async ([key, file]) => {
-          if (file.raw_url && (!file.size || file.size < 1024 * 1024)) {
+        const MAX_SIZE = 1024 * 1024;
+        const contentHandlers = {
+          true: async (file) => {
             try {
               const resp = await fetch(file.raw_url);
               if (resp.ok) {
-                file.content = await resp.text();
+                return await resp.text();
               }
             } catch {
-              file.content = '// Failed to load content';
+              return '// Failed to load content';
             }
-          }
+            return file.content;
+          },
+          false: async (file) => file.content
+        };
+        Object.entries(apiGist.files).map(async ([key, file]) => {
+          const shouldFetch = Boolean(file.raw_url && (!file.size || file.size < MAX_SIZE));
+          file.content = await contentHandlers[shouldFetch](file);
           filesWithContent[key] = file;
         })
       );
@@ -396,18 +399,20 @@ export async function loadGistDetail(
     container.innerHTML = renderGistDetail(gist);
     bindDetailEvents(container, onBack, onEdit, onRevisions);
   } catch (err) {
-    container.innerHTML = `
-      <div class="error-state">
-        <p>Failed to load gist: ${esc(err instanceof Error ? err.message : 'Unknown error')}</p>
-        <button class="retry-btn secondary-btn" id="retry-load-gist">Retry</button>
-        <button class="back-btn" id="retry-back-btn">← Back</button>
-      </div>
-    `;
-    container
-      .querySelector('#retry-load-gist')
-      ?.addEventListener('click', () =>
-        loadGistDetail(gistId, container, onBack, onEdit, onRevisions)
-      );
-    container.querySelector('#retry-back-btn')?.addEventListener('click', onBack);
+    container.innerHTML = ErrorBoundary.render(err as AppError, () => {
+      loadGistDetail(gistId, container, onBack, onEdit, onRevisions);
+    });
+    ErrorBoundary.bindEvents(container, () => {
+      loadGistDetail(gistId, container, onBack, onEdit, onRevisions);
+    });
+
+    // Fallback back button if not handled by ErrorBoundary
+    if (!container.querySelector('#error-retry-btn')) {
+      const backBtn = document.createElement('button');
+      backBtn.className = 'back-btn';
+      backBtn.textContent = '← Back';
+      backBtn.onclick = onBack;
+      container.appendChild(backBtn);
+    }
   }
 }

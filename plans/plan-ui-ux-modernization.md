@@ -22,7 +22,7 @@ Modernize d.o. Gist Hub UI/UX using the updated `reader-ui-ux` skill v2.0.0 with
 
 ### 1.1 Motion Tokens
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `src/tokens/motion/motion.ts`, `src/tokens/css-variables.ts`
 
 Add comprehensive motion tokens:
@@ -50,7 +50,7 @@ export const motion = {
 
 ### 1.2 Elevation Tokens
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `src/tokens/elevation/shadows.ts`
 
 Add glow/accent shadows:
@@ -70,7 +70,7 @@ export const shadows = {
 
 ### 2.1 Container Queries for Gist Cards
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `src/styles/base.css`
 
 Add container query support:
@@ -91,7 +91,7 @@ Add container query support:
 
 ### 2.2 Reduced Motion Support
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `src/styles/motion.css` (new file)
 
 Create motion preferences:
@@ -110,7 +110,7 @@ Create motion preferences:
 
 ### 2.3 Professional Micro-interactions
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `src/styles/interactions.css`
 
 Update hover/active states with easing:
@@ -135,7 +135,7 @@ Update hover/active states with easing:
 
 ### 3.1 Bottom Sheet Component
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `src/components/ui/bottom-sheet.ts` (new)
 
 Implement mobile bottom sheet:
@@ -147,7 +147,7 @@ Implement mobile bottom sheet:
 
 ### 3.2 Navigation Rail (Tablet)
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `src/components/app.ts`, `src/styles/base.css`
 
 Add tablet rail navigation (768-1023px):
@@ -162,7 +162,7 @@ Add tablet rail navigation (768-1023px):
 
 ### 3.3 Command Palette
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `src/components/ui/command-palette.ts` (new)
 
 Implement Cmd+K command palette:
@@ -176,7 +176,7 @@ Implement Cmd+K command palette:
 
 ### 4.1 Skeleton Screens
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `src/components/app.ts`, `src/styles/base.css`
 
 Enhanced skeleton with shimmer:
@@ -190,7 +190,7 @@ Enhanced skeleton with shimmer:
 
 ### 4.2 Toast Notifications
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `src/components/ui/toast.ts`
 
 Update with proper motion:
@@ -201,7 +201,7 @@ Update with proper motion:
 
 ### 4.3 View Transitions Integration
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `src/components/app.ts`
 
 Add View Transitions API:
@@ -218,7 +218,7 @@ if (document.startViewTransition) {
 
 ### 5.1 Focus Management
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `src/utils/focus-trap.ts` (new)
 
 Implement focus trap utility:
@@ -232,7 +232,7 @@ export class FocusTrap {
 
 ### 5.2 ARIA Live Regions
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `src/utils/announcer.ts` (new)
 
 Screen reader announcements:
@@ -245,7 +245,7 @@ export class Announcer {
 
 ### 5.3 Skip Links
 
-**Status:** Pending
+**Status:** Completed
 **Files:** `index.html`, `src/styles/accessibility.css`
 
 Add skip to content link.

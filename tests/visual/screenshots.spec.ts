@@ -14,7 +14,7 @@ test.describe('UI Visual Verification', () => {
   for (const bp of BREAKPOINTS) {
     test(`screenshot - ${bp.name} (${bp.width}x${bp.height})`, async ({ page }) => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
-      await page.goto('http://localhost:5173');
+      await page.goto('http://localhost:3000');
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(500);
 

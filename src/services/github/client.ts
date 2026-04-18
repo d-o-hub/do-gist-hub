@@ -15,6 +15,7 @@ import type {
 } from '../../types/api';
 import { trackRateLimit } from './rate-limiter';
 import { safeError } from '../security/logger';
+import { handleGitHubError } from './error-handler';
 
 const BASE_URL = 'https://api.github.com';
 
@@ -68,22 +69,14 @@ async function buildOptions(method: string = 'GET', body?: string): Promise<Requ
 /**
  * Handle API errors with proper typing
  */
-function handleApiError(error: unknown, context: string): never {
+export function handleApiError(error: unknown, context: string): never {
   if (error instanceof DOMException && error.name === 'AbortError') {
     throw new Error(`Request cancelled: ${context}`);
   }
 
-  safeError(`[GitHub API] ${context}:`, error);
-
-  if (error instanceof Response) {
-    throw new Error(`GitHub API Error: ${error.status} ${error.statusText}`);
-  }
-
-  if (error instanceof Error) {
-    throw error;
-  }
-
-  throw new Error(`Unknown error in ${context}: ${String(error)}`);
+  // Use the central error handler
+  const appError = handleGitHubError(error, context);
+  throw appError;
 }
 
 /**
@@ -142,7 +135,7 @@ export async function listGists(
     );
 
     if (!response.ok) {
-      handleApiError(response, 'listGists');
+      return handleApiError(response, 'listGists');
     }
 
     trackRateLimit(response);
@@ -169,7 +162,7 @@ export async function listStarredGists(
     const response = await fetch(`${BASE_URL}/gists/starred?${params}`, await buildOptions());
 
     if (!response.ok) {
-      handleApiError(response, 'listStarredGists');
+      return handleApiError(response, 'listStarredGists');
     }
 
     trackRateLimit(response);
@@ -187,7 +180,7 @@ export async function getGist(id: string): Promise<GitHubGist> {
     const response = await fetch(`${BASE_URL}/gists/${id}`, await buildOptions());
 
     if (!response.ok) {
-      handleApiError(response, 'getGist');
+      return handleApiError(response, 'getGist');
     }
 
     trackRateLimit(response);
@@ -208,7 +201,7 @@ export async function createGist(payload: CreateGistRequest): Promise<GitHubGist
     );
 
     if (!response.ok) {
-      handleApiError(response, 'createGist');
+      return handleApiError(response, 'createGist');
     }
 
     trackRateLimit(response);
@@ -229,7 +222,7 @@ export async function updateGist(id: string, payload: UpdateGistRequest): Promis
     );
 
     if (!response.ok) {
-      handleApiError(response, 'updateGist');
+      return handleApiError(response, 'updateGist');
     }
 
     trackRateLimit(response);
@@ -247,12 +240,14 @@ export async function deleteGist(id: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/gists/${id}`, await buildOptions('DELETE'));
 
     if (!response.ok) {
-      handleApiError(response, 'deleteGist');
+      return handleApiError(response, 'deleteGist');
     }
 
     trackRateLimit(response);
+    return null;
   } catch (error) {
     handleApiError(error, 'deleteGist');
+    return null;
   }
 }
 
@@ -264,13 +259,14 @@ export async function starGist(id: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/gists/${id}/star`, await buildOptions('PUT'));
 
     if (!response.ok) {
-      handleApiError(response, 'starGist');
+      return handleApiError(response, 'starGist');
     }
 
     trackRateLimit(response);
   } catch (error) {
     handleApiError(error, 'starGist');
   }
+  return null;
 }
 
 /**
@@ -281,13 +277,14 @@ export async function unstarGist(id: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/gists/${id}/star`, await buildOptions('DELETE'));
 
     if (!response.ok) {
-      handleApiError(response, 'unstarGist');
+      return handleApiError(response, 'unstarGist');
     }
 
     trackRateLimit(response);
   } catch (error) {
     handleApiError(error, 'unstarGist');
   }
+  return null;
 }
 
 /**
@@ -313,7 +310,7 @@ export async function forkGist(id: string): Promise<GitHubGist> {
     const response = await fetch(`${BASE_URL}/gists/${id}/forks`, await buildOptions('POST'));
 
     if (!response.ok) {
-      handleApiError(response, 'forkGist');
+      return handleApiError(response, 'forkGist');
     }
 
     trackRateLimit(response);
@@ -331,7 +328,7 @@ export async function listGistRevisions(id: string): Promise<GistRevision[]> {
     const response = await fetch(`${BASE_URL}/gists/${id}/revisions`, await buildOptions());
 
     if (!response.ok) {
-      handleApiError(response, 'listGistRevisions');
+      return handleApiError(response, 'listGistRevisions');
     }
 
     trackRateLimit(response);
@@ -366,7 +363,7 @@ async function getCurrentUsername(): Promise<string> {
     });
 
     if (!response.ok) {
-      handleApiError(response, 'getCurrentUsername');
+      return handleApiError(response, 'getCurrentUsername');
     }
 
     const user = await response.json();

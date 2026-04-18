@@ -1,7 +1,10 @@
 /**
- * Secure logging utility with token redaction.
+ * Secure logging utility with token redaction and offline persistence.
  * Ensures PATs and other secrets are never exposed in logs.
+ * Persists logs to IndexedDB for offline diagnostics.
  */
+
+import { getDB, LogEntry } from '../db';
 
 /**
  * Redact a token, showing only first 6 and last 4 characters.
@@ -92,28 +95,94 @@ export function redactAny(arg: unknown, depth = 0, seen = new WeakSet()): unknow
   return arg;
 }
 
+const MAX_LOGS = 1000;
+
 /**
- * Safe console.log that redacts secrets.
- * Use instead of console.log for any output that might contain tokens.
+ * Persist log entry to IndexedDB with rotation.
  */
-export function safeLog(...args: unknown[]): void {
-  const redacted = args.map((arg) => redactAny(arg));
-  // eslint-disable-next-line no-console
-  console.log(...redacted);
+export async function persistLog(
+  level: LogEntry['level'],
+  message: string,
+  data?: unknown
+): Promise<void> {
+  try {
+    const db = getDB();
+    if (!db) return;
+
+    await db.add('logs', {
+      timestamp: Date.now(),
+      level,
+      message,
+      data: redactAny(data),
+    });
+
+    // Rotation: remove old logs if exceeding limit
+    const count = await db.count('logs');
+    if (count > MAX_LOGS) {
+      const logs = await db.getAllKeysFromIndex('logs', 'by-timestamp');
+      const toDelete = logs.slice(0, count - MAX_LOGS);
+      const tx = db.transaction('logs', 'readwrite');
+      for (const id of toDelete) {
+        tx.objectStore('logs').delete(id);
+      }
+      await tx.done;
+    }
+  } catch (err) {
+    // Fallback if DB not ready or failed
+    /* eslint-disable no-console */
+    console.error('[Logger] Failed to persist log', err);
+  }
 }
 
 /**
- * Safe console.error that redacts secrets.
+ * Safe console.log that redacts secrets and persists offline.
  */
-export function safeError(...args: unknown[]): void {
-  const redacted = args.map((arg) => redactAny(arg));
-  console.error(...redacted);
+export function safeLog(message: string, ...args: unknown[]): void {
+  const redactedArgs = args.map((arg) => redactAny(arg));
+  const redactedMessage = redactSecrets(message);
+
+  /* eslint-disable no-console */
+  persistLog('info', redactedMessage, args.length === 1 ? args[0] : args);
 }
 
 /**
- * Safe console.warn that redacts secrets.
+ * Safe console.error that redacts secrets and persists offline.
  */
-export function safeWarn(...args: unknown[]): void {
-  const redacted = args.map((arg) => redactAny(arg));
-  console.warn(...redacted);
+export function safeError(message: string, ...args: unknown[]): void {
+  const redactedArgs = args.map((arg) => redactAny(arg));
+  const redactedMessage = redactSecrets(message);
+
+  /* eslint-disable no-console */
+  console.error(redactedMessage, ...redactedArgs);
+
+  persistLog('error', redactedMessage, args.length === 1 ? args[0] : args);
+}
+
+/**
+ * Safe console.warn that redacts secrets and persists offline.
+ */
+export function safeWarn(message: string, ...args: unknown[]): void {
+  const redactedArgs = args.map((arg) => redactAny(arg));
+  const redactedMessage = redactSecrets(message);
+
+  /* eslint-disable no-console */
+  console.warn(redactedMessage, ...redactedArgs);
+
+  persistLog('warn', redactedMessage, args.length === 1 ? args[0] : args);
+}
+
+/**
+ * Get all logs from IndexedDB.
+ */
+export function getOfflineLogs(): Promise<LogEntry[]> {
+  const db = getDB();
+  return db.getAllFromIndex('logs', 'by-timestamp');
+}
+
+/**
+ * Clear all logs from IndexedDB.
+ */
+export async function clearOfflineLogs(): Promise<void> {
+  const db = getDB();
+  await db.clear('logs');
 }

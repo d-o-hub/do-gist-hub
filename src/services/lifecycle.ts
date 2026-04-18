@@ -4,7 +4,7 @@
  */
 
 import { cancelAllRequests } from './github/client';
-import { safeLog } from './security/logger';
+import { safeLog, safeError } from './security/logger';
 
 export type CleanupFunction = () => void;
 
@@ -40,7 +40,7 @@ class LifecycleManager {
       try {
         cleanup();
       } catch (error) {
-        console.error('[Lifecycle] Route cleanup error:', error);
+        safeError('[Lifecycle] Route cleanup error:', error);
       }
     });
 
@@ -59,7 +59,7 @@ class LifecycleManager {
       try {
         cleanup();
       } catch (error) {
-        console.error('[Lifecycle] App cleanup error:', error);
+        safeError('[Lifecycle] App cleanup error:', error);
       }
     });
 

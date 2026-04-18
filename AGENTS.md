@@ -354,3 +354,33 @@ agent-docs/
 See `.agents/skills/codebase-optimizer/SKILL.md` for details.
 
 
+
+---
+
+## Self-Learning Rules (Auto-Generated)
+
+This section is automatically updated by `./scripts/analyze-codebase.sh`.
+
+### CSS Layout Rules
+
+1. **Mobile-First Navigation**: Always use `display: none` base style for sidebar
+2. **Dynamic Viewport**: Use `100dvh` for app shell on mobile
+3. **Safe Areas**: Include `env(safe-area-inset-*)` for header/footer padding
+4. **Flex Scrolling**: Add `min-height: 0` to flex children with overflow
+
+### Verification Checklist
+
+Before committing, run:
+```bash
+./scripts/analyze-codebase.sh --validate
+```
+
+This checks:
+- [ ] No unstyled elements at any breakpoint
+- [ ] Layout gaps eliminated
+- [ ] Responsive behavior correct
+- [ ] No console errors
+
+### Issue History
+
+See `agent-docs/issues/` for documented issues and fixes.

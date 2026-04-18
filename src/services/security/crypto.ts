@@ -1,9 +1,11 @@
 /**
  * Web Cryptography Service (2026)
  * Secure encryption for sensitive data at rest.
+ * Uses AES-GCM with a device-persistent master key.
  */
 
 const ALGORITHM = 'AES-GCM';
+const KEY_STORAGE_NAME = 'gist-hub-master-key';
 
 /**
  * Encrypt a string using a device-bound key
@@ -42,27 +44,29 @@ export async function decrypt(encryptedData: string, ivBase64: string): Promise<
   return new TextDecoder().decode(decrypted);
 }
 
-async function getOrCreateKey(): Promise<CryptoKey> {
-  const stored = await getStoredKey();
-  if (stored) return stored;
+/**
+ * Persist/retrieve the master key using IndexedDB metadata
+ */
+export async function getOrCreateKey(): Promise<CryptoKey> {
+  const { getMetadata, setMetadata } = await import('../db');
+
+  const stored = await getMetadata<JsonWebKey>(KEY_STORAGE_NAME);
+  if (stored) {
+    return await window.crypto.subtle.importKey('jwk', stored, { name: ALGORITHM }, true, [
+      'encrypt',
+      'decrypt',
+    ]);
+  }
 
   const key = await window.crypto.subtle.generateKey({ name: ALGORITHM, length: 256 }, true, [
     'encrypt',
     'decrypt',
   ]);
 
-  await storeKey(key);
+  const jwk = await window.crypto.subtle.exportKey('jwk', key);
+  await setMetadata(KEY_STORAGE_NAME, jwk);
+
   return key;
-}
-
-let cachedKey: CryptoKey | null = null;
-
-async function getStoredKey(): Promise<CryptoKey | null> {
-  return cachedKey;
-}
-
-async function storeKey(key: CryptoKey): Promise<void> {
-  cachedKey = key;
 }
 
 function b64encode(buf: ArrayBuffer): string {
