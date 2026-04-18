@@ -16,6 +16,7 @@ import {
 } from '../db';
 import * as GitHub from '../github';
 import networkMonitor from '../network/offline-monitor';
+
 /**
  * Sync operation types
  */
@@ -52,12 +53,14 @@ class SyncQueue {
     this.unsubscribeNetwork = networkMonitor.subscribe((status) => {
       if (status === 'online') {
         safeLog('[SyncQueue] Network online, checking pending operations');
-        this.processQueue();
+        void this.processQueue();
       }
     });
 
     // Also listen for custom online event
-    window.addEventListener('app:online', () => this.processQueue());
+    window.addEventListener('app:online', () => {
+      void this.processQueue();
+    });
 
     safeLog('[SyncQueue] Initialized');
   }
@@ -79,7 +82,7 @@ class SyncQueue {
 
     // If online, try to sync immediately
     if (networkMonitor.isOnline()) {
-      this.processQueue();
+      void this.processQueue();
     }
 
     return id;
