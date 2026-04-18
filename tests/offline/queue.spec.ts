@@ -107,9 +107,9 @@ test.describe('Sync Queue and Offline Operations', () => {
       const { initIndexedDB, queueWrite, getPendingWrites, removePendingWrite } = await import('../../src/services/db');
       await initIndexedDB();
 
-      const id1 = await queueWrite({ gistId: 'gist-a', action: 'create', payload: {} });
+      await queueWrite({ gistId: 'gist-a', action: 'create', payload: {} });
       const id2 = await queueWrite({ gistId: 'gist-b', action: 'update', payload: {} });
-      const id3 = await queueWrite({ gistId: 'gist-c', action: 'delete', payload: {} });
+      await queueWrite({ gistId: 'gist-c', action: 'delete', payload: {} });
 
       // Remove the middle one (simulating successful sync)
       await removePendingWrite(id2);
