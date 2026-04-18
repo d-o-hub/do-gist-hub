@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test.describe('Responsive Screenshots', () => {
   test('mobile - 375px', async ({ page }) => {
