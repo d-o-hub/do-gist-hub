@@ -12,8 +12,6 @@ test.describe('Accessibility - Semantics', () => {
 
   test('should have proper heading hierarchy', async ({ page }) => {
     const h1Count = await page.locator('h1').count();
-    const h2Count = await page.locator('h2').count();
-    const h3Count = await page.locator('h3').count();
 
     // Should have exactly one h1 (app title)
     expect(h1Count).toBeGreaterThanOrEqual(1);

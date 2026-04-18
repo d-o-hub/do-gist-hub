@@ -9,6 +9,7 @@ import gistStore from './stores/gist-store';
 import { registerServiceWorker } from './services/pwa/register-sw';
 import { initWebVitals } from './services/perf';
 import { isViewTransitionSupported } from './utils/view-transitions';
+import { safeLog, safeError } from './services/security/logger';
 import './styles/base.css';
 import './styles/accessibility.css';
 import './styles/interactions.css';

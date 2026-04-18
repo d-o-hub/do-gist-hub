@@ -223,7 +223,6 @@ test.describe('Accessibility - Screen Reader', () => {
       expect(tagName.toLowerCase()).toBe('article');
 
       // Should have accessible name
-      const ariaLabel = await firstCard.getAttribute('aria-label');
       const title = firstCard.locator('.gist-card-title');
       const titleText = await title.textContent().catch(() => '');
 

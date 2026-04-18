@@ -168,21 +168,21 @@ class GistStore {
             if (conflict) {
               await storeConflict(conflict);
               // Auto-resolve with remote-wins for now
-              const resolved = resolveConflict(conflict, 'remote-wins');
-              await dbSaveGist(resolved);
-              this.mergeGistRecord(resolved, starredIds.has(gist.id));
+              record = resolveConflict(conflict, 'remote-wins');
             } else {
-              const record = this.githubGistToRecord(gist, starredIds.has(gist.id));
-              await dbSaveGist(record);
-              this.mergeGistRecord(record, starredIds.has(gist.id));
+              record = this.githubGistToRecord(gist, isStarred);
             }
           } else {
-            const record = this.githubGistToRecord(gist, starredIds.has(gist.id));
-            await dbSaveGist(record);
-            this.mergeGistRecord(record, starredIds.has(gist.id));
+            record = this.githubGistToRecord(gist, isStarred);
           }
+
+          await dbSaveGist(record);
+          // ⚡ Bolt: Batch update memory without sorting in every iteration
+          this.mergeGistRecord(record, isStarred, true);
         }
 
+        // ⚡ Bolt: Single sort after batch update
+        this.sortGists();
         this.notifyListeners();
       }
     } catch (err) {
@@ -489,10 +489,19 @@ class GistStore {
   }
 
   /**
+   * Sort gists by updated_at (descending)
+   * ⚡ Bolt: Use numeric timestamp comparison to avoid object creation in sort loop
+   */
+  private sortGists(): void {
+    this.gists.sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
+  }
+
+  /**
    * Merge a gist record into the local list.
    * Updates existing or adds new, maintains sort order.
+   * ⚡ Bolt: Added skipSort parameter for bulk operations
    */
-  private mergeGistRecord(record: GistRecord, starred: boolean): void {
+  private mergeGistRecord(record: GistRecord, starred: boolean, skipSort = false): void {
     const finalRecord = starred ? { ...record, starred } : record;
     const existingIndex = this.gists.findIndex((g) => g.id === record.id);
 
@@ -505,8 +514,9 @@ class GistStore {
       this.gists.push(finalRecord);
     }
 
-    // Re-sort by updated_at
-    this.gists.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    if (!skipSort) {
+      this.sortGists();
+    }
   }
 }
 
