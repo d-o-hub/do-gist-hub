@@ -186,14 +186,16 @@ generate_report() {
 EOF
 
     # List all detected issues
-    if [[ $total_detected -gt 0 ]]; then
-        for issue in "$AGENT_DOCS/detected/"*.md; do
-            local name=$(basename "$issue" .md)
-            echo "- [$name]($issue)" >> "$report_file"
-        done
-    else
-        echo "No issues detected." >> "$report_file"
-    fi
+    {
+        if [[ $total_detected -gt 0 ]]; then
+            for issue in "$AGENT_DOCS/detected/"*.md; do
+                local name=$(basename "$issue" .md)
+                echo "- [$name]($issue)"
+            done
+        else
+            echo "No issues detected."
+        fi
+    } >> "$report_file"
 
     cat >> "$report_file" << EOF
 
@@ -206,32 +208,15 @@ EOF
     local medium_count=$(grep -l "Severity: medium" "$AGENT_DOCS/detected/"*.md 2>/dev/null | wc -l)
     local low_count=$(grep -l "Severity: low" "$AGENT_DOCS/detected/"*.md 2>/dev/null | wc -l)
 
-    echo "- High: $high_count" >> "$report_file"
-    echo "- Medium: $medium_count" >> "$report_file"
-    echo "- Low: $low_count" >> "$report_file"
+    {
+        echo "- High: $high_count"
+        echo "- Medium: $medium_count"
+        echo "- Low: $low_count"
+    } >> "$report_file"
 
     echo ""
     echo "Report generated: $report_file"
 }
-
-# Main execution
-main() {
-    echo "Autosearch Issues - Pattern Detection"
-    echo "======================================"
-    
-    init_dirs
-    
-    local total_found=0
-    
-    # Run all pattern searches
-    for pattern_name in "${!PATTERNS[@]}"; do
-        search_pattern "$pattern_name"
-        total_found=$((total_found + $?))
-    done
-    
-    # Generate report
-    generate_report
-    
     echo ""
     echo "======================================"
     echo "Scan complete. Total issues: $total_found"
