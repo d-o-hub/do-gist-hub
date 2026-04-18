@@ -100,7 +100,7 @@ const MAX_LOGS = 1000;
 /**
  * Persist log entry to IndexedDB with rotation.
  */
-async function persistLog(
+export async function persistLog(
   level: LogEntry['level'],
   message: string,
   data?: unknown
@@ -123,7 +123,7 @@ async function persistLog(
       const toDelete = logs.slice(0, count - MAX_LOGS);
       const tx = db.transaction('logs', 'readwrite');
       for (const id of toDelete) {
-        void tx.objectStore('logs').delete(id);
+        tx.objectStore('logs').delete(id);
       }
       await tx.done;
     }
@@ -142,8 +142,6 @@ export function safeLog(message: string, ...args: unknown[]): void {
   const redactedMessage = redactSecrets(message);
 
   /* eslint-disable no-console */
-  console.log(redactedMessage, ...redactedArgs);
-
   persistLog('info', redactedMessage, args.length === 1 ? args[0] : args);
 }
 
@@ -176,7 +174,7 @@ export function safeWarn(message: string, ...args: unknown[]): void {
 /**
  * Get all logs from IndexedDB.
  */
-export async function getOfflineLogs(): Promise<LogEntry[]> {
+export function getOfflineLogs(): Promise<LogEntry[]> {
   const db = getDB();
   return db.getAllFromIndex('logs', 'by-timestamp');
 }

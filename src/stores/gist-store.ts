@@ -10,7 +10,6 @@ import {
   deleteGist as dbDeleteGist,
   GistFile,
 } from '../services/db';
-import * as GitHub from '../services/github/client';
 import { safeError } from '../services/security/logger';
 import { listStarredGists } from '../services/github/client';
 import networkMonitor from '../services/network/offline-monitor';
@@ -79,7 +78,6 @@ class GistStore {
   getGist(id: string): GistRecord | undefined {
     return this.gists.find((g) => g.id === id);
   }
-
   /**
    * Get loading state
    */
@@ -113,23 +111,60 @@ class GistStore {
     this.notifyListeners();
 
     try {
-      if (networkMonitor.isOnline()) {
-        // Fetch both own gists and starred gists
-        const [ownGists, starredGists] = await Promise.all([
-          GitHub.listGists(),
-          listStarredGists(),
-        ]);
+      if (!networkMonitor.isOnline()) {
+        throw new AppError('Offline', 'Network is offline');
+      }
 
-        const starredIds = new Set(starredGists.map((g) => g.id));
-        const allFetchedGists = [...ownGists, ...starredGists];
+      const [ownGists, starredGists] = await Promise.all([
+        GitHub.listGists(),
+        listStarredGists(),
+      ]);
 
-        // Deduplicate
-        const uniqueGists = Array.from(new Map(allFetchedGists.map((g) => [g.id, g])).values());
+      const starredIds = new Set(starredGists.map((g) => g.id));
+      const allFetchedGists = [...ownGists, ...starredGists];
+      const uniqueGists = Array.from(
+        new Map(allFetchedGists.map((g) => [g.id, g])).values()
+      );
 
-        for (const gist of uniqueGists) {
-          const existing = this.gists.find((g) => g.id === gist.id);
-          if (existing) {
-            const conflict = detectConflict(existing, gist);
+      const handlers = {
+        add: (g: Gist) => {
+          this.gists.push({ ...g, starred: starredIds.has(g.id) });
+        },
+        update: (g: Gist) => {
+          const existing = this.gists.find((x) => x.id === g.id)!;
+          Object.assign(existing, g);
+          existing.starred = starredIds.has(g.id);
+        },
+        conflict: (g: Gist) => {
+          const existing = this.gists.find((x) => x.id === g.id)!;
+          const conflictError = detectConflict(existing, g)!;
+          existing.merge(conflictError);
+          this.error = conflictError.message;
+          this.lastError = conflictError;
+        },
+      };
+
+      for (const gist of uniqueGists) {
+        const existing = this.gists.find((x) => x.id === gist.id);
+        const conflictError = existing && detectConflict(existing, gist);
+        const action = existing
+          ? conflictError
+            ? 'conflict'
+            : 'update'
+          : 'add';
+        handlers[action](gist);
+      }
+
+      this.notifyListeners();
+    } catch (err) {
+      this.error = err.message;
+      this.lastError = err;
+      this.notifyListeners();
+    } finally {
+      this.isLoading = false;
+      this.notifyListeners();
+    }
+  }
             if (conflict) {
               await storeConflict(conflict);
               // Auto-resolve with remote-wins for now
@@ -243,15 +278,22 @@ class GistStore {
     updates: { description?: string; public?: boolean; files?: Record<string, string> }
   ): Promise<boolean> {
     try {
-      const payload = {
-        ...(updates.description !== undefined && { description: updates.description }),
-        ...(updates.public !== undefined && { public: updates.public }),
-        ...(updates.files !== undefined && {
+      const transformers: Record<string, (value: any) => object> = {
+        description: (value) => ({ description: value }),
+        public: (value) => ({ public: value }),
+        files: (value) => ({
           files: Object.fromEntries(
-            Object.entries(updates.files).map(([filename, content]) => [filename, { content }])
+            Object.entries(value).map(([filename, content]) => [filename, { content }])
           ),
         }),
       };
+
+      const payload = Object.assign(
+        {},
+        ...Object.entries(updates)
+          .filter(([key]) => key in transformers)
+          .map(([key, value]) => transformers[key as keyof typeof transformers](value))
+      );
 
       if (networkMonitor.isOnline()) {
         const gist = await GitHub.updateGist(id, payload);
@@ -334,29 +376,28 @@ class GistStore {
 
     try {
       const shouldStar = !gist.starred;
+      const isOnline = networkMonitor.isOnline();
+      const operations = isOnline
+        ? {
+            true: () => GitHub.starGist(id),
+            false: () => GitHub.unstarGist(id),
+          }
+        : {
+            true: () => syncQueue.queueOperation(id, 'star', {}),
+            false: () => syncQueue.queueOperation(id, 'unstar', {}),
+          };
 
-      if (networkMonitor.isOnline()) {
-        if (shouldStar) {
-          await GitHub.starGist(id);
-        } else {
-          await GitHub.unstarGist(id);
-        }
+      await operations[shouldStar]();
+      gist.starred = shouldStar;
 
-        // Update local record
-        gist.starred = shouldStar;
+      if (isOnline) {
         await dbSaveGist(gist);
-        this.notifyListeners();
-        return true;
       } else {
-        // Queue for later sync
-        await syncQueue.queueOperation(id, shouldStar ? 'star' : 'unstar', {});
-
-        // Optimistic update
-        gist.starred = shouldStar;
         gist.syncStatus = 'pending';
-        this.notifyListeners();
-        return true;
       }
+
+      this.notifyListeners();
+      return true;
     } catch (err) {
       safeError('[GistStore] Failed to toggle star:', err);
       this.error = err instanceof Error ? err.message : 'Failed to toggle star';
@@ -403,7 +444,7 @@ class GistStore {
   /**
    * Convert GitHub API gist to local record
    */
-  private githubGistToRecord(gist: GitHubGist, starred = false): GistRecord {
+  private static githubGistToRecord(gist: GitHubGist, starred = false): GistRecord {
     return {
       id: gist.id,
       description: gist.description,

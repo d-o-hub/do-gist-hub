@@ -53,13 +53,13 @@ class SyncQueue {
     this.unsubscribeNetwork = networkMonitor.subscribe((status) => {
       if (status === 'online') {
         safeLog('[SyncQueue] Network online, checking pending operations');
-        void this.processQueue();
+        this.processQueue();
       }
     });
 
     // Also listen for custom online event
     window.addEventListener('app:online', () => {
-      void this.processQueue();
+      this.processQueue();
     });
 
     safeLog('[SyncQueue] Initialized');
@@ -82,7 +82,7 @@ class SyncQueue {
 
     // If online, try to sync immediately
     if (networkMonitor.isOnline()) {
-      void this.processQueue();
+      this.processQueue();
     }
 
     return id;
@@ -155,32 +155,25 @@ class SyncQueue {
    */
   private async executeWrite(write: PendingWrite): Promise<SyncResult> {
     try {
-      switch (write.action) {
-        case 'create':
-          return await this.syncCreate(write.gistId, write.payload);
+      const handlers: { [key: string]: () => Promise<SyncResult> } = {
+        create: () => this.syncCreate(write.gistId, write.payload),
+        update: () => this.syncUpdate(write.gistId, write.payload),
+        delete: () => this.syncDelete(write.gistId),
+        star: () => this.syncStar(write.gistId),
+        unstar: () => this.syncUnstar(write.gistId),
+        fork: () => this.syncFork(write.gistId),
+      };
 
-        case 'update':
-          return await this.syncUpdate(write.gistId, write.payload);
-
-        case 'delete':
-          return await this.syncDelete(write.gistId);
-
-        case 'star':
-          return await this.syncStar(write.gistId);
-
-        case 'unstar':
-          return await this.syncUnstar(write.gistId);
-
-        case 'fork':
-          return await this.syncFork(write.gistId);
-
-        default:
-          return {
-            success: false,
-            error: `Unknown action: ${write.action}`,
-            shouldRetry: false,
-          };
+      const handler = handlers[write.action];
+      if (handler) {
+        return await handler();
       }
+
+      return {
+        success: false,
+        error: `Unknown action: ${write.action}`,
+        shouldRetry: false,
+      };
     } catch (error) {
       return {
         success: false,
@@ -193,7 +186,7 @@ class SyncQueue {
   /**
    * Sync create operation
    */
-  private async syncCreate(_gistId: string, payload: unknown): Promise<SyncResult> {
+  private static async syncCreate(_gistId: string, payload: unknown): Promise<SyncResult> {
     const gist = await GitHub.createGist(payload as CreateGistRequest);
 
     // Update local cache with server response
@@ -226,7 +219,7 @@ class SyncQueue {
   /**
    * Sync update operation
    */
-  private async syncUpdate(gistId: string, payload: unknown): Promise<SyncResult> {
+  private static async syncUpdate(gistId: string, payload: unknown): Promise<SyncResult> {
     const gist = await GitHub.updateGist(gistId, payload as UpdateGistRequest);
 
     // Update local cache
@@ -259,7 +252,7 @@ class SyncQueue {
   /**
    * Sync delete operation
    */
-  private async syncDelete(gistId: string): Promise<SyncResult> {
+  private static async syncDelete(gistId: string): Promise<SyncResult> {
     await GitHub.deleteGist(gistId);
     await dbDeleteGist(gistId);
     return { success: true, shouldRetry: false };
@@ -268,7 +261,7 @@ class SyncQueue {
   /**
    * Sync star operation
    */
-  private async syncStar(gistId: string): Promise<SyncResult> {
+  private static async syncStar(gistId: string): Promise<SyncResult> {
     await GitHub.starGist(gistId);
     return { success: true, shouldRetry: false };
   }
@@ -276,7 +269,7 @@ class SyncQueue {
   /**
    * Sync unstar operation
    */
-  private async syncUnstar(gistId: string): Promise<SyncResult> {
+  private static async syncUnstar(gistId: string): Promise<SyncResult> {
     await GitHub.unstarGist(gistId);
     return { success: true, shouldRetry: false };
   }
@@ -284,7 +277,7 @@ class SyncQueue {
   /**
    * Sync fork operation
    */
-  private async syncFork(gistId: string): Promise<SyncResult> {
+  private static async syncFork(gistId: string): Promise<SyncResult> {
     const gist = await GitHub.forkGist(gistId);
 
     // Save forked gist to local cache
@@ -317,7 +310,7 @@ class SyncQueue {
   /**
    * Check if error is retryable
    */
-  private isRetryableError(error: unknown): boolean {
+  private static isRetryableError(error: unknown): boolean {
     if (error instanceof Error) {
       const message = error.message.toLowerCase();
       // Network errors and rate limits are retryable
@@ -334,14 +327,14 @@ class SyncQueue {
   /**
    * Delay helper
    */
-  private delay(ms: number): Promise<void> {
+  private static delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
    * Get queue length
    */
-  async getQueueLength(): Promise<number> {
+  static async getQueueLength(): Promise<number> {
     const writes = await getPendingWrites();
     return writes.length;
   }

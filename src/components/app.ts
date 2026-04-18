@@ -150,24 +150,17 @@ export class App {
   }
 
   private getRouteContent(): string {
-    switch (this.currentRoute) {
-      case 'home':
-        return this.getHomeRoute();
-      case 'starred':
-        return this.getStarredRoute();
-      case 'create':
-        return this.getCreateRoute();
-      case 'offline':
-        return this.getOfflineRoute();
-      case 'settings':
-        return this.getSettingsRoute();
-      case 'detail':
-        return '<div id="gist-detail-container"></div>';
-      case 'edit':
-        return '<div id="gist-edit-container"></div>';
-      default:
-        return this.getHomeRoute();
-    }
+    const routeHandlers: { [key: string]: () => string } = {
+      home: () => this.getHomeRoute(),
+      starred: () => this.getStarredRoute(),
+      create: () => this.getCreateRoute(),
+      offline: () => this.getOfflineRoute(),
+      settings: () => this.getSettingsRoute(),
+      detail: () => '<div id="gist-detail-container"></div>',
+      edit: () => '<div id="gist-edit-container"></div>'
+    };
+    const handler = routeHandlers[this.currentRoute];
+    return handler ? handler() : this.getHomeRoute();
   }
 
   private getHomeRoute(): string {
@@ -433,7 +426,7 @@ export class App {
       });
 
       this.container.querySelector('#remove-token-btn')?.addEventListener('click', async () => {
-        if (confirm('Are you sure you want to remove your token and log out?')) {
+        if (customConfirm('Are you sure you want to remove your token and log out?')) {
           await removeToken();
           toast.info('Logged out');
           this.loadTokenInfo();
@@ -457,11 +450,11 @@ export class App {
           const logs = await getOfflineLogs();
           const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
           const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.id = 'export-diagnostics-download';
-          a.href = url;
-          a.download = `gist-hub-logs-${Date.now()}.json`;
-          a.click();
+          const downloadLink = document.createElement('a');
+          downloadLink.id = 'export-diagnostics-download';
+          downloadLink.href = url;
+          downloadLink.download = `gist-hub-logs-${Date.now()}.json`;
+          downloadLink.click();
         });
     }
 
@@ -481,16 +474,16 @@ export class App {
       const data = await exportData();
       const blob = new Blob([data], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
+      const downloadLink = document.createElement('a');
+      downloadLink.href = url;
+      downloadLink.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
+      downloadLink.click();
     });
 
     // Clear cache
     this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
       if (
-        confirm(
+        customConfirm(
           'Are you sure you want to clear all local data? This will log you out and clear all cached gists and logs.'
         )
       ) {

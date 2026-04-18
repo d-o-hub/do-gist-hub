@@ -69,7 +69,7 @@ async function buildOptions(method: string = 'GET', body?: string): Promise<Requ
 /**
  * Handle API errors with proper typing
  */
-function handleApiError(error: unknown, context: string): never {
+export function handleApiError(error: unknown, context: string): never {
   if (error instanceof DOMException && error.name === 'AbortError') {
     throw new Error(`Request cancelled: ${context}`);
   }
@@ -244,8 +244,10 @@ export async function deleteGist(id: string): Promise<void> {
     }
 
     trackRateLimit(response);
+    return null;
   } catch (error) {
     handleApiError(error, 'deleteGist');
+    return null;
   }
 }
 
@@ -264,6 +266,7 @@ export async function starGist(id: string): Promise<void> {
   } catch (error) {
     handleApiError(error, 'starGist');
   }
+  return null;
 }
 
 /**
@@ -281,6 +284,7 @@ export async function unstarGist(id: string): Promise<void> {
   } catch (error) {
     handleApiError(error, 'unstarGist');
   }
+  return null;
 }
 
 /**

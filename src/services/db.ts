@@ -360,30 +360,22 @@ export async function importData(json: string): Promise<void> {
   const tx = db.transaction(['gists', 'pendingWrites', 'metadata', 'logs'], 'readwrite');
 
   // Clear existing data
-  await tx.objectStore('gists').clear();
-  await tx.objectStore('pendingWrites').clear();
-  await tx.objectStore('metadata').clear();
-  await tx.objectStore('logs').clear();
-
   // Import gists
-  for (const gist of data.gists) {
-    await tx.objectStore('gists').put(gist);
-  }
-
   // Import pending writes
-  for (const write of data.pendingWrites) {
-    await tx.objectStore('pendingWrites').put(write);
-  }
-
   // Import metadata
-  for (const meta of data.metadata) {
-    await tx.objectStore('metadata').put(meta);
-  }
-
   // Import logs
-  if (data.logs) {
-    for (const log of data.logs) {
-      await tx.objectStore('logs').put(log);
+  const storeDataMap: { [storeName: string]: any[] } = {
+    gists: data.gists,
+    pendingWrites: data.pendingWrites,
+    metadata: data.metadata,
+    logs: data.logs || [],
+  };
+
+  for (const [storeName, items] of Object.entries(storeDataMap)) {
+    const store = tx.objectStore(storeName);
+    await store.clear();
+    for (const item of items) {
+      await store.put(item);
     }
   }
 

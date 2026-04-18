@@ -47,7 +47,7 @@ export async function decrypt(encryptedData: string, ivBase64: string): Promise<
 /**
  * Persist/retrieve the master key using IndexedDB metadata
  */
-async function getOrCreateKey(): Promise<CryptoKey> {
+export async function getOrCreateKey(): Promise<CryptoKey> {
   const { getMetadata, setMetadata } = await import('../db');
 
   const stored = await getMetadata<JsonWebKey>(KEY_STORAGE_NAME);

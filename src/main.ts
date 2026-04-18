@@ -29,7 +29,7 @@ safeLog(
   CSS.supports('container-type', 'inline-size') ? 'supported' : 'not supported'
 );
 
-async function bootstrap(): Promise<void> {
+(async function(): Promise<void> {
   // Initialize IndexedDB
   await initIndexedDB();
 
@@ -50,18 +50,27 @@ async function bootstrap(): Promise<void> {
 
   // Mount app
   const app = new App();
-  app.mount(document.getElementById('app')!);
+  const mountPoint = document.getElementById('app');
+  if (!mountPoint) {
+    throw new Error('Failed to mount app: element with id "app" not found.');
+  }
+  app.mount(mountPoint);
 
   // Register service worker for PWA support
   await registerServiceWorker();
 
   // Initialize Web Vitals monitoring
   initWebVitals();
-}
+})();
 
 bootstrap().catch((error) => {
   safeError('[App] Failed to bootstrap:', error);
   // Still mount the app so user can see error state
   const app = new App();
-  app.mount(document.getElementById('app')!);
+  const mountEl = document.getElementById('app');
+  if (mountEl) {
+    app.mount(mountEl);
+  } else {
+    safeError('[App] Mount element "app" not found.');
+  }
 });

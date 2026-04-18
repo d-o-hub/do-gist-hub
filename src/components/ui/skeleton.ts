@@ -3,8 +3,8 @@
  * Shimmering placeholders for better perceived performance.
  */
 
-export class Skeleton {
-  static renderCard(): string {
+export const Skeleton = {
+  renderCard(): string {
     return `
       <div class="gist-card skeleton-card" aria-hidden="true">
         <div class="gist-card-header">
@@ -22,13 +22,13 @@ export class Skeleton {
         </div>
       </div>
     `;
-  }
+  },
 
-  static renderList(count = 3): string {
+  renderList(count = 3): string {
     return Array(count).fill(this.renderCard()).join('');
-  }
+  },
 
-  static renderDetail(): string {
+  renderDetail(): string {
     return `
       <div class="gist-detail-skeleton" aria-hidden="true">
         <div class="skeleton-header">
@@ -48,5 +48,5 @@ export class Skeleton {
         </div>
       </div>
     `;
-  }
-}
+  },
+};

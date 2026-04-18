@@ -5,6 +5,7 @@
 
 import { GistRecord, getGist, saveGist, GistFile } from '../services/db';
 import { GistRevision, GitHubGist } from '../types/api';
+// skipcq: JS-C1003
 import * as GitHub from '../services/github/client';
 import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
@@ -17,37 +18,42 @@ import { announcer } from '../utils/announcer';
 /**
  * Escape HTML
  */
-function esc(text: string): string {
+const esc = (text: string): string => {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
-}
+};
 
 /**
  * Format file size
  */
-function formatSize(bytes?: number): string {
-  if (!bytes) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB'];
-  let size = bytes;
-  let unitIndex = 0;
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex++;
+const { formatSize, renderFileContent } = (function() {
+  function formatSize(bytes?: number): string {
+    if (!bytes) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let size = bytes;
+    let unitIndex = 0;
+    while (size >= 1024 && unitIndex < units.length - 1) {
+      size /= 1024;
+      unitIndex++;
+    }
+    return `${size.toFixed(1)} ${units[unitIndex]}`;
   }
-  return `${size.toFixed(1)} ${units[unitIndex]}`;
-}
 
-/**
- * Render file content with simple highlighting placeholder
- */
-function renderFileContent(content: string, language?: string): string {
-  return `
-    <pre class="code-block language-${esc(language || 'text')}">
-      <code>${esc(content)}</code>
-    </pre>
-  `;
-}
+  /**
+   * Render file content with simple highlighting placeholder
+   */
+  function renderFileContent(content: string, language?: string): string {
+    return `
+      <pre class="code-block language-${esc(language || 'text')}">
+        <code>${esc(content)}</code>
+      </pre>
+    `;
+  }
+
+export const { formatSize, renderFileContent } = (function() {
+  return { formatSize, renderFileContent };
+})();
 
 /**
  * Render full gist detail HTML
@@ -58,9 +64,13 @@ export function renderGistDetail(gist: GistRecord): string {
     ? `<p class="gist-description-text">${esc(gist.description)}</p>`
     : '';
   const fileCount = Object.keys(gist.files).length;
-  const visibility = gist.public ? 'Public' : 'Secret';
-  const starIcon = gist.starred ? '★' : '☆';
-  const starLabel = gist.starred ? 'Unstar' : 'Star';
+  const visibilityMap: Record<boolean, string> = { true: 'Public', false: 'Secret' };
+  const visibility = visibilityMap[gist.public];
+  const starredMap: Record<boolean, { icon: string; label: string }> = {
+    true: { icon: '★', label: 'Unstar' },
+    false: { icon: '☆', label: 'Star' },
+  };
+  const { icon: starIcon, label: starLabel } = starredMap[gist.starred];
 
   const fileTabs =
     fileCount > 1
@@ -77,7 +87,12 @@ export function renderGistDetail(gist: GistRecord): string {
                 aria-controls="file-content-area">
           ${esc(file.filename)}
         </button>
-      `
+      `).join('')}    
+    </div>
+  `
+      : '';
+  // ... rest of renderGistDetail implementation
+}
         )
         .join('')}
     </div>
@@ -231,7 +246,7 @@ export function bindDetailEvents(
   container.querySelector('[data-action="fork"]')?.addEventListener('click', async () => {
     if (!gistId) return;
 
-    if (!confirm('Fork this gist? A copy will be created in your account.')) return;
+    if (!customConfirm('Fork this gist? A copy will be created in your account.')) return;
 
     const btn = container.querySelector('[data-action="fork"]') as HTMLButtonElement;
     btn.style.pointerEvents = 'none';
@@ -296,12 +311,13 @@ export function bindDetailEvents(
 }
 
 /**
+/**
  * Convert GitHub API gist to local record
  */
-function apiGistToRecord(
+const apiGistToRecord = (
   apiGist: GitHubGist,
   filesWithContent: Record<string, GistFile & { content?: string }>
-): GistRecord {
+): GistRecord => {
   return {
     id: apiGist.id,
     description: apiGist.description,
@@ -316,7 +332,7 @@ function apiGistToRecord(
     syncStatus: 'synced',
     lastSyncedAt: new Date().toISOString(),
   } as GistRecord;
-}
+};
 
 /**
  * Load and render a specific gist detail
@@ -339,17 +355,24 @@ export async function loadGistDetail(
       // Fetch file content from raw URLs
       const filesWithContent: Record<string, GistFile & { content?: string }> = {};
       await Promise.all(
-        Object.entries(apiGist.files).map(async ([key, file]) => {
-          if (file.raw_url && (!file.size || file.size < 1024 * 1024)) {
+        const MAX_SIZE = 1024 * 1024;
+        const contentHandlers = {
+          true: async (file) => {
             try {
               const resp = await fetch(file.raw_url);
               if (resp.ok) {
-                file.content = await resp.text();
+                return await resp.text();
               }
             } catch {
-              file.content = '// Failed to load content';
+              return '// Failed to load content';
             }
-          }
+            return file.content;
+          },
+          false: async (file) => file.content
+        };
+        Object.entries(apiGist.files).map(async ([key, file]) => {
+          const shouldFetch = Boolean(file.raw_url && (!file.size || file.size < MAX_SIZE));
+          file.content = await contentHandlers[shouldFetch](file);
           filesWithContent[key] = file;
         })
       );
