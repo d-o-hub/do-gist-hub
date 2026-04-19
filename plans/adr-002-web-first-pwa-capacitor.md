@@ -1,3 +1,4 @@
+<!-- Last Audit: 2024-05-15 -->
 # ADR-002: Web-First PWA with Capacitor Android
 
 **Status**: Accepted  

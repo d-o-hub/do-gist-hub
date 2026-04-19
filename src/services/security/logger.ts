@@ -129,7 +129,7 @@ export async function persistLog(
     }
   } catch (err) {
     // Fallback if DB not ready or failed
-    /* eslint-disable no-console */
+
     console.error('[Logger] Failed to persist log', err);
   }
 }
@@ -138,10 +138,8 @@ export async function persistLog(
  * Safe console.log that redacts secrets and persists offline.
  */
 export function safeLog(message: string, ...args: unknown[]): void {
-  const redactedArgs = args.map((arg) => redactAny(arg));
   const redactedMessage = redactSecrets(message);
 
-  /* eslint-disable no-console */
   persistLog('info', redactedMessage, args.length === 1 ? args[0] : args);
 }
 
@@ -149,11 +147,9 @@ export function safeLog(message: string, ...args: unknown[]): void {
  * Safe console.error that redacts secrets and persists offline.
  */
 export function safeError(message: string, ...args: unknown[]): void {
-  const redactedArgs = args.map((arg) => redactAny(arg));
   const redactedMessage = redactSecrets(message);
 
-  /* eslint-disable no-console */
-  console.error(redactedMessage, ...redactedArgs);
+  console.error(redactedMessage, ...args);
 
   persistLog('error', redactedMessage, args.length === 1 ? args[0] : args);
 }
@@ -162,11 +158,9 @@ export function safeError(message: string, ...args: unknown[]): void {
  * Safe console.warn that redacts secrets and persists offline.
  */
 export function safeWarn(message: string, ...args: unknown[]): void {
-  const redactedArgs = args.map((arg) => redactAny(arg));
   const redactedMessage = redactSecrets(message);
 
-  /* eslint-disable no-console */
-  console.warn(redactedMessage, ...redactedArgs);
+  console.warn(redactedMessage, ...args);
 
   persistLog('warn', redactedMessage, args.length === 1 ? args[0] : args);
 }

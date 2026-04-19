@@ -3,6 +3,13 @@
  * Responsive navigation patterns: bottom nav (mobile), rail (tablet), sidebar (desktop)
  */
 
+/* ===== Top Level Base Styles (Mobile-First) ===== */
+.sidebar-nav,
+.rail-nav,
+.bottom-nav {
+  display: none;
+}
+
 /* ===== Rail Navigation (Tablet 768px - 1023px) ===== */
 .rail-nav {
   display: none;
@@ -57,6 +64,7 @@
 
 @media (min-width: 768px) and (max-width: 1023px) {
   .rail-nav {
+    display: none;
     display: flex;
   }
 
@@ -81,6 +89,7 @@
 /* ===== Sidebar Navigation (Desktop 1024px+) ===== */
 @media (min-width: 1024px) {
   .rail-nav {
+    display: none;
     display: none;
   }
 
@@ -107,6 +116,7 @@
 @media (max-width: 767px) {
   .sidebar-nav,
   .rail-nav {
+    display: none;
     display: none !important;
   }
 

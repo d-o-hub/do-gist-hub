@@ -305,6 +305,8 @@ agent-browser eval "document.documentElement.scrollWidth <= window.innerWidth"
 ```
 
 ### References
+- `agent-docs/patterns/dynamic-viewport-units.md`
+- `agent-docs/patterns/mobile-first-navigation.md`
 
 - `.agents/skills/design-token-system/references/mobile-layout-2026.md`
 - `.agents/skills/design-token-system/references/production-ui-standards.md`
