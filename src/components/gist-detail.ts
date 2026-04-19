@@ -1,102 +1,53 @@
-/**
- * Gist Detail Component
- * Renders full gist content, metadata, and files
- */
-
-import { GistRecord, getGist, saveGist, GistFile } from '../services/db';
-import { GistRevision, GitHubGist } from '../types/api';
-// skipcq: JS-C1003
+import { GistRecord } from '../types';
+import { GistRevision } from '../types/api';
 import * as GitHub from '../services/github/client';
-import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
-import { EmptyState } from './ui/empty-state';
-import networkMonitor from '../services/network/offline-monitor';
-import { ErrorBoundary } from './ui/error-boundary';
-import { AppError } from '../services/github/error-handler';
-import { announcer } from '../utils/announcer';
+import { safeError } from '../services/security/logger';
 
-/**
- * Escape HTML
- */
 const esc = (text: string): string => {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 };
 
-/**
- * Format file size
- */
-const { formatSize, renderFileContent } = (function() {
-  function formatSize(bytes?: number): string {
-    if (!bytes) return '0 B';
-    const units = ['B', 'KB', 'MB', 'GB'];
-    let size = bytes;
-    let unitIndex = 0;
-    while (size >= 1024 && unitIndex < units.length - 1) {
-      size /= 1024;
-      unitIndex++;
-    }
-    return `${size.toFixed(1)} ${units[unitIndex]}`;
+export function formatSize(bytes?: number): string {
+  if (!bytes) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let size = bytes;
+  let unitIndex = 0;
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex++;
   }
+  return `${size.toFixed(1)} ${units[unitIndex]}`;
+}
 
-  /**
-   * Render file content with simple highlighting placeholder
-   */
-  function renderFileContent(content: string, language?: string): string {
-    return `
-      <pre class="code-block language-${esc(language || 'text')}">
-        <code>${esc(content)}</code>
-      </pre>
-    `;
-  }
+export function renderFileContent(content: string, language?: string): string {
+  return `<pre class="code-block language-${esc(language || 'text')}"><code>${esc(content)}</code></pre>`;
+}
 
-export const { formatSize, renderFileContent } = (function() {
-  return { formatSize, renderFileContent };
-})();
-
-/**
- * Render full gist detail HTML
- */
 export function renderGistDetail(gist: GistRecord): string {
   const title = gist.description || 'Untitled Gist';
   const description = gist.description
     ? `<p class="gist-description-text">${esc(gist.description)}</p>`
     : '';
   const fileCount = Object.keys(gist.files).length;
-  const visibilityMap: Record<boolean, string> = { true: 'Public', false: 'Secret' };
-  const visibility = visibilityMap[gist.public];
-  const starredMap: Record<boolean, { icon: string; label: string }> = {
-    true: { icon: '★', label: 'Unstar' },
-    false: { icon: '☆', label: 'Star' },
-  };
-  const { icon: starIcon, label: starLabel } = starredMap[gist.starred];
+  const visibility = gist.public ? 'Public' : 'Secret';
+  const starLabel = gist.starred ? 'Unstar' : 'Star';
+  const starIcon = gist.starred ? '★' : '☆';
 
   const fileTabs =
     fileCount > 1
-      ? `
-    <div class="file-tabs scroll-x" role="tablist">
-      ${Object.entries(gist.files)
-        .map(
-          ([key, file], index) => `
-        <button class="file-tab ${index === 0 ? 'active' : ''}"
-                data-file-key="${esc(key)}"
-                id="tab-${index}"
-                role="tab"
-                aria-selected="${index === 0}"
-                aria-controls="file-content-area">
-          ${esc(file.filename)}
-        </button>
-      `).join('')}    
-    </div>
-  `
-      : '';
-  // ... rest of renderGistDetail implementation
-}
-        )
-        .join('')}
-    </div>
-  `
+      ? `<div class="file-tabs scroll-x" role="tablist">${Object.entries(gist.files)
+          .map(
+            ([key, file], index) =>
+              `<button class="file-tab ${index === 0 ? 'active' : ''}" data-file-key="${esc(key)}" id="tab-${index}" role="tab" aria-selected="${index === 0}" aria-controls="file-content-area">${esc(file.filename)}</button>`
+          )
+          .join('')}</div>`
       : '';
 
   const firstFileKey = Object.keys(gist.files)[0];
@@ -110,309 +61,101 @@ export function renderGistDetail(gist: GistRecord): string {
       <div class="gist-detail-header">
         <button class="back-btn" id="gist-back-btn" aria-label="Go back">← Back</button>
         <div class="gist-detail-title">
-          <h2 class="gist-title">${title}</h2>
+          <h2 class="gist-title">${esc(title)}</h2>
           ${description}
         </div>
       </div>
-
       <div class="gist-meta-bar">
         <span class="meta-item">${visibility}</span>
         <span class="meta-item">📄 ${fileCount} file${fileCount !== 1 ? 's' : ''}</span>
         <span class="meta-item">🕒 Updated ${new Date(gist.updatedAt).toLocaleDateString()}</span>
         <div class="gist-detail-actions">
-          <button class="action-btn star-btn ${gist.starred ? 'starred' : ''}" data-action="star" aria-label="${starLabel}">
-            ${starIcon} ${starLabel}
-          </button>
-          <button class="action-btn fork-btn" data-action="fork" aria-label="Fork gist">
-            🍴 Fork
-          </button>
-          <button class="action-btn edit-btn" data-action="edit" aria-label="Edit gist">
-            ✏️ Edit
-          </button>
-          <button class="action-btn revisions-btn" data-action="revisions" aria-label="View revisions">
-            📜 Revisions
-          </button>
-          <a href="${esc(gist.htmlUrl)}" target="_blank" rel="noopener noreferrer" class="action-btn github-btn" aria-label="Open on GitHub">
-            🔗 GitHub
-          </a>
+          <button class="action-btn star-btn ${gist.starred ? 'starred' : ''}" data-action="star" aria-label="${starLabel}">${starIcon} ${starLabel}</button>
+          <button class="action-btn fork-btn" data-action="fork" aria-label="Fork gist">🍴 Fork</button>
+          <button class="action-btn edit-btn" data-action="edit" aria-label="Edit gist">✏️ Edit</button>
+          <button class="action-btn revisions-btn" data-action="revisions" aria-label="View revisions">📜 Revisions</button>
+          <a href="${esc(gist.htmlUrl)}" target="_blank" rel="noopener noreferrer" class="action-btn github-btn" aria-label="Open on GitHub">🔗 GitHub</a>
         </div>
       </div>
-
       ${fileTabs}
-
-      <div class="file-content-area" id="file-content-area" role="tabpanel" aria-labelledby="tab-0">
-        ${content}
-      </div>
-
-      <div class="file-info" id="file-info">
-        ${firstFile ? `<span>Language: ${esc(firstFile.language || 'Unknown')}</span><span>Size: ${formatSize(firstFile.size)}</span>` : ''}
-      </div>
+      <div class="file-content-area" id="file-content-area" role="tabpanel" aria-labelledby="tab-0">${content}</div>
+      <div class="file-info" id="file-info">${firstFile ? `<span>Language: ${esc(firstFile.language || 'Unknown')}</span><span>Size: ${formatSize(firstFile.size)}</span>` : ''}</div>
     </div>
   `;
 }
 
-/**
- * Render revisions list HTML
- */
-export function renderRevisionsList(revisions: GistRevision[], gistId: string): string {
-  if (revisions.length === 0) {
-    return `
-      <div class="revisions-list">
-        <div class="revisions-header">
-          <button class="back-btn" id="gist-back-btn" aria-label="Go back">← Back</button>
-          <h2>Revisions</h2>
-        </div>
-        ${EmptyState.render({ title: 'No Revisions', description: "This gist doesn't have any previous versions.", icon: '📜' })}
-      </div>
-    `;
+export async function loadGistDetail(
+  id: string,
+  container: HTMLElement,
+  onBack: () => void,
+  onEdit: (id: string) => void,
+  onViewRevision: (id: string, version: string) => void
+): Promise<void> {
+  try {
+    const gist = await GitHub.getGist(id);
+    container.innerHTML = renderGistDetail(gist as unknown as GistRecord);
+    bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+  } catch (err) {
+    safeError('[GistDetail] Failed to load gist', err);
+    toast.error('Failed to load gist details');
   }
+}
 
+export function renderRevisions(gistId: string, revisions: GistRevision[]): string {
   const revisionsHtml = revisions
     .map((rev) => {
       const date = new Date(rev.committed_at).toLocaleString();
-      const changes = Object.entries(rev.change_summary || {})
-        .map(([file, change]) => {
-          const status = change.status;
-          const icon = status === 'added' ? '➕' : status === 'deleted' ? '❌' : '✏️';
-          return `${icon} ${esc(file)}`;
-        })
-        .join(', ');
-
-      return `
-      <div class="revision-item">
-        <div class="revision-meta">
-          <span class="revision-user">${esc(rev.user.login)}</span>
-          <span class="revision-date">${date}</span>
-          <span class="revision-version">${rev.version.slice(0, 8)}</span>
-        </div>
-        ${changes ? `<div class="revision-changes">${changes}</div>` : ''}
-        <a href="${esc(rev.url)}" target="_blank" rel="noopener noreferrer" class="revision-link">View on GitHub</a>
-      </div>
-    `;
+      return `<div class="revision-item" data-version="${esc(rev.version)}"><div class="revision-meta"><span class="revision-date">${date}</span><span class="revision-user">by ${esc(rev.user?.login || 'unknown')}</span></div><div class="revision-actions"><button class="btn btn-sm" data-action="view-revision" data-version="${esc(rev.version)}">View</button></div></div>`;
     })
     .join('');
-
-  return `
-    <div class="revisions-list" data-gist-id="${esc(gistId)}">
-      <div class="revisions-header">
-        <button class="back-btn" id="gist-back-btn" aria-label="Go back">← Back</button>
-        <h2>Revisions (${revisions.length})</h2>
-      </div>
-      ${revisionsHtml}
-    </div>
-  `;
+  return `<div class="revisions-list" data-gist-id="${esc(gistId)}"><div class="revisions-header"><button class="back-btn" id="gist-back-btn" aria-label="Go back">← Back</button><h2>Revisions (${revisions.length})</h2></div>${revisionsHtml}</div>`;
 }
 
-/**
- * Bind event listeners for gist detail
- */
 export function bindDetailEvents(
   container: HTMLElement,
-  onBack: () => void,
-  onEdit: (id: string) => void,
-  onRevisions: (id: string) => void
+  {
+    onBack,
+    onEdit,
+    onViewRevision,
+  }: {
+    onBack: () => void;
+    onEdit: (id: string) => void;
+    onViewRevision: (id: string, version: string) => void;
+  }
 ): void {
-  const gistId =
-    container.getAttribute('data-gist-id') ||
-    container.querySelector('[data-gist-id]')?.getAttribute('data-gist-id');
-
-  // Back button
+  const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id');
   container.querySelector('#gist-back-btn')?.addEventListener('click', onBack);
-
-  // Star button
-  container.querySelector('[data-action="star"]')?.addEventListener('click', async () => {
-    if (!gistId) return;
-
-    const btn = container.querySelector('[data-action="star"]') as HTMLElement;
-    btn.style.pointerEvents = 'none';
-    const ok = await gistStore.toggleStar(gistId);
-    btn.style.pointerEvents = '';
-
-    if (ok) {
-      // Re-render to update star state
-      const gist = gistStore.getGist(gistId);
-      if (gist) {
-        container.innerHTML = renderGistDetail(gist);
-        bindDetailEvents(container, onBack, onEdit, onRevisions);
-      }
-      const updatedGist = gistStore.getGist(gistId);
-      toast.success(updatedGist?.starred ? 'Starred' : 'Unstarred');
-    } else {
-      toast.error('Failed to toggle star');
-    }
-  });
-
-  // Fork button
-  container.querySelector('[data-action="fork"]')?.addEventListener('click', async () => {
-    if (!gistId) return;
-
-    if (!customConfirm('Fork this gist? A copy will be created in your account.')) return;
-
-    const btn = container.querySelector('[data-action="fork"]') as HTMLButtonElement;
-    btn.style.pointerEvents = 'none';
-    btn.disabled = true;
-
-    try {
-      const forked = await GitHub.forkGist(gistId);
-      toast.success(`Forked successfully! View at ${forked.html_url}`);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to fork gist');
-    } finally {
-      btn.style.pointerEvents = '';
-      btn.disabled = false;
-    }
-  });
-
-  // Edit button
   container.querySelector('[data-action="edit"]')?.addEventListener('click', () => {
     if (gistId) onEdit(gistId);
   });
-
-  // Revisions button
-  container.querySelector('[data-action="revisions"]')?.addEventListener('click', () => {
-    if (gistId) onRevisions(gistId);
-  });
-
-  // File tabs
-  container.querySelectorAll('.file-tab:not(.single-file)').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      const key = (tab as HTMLElement).getAttribute('data-file-key');
-      if (!key || !gistId) return;
-
-      // Update active tab
-      container.querySelectorAll('.file-tab').forEach((t) => {
-        t.classList.remove('active');
-        t.setAttribute('aria-selected', 'false');
+  container.querySelector('[data-action="revisions"]')?.addEventListener('click', async () => {
+    if (!gistId) return;
+    try {
+      const revisions = await GitHub.listGistRevisions(gistId);
+      container.innerHTML = renderRevisions(gistId, revisions);
+      bindRevisionEvents(container, {
+        onBack: () => loadGistDetail(gistId, container, onBack, onEdit, onViewRevision),
+        onViewRevision,
       });
-      tab.classList.add('active');
-      tab.setAttribute('aria-selected', 'true');
-
-      // Update content
-      const gist = gistStore.getGist(gistId);
-      if (!gist || !gist.files[key]) return;
-
-      const file = gist.files[key];
-      const contentArea = container.querySelector('#file-content-area');
-      const fileInfo = container.querySelector('#file-info');
-
-      if (contentArea) {
-        contentArea.innerHTML = file.content
-          ? renderFileContent(file.content, file.language)
-          : '<p class="empty-content">No content available</p>';
-        contentArea.setAttribute('aria-labelledby', tab.id);
-        announcer.announce(`Displaying file: ${file.filename}`);
-      }
-
-      if (fileInfo) {
-        fileInfo.innerHTML = `<span>Language: ${esc(file.language || 'Unknown')}</span><span>Size: ${formatSize(file.size)}</span>`;
-      }
-    });
+    } catch {
+      toast.error('Failed to load revisions');
+    }
   });
 }
 
-/**
-/**
- * Convert GitHub API gist to local record
- */
-const apiGistToRecord = (
-  apiGist: GitHubGist,
-  filesWithContent: Record<string, GistFile & { content?: string }>
-): GistRecord => {
-  return {
-    id: apiGist.id,
-    description: apiGist.description,
-    files: filesWithContent,
-    htmlUrl: apiGist.html_url,
-    gitPullUrl: apiGist.git_pull_url,
-    gitPushUrl: apiGist.git_push_url,
-    createdAt: apiGist.created_at,
-    updatedAt: apiGist.updated_at,
-    starred: false,
-    public: apiGist.public,
-    syncStatus: 'synced',
-    lastSyncedAt: new Date().toISOString(),
-  } as GistRecord;
-};
-
-/**
- * Load and render a specific gist detail
- */
-export async function loadGistDetail(
-  gistId: string,
+function bindRevisionEvents(
   container: HTMLElement,
-  onBack: () => void,
-  onEdit: (id: string) => void,
-  onRevisions: (id: string) => void
-): Promise<void> {
-  try {
-    // Try local cache first
-    let gist = await getGist(gistId);
-
-    // If online, fetch fresh data from GitHub
-    if (networkMonitor.isOnline()) {
-      const apiGist = await GitHub.getGist(gistId);
-
-      // Fetch file content from raw URLs
-      const filesWithContent: Record<string, GistFile & { content?: string }> = {};
-      await Promise.all(
-        const MAX_SIZE = 1024 * 1024;
-        const contentHandlers = {
-          true: async (file) => {
-            try {
-              const resp = await fetch(file.raw_url);
-              if (resp.ok) {
-                return await resp.text();
-              }
-            } catch {
-              return '// Failed to load content';
-            }
-            return file.content;
-          },
-          false: async (file) => file.content
-        };
-        Object.entries(apiGist.files).map(async ([key, file]) => {
-          const shouldFetch = Boolean(file.raw_url && (!file.size || file.size < MAX_SIZE));
-          file.content = await contentHandlers[shouldFetch](file);
-          filesWithContent[key] = file;
-        })
-      );
-
-      gist = apiGistToRecord(apiGist, filesWithContent);
-
-      // Cache in IndexedDB
-      await saveGist(gist);
-    }
-
-    if (!gist) {
-      container.innerHTML = EmptyState.render({
-        title: 'Gist Not Found',
-        description: 'The gist you are looking for might have been deleted or is inaccessible.',
-        actionLabel: 'Go Home',
-        actionRoute: 'home',
-        icon: '🔍',
-      });
-      return;
-    }
-
-    // Set gist ID on container for event binding
-    container.setAttribute('data-gist-id', gist.id);
-    container.innerHTML = renderGistDetail(gist);
-    bindDetailEvents(container, onBack, onEdit, onRevisions);
-  } catch (err) {
-    container.innerHTML = ErrorBoundary.render(err as AppError, () => {
-      loadGistDetail(gistId, container, onBack, onEdit, onRevisions);
+  {
+    onBack,
+    onViewRevision,
+  }: { onBack: () => void; onViewRevision: (id: string, version: string) => void }
+): void {
+  const gistId = container.querySelector('.revisions-list')?.getAttribute('data-gist-id');
+  container.querySelector('#gist-back-btn')?.addEventListener('click', onBack);
+  container.querySelectorAll('[data-action="view-revision"]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      const version = (e.currentTarget as HTMLElement).getAttribute('data-version');
+      if (gistId && version) onViewRevision(gistId, version);
     });
-    ErrorBoundary.bindEvents(container, () => {
-      loadGistDetail(gistId, container, onBack, onEdit, onRevisions);
-    });
-
-    // Fallback back button if not handled by ErrorBoundary
-    if (!container.querySelector('#error-retry-btn')) {
-      const backBtn = document.createElement('button');
-      backBtn.className = 'back-btn';
-      backBtn.textContent = '← Back';
-      backBtn.onclick = onBack;
-      container.appendChild(backBtn);
-    }
-  }
+  });
 }

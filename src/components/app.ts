@@ -157,7 +157,7 @@ export class App {
       offline: () => this.getOfflineRoute(),
       settings: () => this.getSettingsRoute(),
       detail: () => '<div id="gist-detail-container"></div>',
-      edit: () => '<div id="gist-edit-container"></div>'
+      edit: () => '<div id="gist-edit-container"></div>',
     };
     const handler = routeHandlers[this.currentRoute];
     return handler ? handler() : this.getHomeRoute();
@@ -426,7 +426,7 @@ export class App {
       });
 
       this.container.querySelector('#remove-token-btn')?.addEventListener('click', async () => {
-        if (customConfirm('Are you sure you want to remove your token and log out?')) {
+        if (window.confirm('Are you sure you want to remove your token and log out?')) {
           await removeToken();
           toast.info('Logged out');
           this.loadTokenInfo();
@@ -483,7 +483,7 @@ export class App {
     // Clear cache
     this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
       if (
-        customConfirm(
+        window.confirm(
           'Are you sure you want to clear all local data? This will log you out and clear all cached gists and logs.'
         )
       ) {

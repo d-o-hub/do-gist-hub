@@ -1,3 +1,4 @@
+<!-- Last Audit: 2024-05-15 -->
 # ADR-004: Fine-Grained PAT for V1 Authentication
 
 **Status**: Accepted  

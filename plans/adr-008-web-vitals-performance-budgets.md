@@ -1,3 +1,4 @@
+<!-- Last Audit: 2024-05-15 -->
 # ADR-008: Web Vitals Performance Budgets
 
 **Status**: Accepted  

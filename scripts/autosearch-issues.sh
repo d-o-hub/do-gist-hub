@@ -12,7 +12,7 @@ DATE=$(date +%Y-%m-%d)
 # Search patterns for common issues
 declare -A PATTERNS=(
     # CSS Issues
-    ["css_missing_base_display"]="\.sidebar-nav|\.bottom-nav.*\{[^}]*\}[^@]*@media"
+    ["css_missing_base_display"]="\.sidebar-nav {|\.bottom-nav {.*\{[^}]*\}[^@]*@media"
     ["css_no_dvh"]="100vh[^d]"
     ["css_hardcoded_colors"]="#[0-9a-fA-F]{3,6}"
     ["css_missing_safe_area"]="env\(safe-area"

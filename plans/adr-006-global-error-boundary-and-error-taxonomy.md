@@ -1,3 +1,4 @@
+<!-- Last Audit: 2024-05-15 -->
 # ADR-006: Global Error Boundary and Error Taxonomy
 
 **Status**: Accepted  
