@@ -41,7 +41,7 @@ const MAX_RETRIES = 3;
  */
 const RETRY_DELAY_MS = 1000;
 
-class SyncQueue {
+export class SyncQueue {
   private isSyncing = false;
   private unsubscribeNetwork?: () => void;
 
@@ -139,7 +139,7 @@ class SyncQueue {
         }
 
         // Small delay between operations to avoid rate limiting
-        await this.delay(RETRY_DELAY_MS);
+        await SyncQueue.delay(RETRY_DELAY_MS);
       }
 
       safeLog('[SyncQueue] Queue processing complete');
@@ -178,7 +178,7 @@ class SyncQueue {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        shouldRetry: this.isRetryableError(error),
+        shouldRetry: SyncQueue.isRetryableError(error),
       };
     }
   }
@@ -310,7 +310,7 @@ class SyncQueue {
   /**
    * Check if error is retryable
    */
-  private isRetryableError(error: unknown): boolean {
+  private static isRetryableError(error: unknown): boolean {
     if (error instanceof Error) {
       const message = error.message.toLowerCase();
       // Network errors and rate limits are retryable
@@ -327,14 +327,14 @@ class SyncQueue {
   /**
    * Delay helper
    */
-  private delay(ms: number): Promise<void> {
+  private static delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
    * Get queue length
    */
-  async getQueueLength(): Promise<number> {
+  static async getQueueLength(): Promise<number> {
     const writes = await getPendingWrites();
     return writes.length;
   }

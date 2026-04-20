@@ -7,7 +7,7 @@ import gistStore from '../stores/gist-store';
 import type { GistRecord } from '../services/db';
 import { renderCard, bindCardEvents } from './gist-card';
 import networkMonitor from '../services/network/offline-monitor';
-import syncQueue from '../services/sync/queue';
+import { SyncQueue } from '../services/sync/queue';
 import { getToken, saveToken, removeToken } from '../services/github/auth';
 import { loadGistDetail } from './gist-detail';
 import { APP } from '../config/app.config';
@@ -585,7 +585,7 @@ export class App {
     if (!this.container) return;
     const indicator = this.container.querySelector('#sync-indicator');
     const online = networkMonitor.isOnline();
-    const pendingCount = await syncQueue.getQueueLength();
+    const pendingCount = await SyncQueue.getQueueLength();
     indicator?.classList.toggle('syncing', pendingCount > 0 && online);
     indicator?.classList.toggle('offline', !online);
   }
@@ -604,7 +604,7 @@ export class App {
 
   private async updateOfflineStatus(): Promise<void> {
     const pendingEl = this.container?.querySelector('#pending-count');
-    if (pendingEl) pendingEl.textContent = String(await syncQueue.getQueueLength());
+    if (pendingEl) pendingEl.textContent = String(await SyncQueue.getQueueLength());
   }
 
   private async loadOfflineLogs(): Promise<void> {
@@ -643,7 +643,7 @@ export class App {
     if (!diagEl) return;
 
     const online = networkMonitor.isOnline();
-    const queueLen = await syncQueue.getQueueLength();
+    const queueLen = await SyncQueue.getQueueLength();
     const gists = gistStore.getGists();
 
     diagEl.innerHTML = `

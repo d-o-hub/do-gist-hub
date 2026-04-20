@@ -381,14 +381,26 @@ class GistStore {
     };
   }
 
+  /**
+   * Notify all listeners
+   */
   private notifyListeners(): void {
     this.listeners.forEach((listener) => listener(this.gists));
   }
 
+  /**
+   * Sort gists by updated_at (descending)
+   * ⚡ Bolt: Use numeric timestamp comparison to avoid object creation in sort loop
+   */
   private sortGists(): void {
     this.gists.sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
   }
 
+  /**
+   * Merge a gist record into the local list.
+   * Updates existing or adds new, maintains sort order.
+   * ⚡ Bolt: Added skipSort parameter for bulk operations
+   */
   private mergeGistRecord(record: GistRecord, starred: boolean, skipSort = false): void {
     const finalRecord = starred ? { ...record, starred } : record;
     const existingIndex = this.gists.findIndex((g) => g.id === record.id);
