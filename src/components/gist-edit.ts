@@ -1,35 +1,40 @@
 /**
  * Gist Edit Component
- * Renders edit form for existing gists
+ * Redesigned for App Mode
  */
 
 import type { GistRecord } from '../services/db';
 import { getGist } from '../services/db';
 import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
+// import { customConfirm } from './app';
 
-/**
- * Escape HTML
- */
-function esc(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
+const esc = (text: string): string => {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
 
-/**
- * Render edit form HTML
- */
 export function renderEditForm(gist: GistRecord): string {
   const filesHtml = Object.entries(gist.files)
     .map(
       ([key, file]) => `
-    <div class="file-editor" data-file-key="${esc(key)}">
-      <div class="file-header">
-        <input type="text" class="filename-input" value="${esc(file.filename)}" placeholder="Filename" />
-        <button type="button" class="remove-file-btn" ${Object.keys(gist.files).length <= 1 ? 'style="display: none;"' : ''}>×</button>
+    <div class="file-editor glass-card" data-file-key="${esc(key)}" style="padding: var(--space-4); margin-bottom: var(--space-4);">
+      <div class="form-group">
+        <label class="form-label">FILENAME</label>
+        <div style="display: flex; gap: var(--space-2);">
+            <input type="text" class="form-input filename-input" value="${esc(file.filename)}" placeholder="example.js" />
+            <button type="button" class="btn btn-danger remove-file-btn" ${Object.keys(gist.files).length <= 1 ? 'style="display: none;"' : ''}>×</button>
+        </div>
       </div>
-      <textarea class="content-editor" placeholder="File content...">${esc(file.content || '')}</textarea>
+      <div class="form-group">
+        <label class="form-label">CONTENT</label>
+        <textarea class="form-textarea content-editor" placeholder="Enter content...">${esc(file.content || '')}</textarea>
+      </div>
     </div>
   `
     )
@@ -37,150 +42,114 @@ export function renderEditForm(gist: GistRecord): string {
 
   return `
     <div class="route-edit" data-gist-id="${esc(gist.id)}">
-      <div class="edit-header">
-        <button class="back-btn" id="edit-back-btn" aria-label="Go back">← Back</button>
-        <h2>Edit Gist</h2>
-      </div>
+      <header class="detail-header">
+        <button class="btn btn-ghost" id="edit-back-btn">← BACK</button>
+        <h1 class="detail-title">EDIT GIST</h1>
+      </header>
 
-      <form id="edit-gist-form" class="gist-form">
+      <form id="edit-gist-form" class="gist-form" style="padding: var(--space-6);">
         <div class="form-group">
-          <label for="edit-description">Description (optional)</label>
+          <label class="form-label">DESCRIPTION</label>
           <input type="text" id="edit-description" name="description" class="form-input" value="${esc(gist.description || '')}" />
         </div>
-        <div class="form-group">
-          <label><input type="checkbox" id="edit-public" name="public" ${gist.public ? 'checked' : ''} /> Make public</label>
-        </div>
+
         <div class="files-section" id="edit-files-section">
-          <h3>Files</h3>
+          <div class="micro-label" style="margin-bottom: var(--space-2);">FILES</div>
           ${filesHtml}
         </div>
-        <button type="button" id="edit-add-file-btn" class="secondary-btn">+ Add File</button>
-        <div class="form-actions">
-          <button type="submit" class="primary-btn" id="edit-submit-btn">Save Changes</button>
-          <button type="button" id="edit-cancel-btn" class="secondary-btn">Cancel</button>
+
+        <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4);">
+            <button type="button" id="edit-add-file-btn" class="btn btn-ghost">+ ADD FILE</button>
+            <button type="submit" class="btn btn-primary" id="edit-submit-btn">SAVE CHANGES</button>
+            <button type="button" id="edit-cancel-btn" class="btn btn-ghost">CANCEL</button>
         </div>
       </form>
     </div>
   `;
 }
 
-/**
- * Bind edit form events
- */
 export function bindEditEvents(container: HTMLElement, onBack: () => void): void {
   const gistId = (container.querySelector('.route-edit') as HTMLElement | null)?.dataset.gistId;
 
-  // Back button
   container.querySelector('#edit-back-btn')?.addEventListener('click', onBack);
-
-  // Cancel button
   container.querySelector('#edit-cancel-btn')?.addEventListener('click', onBack);
 
-  // Add file button
   container.querySelector('#edit-add-file-btn')?.addEventListener('click', () => {
     const section = container.querySelector('#edit-files-section');
     if (!section) return;
-
-    const editors = section.querySelectorAll('.file-editor');
-    const hasEmptyKey = Array.from(editors).some((ed) => !(ed as HTMLElement).dataset.fileKey);
-
-    if (hasEmptyKey) {
-      toast.error('Please fill in the filename for the previous file');
-      return;
-    }
-
     const editor = document.createElement('div');
-    editor.className = 'file-editor';
+    editor.className = 'file-editor glass-card';
+    editor.style.padding = 'var(--space-4)';
+    editor.style.marginBottom = 'var(--space-4)';
     editor.innerHTML = `
-      <div class="file-header">
-        <input type="text" class="filename-input" placeholder="Filename (e.g., example.js)" />
-        <button type="button" class="remove-file-btn">×</button>
+      <div class="form-group">
+        <label class="form-label">FILENAME</label>
+        <div style="display: flex; gap: var(--space-2);">
+            <input type="text" class="form-input filename-input" placeholder="example.js" />
+            <button type="button" class="btn btn-danger remove-file-btn">×</button>
+        </div>
       </div>
-      <textarea class="content-editor" placeholder="File content..."></textarea>
+      <div class="form-group">
+        <label class="form-label">CONTENT</label>
+        <textarea class="form-textarea content-editor" placeholder="Enter content..."></textarea>
+      </div>
     `;
     editor.querySelector('.remove-file-btn')?.addEventListener('click', () => {
-      if (section.querySelectorAll('.file-editor').length > 1) {
-        editor.remove();
-      } else {
-        toast.error('At least one file is required');
-      }
+      if (section.querySelectorAll('.file-editor').length > 1) editor.remove();
+      else toast.error('AT LEAST ONE FILE IS REQUIRED');
     });
     section.appendChild(editor);
   });
 
-  // Remove file buttons (for existing files)
   container.querySelectorAll('.remove-file-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const section = container.querySelector('#edit-files-section');
       if (section && section.querySelectorAll('.file-editor').length > 1) {
         (btn as HTMLElement).closest('.file-editor')?.remove();
       } else {
-        toast.error('At least one file is required');
+        toast.error('AT LEAST ONE FILE IS REQUIRED');
       }
     });
   });
 
-  // Form submission
   container.querySelector('#edit-gist-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!gistId) return;
 
-    const btn = container.querySelector('#edit-submit-btn') as HTMLButtonElement | null;
-
-    // Collect files
     const files: Record<string, string> = {};
     let valid = true;
-
     container.querySelectorAll('.file-editor').forEach((editor) => {
       const existingKey = (editor as HTMLElement).dataset.fileKey;
       const filename = (editor.querySelector('.filename-input') as HTMLInputElement)?.value.trim();
       const content = (editor.querySelector('.content-editor') as HTMLTextAreaElement)?.value || '';
-
       if (!filename) {
         valid = false;
         return;
       }
-
-      // Use existing key if available, otherwise use filename
       files[existingKey || filename] = content;
     });
 
     if (!valid || Object.keys(files).length === 0) {
-      toast.error('All files must have filenames');
+      toast.error('ALL FILES MUST HAVE FILENAMES');
       return;
     }
 
-    const description =
-      (container.querySelector('#edit-description') as HTMLInputElement)?.value.trim() || undefined;
-    const public_ = (container.querySelector('#edit-public') as HTMLInputElement)?.checked ?? true;
-
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = 'Saving...';
-    }
+    const description = (
+      container.querySelector('#edit-description') as HTMLInputElement
+    )?.value.trim();
 
     try {
-      const result = await gistStore.updateGist(gistId, { description, public: public_, files });
+      const result = await gistStore.updateGist(gistId, { description, files });
       if (result) {
-        toast.success('Gist updated successfully');
+        toast.success('GIST UPDATED');
         onBack();
-      } else {
-        toast.error('Failed to update gist');
       }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to update gist');
-    } finally {
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = 'Save Changes';
-      }
+    } catch {
+      toast.error('FAILED TO UPDATE GIST');
     }
   });
 }
 
-/**
- * Load and render edit form for a gist
- */
 export async function loadEditForm(
   gistId: string,
   container: HTMLElement,
@@ -188,28 +157,16 @@ export async function loadEditForm(
 ): Promise<void> {
   try {
     const gist = await getGist(gistId);
-
     if (!gist) {
-      container.innerHTML = `
-        <div class="error-state">
-          <p>Gist not found</p>
-          <button class="back-btn" id="edit-back-btn">← Back</button>
-        </div>
-      `;
+      container.innerHTML =
+        '<div class="error-state"><p>GIST NOT FOUND</p><button class="btn btn-ghost" id="edit-back-btn">← BACK</button></div>';
       container.querySelector('#edit-back-btn')?.addEventListener('click', onBack);
       return;
     }
-
     container.innerHTML = renderEditForm(gist);
-    container.setAttribute('data-gist-id', gist.id);
     bindEditEvents(container, onBack);
-  } catch (err) {
-    container.innerHTML = `
-      <div class="error-state">
-        <p>Failed to load gist: ${esc(err instanceof Error ? err.message : 'Unknown error')}</p>
-        <button class="back-btn" id="edit-back-btn">← Back</button>
-      </div>
-    `;
-    container.querySelector('#edit-back-btn')?.addEventListener('click', onBack);
+  } catch {
+    toast.error('FAILED TO LOAD GIST');
+    onBack();
   }
 }
