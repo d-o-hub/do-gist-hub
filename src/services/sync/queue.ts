@@ -1,4 +1,3 @@
-import { safeLog, safeError } from '../security/logger';
 /**
  * Sync Queue Service
  * Manages offline write operations and syncs them when online
@@ -187,7 +186,7 @@ class SyncQueue {
   /**
    * Sync create operation
    */
-  private static async syncCreate(_gistId: string, payload: unknown): Promise<SyncResult> {
+  private async syncCreate(_gistId: string, payload: unknown): Promise<SyncResult> {
     const gist = await GitHub.createGist(payload as CreateGistRequest);
 
     // Update local cache with server response
@@ -220,7 +219,7 @@ class SyncQueue {
   /**
    * Sync update operation
    */
-  private static async syncUpdate(gistId: string, payload: unknown): Promise<SyncResult> {
+  private async syncUpdate(gistId: string, payload: unknown): Promise<SyncResult> {
     const gist = await GitHub.updateGist(gistId, payload as UpdateGistRequest);
 
     // Update local cache
@@ -253,7 +252,7 @@ class SyncQueue {
   /**
    * Sync delete operation
    */
-  private static async syncDelete(gistId: string): Promise<SyncResult> {
+  private async syncDelete(gistId: string): Promise<SyncResult> {
     await GitHub.deleteGist(gistId);
     await dbDeleteGist(gistId);
     return { success: true, shouldRetry: false };
@@ -262,7 +261,7 @@ class SyncQueue {
   /**
    * Sync star operation
    */
-  private static async syncStar(gistId: string): Promise<SyncResult> {
+  private async syncStar(gistId: string): Promise<SyncResult> {
     await GitHub.starGist(gistId);
     return { success: true, shouldRetry: false };
   }
@@ -270,7 +269,7 @@ class SyncQueue {
   /**
    * Sync unstar operation
    */
-  private static async syncUnstar(gistId: string): Promise<SyncResult> {
+  private async syncUnstar(gistId: string): Promise<SyncResult> {
     await GitHub.unstarGist(gistId);
     return { success: true, shouldRetry: false };
   }
@@ -278,7 +277,7 @@ class SyncQueue {
   /**
    * Sync fork operation
    */
-  private static async syncFork(gistId: string): Promise<SyncResult> {
+  private async syncFork(gistId: string): Promise<SyncResult> {
     const gist = await GitHub.forkGist(gistId);
 
     // Save forked gist to local cache
@@ -311,7 +310,7 @@ class SyncQueue {
   /**
    * Check if error is retryable
    */
-  private static isRetryableError(error: unknown): boolean {
+  private isRetryableError(error: unknown): boolean {
     if (error instanceof Error) {
       const message = error.message.toLowerCase();
       // Network errors and rate limits are retryable
@@ -328,14 +327,14 @@ class SyncQueue {
   /**
    * Delay helper
    */
-  private static delay(ms: number): Promise<void> {
+  private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
    * Get queue length
    */
-  static async getQueueLength(): Promise<number> {
+  async getQueueLength(): Promise<number> {
     const writes = await getPendingWrites();
     return writes.length;
   }

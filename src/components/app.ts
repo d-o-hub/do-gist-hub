@@ -17,7 +17,7 @@ import { bottomSheet } from './ui/bottom-sheet';
 import { EmptyState } from './ui/empty-state';
 import { withViewTransition } from '../utils/view-transitions';
 import { lifecycle } from '../services/lifecycle';
-import { safeLog } from '../services/security/logger';
+import { safeLog, LogEntry } from '../services/security/logger';
 import { Skeleton } from './ui/skeleton';
 import { toast } from './ui/toast';
 
@@ -157,7 +157,7 @@ export class App {
       offline: () => this.getOfflineRoute(),
       settings: () => this.getSettingsRoute(),
       detail: () => '<div id="gist-detail-container"></div>',
-      edit: () => '<div id="gist-edit-container"></div>'
+      edit: () => '<div id="gist-edit-container"></div>',
     };
     const handler = routeHandlers[this.currentRoute];
     return handler ? handler() : this.getHomeRoute();
@@ -426,7 +426,7 @@ export class App {
       });
 
       this.container.querySelector('#remove-token-btn')?.addEventListener('click', async () => {
-        if (customConfirm('Are you sure you want to remove your token and log out?')) {
+        if (window.confirm('Are you sure you want to remove your token and log out?')) {
           await removeToken();
           toast.info('Logged out');
           this.loadTokenInfo();
@@ -483,7 +483,7 @@ export class App {
     // Clear cache
     this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
       if (
-        customConfirm(
+        window.confirm(
           'Are you sure you want to clear all local data? This will log you out and clear all cached gists and logs.'
         )
       ) {
@@ -623,7 +623,7 @@ export class App {
         .slice(-50)
         .reverse()
         .map(
-          (log) => `
+          (log: LogEntry) => `
             <div style="border-bottom: 1px solid var(--color-border-default); padding: var(--spacing-1) 0;">
                 <span style="color: var(--color-foreground-muted);">${new Date(log.timestamp).toLocaleTimeString()}</span>
                 <span style="color: ${log.level === 'error' ? 'var(--color-status-error-fg)' : log.level === 'warn' ? 'var(--color-status-warning-fg)' : 'inherit'}; font-weight: bold;">[${log.level.toUpperCase()}]</span>
