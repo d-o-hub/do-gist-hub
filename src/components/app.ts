@@ -15,6 +15,7 @@ import { commandPalette } from './ui/command-palette';
 import { bottomSheet } from './ui/bottom-sheet';
 import { withViewTransition } from '../utils/view-transitions';
 import { toast } from './ui/toast';
+import { showConfirmDialog } from '../utils/dialog';
 
 type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings' | 'detail' | 'edit';
 type Filter = 'all' | 'mine' | 'starred';
@@ -337,7 +338,7 @@ export class App {
     });
 
     this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
-      if (await customConfirm('CLEAR ALL LOCAL DATA?')) {
+      if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
         const { clearAllData } = await import('../services/db');
         await clearAllData();
         window.location.reload();
@@ -406,38 +407,4 @@ export class App {
       { id: 'settings', title: 'SETTINGS', action: () => this.navigate('settings') },
     ]);
   }
-}
-
-export async function customConfirm(message: string, title = 'CONFIRM'): Promise<boolean> {
-  return new Promise((resolve) => {
-    const overlay = document.createElement('div');
-    overlay.className = 'confirm-overlay';
-    overlay.innerHTML = `
-      <div class="confirm-dialog glass-card" role="dialog" aria-modal="true">
-        <h2 class="confirm-title">${title}</h2>
-        <p class="confirm-message">${message}</p>
-        <div class="confirm-actions">
-          <button class="btn btn-ghost" data-action="cancel">CANCEL</button>
-          <button class="btn btn-danger" data-action="confirm">CONFIRM</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-    requestAnimationFrame(() => overlay.classList.add('visible'));
-
-    const cleanup = (res: boolean) => {
-      overlay.classList.remove('visible');
-      setTimeout(() => {
-        overlay.remove();
-        resolve(res);
-      }, 200);
-    };
-
-    overlay
-      .querySelector('[data-action="cancel"]')
-      ?.addEventListener('click', () => cleanup(false));
-    overlay
-      .querySelector('[data-action="confirm"]')
-      ?.addEventListener('click', () => cleanup(true));
-  });
 }

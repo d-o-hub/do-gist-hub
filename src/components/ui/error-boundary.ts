@@ -29,7 +29,7 @@ export class ErrorBoundary {
           }</button>`
         : '',
       reload: isFatal
-        ? `<button class="secondary-btn" onclick="window.location.reload()">Reload App</button>`
+        ? '<button class="secondary-btn" onclick="window.location.reload()">Reload App</button>'
         : '',
     };
     const actionsHtml = Object.values(actionMap)

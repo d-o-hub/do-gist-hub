@@ -240,7 +240,7 @@ export async function deleteGist(id: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/gists/${id}`, await buildOptions('DELETE'));
 
     if (!response.ok) {
-      return handleApiError(response, 'deleteGist');
+      handleApiError(response, 'deleteGist');
     }
 
     trackRateLimit(response);
@@ -257,7 +257,7 @@ export async function starGist(id: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/gists/${id}/star`, await buildOptions('PUT'));
 
     if (!response.ok) {
-      return handleApiError(response, 'starGist');
+      handleApiError(response, 'starGist');
     }
 
     trackRateLimit(response);
@@ -274,7 +274,7 @@ export async function unstarGist(id: string): Promise<void> {
     const response = await fetch(`${BASE_URL}/gists/${id}/star`, await buildOptions('DELETE'));
 
     if (!response.ok) {
-      return handleApiError(response, 'unstarGist');
+      handleApiError(response, 'unstarGist');
     }
 
     trackRateLimit(response);
