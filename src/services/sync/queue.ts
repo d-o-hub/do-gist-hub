@@ -203,7 +203,7 @@ export class SyncQueue {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  static async getQueueLength(): Promise<number> {
+  async getQueueLength(): Promise<number> {
     const writes = await getPendingWrites();
     return writes.length;
   }

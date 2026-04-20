@@ -7,6 +7,7 @@ import type { GistRecord } from '../services/db';
 import { getGist } from '../services/db';
 import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
+// import { customConfirm } from './app';
 
 const esc = (text: string): string => {
   if (!text) return '';

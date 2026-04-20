@@ -6,7 +6,7 @@
 import gistStore from '../stores/gist-store';
 import { renderCard, bindCardEvents } from './gist-card';
 import networkMonitor from '../services/network/offline-monitor';
-import { SyncQueue } from '../services/sync/queue';
+import syncQueue from '../services/sync/queue';
 import { getToken, saveToken } from '../services/github/auth';
 import { loadGistDetail } from './gist-detail';
 import { APP } from '../config/app.config';
@@ -358,7 +358,7 @@ export class App {
   private async updateSyncIndicator(): Promise<void> {
     const el = this.container?.querySelector('#sync-indicator');
     const online = networkMonitor.isOnline();
-    const len = await SyncQueue.getQueueLength();
+    const len = await syncQueue.getQueueLength();
     if (el) {
       el.setAttribute('data-status', online ? (len > 0 ? 'syncing' : 'online') : 'offline');
     }
@@ -366,7 +366,7 @@ export class App {
 
   private async updateOfflineStatus(): Promise<void> {
     const el = this.container?.querySelector('#pending-count');
-    if (el) el.textContent = String(await SyncQueue.getQueueLength());
+    if (el) el.textContent = String(await syncQueue.getQueueLength());
   }
 
   private toggleTheme(): void {
