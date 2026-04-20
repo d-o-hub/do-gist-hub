@@ -244,10 +244,8 @@ export async function deleteGist(id: string): Promise<void> {
     }
 
     trackRateLimit(response);
-    return;
   } catch (error) {
     handleApiError(error, 'deleteGist');
-    return;
   }
 }
 
@@ -266,7 +264,6 @@ export async function starGist(id: string): Promise<void> {
   } catch (error) {
     handleApiError(error, 'starGist');
   }
-  return;
 }
 
 /**
@@ -284,7 +281,6 @@ export async function unstarGist(id: string): Promise<void> {
   } catch (error) {
     handleApiError(error, 'unstarGist');
   }
-  return;
 }
 
 /**

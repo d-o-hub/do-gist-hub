@@ -1,106 +1,136 @@
-import { openDB, IDBPDatabase, DBSchema } from 'idb';
-
 /**
- * Logger Service with Redaction
- * Automatically redacts GitHub Personal Access Tokens and other secrets.
+ * Secure logging utility with token redaction and offline persistence.
+ * Ensures PATs and other secrets are never exposed in logs.
+ * Persists logs to IndexedDB for offline diagnostics.
  */
 
-export interface LogEntry {
-  id?: number;
-  timestamp: string;
-  level: 'info' | 'warn' | 'error';
-  message: string;
-  data?: unknown;
-}
-
-interface LogDBSchema extends DBSchema {
-  logs: {
-    key: number;
-    value: LogEntry;
-  };
-}
-
-const DB_NAME = 'gist-hub-logs';
-const STORE_NAME = 'logs';
+import { getDB, LogEntry } from '../db';
 
 /**
- * Initialize logs database.
+ * Redact a token, showing only first 6 and last 4 characters.
+ * Returns '[REDACTED]' if token is too short.
  */
-async function getLogDB(): Promise<IDBPDatabase<LogDBSchema>> {
-  return openDB<LogDBSchema>(DB_NAME, 2, {
-    upgrade(db) {
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
-      }
-    },
-  });
+export function redactToken(token: string): string {
+  if (!token || token.length <= 10) {
+    return '[REDACTED]';
+  }
+  return `${token.slice(0, 6)}...${token.slice(-4)}`;
 }
 
 /**
- * Redact GitHub PATs and other secrets from strings.
+ * Redact any potential secrets in a string.
+ * Looks for patterns like ghp_.*, gho_.*, github_pat_.*, etc.
  */
-export function redactSecrets(text: string): string {
-  if (typeof text !== 'string') return text;
-  // GitHub PAT regex (fine-grained and classic)
-  return text
-    .replace(/ghp_[a-zA-Z0-9]{36}/g, '[REDACTED_TOKEN]')
-    .replace(/github_pat_[a-zA-Z0-9]{22}_[a-zA-Z0-9]{59}/g, '[REDACTED_TOKEN]');
-}
+export function redactSecrets(input: string): string {
+  if (!input) return input;
 
-/**
- * Deeply redact secrets from objects and arrays.
- */
-export function redactAny(data: unknown, depth = 0): unknown {
-  // Prevent infinite recursion
-  if (depth > 5) return '[DEPTH_LIMIT_REDACTED]';
+  // GitHub token patterns
+  const patterns = [
+    /(ghp_[A-Za-z0-9_]{36,})/g, // Personal Access Token (classic)
+    /(github_pat_[A-Za-z0-9_]{22,})/g, // Fine-grained PAT
+    /(gho_[A-Za-z0-9_]{36,})/g, // OAuth token
+    /(Bearer [A-Za-z0-9._-]{20,})/g, // Bearer token
+    /(token [A-Za-z0-9_]{20,})/g, // Token header value
+  ];
 
-  if (typeof data === 'string') {
-    return redactSecrets(data);
+  let result = input;
+  for (const pattern of patterns) {
+    result = result.replace(pattern, '[REDACTED]');
   }
 
-  if (Array.isArray(data)) {
-    return data.map((item) => redactAny(item, depth + 1));
+  return result;
+}
+
+/**
+ * Recursively redact secrets in any value.
+ * Handles strings, Errors, arrays, and nested objects.
+ * Implements cycle detection and depth limiting.
+ */
+export function redactAny(arg: unknown, depth = 0, seen = new WeakSet()): unknown {
+  // Bounded recursion
+  if (depth > 10) return '[DEPTH_EXCEEDED]';
+
+  if (typeof arg === 'string') {
+    return redactSecrets(arg);
   }
 
-  if (data !== null && typeof data === 'object') {
-    const redacted: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
-      // Redact specific keys that often contain secrets
-      if (['token', 'password', 'secret', 'authorization'].includes(key.toLowerCase())) {
-        redacted[key] = '[REDACTED]';
+  if (arg instanceof Error) {
+    if (seen.has(arg)) return '[CIRCULAR]';
+    seen.add(arg);
+
+    // Preserve error prototype and custom properties while redacting messages
+    const redactedMessage = redactSecrets(arg.message);
+    const redactedStack = arg.stack ? redactSecrets(arg.stack) : undefined;
+
+    // Create a proxy-like object or a shallow copy that redacts key properties
+    const redactedError = Object.create(Object.getPrototypeOf(arg));
+    Object.getOwnPropertyNames(arg).forEach((prop) => {
+      const val = (arg as unknown as Record<string, unknown>)[prop];
+      if (prop === 'message') {
+        redactedError.message = redactedMessage;
+      } else if (prop === 'stack') {
+        redactedError.stack = redactedStack;
       } else {
-        redacted[key] = redactAny(value, depth + 1);
+        redactedError[prop] = redactAny(val, depth + 1, seen);
       }
-    }
-    return redacted;
+    });
+    return redactedError;
   }
 
-  return data;
+  if (arg !== null && typeof arg === 'object') {
+    if (seen.has(arg)) return '[CIRCULAR]';
+    seen.add(arg);
+
+    if (Array.isArray(arg)) {
+      return arg.map((item) => redactAny(item, depth + 1, seen));
+    }
+
+    const redactedObj: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(arg)) {
+      redactedObj[key] = redactAny(value, depth + 1, seen);
+    }
+    return redactedObj;
+  }
+
+  return arg;
 }
 
+const MAX_LOGS = 1000;
+
 /**
- * Persist log entry to IndexedDB.
+ * Persist log entry to IndexedDB with rotation.
  */
-async function persistLog(
+export async function persistLog(
   level: LogEntry['level'],
   message: string,
   data?: unknown
 ): Promise<void> {
   try {
-    const db = await getLogDB();
-    const entry: LogEntry = {
-      timestamp: new Date().toISOString(),
+    const db = getDB();
+    if (!db) return;
+
+    await db.add('logs', {
+      timestamp: Date.now(),
       level,
       message,
       data: redactAny(data),
-    };
+    });
 
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    await tx.objectStore(STORE_NAME).add(entry);
+    // Rotation: remove old logs if exceeding limit
+    const count = await db.count('logs');
+    if (count > MAX_LOGS) {
+      const logs = await db.getAllKeysFromIndex('logs', 'by-timestamp');
+      const toDelete = logs.slice(0, count - MAX_LOGS);
+      const tx = db.transaction('logs', 'readwrite');
+      for (const id of toDelete) {
+        tx.objectStore('logs').delete(id);
+      }
+      await tx.done;
+    }
   } catch (err) {
-    // Fallback to console if DB fails
-    // skipcq: JS-C1003
-    console.error('Failed to persist log:', err);
+    // Fallback if DB not ready or failed
+
+    console.error('[Logger] Failed to persist log', err);
   }
 }
 
@@ -108,56 +138,45 @@ async function persistLog(
  * Safe console.log that redacts secrets and persists offline.
  */
 export function safeLog(message: string, ...args: unknown[]): void {
-  const redactedArgs = args.map((arg) => redactAny(arg));
   const redactedMessage = redactSecrets(message);
 
-  /* eslint-disable no-console */
-  console.log(redactedMessage, ...redactedArgs);
-
-  void persistLog('info', redactedMessage, args.length === 1 ? args[0] : args);
+  persistLog('info', redactedMessage, args.length === 1 ? args[0] : args);
 }
 
 /**
  * Safe console.error that redacts secrets and persists offline.
  */
 export function safeError(message: string, ...args: unknown[]): void {
-  const redactedArgs = args.map((arg) => redactAny(arg));
   const redactedMessage = redactSecrets(message);
 
-  /* eslint-disable no-console */
-  console.error(redactedMessage, ...redactedArgs);
+  console.error(redactedMessage, ...args);
 
-  void persistLog('error', redactedMessage, args.length === 1 ? args[0] : args);
+  persistLog('error', redactedMessage, args.length === 1 ? args[0] : args);
 }
 
 /**
  * Safe console.warn that redacts secrets and persists offline.
  */
 export function safeWarn(message: string, ...args: unknown[]): void {
-  const redactedArgs = args.map((arg) => redactAny(arg));
   const redactedMessage = redactSecrets(message);
 
-  /* eslint-disable no-console */
-  console.warn(redactedMessage, ...redactedArgs);
+  console.warn(redactedMessage, ...args);
 
-  void persistLog('warn', redactedMessage, args.length === 1 ? args[0] : args);
+  persistLog('warn', redactedMessage, args.length === 1 ? args[0] : args);
 }
 
 /**
  * Get all logs from IndexedDB.
  */
-export async function getOfflineLogs(): Promise<LogEntry[]> {
-  const db = await getLogDB();
-  return db.getAll(STORE_NAME);
+export function getOfflineLogs(): Promise<LogEntry[]> {
+  const db = getDB();
+  return db.getAllFromIndex('logs', 'by-timestamp');
 }
 
 /**
- * Clear all logs.
+ * Clear all logs from IndexedDB.
  */
-export async function clearLogs(): Promise<void> {
-  const db = await getLogDB();
-  const tx = db.transaction(STORE_NAME, 'readwrite');
-  await tx.objectStore(STORE_NAME).clear();
+export async function clearOfflineLogs(): Promise<void> {
+  const db = getDB();
+  await db.clear('logs');
 }
-
-export { redactSecrets as redactToken };

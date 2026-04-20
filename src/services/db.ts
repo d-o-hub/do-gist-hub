@@ -364,7 +364,7 @@ export async function importData(json: string): Promise<void> {
   // Import pending writes
   // Import metadata
   // Import logs
-  const storeDataMap: { [storeName: string]: unknown[] } = {
+  const storeDataMap: Record<string, unknown[]> = {
     gists: data.gists,
     pendingWrites: data.pendingWrites,
     metadata: data.metadata,
@@ -372,11 +372,10 @@ export async function importData(json: string): Promise<void> {
   };
 
   for (const [storeName, items] of Object.entries(storeDataMap)) {
-    const store = tx.objectStore(storeName as 'gists' | 'pendingWrites' | 'metadata' | 'logs');
+    const store = tx.objectStore(storeName as never);
     await store.clear();
     for (const item of items) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await store.put(item as any);
+      await store.put(item);
     }
   }
 

@@ -1,38 +1,28 @@
 /**
  * Gist Card Component
- * Renders a single gist with actions
+ * Redesigned for App Mode (Neural Telemetry style)
  */
 
 import type { GistRecord } from '../services/db';
 import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
 
-/**
- * Format relative time
- */
-function relativeTime(dateStr: string): string {
+function formatRelativeTime(dateStr: string): string {
   const now = new Date();
   const date = new Date(dateStr);
   const diffMs = now.getTime() - date.getTime();
   const diffSec = Math.floor(diffMs / 1000);
+  if (diffSec < 60) return 'JUST NOW';
   const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}M AGO`;
   const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}H AGO`;
   const diffDay = Math.floor(diffHr / 24);
-
-  if (diffSec < 60) return 'just now';
-  if (diffMin < 60) return `${diffMin}m ago`;
-  if (diffHr < 24) return `${diffHr}h ago`;
-  if (diffDay < 30) return `${diffDay}d ago`;
-  if (diffDay < 365) return `${Math.floor(diffDay / 30)}mo ago`;
-  return `${Math.floor(diffDay / 365)}y ago`;
+  return `${diffDay}D AGO`;
 }
 
-/**
- * Fast Regex-based HTML escape
- * ⚡ Bolt: Much faster than document.createElement approach for large lists
- */
 function esc(text: string): string {
-  if (text === null || text === undefined) return '';
+  if (!text) return '';
   return String(text)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -41,77 +31,53 @@ function esc(text: string): string {
     .replace(/'/g, '&#039;');
 }
 
-/**
- * Get display title
- */
-function getTitle(gist: GistRecord): string {
-  if (gist.description) return gist.description;
-  const firstFile = Object.values(gist.files)[0];
-  return firstFile?.filename || 'Untitled gist';
-}
-
-/**
- * Get sync status badge HTML
- */
-function syncBadge(gist: GistRecord): string {
-  if (gist.syncStatus === 'synced') return '';
-  const labels: Record<string, string> = {
-    pending: '🕒 Sync pending...',
-    conflict: '⚠️ Conflict detected',
-    error: '❌ Sync failed',
-  };
-  return `<span class="sync-status status-${gist.syncStatus}">${labels[gist.syncStatus] || ''}</span>`;
-}
-
-/**
- * Simple memoization for gist card HTML
- * ⚡ Bolt: Avoids re-generating HTML for gists that haven't changed
- */
 const cardCache = new Map<string, { html: string; updatedAt: string }>();
 
-/**
- * Render a gist card
- */
 export function renderCard(gist: GistRecord): string {
-  // Check cache first
   const cached = cardCache.get(gist.id);
-  if (cached && cached.updatedAt === gist.updatedAt) {
-    return cached.html;
-  }
+  if (cached && cached.updatedAt === gist.updatedAt) return cached.html;
 
-  const title = esc(getTitle(gist));
-  const desc = gist.description
-    ? `<p class="gist-card-description">${esc(gist.description)}</p>`
-    : '';
   const fileCount = Object.keys(gist.files).length;
-  const starIcon = gist.starred ? '★' : '☆';
-  const starClass = gist.starred ? 'starred' : '';
-  const syncHtml = syncBadge(gist);
-  const visibility = gist.public ? '🌐 Public' : '🔒 Private';
-  const updated = relativeTime(gist.updatedAt);
+  const firstFile = Object.values(gist.files)[0];
+  const language = firstFile?.language || 'TEXT';
+  const description = gist.description || 'UNTITLED GIST';
+
+  // Get snippet of content if available
+  const content = firstFile?.content || '';
+  const snippet = content.slice(0, 120);
 
   const html = `
-    <article class="gist-card" data-gist-id="${esc(gist.id)}">
+    <article class="glass-card gist-card" data-gist-id="${esc(gist.id)}" tabindex="0" role="button"
+             aria-label="Open gist: ${esc(description)}">
       <div class="gist-card-header">
-        <a href="${esc(gist.htmlUrl)}" target="_blank" rel="noopener noreferrer" class="gist-card-title" title="${title}">
-          ${title}
-        </a>
-        <div class="gist-card-actions">
-          <button class="gist-action-btn star-btn ${starClass}" data-id="${esc(gist.id)}" aria-label="${gist.starred ? 'Unstar' : 'Star'} gist" title="${gist.starred ? 'Unstar' : 'Star'}">
-            ${starIcon}
-          </button>
-          <button class="gist-action-btn delete-btn" data-id="${esc(gist.id)}" aria-label="Delete gist" title="Delete">
-            🗑
-          </button>
+        <div class="gist-card-meta">
+          <span class="micro-label">${esc(language.toUpperCase())}</span>
+          <h2 class="gist-card-title">${esc(description)}</h2>
+        </div>
+        <div class="gist-card-stat">
+          <span class="stat-number">${fileCount}</span>
+          <span class="micro-label">FILES</span>
         </div>
       </div>
-      ${desc}
-      <div class="gist-card-meta">
-        <span class="gist-card-file-count">📄 ${fileCount} file${fileCount !== 1 ? 's' : ''}</span>
-        <span>${visibility}</span>
-        <span>Updated ${updated}</span>
-        ${syncHtml}
+      <div class="gist-card-preview">
+        <pre class="gist-preview-code"><code>${esc(snippet)}</code></pre>
       </div>
+      <footer class="gist-card-actions">
+        <div class="action-group">
+          <button class="gist-action-btn star-btn" data-id="${esc(gist.id)}"
+                  aria-label="${gist.starred ? 'Unstar' : 'Star'} gist"
+                  aria-pressed="${gist.starred}">
+            ${gist.starred ? '★' : '☆'}
+            <span class="micro-label">${gist.starred ? 'STARRED' : 'STAR'}</span>
+          </button>
+          <button class="gist-action-btn delete-btn" data-id="${esc(gist.id)}" aria-label="Delete gist">
+            <span class="micro-label">DELETE</span>
+          </button>
+        </div>
+        <time class="micro-label" datetime="${gist.updatedAt}">
+          ${formatRelativeTime(gist.updatedAt)}
+        </time>
+      </footer>
     </article>
   `;
 
@@ -119,68 +85,37 @@ export function renderCard(gist: GistRecord): string {
   return html;
 }
 
-/**
- * Attach event listeners to a card element using Event Delegation
- * ⚡ Bolt: Single listener on container instead of many listeners on children.
- * Significant memory and performance boost for long lists.
- */
 export function bindCardEvents(container: HTMLElement, onCardClick?: (id: string) => void): void {
-  // Only bind once per container
-  if (container.dataset.eventsBound === 'true') {
-    // We still need to update the callback if it changed, but in this app it's usually static
-    return;
-  }
+  if (container.dataset.eventsBound === 'true') return;
 
   container.addEventListener('click', async (e) => {
     const target = e.target as HTMLElement;
 
-    // Handle Star Button
     const starBtn = target.closest('.star-btn') as HTMLElement;
     if (starBtn) {
       e.preventDefault();
       e.stopPropagation();
       const id = starBtn.dataset.id;
       if (!id) return;
-
-      starBtn.style.pointerEvents = 'none';
-      const ok = await gistStore.toggleStar(id);
-      starBtn.style.pointerEvents = '';
-
-      if (!ok) {
-        toast.error('Failed to toggle star');
-      }
+      await gistStore.toggleStar(id);
       return;
     }
 
-    // Handle Delete Button
     const deleteBtn = target.closest('.delete-btn') as HTMLElement;
     if (deleteBtn) {
       e.preventDefault();
       e.stopPropagation();
       const id = deleteBtn.dataset.id;
       if (!id) return;
-
-      if (!confirm('Delete this gist? This cannot be undone.')) return;
-
-      deleteBtn.style.pointerEvents = 'none';
+      if (!confirm('DELETE THIS GIST?')) return;
       const ok = await gistStore.deleteGist(id);
-      deleteBtn.style.pointerEvents = '';
-
-      if (ok) {
-        toast.success('Gist deleted');
-      } else {
-        toast.error('Failed to delete gist');
-      }
+      if (ok) toast.success('GIST DELETED');
       return;
     }
 
-    // Handle Card Click (detail view)
     const card = target.closest('.gist-card') as HTMLElement;
     if (card && onCardClick) {
-      // Don't navigate if clicking a link or action container
-      if (target.closest('a') || target.closest('.gist-card-actions')) {
-        return;
-      }
+      if (target.closest('.gist-card-actions')) return;
       const id = card.getAttribute('data-gist-id');
       if (id) onCardClick(id);
     }

@@ -24,12 +24,12 @@ export class ErrorBoundary {
 
     const actionMap: Record<string, string> = {
       retry: onRetry
-        ? `<button class=primary-btn retry-btn id=error-retry-btn>${
+        ? `<button class="primary-btn retry-btn" id="error-retry-btn">${
             error.recoveryAction || 'Try Again'
           }</button>`
         : '',
       reload: isFatal
-        ? `<button class=secondary-btn onclick=window.location.reload()>Reload App</button>`
+        ? `<button class="secondary-btn" onclick="window.location.reload()">Reload App</button>`
         : '',
     };
     const actionsHtml = Object.values(actionMap)

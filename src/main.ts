@@ -16,38 +16,61 @@ import './styles/motion.css';
 import './styles/navigation.css';
 import './styles/modern-glass.css';
 
+// Initialize design tokens
 initDesignTokens();
+
+// Initialize theme from stored preference or system setting
 initTheme();
+
+// Log 2026 feature support
 safeLog('[App] View Transitions API:', isViewTransitionSupported() ? 'supported' : 'not supported');
 safeLog(
   '[App] Container Queries:',
   CSS.supports('container-type', 'inline-size') ? 'supported' : 'not supported'
 );
 
-async function bootstrap(): Promise<void> {
-  await initIndexedDB();
-  networkMonitor.init();
-  syncQueue.init();
-  const authenticated = await isAuthenticated();
-  safeLog('[App] Authenticated:', authenticated);
-  if (authenticated) {
-    await gistStore.init();
-  }
-  const app = new App();
-  const mountPoint = document.getElementById('app');
-  if (!mountPoint) {
-    throw new Error('Failed to mount app: element with id "app" not found.');
-  }
-  app.mount(mountPoint);
-  await registerServiceWorker();
-  initWebVitals();
-}
+(async function init(): Promise<void> {
+  try {
+    // Initialize IndexedDB
+    await initIndexedDB();
 
-bootstrap().catch((error) => {
-  safeError('[App] Failed to bootstrap:', error);
-  const app = new App();
-  const mountEl = document.getElementById('app');
-  if (mountEl) {
-    app.mount(mountEl);
+    // Initialize network monitoring
+    networkMonitor.init();
+
+    // Initialize sync queue
+    syncQueue.init();
+
+    // Check auth state
+    const authenticated = await isAuthenticated();
+    safeLog('[App] Authenticated:', authenticated);
+
+    // Initialize gist store (loads from IndexedDB, then syncs from GitHub if online)
+    if (authenticated) {
+      await gistStore.init();
+    }
+
+    // Mount app
+    const app = new App();
+    const mountPoint = document.getElementById('app');
+    if (!mountPoint) {
+      throw new Error('Failed to mount app: element with id "app" not found.');
+    }
+    app.mount(mountPoint);
+
+    // Register service worker for PWA support
+    await registerServiceWorker();
+
+    // Initialize Web Vitals monitoring
+    initWebVitals();
+  } catch (error) {
+    safeError('[App] Failed to bootstrap:', error);
+    // Still mount the app so user can see error state
+    const app = new App();
+    const mountEl = document.getElementById('app');
+    if (mountEl) {
+      app.mount(mountEl);
+    } else {
+      safeError('[App] Mount element "app" not found.');
+    }
   }
-});
+})();

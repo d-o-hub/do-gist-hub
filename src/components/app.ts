@@ -4,32 +4,19 @@
  */
 
 import gistStore from '../stores/gist-store';
-import type { GistRecord } from '../services/db';
 import { renderCard, bindCardEvents } from './gist-card';
 import networkMonitor from '../services/network/offline-monitor';
 import { SyncQueue } from '../services/sync/queue';
-import { getToken, saveToken, removeToken } from '../services/github/auth';
+import { getToken, saveToken } from '../services/github/auth';
 import { loadGistDetail } from './gist-detail';
 import { APP } from '../config/app.config';
-import { sanitizeHtml, redactToken } from '../services/security';
+import { redactToken } from '../services/security';
 import { commandPalette } from './ui/command-palette';
 import { bottomSheet } from './ui/bottom-sheet';
-import { EmptyState } from './ui/empty-state';
 import { withViewTransition } from '../utils/view-transitions';
-import { lifecycle } from '../services/lifecycle';
-import { safeLog, LogEntry } from '../services/security/logger';
-import { Skeleton } from './ui/skeleton';
 import { toast } from './ui/toast';
 
-type Route =
-  | 'home'
-  | 'starred'
-  | 'create'
-  | 'offline'
-  | 'settings'
-  | 'detail'
-  | 'edit'
-  | 'revisions';
+type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings' | 'detail' | 'edit';
 type Filter = 'all' | 'mine' | 'starred';
 
 export class App {
@@ -37,141 +24,125 @@ export class App {
   private currentRoute: Route = 'home';
   private currentFilter: Filter = 'all';
   private searchQuery = '';
-  private unsubStore?: () => void;
-  private displayedGists: GistRecord[] = [];
   private searchTimeout?: number;
 
   mount(container: HTMLElement): void {
     if (!container) throw new Error('App container not found');
     this.container = container;
+    this.initializeTheme();
     this.render();
     this.setupNavigation();
     this.initializeCommandPalette();
     this.subscribeStore();
 
-    window.addEventListener('app:navigate', (e: Event) => this.navigate((e as CustomEvent).detail));
-    window.addEventListener('app:clear-search', () => {
-      this.searchQuery = '';
-      this.updateGistList();
-    });
+    window.addEventListener('app:sync-complete', () => this.updateGistList());
+    window.addEventListener('online', () => this.updateSyncIndicator());
+    window.addEventListener('offline', () => this.updateSyncIndicator());
+  }
 
-    // Command + K listener
-    window.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        commandPalette.open();
-      }
-    });
+  private initializeTheme(): void {
+    const stored = localStorage.getItem('theme-preference') || 'dark';
+    document.documentElement.setAttribute('data-theme', stored);
   }
 
   private subscribeStore(): void {
-    this.unsubStore?.();
-    this.unsubStore = gistStore.subscribe(() => this.onStoreUpdate());
-  }
-
-  private onStoreUpdate(): void {
-    if (!this.container) return;
-    if (this.currentRoute === 'home' || this.currentRoute === 'starred') {
-      this.updateGistList();
-    }
-    if (this.currentRoute === 'offline') this.updateOfflineStatus();
+    gistStore.subscribe(() => {
+      if (this.currentRoute === 'home' || this.currentRoute === 'starred') {
+        this.updateGistList();
+      }
+      this.updateSyncIndicator();
+    });
   }
 
   private render(): void {
     if (!this.container) return;
 
-    const navItems = [
-      { id: 'home', label: 'Gists', icon: '📋' },
-      { id: 'starred', label: 'Starred', icon: '⭐' },
-      { id: 'create', label: 'New', icon: '➕' },
-      { id: 'offline', label: 'Offline', icon: '📴' },
-      { id: 'settings', label: 'Settings', icon: '⚙️' },
-    ];
-
-    const sidebarHtml = navItems
-      .map(
-        (item) => `
-      <button class="sidebar-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}" data-testid="sidebar-${item.id}">
-        <span class="sidebar-icon">${item.icon}</span>
-        <span class="sidebar-label">${item.label}</span>
-      </button>
-    `
-      )
-      .join('');
-
-    const railHtml = navItems
-      .map(
-        (item) => `
-      <button class="rail-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}" data-testid="rail-${item.id}">
-        <span class="rail-icon">${item.icon}</span>
-        <span class="rail-label">${item.label}</span>
-      </button>
-    `
-      )
-      .join('');
-
-    const bottomNavHtml = navItems
-      .filter((i) => i.id !== 'settings')
-      .map(
-        (item) => `
-      <button class="nav-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}" data-testid="nav-${item.id}">
-        <span class="nav-icon">${item.icon}</span>
-        <span class="nav-label">${item.label}</span>
-      </button>
-    `
-      )
-      .join('');
-
-    this.container.innerHTML = `<div class="app-shell">
-        <nav class="sidebar-nav">
-          ${sidebarHtml}
-        </nav>
-        <nav class="rail-nav">
-          ${railHtml}
-        </nav>
+    this.container.innerHTML = `
+      <div class="app-shell">
         <header class="app-header">
-          <h1 class="app-title">${APP.name}</h1>
+          <div class="header-left">
+            <h1 class="app-title">${APP.name.toUpperCase()}</h1>
+          </div>
           <div class="header-actions">
-            <span id="sync-indicator" class="sync-indicator">
+            <div id="sync-indicator" class="sync-indicator">
               <span class="sync-dot"></span>
-            </span>
-            <button id="mobile-menu-btn" class="icon-button mobile-only" aria-label="Menu" data-testid="mobile-menu-btn"><span class="icon">☰</span></button>
-            <button id="theme-toggle" class="icon-button" aria-label="Toggle theme" data-testid="theme-toggle"><span class="icon">🌓</span></button>
-            <button id="settings-btn" class="icon-button" aria-label="Settings" data-testid="settings-btn"><span class="icon">⚙️</span></button>
+              <span class="micro-label">SYNC</span>
+            </div>
+            <button class="btn btn-ghost" id="theme-toggle" aria-label="Toggle theme">🌓</button>
+            <button class="btn btn-ghost" id="menu-btn" aria-label="Menu">☰</button>
           </div>
         </header>
-        <main class="app-main" id="main-content">${this.getRouteContent()}</main>
-        <nav class="bottom-nav">
-          ${bottomNavHtml}
+
+        <nav class="sidebar-nav">
+          ${this.renderNavItems('sidebar')}
         </nav>
-      </div>`;
-    this.initializeThemeToggle();
-    this.updateSyncIndicator();
+
+        <nav class="rail-nav">
+          ${this.renderNavItems('rail')}
+        </nav>
+
+        <main class="app-main" id="main-content">
+          ${this.getRouteContent()}
+        </main>
+
+        <nav class="bottom-nav">
+          ${this.renderNavItems('bottom')}
+        </nav>
+      </div>
+    `;
+  }
+
+  private renderNavItems(type: 'sidebar' | 'rail' | 'bottom'): string {
+    const items = [
+      { id: 'home', label: 'HOME', icon: '🏠' },
+      { id: 'starred', label: 'STARRED', icon: '⭐' },
+      { id: 'create', label: 'CREATE', icon: '➕' },
+      { id: 'offline', label: 'OFFLINE', icon: '📴' },
+      { id: 'settings', label: 'SETTINGS', icon: '⚙️' },
+    ];
+
+    return items
+      .map(
+        (item) => `
+      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}">
+        <span class="${type}-icon">${item.icon}</span>
+        <span class="${type}-label">${item.label}</span>
+      </button>
+    `
+      )
+      .join('');
   }
 
   private getRouteContent(): string {
-    const routeHandlers: { [key: string]: () => string } = {
-      home: () => this.getHomeRoute(),
-      starred: () => this.getStarredRoute(),
-      create: () => this.getCreateRoute(),
-      offline: () => this.getOfflineRoute(),
-      settings: () => this.getSettingsRoute(),
-      detail: () => '<div id="gist-detail-container"></div>',
-      edit: () => '<div id="gist-edit-container"></div>',
-    };
-    const handler = routeHandlers[this.currentRoute];
-    return handler ? handler() : this.getHomeRoute();
+    switch (this.currentRoute) {
+      case 'home':
+        return this.getHomeRoute();
+      case 'starred':
+        return this.getStarredRoute();
+      case 'create':
+        return this.getCreateRoute();
+      case 'offline':
+        return this.getOfflineRoute();
+      case 'settings':
+        return this.getSettingsRoute();
+      case 'detail':
+        return '<div id="gist-detail-container"></div>';
+      default:
+        return this.getHomeRoute();
+    }
   }
 
   private getHomeRoute(): string {
     return `
       <div class="route-home">
         <div class="gist-list-header">
-          <input type="text" class="search-input" placeholder="Search gists..." value="${this.searchQuery}" />
-          <div class="filter-buttons">
-            <button class="filter-btn ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">All</button>
-            <button class="filter-btn ${this.currentFilter === 'mine' ? 'active' : ''}" data-filter="mine">Mine</button>
-            <button class="filter-btn ${this.currentFilter === 'starred' ? 'active' : ''}" data-filter="starred">Starred</button>
+          <div class="search-container">
+            <input type="text" class="search-input" placeholder="SEARCH GISTS..." value="${this.searchQuery}" />
+          </div>
+          <div class="filter-chips">
+            <button class="chip ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">ALL</button>
+            <button class="chip ${this.currentFilter === 'mine' ? 'active' : ''}" data-filter="mine">MINE</button>
+            <button class="chip ${this.currentFilter === 'starred' ? 'active' : ''}" data-filter="starred">STARRED</button>
           </div>
         </div>
         <div class="gist-list" id="gist-list">${this.renderGistList()}</div>
@@ -182,7 +153,9 @@ export class App {
   private getStarredRoute(): string {
     return `
       <div class="route-starred">
-        <h2>Starred Gists</h2>
+        <header class="detail-header">
+            <h1 class="detail-title">STARRED GISTS</h1>
+        </header>
         <div class="gist-list" id="gist-list">${this.renderGistList()}</div>
       </div>
     `;
@@ -191,41 +164,20 @@ export class App {
   private getCreateRoute(): string {
     return `
       <div class="route-create">
-        <h2>Create New Gist</h2>
+        <header class="detail-header">
+            <h1 class="detail-title">CREATE NEW GIST</h1>
+        </header>
         <form id="create-gist-form" class="gist-form">
           <div class="form-group">
-            <label for="gist-description">Description</label>
-            <input type="text" id="gist-description" class="form-input" />
+            <label class="form-label">DESCRIPTION</label>
+            <input type="text" id="gist-description" class="form-input" placeholder="Enter description..." />
           </div>
-          <div class="files-section" id="files-section">
-            <div class="file-editor">
-              <input type="text" class="filename-input" placeholder="example.js" />
-              <textarea class="content-editor" placeholder="Content..."></textarea>
-            </div>
+          <div class="form-group">
+            <label class="form-label">FILE: index.js</label>
+            <textarea id="gist-content" class="form-textarea" placeholder="Enter content..."></textarea>
           </div>
-          <button type="submit" class="primary-btn">Create Gist</button>
+          <button type="submit" class="btn btn-primary">CREATE GIST</button>
         </form>
-      </div>
-    `;
-  }
-
-  private getOfflineRoute(): string {
-    return `
-      <div class="route-offline">
-        <h2>Offline Status</h2>
-        <p>Pending writes: <span id="pending-count">0</span></p>
-        <div id="offline-logs-container" class="settings-section" style="margin-top: var(--spacing-4);">
-            <div class="settings-section-header">
-                <h3>Offline Logs</h3>
-            </div>
-            <div class="settings-section-content">
-                <button id="refresh-logs-btn" class="secondary-btn">Refresh Logs</button>
-                <button id="export-logs-btn" class="secondary-btn">Export Logs</button>
-                <div id="logs-list" style="max-height: 300px; overflow-y: auto; font-family: var(--font-family-mono); font-size: var(--font-size-xs); margin-top: var(--spacing-2);">
-                    Loading logs...
-                </div>
-            </div>
-        </div>
       </div>
     `;
   }
@@ -233,260 +185,159 @@ export class App {
   private getSettingsRoute(): string {
     return `
       <div class="route-settings">
-        <h2>Settings</h2>
+        <header class="detail-header">
+            <h1 class="detail-title">SETTINGS</h1>
+        </header>
         <div class="settings-panel">
-            <details class="settings-section" open>
-                <summary class="settings-section-header">
-                    <h3>Authentication</h3>
-                    <span class="section-toggle-icon">▼</span>
-                </summary>
-                <div class="settings-section-content">
-                    <div id="token-status"></div>
-                    <div class="form-group" style="margin-top: var(--spacing-4);">
-                        <label for="pat-input">Personal Access Token</label>
-                        <input type="password" id="pat-input" class="form-input" placeholder="ghp_..." />
-                        <p class="help-text">Gist Hub uses your PAT to sync gists with GitHub.</p>
-                    </div>
-                    <div class="form-actions" style="margin-top: var(--spacing-4);">
-                        <button id="save-token-btn" class="primary-btn">Save Token</button>
-                        <button id="remove-token-btn" class="secondary-btn">Remove Token</button>
-                    </div>
+            <div class="form-group">
+                <label class="form-label">GITHUB TOKEN</label>
+                <input type="password" id="pat-input" class="form-input" placeholder="ghp_..." />
+                <div class="form-actions" style="margin-top: var(--space-2); display: flex; gap: var(--space-2);">
+                    <button id="save-token-btn" class="btn btn-primary">SAVE</button>
+                    <button id="remove-token-btn" class="btn btn-ghost">REMOVE</button>
                 </div>
-            </details>
+                <div id="token-status" style="margin-top: var(--space-2);"></div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">DATA MANAGEMENT</label>
+                <div class="form-actions" style="display: flex; gap: var(--space-2);">
+                    <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
+                </div>
+            </div>
+        </div>
+      </div>
+    `;
+  }
 
-            <details class="settings-section">
-                <summary class="settings-section-header">
-                    <h3>Preferences</h3>
-                    <span class="section-toggle-icon">▼</span>
-                </summary>
-                <div class="settings-section-content">
-                    <div class="form-group">
-                        <label for="theme-select">Theme</label>
-                        <select id="theme-select" class="form-input">
-                            <option value="light">Light</option>
-                            <option value="dark">Dark</option>
-                        </select>
-                    </div>
-                </div>
-            </details>
-
-            <details class="settings-section">
-                <summary class="settings-section-header">
-                    <h3>Data & Diagnostics</h3>
-                    <span class="section-toggle-icon">▼</span>
-                </summary>
-                <div class="settings-section-content">
-                    <div id="diagnostics-info" class="diagnostics-info" style="margin-bottom: var(--spacing-4);">
-                        <p>Loading diagnostics...</p>
-                    </div>
-                    <div class="form-actions">
-                        <button id="export-data-btn" class="secondary-btn">Export Backup</button>
-                        <button id="export-diagnostics-btn" class="secondary-btn">Export Logs</button>
-                        <button id="clear-cache-btn" class="secondary-btn" style="color: var(--color-status-error-fg);" data-testid="clear-cache-btn">Clear Local Cache</button>
-                    </div>
-                </div>
-            </details>
+  private getOfflineRoute(): string {
+    return `
+      <div class="route-offline">
+        <header class="detail-header">
+            <h1 class="detail-title">OFFLINE STATUS</h1>
+        </header>
+        <div class="stat-card">
+            <div class="stat-icon">📴</div>
+            <div class="stat-info">
+                <div class="stat-label">PENDING WRITES</div>
+                <div class="stat-value" id="pending-count">0</div>
+            </div>
+        </div>
+        <div id="logs-list" class="glass-card" style="margin-top: var(--space-6); padding: var(--space-4); max-height: 400px; overflow-y: auto;">
+            <div class="micro-label">OFFLINE LOGS</div>
+            <div id="logs-content" style="margin-top: var(--space-2);"></div>
         </div>
       </div>
     `;
   }
 
   private renderGistList(): string {
-    if (gistStore.getLoading() && this.displayedGists.length === 0) {
-      return Skeleton.renderList(5);
-    }
-
-    if (this.displayedGists.length === 0) {
-      if (this.searchQuery)
-        return EmptyState.render({
-          title: 'No Matches',
-          description: `No gists matching "${this.searchQuery}".`,
-          actionLabel: 'Clear Search',
-          icon: '🔍',
-        });
-      return EmptyState.render({
-        title: 'No Gists Yet',
-        description: 'Create your first gist to get started.',
-        actionLabel: 'Create Gist',
-        actionRoute: 'create',
-        icon: '📝',
-      });
-    }
-    return this.displayedGists.map(renderCard).join('');
+    const filtered = gistStore.filterGists(this.currentFilter);
+    const searched = this.searchQuery
+      ? filtered.filter((g) =>
+          g.description?.toLowerCase().includes(this.searchQuery.toLowerCase())
+        )
+      : filtered;
+    if (searched.length === 0) return '<div class="empty-state">NO GISTS FOUND</div>';
+    return searched.map((g) => renderCard(g)).join('');
   }
 
-  private updateGistList(): void {
-    this.displayedGists =
-      this.currentRoute === 'starred'
-        ? gistStore.filterGists('starred')
-        : gistStore.searchGists(this.searchQuery);
-
-    if (this.currentRoute === 'home' && this.currentFilter !== 'all') {
-      this.displayedGists = this.displayedGists.filter((g) =>
-        this.currentFilter === 'starred' ? g.starred : !g.starred
-      );
-    }
-
-    const listEl = this.container?.querySelector('#gist-list');
-    if (listEl) {
-      listEl.innerHTML = this.renderGistList();
-      bindCardEvents(listEl as HTMLElement, (id) => this.navigateToDetail(id));
-    }
+  private setupNavigation(): void {
+    if (!this.container) return;
+    this.container.querySelectorAll('[data-route]').forEach((el) => {
+      el.addEventListener('click', () => {
+        const route = (el as HTMLElement).dataset.route as Route;
+        if (route) this.navigate(route);
+      });
+    });
+    this.container
+      .querySelector('#menu-btn')
+      ?.addEventListener('click', () => this.showMobileMenu());
+    this.container
+      .querySelector('#theme-toggle')
+      ?.addEventListener('click', () => this.toggleTheme());
+    this.setupRouteHandlers();
   }
 
   private navigate(route: Route): void {
-    lifecycle.cleanupRoute();
     this.currentRoute = route;
-    withViewTransition(() => {
+    void withViewTransition(() => {
       this.render();
       this.setupNavigation();
       if (route === 'home' || route === 'starred') this.updateGistList();
-      if (route === 'settings') {
-        this.loadTokenInfo();
-        this.loadDiagnostics();
-      }
-      if (route === 'offline') this.loadOfflineLogs();
+      if (route === 'settings') this.loadTokenInfo();
+      if (route === 'offline') this.updateOfflineStatus();
     });
+  }
+
+  private updateGistList(): void {
+    const listEl = this.container?.querySelector('#gist-list');
+    if (listEl) {
+      listEl.innerHTML = this.renderGistList();
+      bindCardEvents(listEl as HTMLElement, (_id) => this.navigateToDetail(_id));
+    }
   }
 
   private navigateToDetail(id: string): void {
     this.currentRoute = 'detail';
-    withViewTransition(async () => {
+    void withViewTransition(async () => {
       this.render();
       this.setupNavigation();
       const container = this.container?.querySelector('#gist-detail-container');
       if (container) {
-        container.innerHTML = Skeleton.renderDetail();
         await loadGistDetail(
           id,
           container as HTMLElement,
           () => this.navigate('home'),
-          () => this.navigate('edit'),
-          () => this.navigate('revisions')
+          (_id) => {},
+          (_id, _v) => {}
         );
       }
     });
   }
 
-  private setupNavigation(): void {
-    if (!this.container) return;
-    this.container.querySelectorAll('.nav-item, .sidebar-item, .rail-item').forEach((item) => {
-      item.addEventListener('click', (e) => {
-        const route = (e.currentTarget as HTMLElement).dataset.route as Route;
-        if (route) this.navigate(route);
-      });
-    });
-    this.container
-      .querySelector('#theme-toggle')
-      ?.addEventListener('click', () => this.toggleTheme());
-    this.container
-      .querySelector('#settings-btn')
-      ?.addEventListener('click', () => this.navigate('settings'));
-    this.container
-      .querySelector('#mobile-menu-btn')
-      ?.addEventListener('click', () => this.showMobileMenu());
-    this.setupRouteHandlers();
-  }
-
   private setupRouteHandlers(): void {
     if (!this.container) return;
+
+    // Search
     const searchInput = this.container.querySelector('.search-input') as HTMLInputElement | null;
     searchInput?.addEventListener('input', (e) => {
       clearTimeout(this.searchTimeout);
-      const query = (e.target as HTMLInputElement).value;
+      const val = (e.target as HTMLInputElement).value;
       this.searchTimeout = window.setTimeout(() => {
-        this.searchQuery = query;
+        this.searchQuery = val;
         this.updateGistList();
       }, 300);
     });
-    this.container.querySelectorAll('.filter-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        this.currentFilter = (e.target as HTMLElement).dataset.filter as Filter;
+
+    // Chips
+    this.container.querySelectorAll('.chip').forEach((c) => {
+      c.addEventListener('click', () => {
+        this.currentFilter = (c as HTMLElement).dataset.filter as Filter;
         this.updateGistList();
       });
     });
 
-    // Settings specific
-    if (this.currentRoute === 'settings') {
-      this.container.querySelector('#save-token-btn')?.addEventListener('click', async () => {
-        const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
-        const token = input.value.trim();
-        if (!token) {
-          toast.error('Please enter a token');
-          return;
-        }
-        const result = await saveToken(token);
-        if (result.success) {
-          toast.success('Token saved successfully');
-          input.value = '';
-          this.loadTokenInfo();
-        } else {
-          toast.error(result.error || 'Failed to save token');
-        }
-      });
+    // Forms
+    this.container.querySelector('#create-gist-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const desc = (this.container?.querySelector('#gist-description') as HTMLInputElement).value;
+      const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement).value;
+      await gistStore.createGist(desc, true, { 'index.js': content });
+      this.navigate('home');
+    });
 
-      this.container.querySelector('#remove-token-btn')?.addEventListener('click', async () => {
-        if (window.confirm('Are you sure you want to remove your token and log out?')) {
-          await removeToken();
-          toast.info('Logged out');
-          this.loadTokenInfo();
-        }
-      });
-
-      const themeSelect = this.container.querySelector('#theme-select') as HTMLSelectElement;
-      if (themeSelect) {
-        themeSelect.value = document.documentElement.getAttribute('data-theme') || 'light';
-        themeSelect.addEventListener('change', () => {
-          const next = themeSelect.value as 'light' | 'dark';
-          document.documentElement.setAttribute('data-theme', next);
-          localStorage.setItem('theme-preference', next);
-        });
+    // Settings
+    this.container.querySelector('#save-token-btn')?.addEventListener('click', async () => {
+      const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
+      if (input.value) {
+        await saveToken(input.value);
+        toast.success('TOKEN SAVED');
+        this.loadTokenInfo();
       }
-
-      this.container
-        .querySelector('#export-diagnostics-btn')
-        ?.addEventListener('click', async () => {
-          const { getOfflineLogs } = await import('../services/security/logger');
-          const logs = await getOfflineLogs();
-          const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const downloadLink = document.createElement('a');
-          downloadLink.id = 'export-diagnostics-download';
-          downloadLink.href = url;
-          downloadLink.download = `gist-hub-logs-${Date.now()}.json`;
-          downloadLink.click();
-        });
-    }
-
-    // Offline logs refresh
-    this.container
-      .querySelector('#refresh-logs-btn')
-      ?.addEventListener('click', () => this.loadOfflineLogs());
-    this.container.querySelector('#export-logs-btn')?.addEventListener('click', () => {
-      this.container
-        ?.querySelector('#export-diagnostics-btn')
-        ?.dispatchEvent(new MouseEvent('click'));
     });
 
-    // Data management
-    this.container.querySelector('#export-data-btn')?.addEventListener('click', async () => {
-      const { exportData } = await import('../services/db');
-      const data = await exportData();
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const downloadLink = document.createElement('a');
-      downloadLink.href = url;
-      downloadLink.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
-      downloadLink.click();
-    });
-
-    // Clear cache
     this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
-      if (
-        window.confirm(
-          'Are you sure you want to clear all local data? This will log you out and clear all cached gists and logs.'
-        )
-      ) {
+      if (await customConfirm('CLEAR ALL LOCAL DATA?')) {
         const { clearAllData } = await import('../services/db');
         await clearAllData();
         window.location.reload();
@@ -494,24 +345,53 @@ export class App {
     });
   }
 
+  private async loadTokenInfo(): Promise<void> {
+    const el = this.container?.querySelector('#token-status');
+    const token = await getToken();
+    if (el)
+      el.innerHTML = token
+        ? `<p class="micro-label">TOKEN ACTIVE: ${redactToken(token)}</p>`
+        : '<p class="micro-label">NO TOKEN SAVED</p>';
+  }
+
+  private async updateSyncIndicator(): Promise<void> {
+    const el = this.container?.querySelector('#sync-indicator');
+    const online = networkMonitor.isOnline();
+    const len = await SyncQueue.getQueueLength();
+    if (el) {
+      el.setAttribute('data-status', online ? (len > 0 ? 'syncing' : 'online') : 'offline');
+    }
+  }
+
+  private async updateOfflineStatus(): Promise<void> {
+    const el = this.container?.querySelector('#pending-count');
+    if (el) el.textContent = String(await SyncQueue.getQueueLength());
+  }
+
+  private toggleTheme(): void {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme-preference', next);
+  }
+
   private showMobileMenu(): void {
     const content = `
-      <div class="mobile-menu" style="display: grid; gap: var(--spacing-2); padding: var(--spacing-4);">
-        <button class="primary-btn menu-item" data-route="home">Home</button>
-        <button class="primary-btn menu-item" data-route="starred">Starred</button>
-        <button class="primary-btn menu-item" data-route="create">Create</button>
-        <button class="primary-btn menu-item" data-route="offline">Offline Status</button>
-        <button class="primary-btn menu-item" data-route="settings">Settings</button>
+      <div class="mobile-menu" style="display: grid; gap: var(--space-2); padding: var(--space-4);">
+        <button class="btn btn-ghost" data-route="home">HOME</button>
+        <button class="btn btn-ghost" data-route="starred">STARRED</button>
+        <button class="btn btn-ghost" data-route="create">CREATE</button>
+        <button class="btn btn-ghost" data-route="offline">OFFLINE</button>
+        <button class="btn btn-ghost" data-route="settings">SETTINGS</button>
       </div>
     `;
-    bottomSheet.open(content, 'Menu');
+    void bottomSheet.open(content, 'MENU');
     setTimeout(() => {
-      document.querySelectorAll('.mobile-menu .menu-item').forEach((item) => {
-        item.addEventListener('click', (e) => {
-          const route = (e.currentTarget as HTMLElement).dataset.route as Route;
-          if (route) {
-            this.navigate(route);
-            bottomSheet.close();
+      document.querySelectorAll('.mobile-menu .btn').forEach((b) => {
+        b.addEventListener('click', () => {
+          const r = (b as HTMLElement).dataset.route as Route;
+          if (r) {
+            this.navigate(r);
+            void bottomSheet.close();
           }
         });
       });
@@ -520,139 +400,44 @@ export class App {
 
   private initializeCommandPalette(): void {
     commandPalette.setCommands([
-      {
-        id: 'home',
-        title: 'Home',
-        icon: '🏠',
-        category: 'Navigation',
-        action: () => this.navigate('home'),
-      },
-      {
-        id: 'starred',
-        title: 'Starred Gists',
-        icon: '⭐',
-        category: 'Navigation',
-        action: () => this.navigate('starred'),
-      },
-      {
-        id: 'create',
-        title: 'Create New Gist',
-        icon: '➕',
-        category: 'Actions',
-        action: () => this.navigate('create'),
-      },
-      {
-        id: 'offline',
-        title: 'Offline Status',
-        icon: '📴',
-        category: 'Navigation',
-        action: () => this.navigate('offline'),
-      },
-      {
-        id: 'settings',
-        title: 'Settings',
-        icon: '⚙️',
-        category: 'Navigation',
-        action: () => this.navigate('settings'),
-      },
-      {
-        id: 'theme',
-        title: 'Toggle Theme',
-        icon: '🌓',
-        category: 'Preferences',
-        action: () => this.toggleTheme(),
-      },
+      { id: 'home', title: 'HOME', action: () => this.navigate('home') },
+      { id: 'starred', title: 'STARRED GISTS', action: () => this.navigate('starred') },
+      { id: 'create', title: 'CREATE NEW GIST', action: () => this.navigate('create') },
+      { id: 'settings', title: 'SETTINGS', action: () => this.navigate('settings') },
     ]);
   }
+}
 
-  private toggleTheme(): void {
-    const current = document.documentElement.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('theme-preference', next);
-  }
-
-  private initializeThemeToggle(): void {
-    const stored = localStorage.getItem('theme-preference');
-    if (stored) document.documentElement.setAttribute('data-theme', stored);
-    else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-    }
-  }
-
-  private async updateSyncIndicator(): Promise<void> {
-    if (!this.container) return;
-    const indicator = this.container.querySelector('#sync-indicator');
-    const online = networkMonitor.isOnline();
-    const pendingCount = await SyncQueue.getQueueLength();
-    indicator?.classList.toggle('syncing', pendingCount > 0 && online);
-    indicator?.classList.toggle('offline', !online);
-  }
-
-  private async loadTokenInfo(): Promise<void> {
-    const statusEl = this.container?.querySelector('#token-status');
-    if (!statusEl) return;
-    const token = await getToken();
-    if (token) {
-      const masked = redactToken(token);
-      statusEl.innerHTML = `<p class="token-saved">Token saved: ${sanitizeHtml(masked)}</p>`;
-    } else {
-      statusEl.innerHTML = `<p class="token-missing">No token saved.</p>`;
-    }
-  }
-
-  private async updateOfflineStatus(): Promise<void> {
-    const pendingEl = this.container?.querySelector('#pending-count');
-    if (pendingEl) pendingEl.textContent = String(await SyncQueue.getQueueLength());
-  }
-
-  private async loadOfflineLogs(): Promise<void> {
-    const listEl = this.container?.querySelector('#logs-list');
-    if (!listEl) return;
-
-    try {
-      const { getOfflineLogs } = await import('../services/security/logger');
-      const logs = await getOfflineLogs();
-      if (logs.length === 0) {
-        listEl.innerHTML = '<p>No logs found.</p>';
-        return;
-      }
-
-      listEl.innerHTML = logs
-        .slice(-50)
-        .reverse()
-        .map(
-          (log: LogEntry) => `
-            <div style="border-bottom: 1px solid var(--color-border-default); padding: var(--spacing-1) 0;">
-                <span style="color: var(--color-foreground-muted);">${new Date(log.timestamp).toLocaleTimeString()}</span>
-                <span style="color: ${log.level === 'error' ? 'var(--color-status-error-fg)' : log.level === 'warn' ? 'var(--color-status-warning-fg)' : 'inherit'}; font-weight: bold;">[${log.level.toUpperCase()}]</span>
-                ${sanitizeHtml(log.message)}
-            </div>
-          `
-        )
-        .join('');
-    } catch (err) {
-      listEl.innerHTML = '<p>Failed to load logs.</p>';
-      safeLog('Failed to load logs', err);
-    }
-  }
-
-  private async loadDiagnostics(): Promise<void> {
-    const diagEl = this.container?.querySelector('#diagnostics-info');
-    if (!diagEl) return;
-
-    const online = networkMonitor.isOnline();
-    const queueLen = await SyncQueue.getQueueLength();
-    const gists = gistStore.getGists();
-
-    diagEl.innerHTML = `
-        <div class="diagnostics-content">
-            <p><strong>Network:</strong> ${online ? '🟢 Online' : '🔴 Offline'}</p>
-            <p><strong>Sync Queue:</strong> ${queueLen} pending</p>
-            <p><strong>Local Gists:</strong> ${gists.length} cached</p>
-            <p><strong>Platform:</strong> ${navigator.userAgent.includes('Capacitor') ? 'Mobile (Android)' : 'Web (PWA)'}</p>
+export async function customConfirm(message: string, title = 'CONFIRM'): Promise<boolean> {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <div class="confirm-dialog glass-card" role="dialog" aria-modal="true">
+        <h2 class="confirm-title">${title}</h2>
+        <p class="confirm-message">${message}</p>
+        <div class="confirm-actions">
+          <button class="btn btn-ghost" data-action="cancel">CANCEL</button>
+          <button class="btn btn-danger" data-action="confirm">CONFIRM</button>
         </div>
-      `;
-  }
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+
+    const cleanup = (res: boolean) => {
+      overlay.classList.remove('visible');
+      setTimeout(() => {
+        overlay.remove();
+        resolve(res);
+      }, 200);
+    };
+
+    overlay
+      .querySelector('[data-action="cancel"]')
+      ?.addEventListener('click', () => cleanup(false));
+    overlay
+      .querySelector('[data-action="confirm"]')
+      ?.addEventListener('click', () => cleanup(true));
+  });
 }
