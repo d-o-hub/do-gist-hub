@@ -1,3 +1,4 @@
+<!-- Last Audit: 2024-05-15 -->
 # Global Error Handling
 
 ## Error Taxonomy
@@ -16,4 +17,4 @@ Safe, actionable messages via Toast and ErrorBoundary UI. Stack traces redacted.
 
 ---
 
-*Created: 2026. Status: Completed.*
+*Created: 2026. Status: Completed (Audited and Verified) (Missing Playwright coverage).*

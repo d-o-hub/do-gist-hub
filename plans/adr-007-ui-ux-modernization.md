@@ -1,3 +1,4 @@
+<!-- Last Audit: 2024-05-15 -->
 # ADR-007: UI/UX Modernization with 2026 Best Practices
 
 ## Status

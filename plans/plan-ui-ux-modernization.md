@@ -1,3 +1,4 @@
+<!-- Last Audit: 2024-05-15 -->
 # Plan: UI/UX Modernization with Reader UI/UX Skill v2
 
 ## Overview

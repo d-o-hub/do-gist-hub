@@ -1,3 +1,4 @@
+<!-- Last Audit: 2024-05-15 -->
 # ADR-009: AbortController and Lifecycle Cleanup
 
 **Status**: Accepted  

@@ -1,3 +1,4 @@
+<!-- Last Audit: 2024-05-15 -->
 # Security
 
 ## PAT Handling
@@ -14,4 +15,4 @@ Sanitization of all user-controlled data via `sanitizeHtml` and `html` template 
 
 ---
 
-*Created: 2026. Status: Completed.*
+*Created: 2026. Status: Completed (Audited and Verified) (Missing Playwright coverage).*

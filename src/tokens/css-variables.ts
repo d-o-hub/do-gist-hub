@@ -200,6 +200,8 @@ export function generateCSSVariables(): string {
   --shadow-xl: ${shadowTokens.xl};
   --shadow-2xl: ${shadowTokens['2xl']};
   --shadow-inner: ${shadowTokens.inner};
+  --shadow-accent: ${shadowTokens.accent};
+  --shadow-accent-lg: ${shadowTokens.accentLg};
   
   /* ===== Breakpoint Tokens ===== */
   --bp-phone-small: ${breakpoints['phone-small']};

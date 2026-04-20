@@ -1,3 +1,4 @@
+<!-- Last Audit: 2024-05-15 -->
 # ADR-007: CSP and Logging Redaction
 
 **Status**: Accepted  
