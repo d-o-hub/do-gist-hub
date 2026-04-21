@@ -151,6 +151,14 @@ class GistStore {
     }
   }
 
+  async addGist(gist: GitHubGist): Promise<GistRecord> {
+    const record = this.githubGistToRecord(gist);
+    await dbSaveGist(record);
+    this.gists.unshift(record);
+    this.notifyListeners();
+    return record;
+  }
+
   async updateGist(
     id: string,
     updates: { description?: string; public?: boolean; files?: Record<string, string> }

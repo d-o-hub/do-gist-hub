@@ -8,6 +8,8 @@ import { GistRevision } from '../types/api';
 import * as GitHub from '../services/github/client';
 import { toast } from './ui/toast';
 import { safeError } from '../services/security/logger';
+import { showConfirmDialog } from '../utils/dialog';
+import gistStore from '../stores/gist-store';
 
 function formatRelativeTime(dateStr: string): string {
   const now = new Date();
@@ -116,12 +118,13 @@ export async function loadGistDetail(
   container: HTMLElement,
   onBack: () => void,
   onEdit: (id: string) => void,
-  onViewRevision: (id: string, version: string) => void
+  onViewRevision: (id: string, version: string) => void,
+  onForkSuccess: (id: string) => void
 ): Promise<void> {
   try {
     const gist = await GitHub.getGist(id);
     container.innerHTML = renderGistDetail(gist as unknown as GistRecord);
-    bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+    bindDetailEvents(container, { onBack, onEdit, onViewRevision, onForkSuccess });
   } catch (err) {
     safeError('[GistDetail] Failed to load gist', err);
     toast.error('FAILED TO LOAD GIST DETAILS');
@@ -161,10 +164,12 @@ export function bindDetailEvents(
     onBack,
     onEdit,
     onViewRevision,
+    onForkSuccess,
   }: {
     onBack: () => void;
     onEdit: (id: string) => void;
     onViewRevision: (id: string, version: string) => void;
+    onForkSuccess: (id: string) => void;
   }
 ): void {
   const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id');
@@ -179,7 +184,8 @@ export function bindDetailEvents(
       const revisions = await GitHub.listGistRevisions(gistId);
       container.innerHTML = renderRevisions(gistId, revisions);
       bindRevisionEvents(container, {
-        onBack: () => loadGistDetail(gistId, container, onBack, onEdit, onViewRevision),
+        onBack: () =>
+          loadGistDetail(gistId, container, onBack, onEdit, onViewRevision, onForkSuccess),
         onViewRevision,
       });
     } catch {
@@ -190,8 +196,29 @@ export function bindDetailEvents(
   // Star button
   container.querySelector('[data-action="star"]')?.addEventListener('click', async () => {
     if (!gistId) return;
-    const ok = await (await import('../stores/gist-store')).default.toggleStar(gistId);
-    if (ok) loadGistDetail(gistId, container, onBack, onEdit, onViewRevision);
+    const ok = await gistStore.toggleStar(gistId);
+    if (ok) loadGistDetail(gistId, container, onBack, onEdit, onViewRevision, onForkSuccess);
+  });
+
+  // Fork button
+  container.querySelector('[data-action="fork"]')?.addEventListener('click', async () => {
+    if (!gistId) return;
+    const confirmed = await showConfirmDialog('FORK THIS GIST?');
+    if (!confirmed) return;
+
+    try {
+      const forked = await GitHub.forkGist(gistId);
+      await gistStore.addGist(forked);
+      toast.success('GIST FORKED');
+      onForkSuccess(forked.id);
+    } catch (err) {
+      safeError('[GistDetail] Fork failed', err);
+      if (err && typeof err === 'object' && 'category' in err && err.category === 'RATE_LIMIT') {
+        toast.error('RATE LIMIT EXCEEDED. PLEASE WAIT.');
+      } else {
+        toast.error('FAILED TO FORK GIST');
+      }
+    }
   });
 }
 
