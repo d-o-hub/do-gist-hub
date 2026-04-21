@@ -124,7 +124,7 @@ export async function loadGistDetail(
   try {
     const gist = await GitHub.getGist(id);
     container.innerHTML = renderGistDetail(gist as unknown as GistRecord);
-    bindDetailEvents(container, { onBack, onEdit, onViewRevision, onForkSuccess });
+    bindDetailEvents(container, id, { onBack, onEdit, onViewRevision, onForkSuccess });
   } catch (err) {
     safeError('[GistDetail] Failed to load gist', err);
     toast.error('FAILED TO LOAD GIST DETAILS');
@@ -160,6 +160,7 @@ export function renderRevisions(gistId: string, revisions: GistRevision[]): stri
 
 export function bindDetailEvents(
   container: HTMLElement,
+  gistId: string,
   {
     onBack,
     onEdit,
@@ -172,18 +173,16 @@ export function bindDetailEvents(
     onForkSuccess: (id: string) => void;
   }
 ): void {
-  const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id');
   container.querySelector('#gist-back-btn')?.addEventListener('click', onBack);
   container.querySelector('[data-action="edit"]')?.addEventListener('click', () => {
-    if (gistId) onEdit(gistId);
+    onEdit(gistId);
   });
 
   container.querySelector('[data-action="revisions"]')?.addEventListener('click', async () => {
-    if (!gistId) return;
     try {
       const revisions = await GitHub.listGistRevisions(gistId);
       container.innerHTML = renderRevisions(gistId, revisions);
-      bindRevisionEvents(container, {
+      bindRevisionEvents(container, gistId, {
         onBack: () =>
           loadGistDetail(gistId, container, onBack, onEdit, onViewRevision, onForkSuccess),
         onViewRevision,
@@ -195,14 +194,12 @@ export function bindDetailEvents(
 
   // Star button
   container.querySelector('[data-action="star"]')?.addEventListener('click', async () => {
-    if (!gistId) return;
     const ok = await gistStore.toggleStar(gistId);
     if (ok) loadGistDetail(gistId, container, onBack, onEdit, onViewRevision, onForkSuccess);
   });
 
   // Fork button
   container.querySelector('[data-action="fork"]')?.addEventListener('click', async () => {
-    if (!gistId) return;
     const confirmed = await showConfirmDialog('FORK THIS GIST?');
     if (!confirmed) return;
 
@@ -224,17 +221,17 @@ export function bindDetailEvents(
 
 function bindRevisionEvents(
   container: HTMLElement,
+  gistId: string,
   {
     onBack,
     onViewRevision,
   }: { onBack: () => void; onViewRevision: (id: string, version: string) => void }
 ): void {
-  const gistId = container.querySelector('.revisions-list')?.getAttribute('data-gist-id');
   container.querySelector('#gist-back-btn')?.addEventListener('click', onBack);
   container.querySelectorAll('[data-action="view-revision"]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       const version = (e.currentTarget as HTMLElement).getAttribute('data-version');
-      if (gistId && version) onViewRevision(gistId, version);
+      if (version) onViewRevision(gistId, version);
     });
   });
 }
