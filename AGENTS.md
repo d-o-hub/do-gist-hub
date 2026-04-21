@@ -3,7 +3,7 @@
 > **d.o. Gist Hub** — offline-first GitHub Gist management app with token-driven responsive UI, PAT authentication, and Capacitor Android packaging.
 > Stack: Vite, TypeScript (strict), PWA, IndexedDB, GitHub REST API, Capacitor 6
 > Design: DTCG-aligned tokens, mobile-first, 7 breakpoints (320px–1536px+)
-> Version: 0.2.0
+
 
 ## Quick Reference
 
