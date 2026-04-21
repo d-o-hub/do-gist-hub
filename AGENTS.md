@@ -3,7 +3,7 @@
 > **d.o. Gist Hub** — offline-first GitHub Gist management app with token-driven responsive UI, PAT authentication, and Capacitor Android packaging.
 > Stack: Vite, TypeScript (strict), PWA, IndexedDB, GitHub REST API, Capacitor 6
 > Design: DTCG-aligned tokens, mobile-first, 7 breakpoints (320px–1536px+)
-
+> Version: 0.2.0
 
 ## Quick Reference
 
@@ -219,29 +219,19 @@ npm run cap:sync     # sync Capacitor after build
 ### Mobile-First CSS Patterns
 
 **Navigation (Dual-mode)**
-
 ```css
 /* Base: Mobile - hide sidebar, show bottom nav */
-.sidebar-nav {
-  display: none;
-}
-.bottom-nav {
-  display: flex;
-}
+.sidebar-nav { display: none; }
+.bottom-nav { display: flex; }
 
 /* Desktop: show sidebar, hide bottom nav */
 @media (min-width: 768px) {
-  .sidebar-nav {
-    display: flex;
-  }
-  .bottom-nav {
-    display: none;
-  }
+  .sidebar-nav { display: flex; }
+  .bottom-nav { display: none; }
 }
 ```
 
 **Layout (No Gaps)**
-
 ```css
 /* App shell with dynamic viewport */
 .app-shell {
@@ -258,7 +248,6 @@ npm run cap:sync     # sync Capacitor after build
 ```
 
 **Safe Areas (Notch Support)**
-
 ```css
 :root {
   --safe-area-top: env(safe-area-inset-top, 0px);
@@ -272,27 +261,23 @@ npm run cap:sync     # sync Capacitor after build
 
 ### Common Regressions to Prevent
 
-| Issue                     | Prevention                                    |
-| ------------------------- | --------------------------------------------- |
-| Sidebar visible on mobile | Base style `display: none`                    |
-| Unstyled buttons          | Always use `.btn` / `.nav-item` classes       |
-| Layout gaps               | Use `flex: 1 0 auto` + `min-height: 0`        |
-| Missing active states     | Define `.active` for all interactive elements |
-| Hardcoded values          | Use CSS custom properties only                |
+| Issue | Prevention |
+|-------|------------|
+| Sidebar visible on mobile | Base style `display: none` |
+| Unstyled buttons | Always use `.btn` / `.nav-item` classes |
+| Layout gaps | Use `flex: 1 0 auto` + `min-height: 0` |
+| Missing active states | Define `.active` for all interactive elements |
+| Hardcoded values | Use CSS custom properties only |
 
 ### 2026 Patterns
 
 **View Transitions**
-
 ```typescript
 import { withViewTransition } from '../utils/view-transitions';
-withViewTransition(() => {
-  /* navigation */
-});
+withViewTransition(() => { /* navigation */ });
 ```
 
 **Container Queries**
-
 ```css
 .gist-card {
   container-type: inline-size;
@@ -301,13 +286,9 @@ withViewTransition(() => {
 ```
 
 **Reduced Motion**
-
 ```css
 @media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
+  * { animation: none !important; transition: none !important; }
 }
 ```
 
@@ -324,7 +305,6 @@ agent-browser eval "document.documentElement.scrollWidth <= window.innerWidth"
 ```
 
 ### References
-
 - `agent-docs/patterns/dynamic-viewport-units.md`
 - `agent-docs/patterns/mobile-first-navigation.md`
 
@@ -339,21 +319,21 @@ Self-learning system that analyzes, detects, fixes, and documents issues automat
 
 ### Scripts
 
-| Script                 | Purpose                     | Usage                      |
-| ---------------------- | --------------------------- | -------------------------- |
-| `analyze-codebase.sh`  | Full analysis with auto-fix | `--fix --validate --watch` |
-| `autosearch-issues.sh` | Pattern-based detection     | Detects CSS/TS/HTML issues |
-| `self-fix.sh`          | Apply known fixes           | `--dry-run` to preview     |
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `analyze-codebase.sh` | Full analysis with auto-fix | `--fix --validate --watch` |
+| `autosearch-issues.sh` | Pattern-based detection | Detects CSS/TS/HTML issues |
+| `self-fix.sh` | Apply known fixes | `--dry-run` to preview |
 
 ### Detection Patterns
 
-| Pattern                    | Issue                                 | Severity |
-| -------------------------- | ------------------------------------- | -------- |
-| `css_missing_base_display` | Element visible when should be hidden | High     |
-| `css_no_dvh`               | Using 100vh instead of 100dvh         | Medium   |
-| `css_hardcoded_colors`     | Hardcoded hex colors                  | Low      |
-| `ts_any_type`              | TypeScript `any` usage                | Medium   |
-| `html_unstyled_button`     | Button without CSS class              | High     |
+| Pattern | Issue | Severity |
+|---------|-------|----------|
+| `css_missing_base_display` | Element visible when should be hidden | High |
+| `css_no_dvh` | Using 100vh instead of 100dvh | Medium |
+| `css_hardcoded_colors` | Hardcoded hex colors | Low |
+| `ts_any_type` | TypeScript `any` usage | Medium |
+| `html_unstyled_button` | Button without CSS class | High |
 
 ### Self-Learning Database
 
@@ -375,91 +355,7 @@ agent-docs/
 
 See `.agents/skills/codebase-optimizer/SKILL.md` for details.
 
----
 
-## Testing Standards
-
-### Test Categories
-
-- **Browser**: Desktop Chrome/Firefox/Safari
-- **Mobile**: Pixel 7, iPhone 14, iPad Mini
-- **Offline**: Cache behavior, sync queue
-- **Accessibility**: Keyboard, screen reader, contrast
-
-### Playwright Best Practices
-
-```typescript
-// Use role-based locators (stable)
-await page.getByRole('button', { name: 'Create' }).click();
-await page.getByLabel('Description').fill('Test');
-
-// Web-first assertions (auto-retry)
-await expect(page.getByText('Success')).toBeVisible();
-
-// Test isolation
-test.beforeEach(async ({ page }) => {
-  await page.goto('/');
-  await page.waitForLoadState('networkidle');
-});
-```
-
-### Test Coverage Goals
-
-| Type       | Target |
-| ---------- | ------ |
-| Statements | 80%    |
-| Branches   | 75%    |
-| Functions  | 80%    |
-| Lines      | 80%    |
-
-### Running Tests
-
-```bash
-npm run test           # All tests
-npm run test:browser   # Desktop browsers
-npm run test:mobile    # Mobile emulation
-npm run test:offline   # Offline scenarios
-npm run test:a11y      # Accessibility
-```
-
----
-
-## Configuration Standards
-
-### ESLint (Flat Config - ESLint 9+)
-
-- `@typescript-eslint/no-explicit-any`: error
-- `@typescript-eslint/explicit-function-return-type`: warn
-- `@typescript-eslint/no-unused-vars`: error
-
-### TypeScript (Strict Mode)
-
-- `strict: true`, `noImplicitAny: true`
-- `noUnusedLocals: true`, `noUnusedParameters: true`
-- `noImplicitReturns: true`, `noUncheckedIndexedAccess: true`
-
-### Prettier
-
-- Print width: 100, tab width: 2
-- Single quotes, trailing commas (ES5)
-- LF line endings
-
-### Git Hooks
-
-```bash
-# Install pre-commit hook
-cp scripts/pre-commit-hook.sh .git/hooks/pre-commit
-chmod +x .git/hooks/pre-commit
-```
-
-### Quality Gate
-
-```bash
-npm run check           # typecheck + lint + format
-./scripts/quality_gate.sh  # full validation
-```
-
-See `plans/016-configuration-analysis.md` for detailed config review.
 
 ---
 
@@ -474,29 +370,14 @@ This section is automatically updated by `./scripts/analyze-codebase.sh`.
 3. **Safe Areas**: Include `env(safe-area-inset-*)` for header/footer padding
 4. **Flex Scrolling**: Add `min-height: 0` to flex children with overflow
 
-### TypeScript Rules
-
-1. **No `any` types**: Use explicit types or `unknown`
-2. **Explicit returns**: Public APIs must have return types
-3. **Separate test rules**: Relaxed for test files
-
-### Performance Rules
-
-1. **Bundle budgets**: Initial JS < 150KB gzipped
-2. **Chunk limits**: Route chunks < 150KB
-3. **Cold start**: < 2 seconds
-4. **Interactions**: < 100ms
-
 ### Verification Checklist
 
 Before committing, run:
-
 ```bash
 ./scripts/analyze-codebase.sh --validate
 ```
 
 This checks:
-
 - [ ] No unstyled elements at any breakpoint
 - [ ] Layout gaps eliminated
 - [ ] Responsive behavior correct
@@ -505,5 +386,3 @@ This checks:
 ### Issue History
 
 See `agent-docs/issues/` for documented issues and fixes.
-See `agent-docs/patterns/` for good/bad patterns.
-See `plans/017-best-practices-learnings.md` for configuration learnings.
