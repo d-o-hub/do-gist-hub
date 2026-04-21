@@ -59,34 +59,34 @@ export class App {
     if (!this.container) return;
 
     this.container.innerHTML = `
-      <div class="app-shell">
+      <div class="app-shell" data-testid="app-shell">
         <header class="app-header">
           <div class="header-left">
-            <h1 class="app-title">${APP.name.toUpperCase()}</h1>
+            <h1 class="app-title" data-testid="app-title">${APP.name.toUpperCase()}</h1>
           </div>
           <div class="header-actions">
             <div id="sync-indicator" class="sync-indicator">
               <span class="sync-dot"></span>
               <span class="micro-label">SYNC</span>
             </div>
-            <button class="btn btn-ghost" id="theme-toggle" aria-label="Toggle theme">🌓</button>
-            <button class="btn btn-ghost" id="menu-btn" aria-label="Menu">☰</button>
+            <button class="btn btn-ghost" id="theme-toggle" data-testid="theme-toggle" aria-label="Toggle theme">🌓</button>
+            <button class="btn btn-ghost" id="menu-btn" data-testid="mobile-menu-btn" aria-label="Menu">☰</button>
           </div>
         </header>
 
-        <nav class="sidebar-nav">
+        <nav class="sidebar-nav" data-testid="sidebar-nav">
           ${this.renderNavItems('sidebar')}
         </nav>
 
-        <nav class="rail-nav">
+        <nav class="rail-nav" data-testid="rail-nav">
           ${this.renderNavItems('rail')}
         </nav>
 
-        <main class="app-main" id="main-content">
+        <main class="app-main" id="main-content" data-testid="main-content">
           ${this.getRouteContent()}
         </main>
 
-        <nav class="bottom-nav">
+        <nav class="bottom-nav" data-testid="bottom-nav">
           ${this.renderNavItems('bottom')}
         </nav>
       </div>
@@ -95,17 +95,17 @@ export class App {
 
   private renderNavItems(type: 'sidebar' | 'rail' | 'bottom'): string {
     const items = [
-      { id: 'home', label: 'HOME', icon: '🏠' },
-      { id: 'starred', label: 'STARRED', icon: '⭐' },
-      { id: 'create', label: 'CREATE', icon: '➕' },
-      { id: 'offline', label: 'OFFLINE', icon: '📴' },
-      { id: 'settings', label: 'SETTINGS', icon: '⚙️' },
+      { id: 'home', label: 'HOME', icon: '🏠', testId: 'nav-home' },
+      { id: 'starred', label: 'STARRED', icon: '⭐', testId: 'nav-starred' },
+      { id: 'create', label: 'CREATE', icon: '➕', testId: 'nav-create' },
+      { id: 'offline', label: 'OFFLINE', icon: '📴', testId: 'nav-offline' },
+      { id: 'settings', label: 'SETTINGS', icon: '⚙️', testId: 'settings-btn' },
     ];
 
     return items
       .map(
         (item) => `
-      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}">
+      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}" data-testid="${item.testId}">
         <span class="${type}-icon">${item.icon}</span>
         <span class="${type}-label">${item.label}</span>
       </button>
@@ -290,8 +290,7 @@ export class App {
           container as HTMLElement,
           () => this.navigate('home'),
           (_id) => {},
-          (_id, _v) => {},
-          (forkedId) => this.navigateToDetail(forkedId)
+          (_id, _v) => {}
         );
       }
     });
@@ -402,10 +401,10 @@ export class App {
 
   private initializeCommandPalette(): void {
     commandPalette.setCommands([
-      { id: 'home', title: 'HOME', action: () => this.navigate('home') },
-      { id: 'starred', title: 'STARRED GISTS', action: () => this.navigate('starred') },
-      { id: 'create', title: 'CREATE NEW GIST', action: () => this.navigate('create') },
-      { id: 'settings', title: 'SETTINGS', action: () => this.navigate('settings') },
+      { id: 'home', title: 'Home', action: () => this.navigate('home') },
+      { id: 'starred', title: 'Starred Gists', action: () => this.navigate('starred') },
+      { id: 'create', title: 'Create New Gist', action: () => this.navigate('create') },
+      { id: 'settings', title: 'Settings', action: () => this.navigate('settings') },
     ]);
   }
 }

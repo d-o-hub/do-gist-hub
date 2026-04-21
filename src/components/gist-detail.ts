@@ -8,8 +8,6 @@ import { GistRevision } from '../types/api';
 import * as GitHub from '../services/github/client';
 import { toast } from './ui/toast';
 import { safeError } from '../services/security/logger';
-import { showConfirmDialog } from '../utils/dialog';
-import gistStore from '../stores/gist-store';
 
 function formatRelativeTime(dateStr: string): string {
   const now = new Date();
@@ -118,13 +116,12 @@ export async function loadGistDetail(
   container: HTMLElement,
   onBack: () => void,
   onEdit: (id: string) => void,
-  onViewRevision: (id: string, version: string) => void,
-  onForkSuccess: (id: string) => void
+  onViewRevision: (id: string, version: string) => void
 ): Promise<void> {
   try {
     const gist = await GitHub.getGist(id);
     container.innerHTML = renderGistDetail(gist as unknown as GistRecord);
-    bindDetailEvents(container, id, { onBack, onEdit, onViewRevision, onForkSuccess });
+    bindDetailEvents(container, { onBack, onEdit, onViewRevision });
   } catch (err) {
     safeError('[GistDetail] Failed to load gist', err);
     toast.error('FAILED TO LOAD GIST DETAILS');
@@ -160,31 +157,29 @@ export function renderRevisions(gistId: string, revisions: GistRevision[]): stri
 
 export function bindDetailEvents(
   container: HTMLElement,
-  gistId: string,
   {
     onBack,
     onEdit,
     onViewRevision,
-    onForkSuccess,
   }: {
     onBack: () => void;
     onEdit: (id: string) => void;
     onViewRevision: (id: string, version: string) => void;
-    onForkSuccess: (id: string) => void;
   }
 ): void {
+  const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id');
   container.querySelector('#gist-back-btn')?.addEventListener('click', onBack);
   container.querySelector('[data-action="edit"]')?.addEventListener('click', () => {
-    onEdit(gistId);
+    if (gistId) onEdit(gistId);
   });
 
   container.querySelector('[data-action="revisions"]')?.addEventListener('click', async () => {
+    if (!gistId) return;
     try {
       const revisions = await GitHub.listGistRevisions(gistId);
       container.innerHTML = renderRevisions(gistId, revisions);
-      bindRevisionEvents(container, gistId, {
-        onBack: () =>
-          loadGistDetail(gistId, container, onBack, onEdit, onViewRevision, onForkSuccess),
+      bindRevisionEvents(container, {
+        onBack: () => loadGistDetail(gistId, container, onBack, onEdit, onViewRevision),
         onViewRevision,
       });
     } catch {
@@ -194,44 +189,25 @@ export function bindDetailEvents(
 
   // Star button
   container.querySelector('[data-action="star"]')?.addEventListener('click', async () => {
-    const ok = await gistStore.toggleStar(gistId);
-    if (ok) loadGistDetail(gistId, container, onBack, onEdit, onViewRevision, onForkSuccess);
-  });
-
-  // Fork button
-  container.querySelector('[data-action="fork"]')?.addEventListener('click', async () => {
-    const confirmed = await showConfirmDialog('FORK THIS GIST?');
-    if (!confirmed) return;
-
-    try {
-      const forked = await GitHub.forkGist(gistId);
-      await gistStore.addGist(forked);
-      toast.success('GIST FORKED');
-      onForkSuccess(forked.id);
-    } catch (err) {
-      safeError('[GistDetail] Fork failed', err);
-      if (err && typeof err === 'object' && 'category' in err && err.category === 'RATE_LIMIT') {
-        toast.error('RATE LIMIT EXCEEDED. PLEASE WAIT.');
-      } else {
-        toast.error('FAILED TO FORK GIST');
-      }
-    }
+    if (!gistId) return;
+    const ok = await (await import('../stores/gist-store')).default.toggleStar(gistId);
+    if (ok) loadGistDetail(gistId, container, onBack, onEdit, onViewRevision);
   });
 }
 
 function bindRevisionEvents(
   container: HTMLElement,
-  gistId: string,
   {
     onBack,
     onViewRevision,
   }: { onBack: () => void; onViewRevision: (id: string, version: string) => void }
 ): void {
+  const gistId = container.querySelector('.revisions-list')?.getAttribute('data-gist-id');
   container.querySelector('#gist-back-btn')?.addEventListener('click', onBack);
   container.querySelectorAll('[data-action="view-revision"]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       const version = (e.currentTarget as HTMLElement).getAttribute('data-version');
-      if (version) onViewRevision(gistId, version);
+      if (gistId && version) onViewRevision(gistId, version);
     });
   });
 }
