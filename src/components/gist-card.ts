@@ -48,7 +48,7 @@ export function renderCard(gist: GistRecord): string {
   const snippet = content.slice(0, 120);
 
   const html = `
-    <article class="glass-card gist-card" data-gist-id="${esc(gist.id)}" tabindex="0" role="button"
+    <article class="glass-card gist-card" data-gist-id="${esc(gist.id)}" data-testid="gist-item" tabindex="0" role="button"
              aria-label="Open gist: ${esc(description)}">
       <div class="gist-card-header">
         <div class="gist-card-meta">

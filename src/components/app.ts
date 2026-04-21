@@ -10,13 +10,15 @@ import syncQueue from '../services/sync/queue';
 import { getToken, saveToken } from '../services/github/auth';
 import { loadGistDetail } from './gist-detail';
 import { APP } from '../config/app.config';
-import { redactToken } from '../services/security';
 import { commandPalette } from './ui/command-palette';
 import { bottomSheet } from './ui/bottom-sheet';
 import { withViewTransition } from '../utils/view-transitions';
 import { toast } from './ui/toast';
 import { showConfirmDialog } from '../utils/dialog';
 import { loadConflictResolution } from './conflict-resolution';
+import { loadEditForm } from './gist-edit';
+import { renderRevisions } from './gist-detail';
+import * as GitHub from '../services/github';
 
 type Route =
   | 'home'
@@ -26,8 +28,11 @@ type Route =
   | 'settings'
   | 'detail'
   | 'edit'
+  | 'revisions'
   | 'conflicts';
 type Filter = 'all' | 'mine' | 'starred';
+type SortKey = 'updated' | 'created' | 'title';
+type SortOrder = 'asc' | 'desc';
 
 export class App {
   private container: HTMLElement | null = null;
@@ -35,6 +40,8 @@ export class App {
   private currentFilter: Filter = 'all';
   private searchQuery = '';
   private searchTimeout?: number;
+  private currentSortKey: SortKey = 'updated';
+  private currentSortOrder: SortOrder = 'desc';
 
   mount(container: HTMLElement): void {
     if (!container) throw new Error('App container not found');
@@ -68,22 +75,23 @@ export class App {
     if (!this.container) return;
 
     this.container.innerHTML = `
-      <div class="app-shell">
+      <div class="app-shell" data-testid="app-shell">
         <header class="app-header">
           <div class="header-left">
-            <h1 class="app-title">${APP.name.toUpperCase()}</h1>
+            <h1 class="app-title" data-testid="app-title">${APP.name.toUpperCase()}</h1>
           </div>
           <div class="header-actions">
             <div id="sync-indicator" class="sync-indicator">
               <span class="sync-dot"></span>
               <span class="micro-label">SYNC</span>
             </div>
-            <button class="btn btn-ghost" id="theme-toggle" aria-label="Toggle theme">🌓</button>
-            <button class="btn btn-ghost" id="menu-btn" aria-label="Menu">☰</button>
+            <button class="btn btn-ghost" id="theme-toggle" aria-label="Toggle theme" data-testid="theme-toggle">🌓</button>
+            <button class="btn btn-ghost" id="settings-btn" aria-label="Settings" data-testid="settings-btn">⚙️</button>
+            <button class="btn btn-ghost" id="menu-btn" aria-label="Menu" data-testid="mobile-menu-btn">☰</button>
           </div>
         </header>
 
-        <nav class="sidebar-nav">
+        <nav class="sidebar-nav" data-testid="sidebar-nav">
           ${this.renderNavItems('sidebar')}
         </nav>
 
@@ -91,11 +99,11 @@ export class App {
           ${this.renderNavItems('rail')}
         </nav>
 
-        <main class="app-main" id="main-content">
+        <main class="app-main" id="main-content" data-testid="main-content">
           ${this.getRouteContent()}
         </main>
 
-        <nav class="bottom-nav">
+        <nav class="bottom-nav" data-testid="bottom-nav">
           ${this.renderNavItems('bottom')}
         </nav>
       </div>
@@ -104,17 +112,19 @@ export class App {
 
   private renderNavItems(type: 'sidebar' | 'rail' | 'bottom'): string {
     const items = [
-      { id: 'home', label: 'HOME', icon: '🏠' },
-      { id: 'starred', label: 'STARRED', icon: '⭐' },
-      { id: 'create', label: 'CREATE', icon: '➕' },
-      { id: 'offline', label: 'OFFLINE', icon: '📴' },
-      { id: 'settings', label: 'SETTINGS', icon: '⚙️' },
+      { id: 'home', label: 'Gists', icon: '📋' },
+      { id: 'starred', label: 'Starred', icon: '⭐' },
+      { id: 'create', label: 'New', icon: '➕' },
+      { id: 'offline', label: 'Offline', icon: '📴' },
+      { id: 'settings', label: 'Settings', icon: '⚙️' },
     ];
 
     return items
       .map(
         (item) => `
-      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}">
+      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}"
+              data-route="${item.id}"
+              data-testid="${type === 'sidebar' ? 'sidebar-' + item.id : 'nav-' + item.id}">
         <span class="${type}-icon">${item.icon}</span>
         <span class="${type}-label">${item.label}</span>
       </button>
@@ -138,7 +148,11 @@ export class App {
       case 'settings':
         return this.getSettingsRoute();
       case 'detail':
-        return '<div id="gist-detail-container"></div>';
+        return '<div id="gist-detail-container" data-testid="gist-detail"></div>';
+      case 'edit':
+        return '<div id="gist-edit-container" data-testid="gist-edit"></div>';
+      case 'revisions':
+        return '<div id="gist-revisions-container" data-testid="gist-revisions"></div>';
       default:
         return this.getHomeRoute();
     }
@@ -149,12 +163,23 @@ export class App {
       <div class="route-home">
         <div class="gist-list-header">
           <div class="search-container">
-            <input type="text" class="search-input" placeholder="SEARCH GISTS..." value="${this.searchQuery}" />
+            <input type="text" class="search-input" placeholder="Search gists..." value="${this.searchQuery}" />
           </div>
-          <div class="filter-chips">
-            <button class="chip ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">ALL</button>
-            <button class="chip ${this.currentFilter === 'mine' ? 'active' : ''}" data-filter="mine">MINE</button>
-            <button class="chip ${this.currentFilter === 'starred' ? 'active' : ''}" data-filter="starred">STARRED</button>
+          <div class="filter-buttons filter-chips">
+            <button class="chip filter-btn ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">All</button>
+            <button class="chip filter-btn ${this.currentFilter === 'mine' ? 'active' : ''}" data-filter="mine">Mine</button>
+            <button class="chip filter-btn ${this.currentFilter === 'starred' ? 'active' : ''}" data-filter="starred">Starred</button>
+          </div>
+          <div class="sort-controls">
+            <label for="sort-select" class="micro-label">Sort by:</label>
+            <select id="sort-select" class="sort-select form-input" style="width: auto; padding: var(--space-1) var(--space-2);">
+              <option value="updated-desc" ${this.currentSortKey === 'updated' && this.currentSortOrder === 'desc' ? 'selected' : ''}>Last Updated (Newest)</option>
+              <option value="updated-asc" ${this.currentSortKey === 'updated' && this.currentSortOrder === 'asc' ? 'selected' : ''}>Last Updated (Oldest)</option>
+              <option value="created-desc" ${this.currentSortKey === 'created' && this.currentSortOrder === 'desc' ? 'selected' : ''}>Created (Newest)</option>
+              <option value="created-asc" ${this.currentSortKey === 'created' && this.currentSortOrder === 'asc' ? 'selected' : ''}>Created (Oldest)</option>
+              <option value="title-asc" ${this.currentSortKey === 'title' && this.currentSortOrder === 'asc' ? 'selected' : ''}>Title (A-Z)</option>
+              <option value="title-desc" ${this.currentSortKey === 'title' && this.currentSortOrder === 'desc' ? 'selected' : ''}>Title (Z-A)</option>
+            </select>
           </div>
         </div>
         <div class="gist-list" id="gist-list">${this.renderGistList()}</div>
@@ -166,7 +191,7 @@ export class App {
     return `
       <div class="route-starred">
         <header class="detail-header">
-            <h1 class="detail-title">STARRED GISTS</h1>
+            <h2 class="detail-title">Starred Gists</h2>
         </header>
         <div class="gist-list" id="gist-list">${this.renderGistList()}</div>
       </div>
@@ -177,7 +202,7 @@ export class App {
     return `
       <div class="route-create">
         <header class="detail-header">
-            <h1 class="detail-title">CREATE NEW GIST</h1>
+            <h2 class="detail-title">Create New Gist</h2>
         </header>
         <form id="create-gist-form" class="gist-form">
           <div class="form-group">
@@ -195,27 +220,58 @@ export class App {
   }
 
   private getSettingsRoute(): string {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
     return `
       <div class="route-settings">
         <header class="detail-header">
-            <h1 class="detail-title">SETTINGS</h1>
+            <h2 class="detail-title">Settings</h2>
         </header>
         <div class="settings-panel">
-            <div class="form-group">
-                <label class="form-label">GITHUB TOKEN</label>
+          <details class="settings-section" open>
+            <summary class="settings-section-header">
+              <h3 class="form-label">Authentication</h3>
+            </summary>
+            <div class="settings-section-content" style="padding-top: var(--space-4);">
+              <div class="form-group">
+                <label class="form-label">GitHub Token</label>
                 <input type="password" id="pat-input" class="form-input" placeholder="ghp_..." />
                 <div class="form-actions" style="margin-top: var(--space-2); display: flex; gap: var(--space-2);">
                     <button id="save-token-btn" class="btn btn-primary">SAVE</button>
                     <button id="remove-token-btn" class="btn btn-ghost">REMOVE</button>
                 </div>
                 <div id="token-status" style="margin-top: var(--space-2);"></div>
+              </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">DATA MANAGEMENT</label>
-                <div class="form-actions" style="display: flex; gap: var(--space-2);">
-                    <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
-                </div>
+          </details>
+
+          <details class="settings-section">
+            <summary class="settings-section-header">
+              <h3 class="form-label">Preferences</h3>
+            </summary>
+            <div class="settings-section-content" style="padding-top: var(--space-4);">
+              <div class="form-group">
+                <label class="form-label" for="theme-select">Theme</label>
+                <select id="theme-select" class="form-input">
+                  <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>Light</option>
+                  <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>Dark</option>
+                  <option value="auto" ${currentTheme === 'auto' ? 'selected' : ''}>Auto (System)</option>
+                </select>
+              </div>
             </div>
+          </details>
+
+          <details class="settings-section">
+            <summary class="settings-section-header">
+              <h3 class="form-label">Data & Diagnostics</h3>
+            </summary>
+            <div class="settings-section-content" style="padding-top: var(--space-4);">
+              <div class="form-actions" style="display: flex; flex-direction: column; gap: var(--space-2);">
+                <button id="export-data-btn" class="btn btn-ghost">Export Data (JSON)</button>
+                <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
+              </div>
+              <div id="diagnostics-info" class="diagnostics-info" style="margin-top: var(--space-4);"></div>
+            </div>
+          </details>
         </div>
       </div>
     `;
@@ -225,7 +281,7 @@ export class App {
     return `
       <div class="route-offline">
         <header class="detail-header">
-            <h1 class="detail-title">OFFLINE STATUS</h1>
+            <h2 class="detail-title">Offline Status</h2>
         </header>
         <div class="offline-stats">
             <div class="stat-card">
@@ -243,6 +299,7 @@ export class App {
                 </div>
             </div>
         </div>
+        <div class="pending-operations" id="pending-ops" style="margin-top: var(--space-6);"></div>
         <div id="logs-list" class="glass-card" style="margin-top: var(--space-6); padding: var(--space-4); max-height: 400px; overflow-y: auto;">
             <div class="micro-label">OFFLINE LOGS</div>
             <div id="logs-content" style="margin-top: var(--space-2);"></div>
@@ -252,14 +309,39 @@ export class App {
   }
 
   private renderGistList(): string {
-    const filtered = gistStore.filterGists(this.currentFilter);
-    const searched = this.searchQuery
-      ? filtered.filter((g) =>
-          g.description?.toLowerCase().includes(this.searchQuery.toLowerCase())
-        )
-      : filtered;
-    if (searched.length === 0) return '<div class="empty-state">NO GISTS FOUND</div>';
-    return searched.map((g) => renderCard(g)).join('');
+    let gists = gistStore.filterGists(this.currentFilter);
+
+    if (this.searchQuery) {
+      const q = this.searchQuery.toLowerCase();
+      gists = gists.filter(
+        (g) =>
+          g.description?.toLowerCase().includes(q) ||
+          Object.values(g.files).some((f) => f.filename.toLowerCase().includes(q))
+      );
+    }
+
+    // Apply sorting
+    gists = [...gists].sort((a, b) => {
+      let comparison = 0;
+      switch (this.currentSortKey) {
+        case 'updated':
+          comparison = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+          break;
+        case 'created':
+          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
+        case 'title': {
+          const titleA = (a.description || Object.values(a.files)[0]?.filename || '').toLowerCase();
+          const titleB = (b.description || Object.values(b.files)[0]?.filename || '').toLowerCase();
+          comparison = titleA.localeCompare(titleB);
+          break;
+        }
+      }
+      return this.currentSortOrder === 'desc' ? -comparison : comparison;
+    });
+
+    if (gists.length === 0) return '<div class="empty-state">No gists found</div>';
+    return gists.map((g) => renderCard(g)).join('');
   }
 
   private setupNavigation(): void {
@@ -276,6 +358,9 @@ export class App {
     this.container
       .querySelector('#theme-toggle')
       ?.addEventListener('click', () => this.toggleTheme());
+    this.container
+      .querySelector('#settings-btn')
+      ?.addEventListener('click', () => this.navigate('settings'));
     this.setupRouteHandlers();
   }
 
@@ -285,7 +370,10 @@ export class App {
       this.render();
       this.setupNavigation();
       if (route === 'home' || route === 'starred') this.updateGistList();
-      if (route === 'settings') this.loadTokenInfo();
+      if (route === 'settings') {
+        await this.loadTokenInfo();
+        await this.loadDiagnostics();
+      }
       if (route === 'offline') this.updateOfflineStatus();
       if (route === 'conflicts') {
         const container = this.container?.querySelector('#conflicts-container');
@@ -315,15 +403,56 @@ export class App {
           id,
           container as HTMLElement,
           () => this.navigate('home'),
-          (_id) => {},
-          (_id, _v) => {}
+          (gid) => this.navigateToEdit(gid),
+          (gid) => this.navigateToRevisions(gid)
         );
+      }
+    });
+  }
+
+  private navigateToEdit(id: string): void {
+    this.currentRoute = 'edit';
+    void withViewTransition(async () => {
+      this.render();
+      this.setupNavigation();
+      const container = this.container?.querySelector('#gist-edit-container');
+      if (container) {
+        await loadEditForm(id, container as HTMLElement, () => this.navigateToDetail(id));
+      }
+    });
+  }
+
+  private navigateToRevisions(id: string): void {
+    this.currentRoute = 'revisions';
+    void withViewTransition(async () => {
+      this.render();
+      this.setupNavigation();
+      const container = this.container?.querySelector('#gist-revisions-container');
+      if (container) {
+        try {
+          const revisions = await GitHub.listGistRevisions(id);
+          container.innerHTML = renderRevisions(id, revisions);
+          container
+            .querySelector('#gist-back-btn')
+            ?.addEventListener('click', () => this.navigateToDetail(id));
+        } catch {
+          toast.error('FAILED TO LOAD REVISIONS');
+        }
       }
     });
   }
 
   private setupRouteHandlers(): void {
     if (!this.container) return;
+
+    // Sort control
+    this.container.querySelector('#sort-select')?.addEventListener('change', (e) => {
+      const select = e.target as HTMLSelectElement;
+      const [sortKey, sortOrder] = select.value.split('-') as [SortKey, SortOrder];
+      this.currentSortKey = sortKey;
+      this.currentSortOrder = sortOrder;
+      this.updateGistList();
+    });
 
     // Search
     const searchInput = this.container.querySelector('.search-input') as HTMLInputElement | null;
@@ -339,6 +468,8 @@ export class App {
     // Chips
     this.container.querySelectorAll('.chip').forEach((c) => {
       c.addEventListener('click', () => {
+        this.container!.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
+        c.classList.add('active');
         this.currentFilter = (c as HTMLElement).dataset.filter as Filter;
         this.updateGistList();
       });
@@ -360,6 +491,27 @@ export class App {
         await saveToken(input.value);
         toast.success('TOKEN SAVED');
         this.loadTokenInfo();
+      } else {
+        toast.error('ENTER A TOKEN');
+      }
+    });
+
+    this.container.querySelector('#export-data-btn')?.addEventListener('click', async () => {
+      try {
+        const { exportData } = await import('../services/db');
+        const data = await exportData();
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success('DATA EXPORTED');
+      } catch {
+        toast.error('EXPORT FAILED');
       }
     });
 
@@ -375,10 +527,33 @@ export class App {
   private async loadTokenInfo(): Promise<void> {
     const el = this.container?.querySelector('#token-status');
     const token = await getToken();
-    if (el)
-      el.innerHTML = token
-        ? `<p class="micro-label">TOKEN ACTIVE: ${redactToken(token)}</p>`
-        : '<p class="micro-label">NO TOKEN SAVED</p>';
+    if (el) {
+      if (token) {
+        const masked = token.slice(0, 6) + '••••' + token.slice(-4);
+        el.innerHTML = `<p class="micro-label token-saved">Token saved: ${masked}</p>`;
+      } else {
+        el.innerHTML = '<p class="micro-label token-missing">No token saved. Add one above.</p>';
+      }
+    }
+  }
+
+  private async loadDiagnostics(): Promise<void> {
+    const container = this.container?.querySelector('#diagnostics-info');
+    if (!container) return;
+
+    const info = {
+      online: networkMonitor.isOnline(),
+      gistsCount: gistStore.getGists().length,
+      theme: document.documentElement.getAttribute('data-theme'),
+    };
+
+    container.innerHTML = `
+      <div class="diagnostics-content micro-label">
+        <p>Online: ${info.online ? 'Yes' : 'No'}</p>
+        <p>Gists: ${info.gistsCount}</p>
+        <p>Theme: ${info.theme}</p>
+      </div>
+    `;
   }
 
   private async updateSyncIndicator(): Promise<void> {
@@ -392,7 +567,18 @@ export class App {
 
   private async updateOfflineStatus(): Promise<void> {
     const pendingEl = this.container?.querySelector('#pending-count');
-    if (pendingEl) pendingEl.textContent = String(await syncQueue.getQueueLength());
+    const count = await syncQueue.getQueueLength();
+    if (pendingEl) pendingEl.textContent = String(count);
+
+    const opsEl = this.container?.querySelector('#pending-ops');
+    if (opsEl) {
+      if (count > 0) {
+        opsEl.innerHTML = `<h3>Pending Operations</h3><div class="empty-state"><p>${count} operation${count !== 1 ? 's' : ''} waiting</p></div>`;
+      } else {
+        opsEl.innerHTML =
+          '<h3>Pending Operations</h3><div class="empty-state"><p>No pending operations</p></div>';
+      }
+    }
 
     const { getConflicts } = await import('../services/sync/conflict-detector');
     const conflicts = await getConflicts();
