@@ -201,9 +201,12 @@ export class App {
             </div>
             <div class="form-group">
                 <label class="form-label">DATA MANAGEMENT</label>
-                <div class="form-actions" style="display: flex; gap: var(--space-2);">
+                <div class="form-actions" style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                    <button id="export-data-btn" class="btn btn-secondary">EXPORT ALL GISTS</button>
+                    <button id="import-data-btn" class="btn btn-secondary">IMPORT BACKUP</button>
                     <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
                 </div>
+                <input type="file" id="import-file-input" accept=".json" style="display: none;" />
             </div>
         </div>
       </div>
@@ -335,6 +338,43 @@ export class App {
         toast.success('TOKEN SAVED');
         this.loadTokenInfo();
       }
+    });
+
+    this.container.querySelector('#export-data-btn')?.addEventListener('click', async () => {
+      const { exportAllGists } = await import('../services/export-import');
+      const blob = await exportAllGists();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('EXPORT STARTED');
+    });
+
+    this.container.querySelector('#import-data-btn')?.addEventListener('click', () => {
+      (this.container?.querySelector('#import-file-input') as HTMLInputElement)?.click();
+    });
+
+    this.container.querySelector('#import-file-input')?.addEventListener('change', async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      const { importGists } = await import('../services/export-import');
+      toast.info('IMPORTING...');
+      const result = await importGists(file);
+
+      if (result.errors.length > 0 && result.imported === 0 && result.updated === 0) {
+        toast.error('IMPORT FAILED');
+      } else {
+        toast.success(`IMPORTED: ${result.imported}, UPDATED: ${result.updated}`);
+        if (result.conflicts > 0) {
+          toast.warn(`${result.conflicts} CONFLICTS DETECTED`);
+        }
+        gistStore.fetchGists(); // Refresh store
+      }
+      // Reset input
+      (e.target as HTMLInputElement).value = '';
     });
 
     this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
