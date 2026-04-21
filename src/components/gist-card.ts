@@ -6,6 +6,7 @@
 import type { GistRecord } from '../services/db';
 import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
+import { showConfirmDialog } from '../utils/dialog';
 
 function formatRelativeTime(dateStr: string): string {
   const now = new Date();
@@ -107,7 +108,8 @@ export function bindCardEvents(container: HTMLElement, onCardClick?: (id: string
       e.stopPropagation();
       const id = deleteBtn.dataset.id;
       if (!id) return;
-      if (!confirm('DELETE THIS GIST?')) return;
+      const confirmed = await showConfirmDialog('DELETE THIS GIST?');
+      if (!confirmed) return;
       const ok = await gistStore.deleteGist(id);
       if (ok) toast.success('GIST DELETED');
       return;

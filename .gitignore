@@ -98,6 +98,8 @@ __pycache__/
 *.war
 *.ear
 *.iml
+# Gradle wrapper JAR must be tracked
+!android/gradle/wrapper/gradle-wrapper.jar
 
 # C/C++
 *.obj

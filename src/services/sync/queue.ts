@@ -29,7 +29,7 @@ export interface SyncResult {
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 
-class SyncQueue {
+export class SyncQueue {
   private isSyncing = false;
   private unsubscribeNetwork?: () => void;
 
@@ -83,7 +83,7 @@ class SyncQueue {
             await updatePendingWriteError(write.id, result.error || 'Max retries reached');
           }
         }
-        await this.delay(RETRY_DELAY_MS);
+        await SyncQueue.delay(RETRY_DELAY_MS);
       }
     } catch (error) {
       safeError('[SyncQueue] Error processing queue:', error);
@@ -95,12 +95,12 @@ class SyncQueue {
   private async executeWrite(write: PendingWrite): Promise<SyncResult> {
     try {
       const handlers: Record<string, () => Promise<SyncResult>> = {
-        create: () => this.syncCreate(write.gistId, write.payload),
-        update: () => this.syncUpdate(write.gistId, write.payload),
-        delete: () => this.syncDelete(write.gistId),
-        star: () => this.syncStar(write.gistId),
-        unstar: () => this.syncUnstar(write.gistId),
-        fork: () => this.syncFork(write.gistId),
+        create: () => SyncQueue.syncCreate(write.gistId, write.payload),
+        update: () => SyncQueue.syncUpdate(write.gistId, write.payload),
+        delete: () => SyncQueue.syncDelete(write.gistId),
+        star: () => SyncQueue.syncStar(write.gistId),
+        unstar: () => SyncQueue.syncUnstar(write.gistId),
+        fork: () => SyncQueue.syncFork(write.gistId),
       };
       const handler = handlers[write.action];
       if (handler) return await handler();
@@ -109,46 +109,46 @@ class SyncQueue {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        shouldRetry: this.isRetryableError(error),
+        shouldRetry: SyncQueue.isRetryableError(error),
       };
     }
   }
 
-  private async syncCreate(_gistId: string, payload: unknown): Promise<SyncResult> {
+  private static async syncCreate(_gistId: string, payload: unknown): Promise<SyncResult> {
     const gist = await GitHub.createGist(payload as CreateGistRequest);
-    await saveGist(this.githubGistToRecord(gist));
+    await saveGist(SyncQueue.githubGistToRecord(gist));
     return { success: true, shouldRetry: false };
   }
 
-  private async syncUpdate(gistId: string, payload: unknown): Promise<SyncResult> {
+  private static async syncUpdate(gistId: string, payload: unknown): Promise<SyncResult> {
     const gist = await GitHub.updateGist(gistId, payload as UpdateGistRequest);
-    await saveGist(this.githubGistToRecord(gist));
+    await saveGist(SyncQueue.githubGistToRecord(gist));
     return { success: true, shouldRetry: false };
   }
 
-  private async syncDelete(gistId: string): Promise<SyncResult> {
+  private static async syncDelete(gistId: string): Promise<SyncResult> {
     await GitHub.deleteGist(gistId);
     await dbDeleteGist(gistId);
     return { success: true, shouldRetry: false };
   }
 
-  private async syncStar(gistId: string): Promise<SyncResult> {
+  private static async syncStar(gistId: string): Promise<SyncResult> {
     await GitHub.starGist(gistId);
     return { success: true, shouldRetry: false };
   }
 
-  private async syncUnstar(gistId: string): Promise<SyncResult> {
+  private static async syncUnstar(gistId: string): Promise<SyncResult> {
     await GitHub.unstarGist(gistId);
     return { success: true, shouldRetry: false };
   }
 
-  private async syncFork(gistId: string): Promise<SyncResult> {
+  private static async syncFork(gistId: string): Promise<SyncResult> {
     const gist = await GitHub.forkGist(gistId);
-    await saveGist(this.githubGistToRecord(gist));
+    await saveGist(SyncQueue.githubGistToRecord(gist));
     return { success: true, shouldRetry: false };
   }
 
-  private githubGistToRecord(gist: GitHubGist): GistRecord {
+  private static githubGistToRecord(gist: GitHubGist): GistRecord {
     return {
       id: gist.id,
       description: gist.description,
@@ -186,7 +186,7 @@ class SyncQueue {
     };
   }
 
-  private isRetryableError(error: unknown): boolean {
+  private static isRetryableError(error: unknown): boolean {
     if (error instanceof Error) {
       const message = error.message.toLowerCase();
       return (
@@ -199,7 +199,7 @@ class SyncQueue {
     return false;
   }
 
-  private delay(ms: number): Promise<void> {
+  private static delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
