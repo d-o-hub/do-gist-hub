@@ -16,8 +16,17 @@ import { bottomSheet } from './ui/bottom-sheet';
 import { withViewTransition } from '../utils/view-transitions';
 import { toast } from './ui/toast';
 import { showConfirmDialog } from '../utils/dialog';
+import { loadConflictResolution } from './conflict-resolution';
 
-type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings' | 'detail' | 'edit';
+type Route =
+  | 'home'
+  | 'starred'
+  | 'create'
+  | 'offline'
+  | 'settings'
+  | 'detail'
+  | 'edit'
+  | 'conflicts';
 type Filter = 'all' | 'mine' | 'starred';
 
 export class App {
@@ -124,6 +133,8 @@ export class App {
         return this.getCreateRoute();
       case 'offline':
         return this.getOfflineRoute();
+      case 'conflicts':
+        return '<div id="conflicts-container"></div>';
       case 'settings':
         return this.getSettingsRoute();
       case 'detail':
@@ -216,11 +227,20 @@ export class App {
         <header class="detail-header">
             <h1 class="detail-title">OFFLINE STATUS</h1>
         </header>
-        <div class="stat-card">
-            <div class="stat-icon">📴</div>
-            <div class="stat-info">
-                <div class="stat-label">PENDING WRITES</div>
-                <div class="stat-value" id="pending-count">0</div>
+        <div class="offline-stats">
+            <div class="stat-card">
+                <div class="stat-icon">📴</div>
+                <div class="stat-info">
+                    <div class="stat-label">PENDING WRITES</div>
+                    <div class="stat-value" id="pending-count">0</div>
+                </div>
+            </div>
+            <div class="stat-card clickable" id="conflicts-stat-card">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-info">
+                    <div class="stat-label">SYNC CONFLICTS</div>
+                    <div class="stat-value" id="conflict-count">0</div>
+                </div>
             </div>
         </div>
         <div id="logs-list" class="glass-card" style="margin-top: var(--space-6); padding: var(--space-4); max-height: 400px; overflow-y: auto;">
@@ -261,12 +281,18 @@ export class App {
 
   private navigate(route: Route): void {
     this.currentRoute = route;
-    void withViewTransition(() => {
+    void withViewTransition(async () => {
       this.render();
       this.setupNavigation();
       if (route === 'home' || route === 'starred') this.updateGistList();
       if (route === 'settings') this.loadTokenInfo();
       if (route === 'offline') this.updateOfflineStatus();
+      if (route === 'conflicts') {
+        const container = this.container?.querySelector('#conflicts-container');
+        if (container) {
+          await loadConflictResolution(container as HTMLElement);
+        }
+      }
     });
   }
 
@@ -365,8 +391,16 @@ export class App {
   }
 
   private async updateOfflineStatus(): Promise<void> {
-    const el = this.container?.querySelector('#pending-count');
-    if (el) el.textContent = String(await syncQueue.getQueueLength());
+    const pendingEl = this.container?.querySelector('#pending-count');
+    if (pendingEl) pendingEl.textContent = String(await syncQueue.getQueueLength());
+
+    const { getConflicts } = await import('../services/sync/conflict-detector');
+    const conflicts = await getConflicts();
+    const conflictEl = this.container?.querySelector('#conflict-count');
+    if (conflictEl) conflictEl.textContent = String(conflicts.length);
+
+    const conflictCard = this.container?.querySelector('#conflicts-stat-card');
+    conflictCard?.addEventListener('click', () => this.navigate('conflicts'));
   }
 
   private toggleTheme(): void {
@@ -404,6 +438,7 @@ export class App {
       { id: 'home', title: 'HOME', action: () => this.navigate('home') },
       { id: 'starred', title: 'STARRED GISTS', action: () => this.navigate('starred') },
       { id: 'create', title: 'CREATE NEW GIST', action: () => this.navigate('create') },
+      { id: 'conflicts', title: 'SYNC CONFLICTS', action: () => this.navigate('conflicts') },
       { id: 'settings', title: 'SETTINGS', action: () => this.navigate('settings') },
     ]);
   }
