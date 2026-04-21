@@ -75,7 +75,7 @@ export class App {
     if (!this.container) return;
 
     this.container.innerHTML = `
-      <div class="app-shell" data-testid="app-shell">
+      <div class="app-shell" data-testid="app-shell" id="app">
         <header class="app-header">
           <div class="header-left">
             <h1 class="app-title" data-testid="app-title">${APP.name.toUpperCase()}</h1>
@@ -85,9 +85,9 @@ export class App {
               <span class="sync-dot"></span>
               <span class="micro-label">SYNC</span>
             </div>
-            <button class="btn btn-ghost" id="theme-toggle" aria-label="Toggle theme" data-testid="theme-toggle">🌓</button>
-            <button class="btn btn-ghost" id="settings-btn" aria-label="Settings" data-testid="settings-btn">⚙️</button>
-            <button class="btn btn-ghost" id="menu-btn" aria-label="Menu" data-testid="mobile-menu-btn">☰</button>
+            <button class="btn btn-ghost icon-button" id="theme-toggle" aria-label="Toggle theme" data-testid="theme-toggle">🌓</button>
+            <button class="btn btn-ghost icon-button" id="settings-btn" aria-label="Settings" data-testid="settings-btn">⚙️</button>
+            <button class="btn btn-ghost icon-button" id="menu-btn" aria-label="Menu" data-testid="mobile-menu-btn">☰</button>
           </div>
         </header>
 
@@ -193,6 +193,11 @@ export class App {
         <header class="detail-header">
             <h2 class="detail-title">Starred Gists</h2>
         </header>
+        <div class="gist-list-header">
+          <div class="filter-buttons filter-chips">
+            <button class="chip filter-btn active" data-filter="starred">Starred</button>
+          </div>
+        </div>
         <div class="gist-list" id="gist-list">${this.renderGistList()}</div>
       </div>
     `;
@@ -309,6 +314,23 @@ export class App {
   }
 
   private renderGistList(): string {
+    if (gistStore.getLoading() && gistStore.getGists().length === 0) {
+      return Array(3)
+        .fill('')
+        .map(
+          () => `
+        <div class="gist-card">
+          <div class="gist-card-header">
+            <div class="loading-skeleton" style="height:20px;flex:1;"></div>
+          </div>
+          <div class="loading-skeleton" style="height:14px;width:60%;margin-bottom:8px;"></div>
+          <div class="loading-skeleton" style="height:12px;width:40%;"></div>
+        </div>
+      `
+        )
+        .join('');
+    }
+
     let gists = gistStore.filterGists(this.currentFilter);
 
     if (this.searchQuery) {
@@ -366,6 +388,14 @@ export class App {
 
   private navigate(route: Route): void {
     this.currentRoute = route;
+    if (route === 'home') {
+      this.currentFilter = 'all';
+      this.searchQuery = '';
+    } else if (route === 'starred') {
+      this.currentFilter = 'starred';
+      this.searchQuery = '';
+    }
+
     void withViewTransition(async () => {
       this.render();
       this.setupNavigation();
@@ -621,11 +651,11 @@ export class App {
 
   private initializeCommandPalette(): void {
     commandPalette.setCommands([
-      { id: 'home', title: 'HOME', action: () => this.navigate('home') },
-      { id: 'starred', title: 'STARRED GISTS', action: () => this.navigate('starred') },
-      { id: 'create', title: 'CREATE NEW GIST', action: () => this.navigate('create') },
-      { id: 'conflicts', title: 'SYNC CONFLICTS', action: () => this.navigate('conflicts') },
-      { id: 'settings', title: 'SETTINGS', action: () => this.navigate('settings') },
+      { id: 'home', title: 'Home', action: () => this.navigate('home') },
+      { id: 'starred', title: 'Starred Gists', action: () => this.navigate('starred') },
+      { id: 'create', title: 'Create New Gist', action: () => this.navigate('create') },
+      { id: 'conflicts', title: 'Sync Conflicts', action: () => this.navigate('conflicts') },
+      { id: 'settings', title: 'Settings', action: () => this.navigate('settings') },
     ]);
   }
 }

@@ -249,8 +249,7 @@ class GistStore {
   }
 
   async resolveGistConflict(gistId: string, strategy: 'local-wins' | 'remote-wins'): Promise<void> {
-    const { getConflicts, clearConflict, resolveConflict } =
-      await import('../services/sync/conflict-detector');
+    const { getConflicts, clearConflict } = await import('../services/sync/conflict-detector');
     const conflicts = await getConflicts();
     const conflict = conflicts.find((c) => c.gistId === gistId);
     if (!conflict) return;
