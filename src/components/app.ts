@@ -371,7 +371,7 @@ export class App {
         if (result.conflicts > 0) {
           toast.warn(`${result.conflicts} CONFLICTS DETECTED`);
         }
-        gistStore.fetchGists(); // Refresh store
+        gistStore.loadGists(true); // Refresh store
       }
       // Reset input
       (e.target as HTMLInputElement).value = '';
