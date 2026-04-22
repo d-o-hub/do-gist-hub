@@ -221,6 +221,16 @@ class GistStore {
     }
   }
 
+  /**
+   * Add a new gist to the store (e.g. after forking or external creation)
+   */
+  async addGist(gist: GitHubGist): Promise<void> {
+    const record = this.githubGistToRecord(gist);
+    await dbSaveGist(record);
+    this.mergeGistRecord(record, false);
+    this.notifyListeners();
+  }
+
   private githubGistToRecord(gist: GitHubGist, starred = false): GistRecord {
     return {
       id: gist.id,

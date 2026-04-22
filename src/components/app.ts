@@ -290,7 +290,8 @@ export class App {
           container as HTMLElement,
           () => this.navigate('home'),
           (_id) => {},
-          (_id, _v) => {}
+          (_id, _v) => {},
+          (newId) => this.navigateToDetail(newId)
         );
       }
     });
