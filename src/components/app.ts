@@ -54,13 +54,13 @@ export class App {
     this.subscribeStore();
 
     window.addEventListener('app:sync-complete', () => {
-      void this.updateGistList();
+      this.updateGistList().catch((err) => console.error(err));
     });
     window.addEventListener('online', () => {
-      void this.updateSyncIndicator();
+      this.updateSyncIndicator().catch((err) => console.error(err));
     });
     window.addEventListener('offline', () => {
-      void this.updateSyncIndicator();
+      this.updateSyncIndicator().catch((err) => console.error(err));
     });
   }
 
@@ -72,9 +72,9 @@ export class App {
   private subscribeStore(): void {
     gistStore.subscribe(() => {
       if (this.currentRoute === 'home' || this.currentRoute === 'starred') {
-        void this.updateGistList();
+        this.updateGistList().catch((err) => console.error(err));
       }
-      void this.updateSyncIndicator();
+      this.updateSyncIndicator().catch((err) => console.error(err));
     });
   }
 
@@ -500,7 +500,7 @@ export class App {
       const [sortKey, sortOrder] = select.value.split('-') as [SortKey, SortOrder];
       this.currentSortKey = sortKey;
       this.currentSortOrder = sortOrder;
-      this.updateGistList();
+      this.updateGistList().catch((err) => console.error(err));
     });
 
     // Search
@@ -510,66 +510,75 @@ export class App {
       const val = (e.target as HTMLInputElement).value;
       this.searchTimeout = window.setTimeout(() => {
         this.searchQuery = val;
-        this.updateGistList();
+        void this.updateGistList();
       }, 300);
     });
 
     // Chips
-    this.container.querySelectorAll('.chip').forEach((c) => {
-      c.addEventListener('click', () => {
-        this.container!.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
-        c.classList.add('active');
-        this.currentFilter = (c as HTMLElement).dataset.filter as Filter;
-        void this.updateGistList();
-      });
+    this.container.querySelector('.filter-chips')?.addEventListener('click', (e) => {
+      const chip = (e.target as HTMLElement).closest('.chip') as HTMLElement;
+      if (!chip) return;
+
+      this.container!.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
+      chip.classList.add('active');
+      this.currentFilter = (chip.dataset.filter as Filter) || 'all';
+      void this.updateGistList();
     });
 
     // Forms
-    this.container.querySelector('#create-gist-form')?.addEventListener('submit', async (e) => {
+    this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const desc = (this.container?.querySelector('#gist-description') as HTMLInputElement).value;
       const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement).value;
-      await gistStore.createGist(desc, true, { 'index.js': content });
-      this.navigate('home');
+      void (async () => {
+        await gistStore.createGist(desc, true, { 'index.js': content });
+        await this.navigate('home');
+      })();
     });
 
     // Settings
-    this.container.querySelector('#save-token-btn')?.addEventListener('click', async () => {
+    this.container.querySelector('#save-token-btn')?.addEventListener('click', () => {
       const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
       if (input.value) {
-        await saveToken(input.value);
-        toast.success('TOKEN SAVED');
-        this.loadTokenInfo();
+        void (async () => {
+          await saveToken(input.value);
+          toast.success('TOKEN SAVED');
+          await this.loadTokenInfo();
+        })();
       } else {
         toast.error('ENTER A TOKEN');
       }
     });
 
-    this.container.querySelector('#export-data-btn')?.addEventListener('click', async () => {
-      try {
-        const { exportData } = await import('../services/db');
-        const data = await exportData();
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast.success('DATA EXPORTED');
-      } catch {
-        toast.error('EXPORT FAILED');
-      }
+    this.container.querySelector('#export-data-btn')?.addEventListener('click', () => {
+      void (async () => {
+        try {
+          const { exportData } = await import('../services/db');
+          const data = await exportData();
+          const blob = new Blob([data], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          toast.success('DATA EXPORTED');
+        } catch {
+          toast.error('EXPORT FAILED');
+        }
+      })();
     });
 
-    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
-      if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
-        const { clearAllData } = await import('../services/db');
-        await clearAllData();
-        window.location.reload();
-      }
+    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', () => {
+      void (async () => {
+        if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
+          const { clearAllData } = await import('../services/db');
+          await clearAllData();
+          window.location.reload();
+        }
+      })();
     });
   }
 
@@ -578,7 +587,7 @@ export class App {
     const token = await getToken();
     if (el) {
       if (token) {
-        el.innerHTML = `<p class="micro-label token-saved">Token saved: ${redactToken(token)}</p>`;
+        el.innerHTML = `<p class="micro-label token-saved">Token active: ${redactToken(token)}</p>`;
       } else {
         el.innerHTML = '<p class="micro-label token-missing">No token saved. Add one above.</p>';
       }
@@ -634,7 +643,9 @@ export class App {
     if (conflictEl) conflictEl.textContent = String(conflicts.length);
 
     const conflictCard = this.container?.querySelector('#conflicts-stat-card');
-    conflictCard?.addEventListener('click', () => this.navigate('conflicts'));
+    conflictCard?.addEventListener('click', () => {
+      void this.navigate('conflicts');
+    });
   }
 
   private toggleTheme(): void {
@@ -643,7 +654,7 @@ export class App {
     localStorage.setItem('theme-preference', next);
   }
 
-  private showMobileMenu(): void {
+  private async showMobileMenu(): Promise<void> {
     const content = `
       <div class="mobile-menu" style="display: grid; gap: var(--space-2); padding: var(--space-4);">
         <button class="btn btn-ghost" data-route="home">HOME</button>
@@ -653,14 +664,16 @@ export class App {
         <button class="btn btn-ghost" data-route="settings">SETTINGS</button>
       </div>
     `;
-    void bottomSheet.open(content, 'MENU');
+    await bottomSheet.open(content, 'MENU');
     setTimeout(() => {
       document.querySelectorAll('.mobile-menu .btn').forEach((b) => {
         b.addEventListener('click', () => {
           const r = (b as HTMLElement).dataset.route as Route;
           if (r) {
-            this.navigate(r);
-            void bottomSheet.close();
+            void (async () => {
+              await this.navigate(r);
+              await bottomSheet.close();
+            })();
           }
         });
       });
@@ -669,11 +682,41 @@ export class App {
 
   private initializeCommandPalette(): void {
     commandPalette.setCommands([
-      { id: 'home', title: 'Home', action: () => { void this.navigate('home'); } },
-      { id: 'starred', title: 'Starred Gists', action: () => { void this.navigate('starred'); } },
-      { id: 'create', title: 'Create New Gist', action: () => { void this.navigate('create'); } },
-      { id: 'conflicts', title: 'Sync Conflicts', action: () => { void this.navigate('conflicts'); } },
-      { id: 'settings', title: 'Settings', action: () => { void this.navigate('settings'); } },
+      {
+        id: 'home',
+        title: 'Home',
+        action: () => {
+          void this.navigate('home');
+        },
+      },
+      {
+        id: 'starred',
+        title: 'Starred Gists',
+        action: () => {
+          void this.navigate('starred');
+        },
+      },
+      {
+        id: 'create',
+        title: 'Create New Gist',
+        action: () => {
+          void this.navigate('create');
+        },
+      },
+      {
+        id: 'conflicts',
+        title: 'Sync Conflicts',
+        action: () => {
+          void this.navigate('conflicts');
+        },
+      },
+      {
+        id: 'settings',
+        title: 'Settings',
+        action: () => {
+          void this.navigate('settings');
+        },
+      },
     ]);
   }
 }
