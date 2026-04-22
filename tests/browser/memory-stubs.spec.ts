@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test.describe('Memory Safety & Lifecycle', () => {
   test.beforeEach(async ({ page }) => {
