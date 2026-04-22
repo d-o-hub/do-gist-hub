@@ -4,7 +4,7 @@ test.describe('Settings', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
     await page.waitForLoadState('networkidle');
-    await page.locator('[data-testid="settings-btn"]').click();
+    await page.locator('[data-testid="settings-btn"]:visible').click();
     await expect(page.locator('h2')).toContainText('Settings');
   });
 

@@ -4,6 +4,7 @@
  */
 
 import gistStore from '../stores/gist-store';
+import { lifecycle } from '../services/lifecycle';
 import { renderCard, bindCardEvents } from './gist-card';
 import networkMonitor from '../services/network/offline-monitor';
 import syncQueue from '../services/sync/queue';
@@ -105,7 +106,7 @@ export class App {
     return items
       .map(
         (item) => `
-      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}">
+      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}" data-testid="${item.id}-btn">
         <span class="${type}-icon">${item.icon}</span>
         <span class="${type}-label">${item.label}</span>
       </button>
@@ -261,6 +262,7 @@ export class App {
 
   private navigate(route: Route): void {
     this.currentRoute = route;
+    lifecycle.cleanupRoute();
     void withViewTransition(() => {
       this.render();
       this.setupNavigation();

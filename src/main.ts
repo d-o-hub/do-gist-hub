@@ -8,6 +8,8 @@ import syncQueue from './services/sync/queue';
 import gistStore from './stores/gist-store';
 import { registerServiceWorker } from './services/pwa/register-sw';
 import { initWebVitals } from './services/perf';
+import { lifecycle } from './services/lifecycle';
+import { closeDB } from './services/db';
 import { isViewTransitionSupported } from './utils/view-transitions';
 import './styles/base.css';
 import './styles/accessibility.css';
@@ -62,6 +64,12 @@ safeLog(
 
     // Initialize Web Vitals monitoring
     initWebVitals();
+
+    // Expose services for testing in development
+    if (import.meta.env.DEV) {
+      (window as any).lifecycle = lifecycle;
+      (window as any).closeDB = closeDB;
+    }
   } catch (error) {
     safeError('[App] Failed to bootstrap:', error);
     // Still mount the app so user can see error state

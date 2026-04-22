@@ -48,6 +48,13 @@ class LifecycleManager {
   }
 
   /**
+   * Get the number of pending route-scoped cleanups (for testing)
+   */
+  getPendingCleanupCount(): number {
+    return this.routeCleanups.length;
+  }
+
+  /**
    * Execute all app-scoped cleanups
    */
   cleanupApp(): void {

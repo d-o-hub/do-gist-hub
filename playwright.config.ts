@@ -39,6 +39,18 @@ export default defineConfig({
   reporter: [
     ['html', { outputFolder: 'playwright-report', open: 'never' }],
     ['list', { printSteps: true }],
+    [
+      'monocart-reporter',
+      {
+        name: 'd.o. Gist Hub Coverage Report',
+        outputFile: './analysis/tests/index.html',
+        coverage: {
+          entryFilter: (entry: any) => entry.url.includes('src/'),
+          sourceFilter: (sourcePath: string) => sourcePath.includes('src/'),
+          reports: [['lcovonly'], ['html-details']],
+        },
+      },
+    ],
   ],
 
   // Global test settings
