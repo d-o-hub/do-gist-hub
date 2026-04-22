@@ -189,7 +189,7 @@ export default defineConfig({
     { name: 'accessibility', use: { ...devices['Desktop Chrome'] }, testDir: './tests/accessibility' },
   ],
   webServer: {
-    command: 'pnpm run dev',
+    command: 'npm run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
@@ -220,24 +220,24 @@ export default defineConfig({
 
 ```bash
 # Run all tests
-pnpm run test
+npm run test
 
 # Run specific test suite
-pnpm run test:browser
-pnpm run test:mobile
-pnpm run test:offline
+npm run test:browser
+npm run test:mobile
+npm run test:offline
 
 # Run with UI mode (2026 feature)
-pnpm run test:ui
+npm run test:ui
 
 # Debug mode
-pnpm run test:debug
+npm run test:debug
 
 # Generate coverage
-pnpm run test:coverage
+npm run test:coverage
 
 # Open HTML report
-pnpm run test:report
+npm run test:report
 ```
 
 ## References

@@ -98,7 +98,7 @@
     {
       "id": 8,
       "prompt": "Add a README.md that documents the project for both humans and AI agents. Should include project description, tech stack, setup instructions, how AI agents should use AGENTS.md, and links to official docs.",
-      "expected_output": "README.md with project description, badge section, tech stack summary, quick start commands (pnpm install, pnpm run dev), link to AGENTS.md for AI agents, and links to Vite, GitHub API, Capacitor, and Playwright documentation.",
+      "expected_output": "README.md with project description, badge section, tech stack summary, quick start commands (npm install, npm run dev), link to AGENTS.md for AI agents, and links to Vite, GitHub API, Capacitor, and Playwright documentation.",
       "files": [],
       "assertions": [
         "README.md includes project description and tech stack",

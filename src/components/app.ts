@@ -1,6 +1,5 @@
 /**
  * Root App Component
- * Manages routing, global layout, and gist store integration
  */
 
 import gistStore from '../stores/gist-store';
@@ -214,7 +213,6 @@ export class App {
                     <div id="token-status" style="margin-top: var(--space-2);"></div>
                 </div>
             </details>
-
             <details>
                 <summary class="form-label">Preferences</summary>
                 <div class="form-group">
@@ -225,7 +223,6 @@ export class App {
                     </select>
                 </div>
             </details>
-
             <details>
                 <summary class="form-label">Data & Diagnostics</summary>
                 <div class="form-group">
@@ -289,13 +286,11 @@ export class App {
     this.container
       .querySelector('#theme-toggle')
       ?.addEventListener('click', () => this.toggleTheme());
-
     this.container.querySelector('#theme-select')?.addEventListener('change', (e) => {
       const theme = (e.target as HTMLSelectElement).value;
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('theme-preference', theme);
     });
-
     this.setupRouteHandlers();
   }
 
@@ -314,7 +309,7 @@ export class App {
     const listEl = this.container?.querySelector('#gist-list');
     if (listEl) {
       listEl.innerHTML = this.renderGistList();
-      bindCardEvents(listEl as HTMLElement, (_id) => this.navigateToDetail(_id));
+      bindCardEvents(listEl as HTMLElement, (id) => this.navigateToDetail(id));
     }
   }
 
@@ -338,10 +333,7 @@ export class App {
 
   private setupRouteHandlers(): void {
     if (!this.container) return;
-
-    // Search
-    const searchInput = this.container.querySelector('.search-input') as HTMLInputElement | null;
-    searchInput?.addEventListener('input', (e) => {
+    this.container.querySelector('.search-input')?.addEventListener('input', (e) => {
       clearTimeout(this.searchTimeout);
       const val = (e.target as HTMLInputElement).value;
       this.searchTimeout = window.setTimeout(() => {
@@ -349,13 +341,10 @@ export class App {
         this.updateGistList();
       }, 300);
     });
-
-    // Chips
     this.container.querySelectorAll('.chip').forEach((c) => {
       c.addEventListener('click', () => {
         this.currentFilter = (c as HTMLElement).dataset.filter as Filter;
         this.updateGistList();
-        // Update active class immediately for feedback and tests
         this.container?.querySelectorAll('.chip').forEach((chip) => {
           chip.classList.toggle(
             'active',
@@ -364,8 +353,6 @@ export class App {
         });
       });
     });
-
-    // Forms
     this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
       void (async () => {
         e.preventDefault();
@@ -376,8 +363,6 @@ export class App {
         this.navigate('home');
       })();
     });
-
-    // Settings
     this.container.querySelector('#save-token-btn')?.addEventListener('click', () => {
       void (async () => {
         const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
@@ -390,7 +375,6 @@ export class App {
         }
       })();
     });
-
     this.container.querySelector('#clear-cache-btn')?.addEventListener('click', () => {
       void (async () => {
         if (await showConfirmDialog('Clear all local data?')) {
@@ -415,9 +399,7 @@ export class App {
     const el = this.container?.querySelector('#sync-indicator');
     const online = networkMonitor.isOnline();
     const len = await syncQueue.getQueueLength();
-    if (el) {
-      el.setAttribute('data-status', online ? (len > 0 ? 'syncing' : 'online') : 'offline');
-    }
+    if (el) el.setAttribute('data-status', online ? (len > 0 ? 'syncing' : 'online') : 'offline');
   }
 
   private async updateOfflineStatus(): Promise<void> {
