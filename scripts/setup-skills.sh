@@ -10,11 +10,10 @@ AGENT_DIRS=(".claude" ".gemini" ".qwen" ".cursor")
 
 for agent_dir in "${AGENT_DIRS[@]}"; do
   target="$ROOT_DIR/$agent_dir/skills"
-  if [[ ! -d "$target" ]]; then
-    mkdir -p "$(dirname "$target")"
-    ln -sf "../../.agents/skills" "$target"
-    echo "Created symlink: $target -> ../../.agents/skills"
-  fi
+  mkdir -p "$(dirname "$target")"
+  # Use a relative path from the target to the .agents/skills directory
+  ln -sf "../.agents/skills" "$target"
+  echo "Created symlink: $target -> ../.agents/skills"
 done
 
 echo "✓ Skill symlinks created"
