@@ -8,7 +8,13 @@ import { safeError } from '../services/security/logger';
 import * as GitHub from '../services/github/client';
 import networkMonitor from '../services/network/offline-monitor';
 import syncQueue from '../services/sync/queue';
-import { detectConflict, resolveConflict, storeConflict } from '../services/sync/conflict-detector';
+import {
+  detectConflict,
+  resolveConflict,
+  storeConflict,
+  getConflicts,
+  clearConflict,
+} from '../services/sync/conflict-detector';
 import { GitHubGist, UpdateGistRequest } from '../types/api';
 import { AppError } from '../services/github/error-handler';
 
@@ -249,7 +255,6 @@ class GistStore {
   }
 
   async resolveGistConflict(gistId: string, strategy: 'local-wins' | 'remote-wins'): Promise<void> {
-    const { getConflicts, clearConflict } = await import('../services/sync/conflict-detector');
     const conflicts = await getConflicts();
     const conflict = conflicts.find((c) => c.gistId === gistId);
     if (!conflict) return;

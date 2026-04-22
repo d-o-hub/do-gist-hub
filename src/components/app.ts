@@ -10,11 +10,12 @@ import syncQueue from '../services/sync/queue';
 import { getToken, saveToken } from '../services/github/auth';
 import { loadGistDetail } from './gist-detail';
 import { APP } from '../config/app.config';
-import { redactToken, sanitizeHtml } from '../services/security';
+import { redactToken, sanitizeHtml, safeError } from '../services/security';
 import { commandPalette } from './ui/command-palette';
 import { bottomSheet } from './ui/bottom-sheet';
 import { withViewTransition } from '../utils/view-transitions';
 import { toast } from './ui/toast';
+import { announcer } from '../utils/announcer';
 import { showConfirmDialog } from '../utils/dialog';
 import { loadConflictResolution } from './conflict-resolution';
 import { loadEditForm } from './gist-edit';
@@ -54,13 +55,13 @@ export class App {
     this.subscribeStore();
 
     window.addEventListener('app:sync-complete', () => {
-      this.updateGistList().catch((err) => console.error(err));
+      void this.updateGistList().catch(safeError);
     });
     window.addEventListener('online', () => {
-      this.updateSyncIndicator().catch((err) => console.error(err));
+      void this.updateSyncIndicator().catch(safeError);
     });
     window.addEventListener('offline', () => {
-      this.updateSyncIndicator().catch((err) => console.error(err));
+      void this.updateSyncIndicator().catch(safeError);
     });
   }
 
@@ -72,9 +73,9 @@ export class App {
   private subscribeStore(): void {
     gistStore.subscribe(() => {
       if (this.currentRoute === 'home' || this.currentRoute === 'starred') {
-        this.updateGistList().catch((err) => console.error(err));
+        void this.updateGistList().catch(safeError);
       }
-      this.updateSyncIndicator().catch((err) => console.error(err));
+      void this.updateSyncIndicator().catch(safeError);
     });
   }
 
@@ -397,6 +398,7 @@ export class App {
 
   private async navigate(route: Route): Promise<void> {
     this.currentRoute = route;
+    announcer.announce(`Navigating to ${route} page`);
     if (route === 'home') {
       this.currentFilter = 'all';
       this.searchQuery = '';
@@ -500,7 +502,7 @@ export class App {
       const [sortKey, sortOrder] = select.value.split('-') as [SortKey, SortOrder];
       this.currentSortKey = sortKey;
       this.currentSortOrder = sortOrder;
-      this.updateGistList().catch((err) => console.error(err));
+      void this.updateGistList().catch(safeError);
     });
 
     // Search

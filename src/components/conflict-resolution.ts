@@ -7,6 +7,7 @@ import { GistConflict, getConflicts } from '../services/sync/conflict-detector';
 import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
 import { withViewTransition } from '../utils/view-transitions';
+import { announcer } from '../utils/announcer';
 import { sanitizeHtml } from '../services/security/dom';
 
 let currentConflictId: string | null = null;
@@ -142,8 +143,8 @@ export function bindConflictEvents(container: HTMLElement, onResolve: () => void
   container.querySelectorAll('.resolve-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       currentConflictId = (btn as HTMLElement).dataset.id || null;
-      void withViewTransition(() => {
-        loadConflictResolution(container, onResolve);
+      void withViewTransition(async () => {
+        await loadConflictResolution(container, onResolve);
       });
     });
   });
@@ -151,29 +152,33 @@ export function bindConflictEvents(container: HTMLElement, onResolve: () => void
   // Back to list button
   container.querySelector('.back-to-list')?.addEventListener('click', () => {
     currentConflictId = null;
-    void withViewTransition(() => {
-      loadConflictResolution(container, onResolve);
+    void withViewTransition(async () => {
+      await loadConflictResolution(container, onResolve);
     });
   });
 
   // Strategy selection buttons
   container.querySelectorAll('.resolve-choice-btn').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      if (!currentConflictId) return;
-      const strategy = (btn as HTMLElement).dataset.strategy as 'local-wins' | 'remote-wins';
+    btn.addEventListener('click', () => {
+      void (async () => {
+        if (!currentConflictId) return;
+        const strategy = (btn as HTMLElement).dataset.strategy as 'local-wins' | 'remote-wins';
 
-      try {
-        await gistStore.resolveGistConflict(currentConflictId, strategy);
-        toast.success(`CONFLICT RESOLVED: ${strategy.toUpperCase()}`);
-        currentConflictId = null;
-        onResolve();
-        void withViewTransition(() => {
-          loadConflictResolution(container, onResolve);
-        });
-      } catch (err) {
-        toast.error('FAILED TO RESOLVE CONFLICT');
-        console.error(err);
-      }
+        try {
+          await gistStore.resolveGistConflict(currentConflictId, strategy);
+          const message = `CONFLICT RESOLVED: ${strategy.toUpperCase()}`;
+          toast.success(message);
+          announcer.success(message);
+          currentConflictId = null;
+          onResolve();
+          await withViewTransition(async () => {
+            await loadConflictResolution(container, onResolve);
+          });
+        } catch (err) {
+          toast.error('FAILED TO RESOLVE CONFLICT');
+          console.error(err);
+        }
+      })();
     });
   });
 }
