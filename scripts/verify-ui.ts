@@ -3,6 +3,7 @@
  * Takes screenshots at all breakpoints and reports findings
  */
 import { chromium } from 'playwright';
+import { chromium, Browser, Page } from 'playwright';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -28,8 +29,8 @@ interface Findings {
   errors: string[];
 }
 
-async function verifyBreakpoint(browser: any, bp: (typeof BREAKPOINTS)[0]): Promise<Findings> {
-  const page = await browser.newPage({ viewport: { width: bp.width, height: bp.height } });
+async function verifyBreakpoint(browser: Browser, bp: (typeof BREAKPOINTS)[0]): Promise<Findings> {
+  const page: Page = await browser.newPage({ viewport: { width: bp.width, height: bp.height } });
   const findings: Findings = {
     breakpoint: bp.label,
     horizontalOverflow: false,
@@ -110,7 +111,6 @@ async function verifyBreakpoint(browser: any, bp: (typeof BREAKPOINTS)[0]): Prom
         findings.errors.push(`${findings.smallTouchTargets.length} touch targets < 44px`);
       }
     }
-
     // Active nav pill style check
     const activeSelector = bp.width >= 768 ? '.sidebar-item.active' : '.nav-item.active';
     const activeEl = await page.locator(activeSelector).first();
@@ -135,8 +135,14 @@ async function verifyBreakpoint(browser: any, bp: (typeof BREAKPOINTS)[0]): Prom
     const screenshotPath = path.join(SCREENSHOT_DIR, `screenshot-${bp.name}.png`);
     await page.screenshot({ path: screenshotPath, fullPage: true });
     console.log(`  ✓ Screenshot saved: ${screenshotPath}`);
-  } catch (err: any) {
-    findings.errors.push(`Exception: ${err.message}`);
+  } catch (err: unknown) {
+    let message: string;
+    if (err instanceof Error) {
+      message = err.message;
+    } else {
+      message = String(err);
+    }
+    findings.errors.push(`Exception: ${message}`);
   } finally {
     await page.close();
   }
