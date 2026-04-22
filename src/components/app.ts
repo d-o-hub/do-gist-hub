@@ -82,7 +82,7 @@ export class App {
     if (!this.container) return;
 
     this.container.innerHTML = `
-      <div class="app-shell" data-testid="app-shell" id="app">
+      <div class="app-shell" data-testid="app-shell">
         <header class="app-header">
           <div class="header-left">
             <h1 class="app-title" data-testid="app-title">${APP.name.toUpperCase()}</h1>
@@ -102,7 +102,7 @@ export class App {
           ${this.renderNavItems('sidebar')}
         </nav>
 
-        <nav class="rail-nav">
+        <nav class="rail-nav" data-testid="rail-nav">
           ${this.renderNavItems('rail')}
         </nav>
 
@@ -119,11 +119,11 @@ export class App {
 
   private renderNavItems(type: 'sidebar' | 'rail' | 'bottom'): string {
     const items = [
-      { id: 'home', label: 'Gists', icon: '📋' },
-      { id: 'starred', label: 'Starred', icon: '⭐' },
-      { id: 'create', label: 'New', icon: '➕' },
-      { id: 'offline', label: 'Offline', icon: '📴' },
-      { id: 'settings', label: 'Settings', icon: '⚙️' },
+      { id: 'home', label: 'HOME', icon: '🏠', testId: 'nav-home' },
+      { id: 'starred', label: 'STARRED', icon: '⭐', testId: 'nav-starred' },
+      { id: 'create', label: 'CREATE', icon: '➕', testId: 'nav-create' },
+      { id: 'offline', label: 'OFFLINE', icon: '📴', testId: 'nav-offline' },
+      { id: 'settings', label: 'SETTINGS', icon: '⚙️', testId: 'settings-btn' },
     ];
 
     return items
