@@ -227,13 +227,13 @@ export function getRateLimitState(): RateLimitState {
 
 ```bash
 # Type check
-npm run typecheck
+pnpm run typecheck
 
 # Test API integration
-npm run test:browser
+pnpm run test:browser
 
 # Verify rate limit handling
-npm run test:offline
+pnpm run test:offline
 ```
 
 ## References

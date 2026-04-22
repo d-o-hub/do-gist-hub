@@ -11,7 +11,7 @@
         "webDir is set to 'dist' (Vite's default output directory)",
         "server.androidScheme is set to 'https'",
         "cleartext traffic is disabled",
-        "Commands include npm install @capacitor/core @capacitor/cli @capacitor/android"
+        "Commands include ppnpm install @capacitor/core @capacitor/cli @capacitor/android"
       ]
     },
     {
@@ -30,10 +30,10 @@
     {
       "id": 3,
       "prompt": "Can you set up Capacitor so we can test this on an Android emulator? I want to be able to run the app from the web build.",
-      "expected_output": "Step-by-step instructions: npm run build (Vite), npx cap sync android, npx cap run android (or npx cap open android). Configuration includes webDir pointing to dist/. Includes npx cap doctor for verification.",
+      "expected_output": "Step-by-step instructions: pnpm run build (Vite), npx cap sync android, npx cap run android (or npx cap open android). Configuration includes webDir pointing to dist/. Includes npx cap doctor for verification.",
       "files": [],
       "assertions": [
-        "Instructions include npm run build before npx cap sync",
+        "Instructions include pnpm run build before npx cap sync",
         "npx cap sync android command is included",
         "npx cap run android or npx cap open android is included",
         "npx cap doctor command is mentioned for verification",
@@ -69,7 +69,7 @@
     {
       "id": 6,
       "prompt": "I built the web app but the Android app isn't picking up the changes. How do I sync everything?",
-      "expected_output": "Explanation that npx cap sync android must be run after every web build. Full sequence: npm run build, npx cap sync android, npx cap run android. Explanation of what sync does (copies web assets to android/app/src/main/assets/public/).",
+      "expected_output": "Explanation that npx cap sync android must be run after every web build. Full sequence: pnpm run build, npx cap sync android, npx cap run android. Explanation of what sync does (copies web assets to android/app/src/main/assets/public/).",
       "files": [],
       "assertions": [
         "Explains that sync must be run after every web build",
@@ -89,7 +89,7 @@
         "Includes Android WebView test configuration",
         "Test verifies app loads and renders basic content",
         "Uses Playwright's Android API (android.launchServer or similar)",
-        "References npm run test:android from package.json scripts"
+        "References pnpm run test:android from package.json scripts"
       ]
     },
     {

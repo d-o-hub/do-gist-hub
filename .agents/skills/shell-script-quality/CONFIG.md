@@ -129,9 +129,9 @@ cd bats-core
 sudo ./install.sh /usr/local
 ```
 
-**From npm**:
+**From pnpm**:
 ```bash
-npm install -g bats
+ppnpm install -g bats
 ```
 
 ### Helper Libraries

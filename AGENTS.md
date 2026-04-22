@@ -9,7 +9,7 @@
 
 ```bash
 # Start development
-pnpm install && ./scripts/setup-skills.sh && pnpm dev
+ppnpm install && ./scripts/setup-skills.sh && pnpm dev
 
 # Before every commit
 ./scripts/quality_gate.sh
@@ -54,7 +54,7 @@ readonly RETRY_BACKOFF_MS=1000
 ## Setup & Quality Gate
 
 ```bash
-pnpm install && ./scripts/setup-skills.sh
+ppnpm install && ./scripts/setup-skills.sh
 pnpm run init:design && pnpm dev
 ```
 
@@ -136,7 +136,7 @@ Typed client → Pagination via `Link` headers → Rate limit tracking → `Acce
 ## Validation-Before-Commit
 
 1. `./scripts/quality_gate.sh` passes
-2. Type check, lint, format check pass (`npm run check`)
+2. Type check, lint, format check pass (`pnpm run check`)
 3. No console errors, responsive on 2+ viewports
 4. Memory profile stable, no leaks
 

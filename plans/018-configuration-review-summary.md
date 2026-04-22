@@ -94,12 +94,12 @@ Offline-first GitHub Gist management app.
 
 ## Quick Start
 
-npm install && npm run dev
+pnpm install && pnpm run dev
 
 ## Scripts
 
-npm run check # typecheck + lint + format
-npm run test # playwright tests
+pnpm run check # typecheck + lint + format
+pnpm run test # playwright tests
 ```
 
 ### Create .vscode/settings.json
