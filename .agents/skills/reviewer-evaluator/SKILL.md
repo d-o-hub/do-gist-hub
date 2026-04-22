@@ -124,16 +124,16 @@ Structure feedback clearly:
 ./scripts/quality_gate.sh
 
 # Type check
-pnpm run typecheck
+npm run typecheck
 
 # Lint
-pnpm run lint
+npm run lint
 
 # Tests
-pnpm run test
+npm run test
 
 # Build
-pnpm run build
+npm run build
 ```
 
 ## Gotchas
@@ -157,10 +157,10 @@ pnpm run build
 
 ```bash
 # Run all checks
-./scripts/quality_gate.sh && pnpm run test && pnpm run build
+./scripts/quality_gate.sh && npm run test && npm run build
 
 # Check bundle size
-pnpm run build
+npm run build
 ls -lh dist/assets/*.js
 ```
 

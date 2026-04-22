@@ -210,14 +210,14 @@ export default defineConfig({
 
 ```bash
 # Build and preview
-pnpm run build
-pnpm run preview
+npm run build
+npm run preview
 
 # Check PWA in Lighthouse
 npx lighthouse http://localhost:4173 --output=json
 
 # Test offline behavior
-pnpm run test:offline
+npm run test:offline
 ```
 
 ## References

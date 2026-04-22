@@ -15,6 +15,8 @@ import './styles/interactions.css';
 import './styles/motion.css';
 import './styles/navigation.css';
 import './styles/modern-glass.css';
+import './styles/conflicts.css';
+import './styles/command-palette.css';
 
 // Initialize design tokens
 initDesignTokens();
@@ -58,7 +60,7 @@ safeLog(
     app.mount(mountPoint);
 
     // Register service worker for PWA support
-    await registerServiceWorker();
+    void registerServiceWorker();
 
     // Initialize Web Vitals monitoring
     initWebVitals();
