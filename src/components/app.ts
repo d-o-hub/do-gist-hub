@@ -123,6 +123,22 @@ export class App {
 
     this.container.innerHTML = `
       <div class="app-shell">
+        <aside class="sidebar-nav">
+          <button class="sidebar-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home">Home</button>
+          <button class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">Starred</button>
+          <button class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">Create</button>
+          <button class="sidebar-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">Offline</button>
+          <button class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings">Settings</button>
+        </aside>
+
+        <aside class="rail-nav">
+          <button class="rail-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home">🏠</button>
+          <button class="rail-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">⭐</button>
+          <button class="rail-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">➕</button>
+          <button class="rail-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">📶</button>
+          <button class="rail-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings">⚙️</button>
+        </aside>
+
         <header class="app-header">
           <div class="header-left">
             <h1 class="app-title" data-route="home">${APP.name}</h1>
@@ -130,13 +146,6 @@ export class App {
           <div class="header-right">
             <div id="sync-indicator" class="sync-indicator"></div>
             <button id="mobile-menu-btn" class="icon-button" aria-label="Menu">☰</button>
-            <nav class="desktop-nav">
-              <button class="nav-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home">HOME</button>
-              <button class="nav-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">STARRED</button>
-              <button class="nav-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">CREATE</button>
-              <button class="nav-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">OFFLINE</button>
-              <button id="settings-btn" class="icon-button" aria-label="Settings" data-testid="settings-btn">⚙️</button>
-            </nav>
           </div>
         </header>
 
