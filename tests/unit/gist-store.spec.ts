@@ -8,7 +8,7 @@ test.describe('GistStore logic', () => {
 
   test('should search gists correctly', async ({ page }) => {
     const results = await page.evaluate(async () => {
-      const { default: gistStore } = await import('./src/stores/gist-store');
+      const { default: gistStore } = await import('@/stores/gist-store');
       gistStore.gists = [
         { id: '1', description: 'test gist', files: { 'a.txt': { filename: 'a.txt' } }, updatedAt: new Date().toISOString() },
         { id: '2', description: 'other', files: { 'other.js': { filename: 'other.js' } }, updatedAt: new Date().toISOString() }
