@@ -62,12 +62,12 @@ export class App {
       <div class="app-shell">
         <header class="app-header">
           <div class="header-left">
-            <h1 class="app-title">${APP.name.toUpperCase()}</h1>
+            <h1 class="app-title">${APP.name}</h1>
           </div>
           <div class="header-actions">
             <div id="sync-indicator" class="sync-indicator">
               <span class="sync-dot"></span>
-              <span class="micro-label">SYNC</span>
+              <span class="micro-label">Sync</span>
             </div>
             <button class="btn btn-ghost" id="theme-toggle" aria-label="Toggle theme">🌓</button>
             <button class="btn btn-ghost" id="menu-btn" aria-label="Menu">☰</button>
@@ -95,17 +95,17 @@ export class App {
 
   private renderNavItems(type: 'sidebar' | 'rail' | 'bottom'): string {
     const items = [
-      { id: 'home', label: 'HOME', icon: '🏠' },
-      { id: 'starred', label: 'STARRED', icon: '⭐' },
-      { id: 'create', label: 'CREATE', icon: '➕' },
-      { id: 'offline', label: 'OFFLINE', icon: '📴' },
-      { id: 'settings', label: 'SETTINGS', icon: '⚙️' },
+      { id: 'home', label: 'Home', icon: '🏠' },
+      { id: 'starred', label: 'Starred Gists', icon: '⭐' },
+      { id: 'create', label: 'Create New Gist', icon: '➕' },
+      { id: 'offline', label: 'Offline Status', icon: '📴' },
+      { id: 'settings', label: 'Settings', icon: '⚙️' },
     ];
 
     return items
       .map(
         (item) => `
-      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}">
+      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}" data-testid="${item.id}-btn">
         <span class="${type}-icon">${item.icon}</span>
         <span class="${type}-label">${item.label}</span>
       </button>
@@ -138,12 +138,20 @@ export class App {
       <div class="route-home">
         <div class="gist-list-header">
           <div class="search-container">
-            <input type="text" class="search-input" placeholder="SEARCH GISTS..." value="${this.searchQuery}" />
+            <input type="text" class="search-input" placeholder="Search gists..." value="${this.searchQuery}" />
           </div>
-          <div class="filter-chips">
-            <button class="chip ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">ALL</button>
-            <button class="chip ${this.currentFilter === 'mine' ? 'active' : ''}" data-filter="mine">MINE</button>
-            <button class="chip ${this.currentFilter === 'starred' ? 'active' : ''}" data-filter="starred">STARRED</button>
+          <div class="filter-buttons filter-chips">
+            <button class="chip ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">All</button>
+            <button class="chip ${this.currentFilter === 'mine' ? 'active' : ''}" data-filter="mine">Mine</button>
+            <button class="chip ${this.currentFilter === 'starred' ? 'active' : ''}" data-filter="starred">Starred</button>
+          </div>
+          <div class="sort-container">
+            <select id="sort-select" class="form-select">
+              <option value="updated-desc">Updated (Newest)</option>
+              <option value="updated-asc">Updated (Oldest)</option>
+              <option value="created-desc">Created (Newest)</option>
+              <option value="created-asc">Created (Oldest)</option>
+            </select>
           </div>
         </div>
         <div class="gist-list" id="gist-list">${this.renderGistList()}</div>
@@ -155,7 +163,7 @@ export class App {
     return `
       <div class="route-starred">
         <header class="detail-header">
-            <h1 class="detail-title">STARRED GISTS</h1>
+            <h2 class="detail-title">Starred Gists</h2>
         </header>
         <div class="gist-list" id="gist-list">${this.renderGistList()}</div>
       </div>
@@ -166,18 +174,18 @@ export class App {
     return `
       <div class="route-create">
         <header class="detail-header">
-            <h1 class="detail-title">CREATE NEW GIST</h1>
+            <h2 class="detail-title">Create New Gist</h2>
         </header>
         <form id="create-gist-form" class="gist-form">
           <div class="form-group">
-            <label class="form-label">DESCRIPTION</label>
+            <label class="form-label">Description</label>
             <input type="text" id="gist-description" class="form-input" placeholder="Enter description..." />
           </div>
           <div class="form-group">
-            <label class="form-label">FILE: index.js</label>
+            <label class="form-label">File: index.js</label>
             <textarea id="gist-content" class="form-textarea" placeholder="Enter content..."></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">CREATE GIST</button>
+          <button type="submit" class="btn btn-primary">Create Gist</button>
         </form>
       </div>
     `;
@@ -187,24 +195,45 @@ export class App {
     return `
       <div class="route-settings">
         <header class="detail-header">
-            <h1 class="detail-title">SETTINGS</h1>
+            <h2 class="detail-title">Settings</h2>
         </header>
         <div class="settings-panel">
-            <div class="form-group">
-                <label class="form-label">GITHUB TOKEN</label>
-                <input type="password" id="pat-input" class="form-input" placeholder="ghp_..." />
-                <div class="form-actions" style="margin-top: var(--space-2); display: flex; gap: var(--space-2);">
-                    <button id="save-token-btn" class="btn btn-primary">SAVE</button>
-                    <button id="remove-token-btn" class="btn btn-ghost">REMOVE</button>
+            <details open>
+                <summary class="form-label">Authentication</summary>
+                <div class="form-group">
+                    <label class="form-label">GitHub Token</label>
+                    <input type="password" id="pat-input" class="form-input" placeholder="ghp_..." />
+                    <div class="form-actions" style="margin-top: var(--space-2); display: flex; gap: var(--space-2);">
+                        <button id="save-token-btn" class="btn btn-primary">Save</button>
+                        <button id="remove-token-btn" class="btn btn-ghost">Remove</button>
+                    </div>
+                    <div id="token-status" style="margin-top: var(--space-2);"></div>
                 </div>
-                <div id="token-status" style="margin-top: var(--space-2);"></div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">DATA MANAGEMENT</label>
-                <div class="form-actions" style="display: flex; gap: var(--space-2);">
-                    <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
+            </details>
+
+            <details>
+                <summary class="form-label">Preferences</summary>
+                <div class="form-group">
+                    <label class="form-label">Theme</label>
+                    <select id="theme-select" class="form-select">
+                        <option value="dark">Dark</option>
+                        <option value="light">Light</option>
+                    </select>
                 </div>
-            </div>
+            </details>
+
+            <details>
+                <summary class="form-label">Data & Diagnostics</summary>
+                <div class="form-group">
+                    <div class="form-actions" style="display: flex; gap: var(--space-2);">
+                        <button id="clear-cache-btn" class="btn btn-danger">Clear Local Cache</button>
+                        <button id="export-data-btn" class="btn btn-ghost">Export Data</button>
+                    </div>
+                    <div id="diagnostics-info" class="micro-label" style="margin-top: var(--space-4);">
+                        Version: 0.1.0
+                    </div>
+                </div>
+            </details>
         </div>
       </div>
     `;
@@ -214,17 +243,17 @@ export class App {
     return `
       <div class="route-offline">
         <header class="detail-header">
-            <h1 class="detail-title">OFFLINE STATUS</h1>
+            <h2 class="detail-title">Offline Status</h2>
         </header>
         <div class="stat-card">
             <div class="stat-icon">📴</div>
             <div class="stat-info">
-                <div class="stat-label">PENDING WRITES</div>
+                <div class="stat-label">Pending Writes</div>
                 <div class="stat-value" id="pending-count">0</div>
             </div>
         </div>
         <div id="logs-list" class="glass-card" style="margin-top: var(--space-6); padding: var(--space-4); max-height: 400px; overflow-y: auto;">
-            <div class="micro-label">OFFLINE LOGS</div>
+            <div class="micro-label">Offline Logs</div>
             <div id="logs-content" style="margin-top: var(--space-2);"></div>
         </div>
       </div>
@@ -238,7 +267,7 @@ export class App {
           g.description?.toLowerCase().includes(this.searchQuery.toLowerCase())
         )
       : filtered;
-    if (searched.length === 0) return '<div class="empty-state">NO GISTS FOUND</div>';
+    if (searched.length === 0) return '<div class="empty-state">No Gists Found</div>';
     return searched.map((g) => renderCard(g)).join('');
   }
 
@@ -256,6 +285,13 @@ export class App {
     this.container
       .querySelector('#theme-toggle')
       ?.addEventListener('click', () => this.toggleTheme());
+
+    this.container.querySelector('#theme-select')?.addEventListener('change', (e) => {
+      const theme = (e.target as HTMLSelectElement).value;
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme-preference', theme);
+    });
+
     this.setupRouteHandlers();
   }
 
@@ -315,6 +351,13 @@ export class App {
       c.addEventListener('click', () => {
         this.currentFilter = (c as HTMLElement).dataset.filter as Filter;
         this.updateGistList();
+        // Update active class immediately for feedback and tests
+        this.container?.querySelectorAll('.chip').forEach((chip) => {
+          chip.classList.toggle(
+            'active',
+            (chip as HTMLElement).dataset.filter === this.currentFilter
+          );
+        });
       });
     });
 
@@ -332,13 +375,15 @@ export class App {
       const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
       if (input.value) {
         await saveToken(input.value);
-        toast.success('TOKEN SAVED');
+        toast.success('Token Saved');
         this.loadTokenInfo();
+      } else {
+        toast.error('Token Required');
       }
     });
 
     this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
-      if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
+      if (await showConfirmDialog('Clear all local data?')) {
         const { clearAllData } = await import('../services/db');
         await clearAllData();
         window.location.reload();
@@ -351,8 +396,8 @@ export class App {
     const token = await getToken();
     if (el)
       el.innerHTML = token
-        ? `<p class="micro-label">TOKEN ACTIVE: ${redactToken(token)}</p>`
-        : '<p class="micro-label">NO TOKEN SAVED</p>';
+        ? `<p class="micro-label">Token Active: ${redactToken(token)}</p>`
+        : '<p class="micro-label">No Token Saved</p>';
   }
 
   private async updateSyncIndicator(): Promise<void> {
@@ -378,14 +423,14 @@ export class App {
   private showMobileMenu(): void {
     const content = `
       <div class="mobile-menu" style="display: grid; gap: var(--space-2); padding: var(--space-4);">
-        <button class="btn btn-ghost" data-route="home">HOME</button>
-        <button class="btn btn-ghost" data-route="starred">STARRED</button>
-        <button class="btn btn-ghost" data-route="create">CREATE</button>
-        <button class="btn btn-ghost" data-route="offline">OFFLINE</button>
-        <button class="btn btn-ghost" data-route="settings">SETTINGS</button>
+        <button class="btn btn-ghost" data-route="home">Home</button>
+        <button class="btn btn-ghost" data-route="starred">Starred Gists</button>
+        <button class="btn btn-ghost" data-route="create">Create New Gist</button>
+        <button class="btn btn-ghost" data-route="offline">Offline Status</button>
+        <button class="btn btn-ghost" data-route="settings">Settings</button>
       </div>
     `;
-    void bottomSheet.open(content, 'MENU');
+    void bottomSheet.open(content, 'Menu');
     setTimeout(() => {
       document.querySelectorAll('.mobile-menu .btn').forEach((b) => {
         b.addEventListener('click', () => {
@@ -401,10 +446,10 @@ export class App {
 
   private initializeCommandPalette(): void {
     commandPalette.setCommands([
-      { id: 'home', title: 'HOME', action: () => this.navigate('home') },
-      { id: 'starred', title: 'STARRED GISTS', action: () => this.navigate('starred') },
-      { id: 'create', title: 'CREATE NEW GIST', action: () => this.navigate('create') },
-      { id: 'settings', title: 'SETTINGS', action: () => this.navigate('settings') },
+      { id: 'home', title: 'Home', action: () => this.navigate('home') },
+      { id: 'starred', title: 'Starred Gists', action: () => this.navigate('starred') },
+      { id: 'create', title: 'Create New Gist', action: () => this.navigate('create') },
+      { id: 'settings', title: 'Settings', action: () => this.navigate('settings') },
     ]);
   }
 }
