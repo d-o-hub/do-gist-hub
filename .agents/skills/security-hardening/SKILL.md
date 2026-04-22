@@ -77,7 +77,7 @@ See `references/security-examples.md` for:
 curl -I http://localhost:5173 | grep Content-Security-Policy
 
 # Run security tests
-pnpm run test
+npm run test
 
 # Lighthouse security audit
 npx lighthouse http://localhost:4173 --only-categories=best-practices

@@ -4,14 +4,14 @@
     {
       "id": 1,
       "prompt": "Create an AGENTS.md file for this repo. It's a Vite + TypeScript PWA app that stores gists locally with IndexedDB and talks to the GitHub Gist API.",
-      "expected_output": "A well-structured AGENTS.md at the repository root with header, mission, stack table, source-of-truth rules, setup commands, code style rules, and references to the .agents/skills/ directory. Includes actual commands for pnpm, Vite, and the project's tech stack.",
+      "expected_output": "A well-structured AGENTS.md at the repository root with header, mission, stack table, source-of-truth rules, setup commands, code style rules, and references to the .agents/skills/ directory. Includes actual commands for npm, Vite, and the project's tech stack.",
       "files": [],
       "assertions": [
         "Output is a complete AGENTS.md markdown document, not a template or outline",
         "Includes a mission section describing a GitHub Gist CRUD app",
         "Includes a stack/technology table mentioning Vite, TypeScript, IndexedDB, and GitHub API",
         "References .agents/skills/ directory and at least 3 specific skills",
-        "Contains setup and dev commands using pnpm run scripts",
+        "Contains setup and dev commands using npm run scripts",
         "No TODO or placeholder markers in the output"
       ]
     },
@@ -96,10 +96,10 @@
     {
       "id": 8,
       "prompt": "Add Android packaging commands and Capacitor setup instructions to the AGENTS.md setup section. Include the npx cap commands we need.",
-      "expected_output": "AGENTS.md updated with Android packaging commands in the setup or a dedicated Android section. Includes: pnpm install @capacitor/core @capacitor/cli @capacitor/android, npx cap init, npx cap add android, npx cap sync android, npx cap open android. Also references the capacitor-android skill.",
+      "expected_output": "AGENTS.md updated with Android packaging commands in the setup or a dedicated Android section. Includes: npm install @capacitor/core @capacitor/cli @capacitor/android, npx cap init, npx cap add android, npx cap sync android, npx cap open android. Also references the capacitor-android skill.",
       "files": [],
       "assertions": [
-        "Includes pnpm install command for Capacitor dependencies",
+        "Includes npm install command for Capacitor dependencies",
         "Includes npx cap init, npx cap add android, npx cap sync, npx cap open android commands",
         "References the capacitor-android skill in available skills or cross-references",
         "Commands are in a setup or build commands section",
