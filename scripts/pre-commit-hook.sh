@@ -10,5 +10,5 @@ if [[ -n "$GLOBAL_HOOKS_PATH" && -z "${SKIP_GLOBAL_HOOKS_CHECK:-}" ]]; then
 fi
 
 # Run quality gate
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-"$SCRIPT_DIR/quality_gate.sh"
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+"$ROOT_DIR/scripts/quality_gate.sh"
