@@ -9,7 +9,7 @@ echo "Running quality gates..."
 # Type check
 if command -v npm &> /dev/null && [[ -f "$ROOT_DIR/package.json" ]]; then
   cd "$ROOT_DIR"
-  
+
   echo "→ Type checking..."
   npm run typecheck || { echo "✗ Type check failed"; exit 1; }
   echo "✓ Type check passed"
