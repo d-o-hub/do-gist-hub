@@ -1,6 +1,5 @@
 /**
  * Root App Component
- * Manages routing, global layout, and gist store integration
  */
 
 import gistStore from '../stores/gist-store';
@@ -91,7 +90,7 @@ export class App {
           <div class="header-actions">
             <div id="sync-indicator" class="sync-indicator">
               <span class="sync-dot"></span>
-              <span class="micro-label">SYNC</span>
+              <span class="micro-label">Sync</span>
             </div>
             <button class="btn btn-ghost icon-button" id="theme-toggle" aria-label="Toggle theme" data-testid="theme-toggle">🌓</button>
             <button class="btn btn-ghost icon-button" id="settings-btn" aria-label="Settings" data-testid="settings-btn">⚙️</button>
@@ -219,14 +218,14 @@ export class App {
         </header>
         <form id="create-gist-form" class="gist-form">
           <div class="form-group">
-            <label class="form-label">DESCRIPTION</label>
+            <label class="form-label">Description</label>
             <input type="text" id="gist-description" class="form-input" placeholder="Enter description..." />
           </div>
           <div class="form-group">
-            <label class="form-label">FILE: index.js</label>
+            <label class="form-label">File: index.js</label>
             <textarea id="gist-content" class="form-textarea" placeholder="Enter content..."></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">CREATE GIST</button>
+          <button type="submit" class="btn btn-primary">Create Gist</button>
         </form>
       </div>
     `;
@@ -314,7 +313,7 @@ export class App {
         </div>
         <div class="pending-operations" id="pending-ops" style="margin-top: var(--space-6);"></div>
         <div id="logs-list" class="glass-card" style="margin-top: var(--space-6); padding: var(--space-4); max-height: 400px; overflow-y: auto;">
-            <div class="micro-label">OFFLINE LOGS</div>
+            <div class="micro-label">Offline Logs</div>
             <div id="logs-content" style="margin-top: var(--space-2);"></div>
         </div>
       </div>
@@ -392,6 +391,10 @@ export class App {
       ?.addEventListener('click', () => this.toggleTheme());
     this.container.querySelector('#settings-btn')?.addEventListener('click', () => {
       void this.navigate('settings');
+    this.container.querySelector('#theme-select')?.addEventListener('change', (e) => {
+      const theme = (e.target as HTMLSelectElement).value;
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme-preference', theme);
     });
     this.setupRouteHandlers();
   }
@@ -526,6 +529,28 @@ export class App {
       this.currentFilter = (chip.dataset.filter as Filter) || 'all';
       void this.updateGistList();
     });
+    this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
+      void (async () => {
+        e.preventDefault();
+        const desc = (this.container?.querySelector('#gist-description') as HTMLInputElement).value;
+        const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement)
+          .value;
+        await gistStore.createGist(desc, true, { 'index.js': content });
+        this.navigate('home');
+      })();
+    });
+    this.container.querySelector('#save-token-btn')?.addEventListener('click', () => {
+      void (async () => {
+        const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
+        if (input.value) {
+          await saveToken(input.value);
+          toast.success('Token Saved');
+          void this.loadTokenInfo();
+        } else {
+          toast.error('Token Required');
+        }
+      })();
+    });
 
     // Forms
     this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
@@ -550,6 +575,8 @@ export class App {
       } else {
         toast.error('ENTER A TOKEN');
       }
+      // Reset input
+      (e.target as HTMLInputElement).value = '';
     });
 
     this.container.querySelector('#export-data-btn')?.addEventListener('click', () => {
@@ -619,9 +646,7 @@ export class App {
     const el = this.container?.querySelector('#sync-indicator');
     const online = networkMonitor.isOnline();
     const len = await syncQueue.getQueueLength();
-    if (el) {
-      el.setAttribute('data-status', online ? (len > 0 ? 'syncing' : 'online') : 'offline');
-    }
+    if (el) el.setAttribute('data-status', online ? (len > 0 ? 'syncing' : 'online') : 'offline');
   }
 
   private async updateOfflineStatus(): Promise<void> {
@@ -659,11 +684,11 @@ export class App {
   private async showMobileMenu(): Promise<void> {
     const content = `
       <div class="mobile-menu" style="display: grid; gap: var(--space-2); padding: var(--space-4);">
-        <button class="btn btn-ghost" data-route="home">HOME</button>
-        <button class="btn btn-ghost" data-route="starred">STARRED</button>
-        <button class="btn btn-ghost" data-route="create">CREATE</button>
-        <button class="btn btn-ghost" data-route="offline">OFFLINE</button>
-        <button class="btn btn-ghost" data-route="settings">SETTINGS</button>
+        <button class="btn btn-ghost" data-route="home">Home</button>
+        <button class="btn btn-ghost" data-route="starred">Starred Gists</button>
+        <button class="btn btn-ghost" data-route="create">Create New Gist</button>
+        <button class="btn btn-ghost" data-route="offline">Offline Status</button>
+        <button class="btn btn-ghost" data-route="settings">Settings</button>
       </div>
     `;
     await bottomSheet.open(content, 'MENU');
