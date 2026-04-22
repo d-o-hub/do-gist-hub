@@ -31,7 +31,7 @@ const tokens = {
 
 // Generate CSS
 const cssContent = `/* Auto-generated design tokens - DO NOT EDIT */
-/* Run pnpm run init:design to regenerate */
+/* Run npm run init:design to regenerate */
 
 :root {
   /* Colors - Light Theme */

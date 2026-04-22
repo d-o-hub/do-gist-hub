@@ -5,7 +5,7 @@
 
 import { sanitizeHtml } from '../../services/security';
 
-export type ToastType = 'success' | 'error' | 'info';
+export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 export class ToastManager {
   private container: HTMLElement | null = null;
@@ -52,7 +52,7 @@ export class ToastManager {
     toast.style.pointerEvents = 'auto';
 
     // Icon based on type
-    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : type === 'warning' ? '⚠' : 'ℹ';
 
     toast.innerHTML = `
       <span class="toast-icon" aria-hidden="true">${icon}</span>
@@ -86,6 +86,10 @@ export class ToastManager {
 
   info(message: string, durationMs?: number): string {
     return this.show(message, 'info', durationMs);
+  }
+
+  warn(message: string, durationMs?: number): string {
+    return this.show(message, 'warning', durationMs);
   }
 
   dismiss(id: string): void {

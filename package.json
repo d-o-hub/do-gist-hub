@@ -13,7 +13,7 @@
     "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
-    "check": "pnpm run typecheck && pnpm run lint && pnpm run format:check",
+    "check": "npm run typecheck && npm run lint && npm run format:check",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
@@ -29,9 +29,8 @@
     "generate:icons": "node scripts/generate-icons.mjs",
     "cap:sync": "npx cap sync android",
     "cap:android:open": "npx cap open android",
-    "build:android": "pnpm run build && pnpm run cap:sync",
-    "quality": "./scripts/quality_gate.sh",
-    "prepare": "cp scripts/pre-commit-hook.sh .git/hooks/pre-commit 2>/dev/null && chmod +x .git/hooks/pre-commit 2>/dev/null || true"
+    "build:android": "npm run build && npm run cap:sync",
+    "quality": "./scripts/quality_gate.sh"
   },
   "dependencies": {
     "@capacitor/android": "^6.0.0",
@@ -43,13 +42,14 @@
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@playwright/test": "^1.45.0",
-    "@types/node": "^25.6.0",
+    "@types/node": "^22.0.0",
     "canvas": "^3.2.3",
+    "esbuild": "^0.28.0",
     "eslint": "^10.2.1",
     "globals": "^16.0.0",
-    "prettier": "^3.8.3",
+    "prettier": "^3.3.0",
     "typescript": "^5.5.0",
-    "typescript-eslint": "^8.59.0",
-    "vite": "^8.0.9"
+    "typescript-eslint": "^8.58.1",
+    "vite": "^5.4.0"
   }
 }

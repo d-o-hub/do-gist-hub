@@ -360,7 +360,7 @@ validate_with_screenshots() {
     # Check if dev server is running
     if ! curl -s http://localhost:3000 > /dev/null; then
         log_warning "Dev server not running on localhost:3000, starting..."
-        cd "$ROOT_DIR" && pnpm run dev > /tmp/dev.log 2>&1 &
+        cd "$ROOT_DIR" && npm run dev > /tmp/dev.log 2>&1 &
         sleep 3
     fi
     

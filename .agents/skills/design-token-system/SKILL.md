@@ -178,10 +178,10 @@ Before considering UI work complete, verify:
 npx -y node .agents/skills/design-token-system/scripts/validate-tokens.cjs
 
 # Check CSS variable generation
-pnpm run build:tokens
+npm run build:tokens
 
 # Verify type safety
-pnpm run typecheck
+npm run typecheck
 ```
 
 ## Layout Best Practices (2026)
