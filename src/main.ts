@@ -15,6 +15,7 @@ import './styles/interactions.css';
 import './styles/motion.css';
 import './styles/navigation.css';
 import './styles/modern-glass.css';
+import './styles/command-palette.css';
 
 // Initialize design tokens
 initDesignTokens();
