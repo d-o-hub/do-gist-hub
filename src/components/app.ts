@@ -7,7 +7,7 @@ import gistStore from '../stores/gist-store';
 import { renderCard, bindCardEvents } from './gist-card';
 import networkMonitor from '../services/network/offline-monitor';
 import syncQueue from '../services/sync/queue';
-import { getToken, saveToken } from '../services/github/auth';
+import { getToken, saveToken, removeToken } from '../services/github/auth';
 import { loadGistDetail } from './gist-detail';
 import { APP } from '../config/app.config';
 import { redactToken } from '../services/security';
@@ -69,7 +69,8 @@ export class App {
               <span class="sync-dot"></span>
               <span class="micro-label">SYNC</span>
             </div>
-            <button class="btn btn-ghost" id="theme-toggle" aria-label="Toggle theme">🌓</button>
+            <button class="btn btn-ghost" id="theme-toggle" aria-label="Toggle theme" data-testid="theme-toggle">🌓</button>
+            <button class="btn btn-ghost" id="settings-btn" aria-label="Settings" data-testid="settings-btn">⚙️</button>
             <button class="btn btn-ghost" id="menu-btn" aria-label="Menu">☰</button>
           </div>
         </header>
@@ -105,7 +106,7 @@ export class App {
     return items
       .map(
         (item) => `
-      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}">
+      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}" data-testid="${type}-${item.id}">
         <span class="${type}-icon">${item.icon}</span>
         <span class="${type}-label">${item.label}</span>
       </button>
@@ -155,7 +156,7 @@ export class App {
     return `
       <div class="route-starred">
         <header class="detail-header">
-            <h1 class="detail-title">STARRED GISTS</h1>
+            <h2 class="detail-title">STARRED GISTS</h2>
         </header>
         <div class="gist-list" id="gist-list">${this.renderGistList()}</div>
       </div>
@@ -166,7 +167,7 @@ export class App {
     return `
       <div class="route-create">
         <header class="detail-header">
-            <h1 class="detail-title">CREATE NEW GIST</h1>
+            <h2 class="detail-title">CREATE NEW GIST</h2>
         </header>
         <form id="create-gist-form" class="gist-form">
           <div class="form-group">
@@ -184,14 +185,17 @@ export class App {
   }
 
   private getSettingsRoute(): string {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
     return `
       <div class="route-settings">
         <header class="detail-header">
-            <h1 class="detail-title">SETTINGS</h1>
+            <h2 class="detail-title">SETTINGS</h2>
         </header>
         <div class="settings-panel">
+          <details open>
+            <summary>Authentication</summary>
             <div class="form-group">
-                <label class="form-label">GITHUB TOKEN</label>
+                <label class="form-label" for="pat-input">GITHUB TOKEN</label>
                 <input type="password" id="pat-input" class="form-input" placeholder="ghp_..." />
                 <div class="form-actions" style="margin-top: var(--space-2); display: flex; gap: var(--space-2);">
                     <button id="save-token-btn" class="btn btn-primary">SAVE</button>
@@ -199,12 +203,31 @@ export class App {
                 </div>
                 <div id="token-status" style="margin-top: var(--space-2);"></div>
             </div>
+          </details>
+
+          <details>
+            <summary>Preferences</summary>
+            <div class="form-group">
+                <label class="form-label" for="theme-select">THEME</label>
+                <select id="theme-select" class="form-input">
+                  <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>Light</option>
+                  <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>Dark</option>
+                  <option value="auto">Auto (System)</option>
+                </select>
+            </div>
+          </details>
+
+          <details>
+            <summary>Data & Diagnostics</summary>
             <div class="form-group">
                 <label class="form-label">DATA MANAGEMENT</label>
-                <div class="form-actions" style="display: flex; gap: var(--space-2);">
+                <div class="form-actions" style="display: flex; flex-direction: column; gap: var(--space-2);">
+                    <button id="export-data-btn" class="btn btn-ghost">EXPORT DATA (JSON)</button>
                     <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
                 </div>
             </div>
+            <div id="diagnostics-info" style="margin-top: var(--space-4);"></div>
+          </details>
         </div>
       </div>
     `;
@@ -214,7 +237,7 @@ export class App {
     return `
       <div class="route-offline">
         <header class="detail-header">
-            <h1 class="detail-title">OFFLINE STATUS</h1>
+            <h2 class="detail-title">OFFLINE STATUS</h2>
         </header>
         <div class="stat-card">
             <div class="stat-icon">📴</div>
@@ -334,6 +357,43 @@ export class App {
         await saveToken(input.value);
         toast.success('TOKEN SAVED');
         this.loadTokenInfo();
+      } else {
+        toast.error('ENTER TOKEN');
+      }
+    });
+
+    this.container.querySelector('#remove-token-btn')?.addEventListener('click', async () => {
+      await removeToken();
+      toast.info('TOKEN REMOVED');
+      this.loadTokenInfo();
+    });
+
+    this.container.querySelector('#theme-select')?.addEventListener('change', (e) => {
+      const val = (e.target as HTMLSelectElement).value;
+      if (val === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        localStorage.removeItem('theme-preference');
+      } else {
+        document.documentElement.setAttribute('data-theme', val);
+        localStorage.setItem('theme-preference', val);
+      }
+    });
+
+    this.container.querySelector('#export-data-btn')?.addEventListener('click', async () => {
+      try {
+        const { exportData } = await import('../services/db');
+        const data = await exportData();
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success('DATA EXPORTED');
+      } catch {
+        toast.error('EXPORT FAILED');
       }
     });
 
