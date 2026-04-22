@@ -28,8 +28,11 @@ export class ErrorBoundary {
             error.recoveryAction || 'Try Again'
           }</button>`
         : '',
+      clearCache: isFatal
+        ? '<button class="secondary-btn" id="error-clear-cache-btn">Clear Local Data</button>'
+        : '',
       reload: isFatal
-        ? '<button class="secondary-btn" onclick="window.location.reload()">Reload App</button>'
+        ? '<button class="btn-ghost" onclick="window.location.reload()">Reload App</button>'
         : '',
     };
     const actionsHtml = Object.values(actionMap)
@@ -57,6 +60,17 @@ export class ErrorBoundary {
         onRetry();
       });
     }
+
+    container.querySelector('#error-clear-cache-btn')?.addEventListener('click', () => {
+      void (async () => {
+        const { showConfirmDialog } = await import('../../utils/dialog');
+        if (await showConfirmDialog('CLEAR ALL LOCAL DATA? THIS CANNOT BE UNDONE.')) {
+          const { clearAllData } = await import('../../services/db');
+          await clearAllData();
+          window.location.reload();
+        }
+      })();
+    });
   }
 
   private static getIcon(category: ErrorCategory): string {

@@ -140,6 +140,8 @@ export function safeLog(message: string, ...args: unknown[]): void {
   const redactedArgs = args.map((arg) => redactAny(arg));
   const redactedMessage = redactSecrets(message);
 
+  console.warn(redactedMessage, ...redactedArgs);
+
   void persistLog(
     'info',
     redactedMessage,

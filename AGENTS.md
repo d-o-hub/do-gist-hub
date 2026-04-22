@@ -9,7 +9,7 @@
 
 ```bash
 # Start development
-npm install && ./scripts/setup-skills.sh && npm run dev
+pnpm install && ./scripts/setup-skills.sh && pnpm dev
 
 # Before every commit
 ./scripts/quality_gate.sh
@@ -54,9 +54,9 @@ readonly RETRY_BACKOFF_MS=1000
 ## Setup & Quality Gate
 
 ```bash
-npm install && ./scripts/setup-skills.sh
+pnpm install && ./scripts/setup-skills.sh
 cp scripts/pre-commit-hook.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
-npm run init:design && npm run dev
+npm run init:design && pnpm dev
 ```
 
 **MANDATORY**: Run `./scripts/quality_gate.sh` before every commit. If blocked: `git config --global --unset core.hooksPath`

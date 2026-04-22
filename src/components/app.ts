@@ -7,9 +7,11 @@ import { renderCard, bindCardEvents } from './gist-card';
 import networkMonitor from '../services/network/offline-monitor';
 import syncQueue from '../services/sync/queue';
 import { getToken, saveToken } from '../services/github/auth';
-import { loadGistDetail } from './gist-detail';
+import { loadGistDetail, renderRevisions } from './gist-detail';
+import { loadEditForm } from './gist-edit';
+import * as GitHub from '../services/github/client';
 import { APP } from '../config/app.config';
-import { redactToken, sanitizeHtml, safeError } from '../services/security';
+import { redactToken, sanitizeHtml } from '../services/security';
 import { commandPalette } from './ui/command-palette';
 import { bottomSheet } from './ui/bottom-sheet';
 import { withViewTransition } from '../utils/view-transitions';
@@ -18,66 +20,116 @@ import { announcer } from '../utils/announcer';
 import { showConfirmDialog } from '../utils/dialog';
 import { safeError } from '../services/security/logger';
 
-type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings' | 'detail' | 'edit';
-import { loadConflictResolution } from './conflict-resolution';
-import { loadEditForm } from './gist-edit';
-import { renderRevisions } from './gist-detail';
-import * as GitHub from '../services/github';
-
 type Route =
   | 'home'
   | 'starred'
   | 'create'
-  | 'offline'
   | 'settings'
+  | 'offline'
   | 'detail'
   | 'edit'
   | 'revisions'
   | 'conflicts';
 type Filter = 'all' | 'mine' | 'starred';
-type SortKey = 'updated' | 'created' | 'title';
-type SortOrder = 'asc' | 'desc';
+type Sort = 'created-desc' | 'updated-desc' | 'updated-asc';
 
 export class App {
   private container: HTMLElement | null = null;
   private currentRoute: Route = 'home';
   private currentFilter: Filter = 'all';
-  private searchQuery = '';
-  private searchTimeout?: number;
-  private currentSortKey: SortKey = 'updated';
-  private currentSortOrder: SortOrder = 'desc';
+  private currentSort: Sort = 'updated-desc';
+  private searchQuery: string = '';
+  private searchTimeout: number | undefined;
+  private currentGistId: string | null = null;
 
-  mount(container: HTMLElement): void {
-    if (!container) throw new Error('App container not found');
-    this.container = container;
-    this.initializeTheme();
-    this.render();
-    this.setupNavigation();
+  constructor() {
+    this.initialize();
+  }
+
+  private initialize(): void {
+    document.title = APP.name;
+    const appElement = document.getElementById('app');
+    if (!appElement) return;
+    this.container = appElement;
+
+    // Listen for sync/network changes
+    networkMonitor.subscribe(() => {
+      void this.updateSyncIndicator();
+    });
+
+    // Simple custom event for sync queue since it doesn't have a formal subscribe yet
+    window.addEventListener('app:sync-change', () => {
+      void this.updateSyncIndicator();
+      if (this.currentRoute === 'offline') void this.updateOfflineStatus();
+    });
+
+    // Theme initialization
+    const savedTheme = localStorage.getItem('theme-preference') || 'auto';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
     this.initializeCommandPalette();
-    this.subscribeStore();
+    void this.navigate('home');
+  }
 
-    window.addEventListener('app:sync-complete', () => {
-      void this.updateGistList().catch(safeError);
+  private setupNavigation(): void {
+    this.container?.querySelectorAll('[data-route]').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        const route = (el as HTMLElement).dataset.route as Route;
+        if (route) void this.navigate(route);
+      });
     });
-    window.addEventListener('online', () => {
-      void this.updateSyncIndicator().catch(safeError);
+
+    this.container?.querySelector('#mobile-menu-btn')?.addEventListener('click', () => {
+      void this.showMobileMenu();
     });
-    window.addEventListener('offline', () => {
-      void this.updateSyncIndicator().catch(safeError);
+
+    this.container?.querySelectorAll('#settings-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        void this.navigate('settings');
+      });
+    });
+
+    this.container?.querySelector('#theme-select')?.addEventListener('change', (e) => {
+      const theme = (e.target as HTMLSelectElement).value;
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme-preference', theme);
     });
   }
 
-  private initializeTheme(): void {
-    const stored = localStorage.getItem('theme-preference') || 'dark';
-    document.documentElement.setAttribute('data-theme', stored);
-  }
+  private async navigate(route: Route): Promise<void> {
+    this.currentRoute = route;
+    announcer.announce(`Navigating to ${route} page`);
 
-  private subscribeStore(): void {
-    gistStore.subscribe(() => {
-      if (this.currentRoute === 'home' || this.currentRoute === 'starred') {
-        void this.updateGistList().catch(safeError);
+    if (route === 'home') {
+      this.currentFilter = 'all';
+      this.searchQuery = '';
+    } else if (route === 'starred') {
+      this.currentFilter = 'starred';
+      this.searchQuery = '';
+    }
+
+    await withViewTransition(async () => {
+      this.render();
+      this.setupNavigation();
+      if (route === 'home' || route === 'starred') await this.updateGistList();
+      if (route === 'settings') {
+        await this.loadTokenInfo();
+        await this.loadDiagnostics();
       }
-      void this.updateSyncIndicator().catch(safeError);
+      if (route === 'offline') {
+        await this.updateOfflineStatus();
+      }
+      if (route === 'conflicts') {
+        const { loadConflictResolution } = await import('./conflict-resolution');
+        const conflictContainer = this.container?.querySelector('#conflict-resolution-container');
+        if (conflictContainer instanceof HTMLElement) {
+          await loadConflictResolution(conflictContainer, () => {
+            void this.updateOfflineStatus();
+          });
+        }
+      }
+      this.bindRouteEvents();
     });
   }
 
@@ -86,129 +138,104 @@ export class App {
 
     this.container.innerHTML = `
       <div class="app-shell" data-testid="app-shell">
+        <aside class="sidebar-nav">
+          <button class="sidebar-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home">Home</button>
+          <button class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">Starred</button>
+          <button class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">Create</button>
+          <button class="sidebar-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">Offline</button>
+          <button class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" id="settings-btn" data-testid="settings-btn">Settings</button>
+        </aside>
+
+        <aside class="rail-nav">
+          <button class="rail-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home">🏠</button>
+          <button class="rail-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">⭐</button>
+          <button class="rail-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">➕</button>
+          <button class="rail-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">📶</button>
+          <button class="rail-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" id="settings-btn" data-testid="settings-btn">⚙️</button>
+        </aside>
+
         <header class="app-header">
           <div class="header-left">
-            <h1 class="app-title" data-testid="app-title">${APP.name.toUpperCase()}</h1>
+            <h1 class="app-title" data-route="home" data-testid="app-title">${APP.name}</h1>
           </div>
-          <div class="header-actions">
-            <div id="sync-indicator" class="sync-indicator">
-              <span class="sync-dot"></span>
-              <span class="micro-label">Sync</span>
-            </div>
-            <button class="btn btn-ghost icon-button" id="theme-toggle" aria-label="Toggle theme" data-testid="theme-toggle">🌓</button>
-            <button class="btn btn-ghost icon-button" id="settings-btn" aria-label="Settings" data-testid="settings-btn">⚙️</button>
-            <button class="btn btn-ghost icon-button" id="menu-btn" aria-label="Menu" data-testid="mobile-menu-btn">☰</button>
+          <div class="header-right">
+            <div id="sync-indicator" class="sync-indicator"></div>
+            <button id="mobile-menu-btn" class="icon-button" aria-label="Menu" data-testid="mobile-menu-btn">☰</button>
+            <button id="settings-btn" class="icon-button" aria-label="Settings" data-testid="settings-btn" data-route="settings">⚙️</button>
           </div>
         </header>
 
-        <nav class="sidebar-nav" data-testid="sidebar-nav">
-          ${this.renderNavItems('sidebar')}
-        </nav>
-
-        <nav class="rail-nav" data-testid="rail-nav">
-          ${this.renderNavItems('rail')}
-        </nav>
-
-        <main class="app-main" id="main-content" data-testid="main-content">
-          ${this.getRouteContent()}
+        <main class="app-main" id="main-content">
+          ${this.renderRoute()}
         </main>
 
-        <nav class="bottom-nav" data-testid="bottom-nav">
-          ${this.renderNavItems('bottom')}
+        <nav class="bottom-nav">
+          <button class="nav-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Home</span>
+          </button>
+          <button class="nav-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">
+            <span class="nav-icon">⭐</span>
+            <span class="nav-label">Starred</span>
+          </button>
+          <button class="nav-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">
+            <span class="nav-icon">➕</span>
+            <span class="nav-label">Create</span>
+          </button>
+          <button class="nav-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">
+            <span class="nav-icon">📶</span>
+            <span class="nav-label">Offline</span>
+          </button>
         </nav>
       </div>
     `;
   }
 
-  private renderNavItems(type: 'sidebar' | 'rail' | 'bottom'): string {
-    const items = [
-      { id: 'home', label: 'HOME', icon: '🏠', testId: 'nav-home' },
-      { id: 'starred', label: 'STARRED', icon: '⭐', testId: 'nav-starred' },
-      { id: 'create', label: 'CREATE', icon: '➕', testId: 'nav-create' },
-      { id: 'offline', label: 'OFFLINE', icon: '📴', testId: 'nav-offline' },
-      { id: 'settings', label: 'SETTINGS', icon: '⚙️', testId: 'settings-btn' },
-    ];
-
-    return items
-      .map(
-        (item) => `
-      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}"
-              data-route="${item.id}"
-              data-testid="${type === 'sidebar' ? 'sidebar-' + item.id : 'nav-' + item.id}">
-        <span class="${type}-icon">${item.icon}</span>
-        <span class="${type}-label">${item.label}</span>
-      </button>
-    `
-      )
-      .join('');
-  }
-
-  private getRouteContent(): string {
+  private renderRoute(): string {
     switch (this.currentRoute) {
       case 'home':
-        return this.getHomeRoute();
       case 'starred':
-        return this.getStarredRoute();
+        return this.getHomeRoute();
       case 'create':
         return this.getCreateRoute();
-      case 'offline':
-        return this.getOfflineRoute();
-      case 'conflicts':
-        return '<div id="conflicts-container"></div>';
       case 'settings':
         return this.getSettingsRoute();
+      case 'offline':
+        return this.getOfflineRoute();
       case 'detail':
-        return '<div id="gist-detail-container" data-testid="gist-detail"></div>';
+        return '<div id="gist-detail-container"></div>';
       case 'edit':
-        return '<div id="gist-edit-container" data-testid="gist-edit"></div>';
+        return '<div id="gist-edit-container"></div>';
       case 'revisions':
-        return '<div id="gist-revisions-container" data-testid="gist-revisions"></div>';
+        return '<div id="gist-revisions-container"></div>';
+      case 'conflicts':
+        return '<div id="conflict-resolution-container"></div>';
       default:
-        return this.getHomeRoute();
+        return '<div>Route not found</div>';
     }
   }
 
   private getHomeRoute(): string {
     return `
       <div class="route-home">
-        <div class="gist-list-header">
-          <div class="search-container">
-            <input type="text" class="search-input" placeholder="Search gists..." value="${this.searchQuery}" />
-          </div>
-          <div class="filter-buttons filter-chips">
-            <button class="chip filter-btn ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">All</button>
-            <button class="chip filter-btn ${this.currentFilter === 'mine' ? 'active' : ''}" data-filter="mine">Mine</button>
-            <button class="chip filter-btn ${this.currentFilter === 'starred' ? 'active' : ''}" data-filter="starred">Starred</button>
-          </div>
-          <div class="sort-controls">
-            <label for="sort-select" class="micro-label">Sort by:</label>
-            <select id="sort-select" class="sort-select form-input" style="width: auto; padding: var(--space-1) var(--space-2);">
-              <option value="updated-desc" ${this.currentSortKey === 'updated' && this.currentSortOrder === 'desc' ? 'selected' : ''}>Last Updated (Newest)</option>
-              <option value="updated-asc" ${this.currentSortKey === 'updated' && this.currentSortOrder === 'asc' ? 'selected' : ''}>Last Updated (Oldest)</option>
-              <option value="created-desc" ${this.currentSortKey === 'created' && this.currentSortOrder === 'desc' ? 'selected' : ''}>Created (Newest)</option>
-              <option value="created-asc" ${this.currentSortKey === 'created' && this.currentSortOrder === 'asc' ? 'selected' : ''}>Created (Oldest)</option>
-              <option value="title-asc" ${this.currentSortKey === 'title' && this.currentSortOrder === 'asc' ? 'selected' : ''}>Title (A-Z)</option>
-              <option value="title-desc" ${this.currentSortKey === 'title' && this.currentSortOrder === 'desc' ? 'selected' : ''}>Title (Z-A)</option>
+        <div class="search-container">
+          <input type="text" id="gist-search" class="search-input" placeholder="Search gists..." value="${this.searchQuery}">
+        </div>
+        <div class="filter-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+            <div class="filter-buttons filter-chips">
+              <button class="chip ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">All</button>
+              <button class="chip ${this.currentFilter === 'mine' ? 'active' : ''}" data-filter="mine">Mine</button>
+              <button class="chip ${this.currentFilter === 'starred' ? 'active' : ''}" data-filter="starred">Starred</button>
+            </div>
+            <select id="sort-select" class="form-input" style="width: auto; margin-bottom: 0;">
+                <option value="updated-desc" ${this.currentSort === 'updated-desc' ? 'selected' : ''}>Recent</option>
+                <option value="created-desc" ${this.currentSort === 'created-desc' ? 'selected' : ''}>Newest</option>
+                <option value="updated-asc" ${this.currentSort === 'updated-asc' ? 'selected' : ''}>Oldest</option>
             </select>
-          </div>
         </div>
-        <div class="gist-list" id="gist-list">${this.renderGistList()}</div>
-      </div>
-    `;
-  }
-
-  private getStarredRoute(): string {
-    return `
-      <div class="route-starred">
-        <header class="detail-header">
-            <h2 class="detail-title">Starred Gists</h2>
-        </header>
-        <div class="gist-list-header">
-          <div class="filter-buttons filter-chips">
-            <button class="chip filter-btn active" data-filter="starred">Starred</button>
-          </div>
+        <div id="gist-list" class="gist-list">
+          ${this.renderGistList()}
         </div>
-        <div class="gist-list" id="gist-list">${this.renderGistList()}</div>
       </div>
     `;
   }
@@ -219,54 +246,63 @@ export class App {
         <header class="detail-header">
             <h2 class="detail-title">Create New Gist</h2>
         </header>
-        <form id="create-gist-form" class="gist-form">
+        <form id="create-gist-form" class="glass-card" style="padding: var(--space-6);">
           <div class="form-group">
-            <label class="form-label">Description</label>
-            <input type="text" id="gist-description" class="form-input" placeholder="Enter description..." />
+            <label class="form-label" for="gist-description">Description</label>
+            <input type="text" id="gist-description" class="form-input" placeholder="Gist description..." required>
           </div>
           <div class="form-group">
-            <label class="form-label">File: index.js</label>
-            <textarea id="gist-content" class="form-textarea" placeholder="Enter content..."></textarea>
+            <label class="form-label" for="gist-content">index.js</label>
+            <textarea id="gist-content" class="form-input code-editor" placeholder="Gist content..." required style="min-height: 200px;"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">Create Gist</button>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">CREATE GIST</button>
+          </div>
         </form>
       </div>
     `;
   }
 
   private getSettingsRoute(): string {
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'auto';
+
     return `
       <div class="route-settings">
         <header class="detail-header">
             <h2 class="detail-title">Settings</h2>
         </header>
-        <div class="settings-panel">
+
+        <div class="settings-list">
           <details class="settings-section" open>
             <summary class="settings-section-header">
               <h3 class="form-label">Authentication</h3>
             </summary>
             <div class="settings-section-content" style="padding-top: var(--space-4);">
               <div class="form-group">
-                <label class="form-label">GitHub Token</label>
-                <input type="password" id="pat-input" class="form-input" placeholder="ghp_..." />
-                <div class="form-actions" style="margin-top: var(--space-2); display: flex; gap: var(--space-2);">
+                <label class="form-label" for="pat-input">GitHub Personal Access Token</label>
+                <div style="display: flex; gap: var(--space-2);">
+                    <input type="password" id="pat-input" class="form-input" style="flex: 1;" placeholder="ghp_...">
                     <button id="save-token-btn" class="btn btn-primary">SAVE</button>
                     <button id="remove-token-btn" class="btn btn-ghost">REMOVE</button>
                 </div>
                 <div id="token-status" style="margin-top: var(--space-2);"></div>
               </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">DATA MANAGEMENT</label>
+          </details>
+
+          <details class="settings-section" open>
+            <summary class="settings-section-header">
+              <h3 class="form-label">Data Management</h3>
+            </summary>
+            <div class="settings-section-content" style="padding-top: var(--space-4);">
                 <div class="form-actions" style="display: flex; flex-direction: column; gap: var(--space-2);">
                     <div style="display: flex; gap: var(--space-2);">
                         <button id="export-all-btn" class="btn btn-secondary" style="flex: 1;">EXPORT ALL GISTS</button>
                         <button id="import-btn" class="btn btn-secondary" style="flex: 1;">IMPORT GISTS</button>
-                        <input type="file" id="import-input" accept=".json" style="display: none;" />
+                        <input type="file" id="import-file-input" accept=".json" style="display: none;" />
                     </div>
-                    <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
                 </div>
+            </div>
           </details>
 
           <details class="settings-section">
@@ -325,10 +361,6 @@ export class App {
             </div>
         </div>
         <div class="pending-operations" id="pending-ops" style="margin-top: var(--space-6);"></div>
-        <div id="logs-list" class="glass-card" style="margin-top: var(--space-6); padding: var(--space-4); max-height: 400px; overflow-y: auto;">
-            <div class="micro-label">Offline Logs</div>
-            <div id="logs-content" style="margin-top: var(--space-2);"></div>
-        </div>
       </div>
     `;
   }
@@ -339,10 +371,8 @@ export class App {
         .fill('')
         .map(
           () => `
-        <div class="gist-card">
-          <div class="gist-card-header">
-            <div class="loading-skeleton" style="height:20px;flex:1;"></div>
-          </div>
+        <div class="gist-card skeleton">
+          <div class="loading-skeleton" style="height:20px;width:80%;margin-bottom:12px;"></div>
           <div class="loading-skeleton" style="height:14px;width:60%;margin-bottom:8px;"></div>
           <div class="loading-skeleton" style="height:12px;width:40%;"></div>
         </div>
@@ -351,7 +381,9 @@ export class App {
         .join('');
     }
 
-    let gists = gistStore.filterGists(this.currentFilter);
+    let gists = gistStore.filterGists(
+      this.currentFilter === 'mine' ? 'all' : (this.currentFilter as 'all' | 'mine' | 'starred')
+    );
 
     if (this.searchQuery) {
       const q = this.searchQuery.toLowerCase();
@@ -362,167 +394,80 @@ export class App {
       );
     }
 
-    // Apply sorting
+    // Sort gists
     gists = [...gists].sort((a, b) => {
-      let comparison = 0;
-      switch (this.currentSortKey) {
-        case 'updated':
-          comparison = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-          break;
-        case 'created':
-          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          break;
-        case 'title': {
-          const titleA = (a.description || Object.values(a.files)[0]?.filename || '').toLowerCase();
-          const titleB = (b.description || Object.values(b.files)[0]?.filename || '').toLowerCase();
-          comparison = titleA.localeCompare(titleB);
-          break;
-        }
-      }
-      return this.currentSortOrder === 'desc' ? -comparison : comparison;
+      if (this.currentSort === 'created-desc')
+        return Date.parse(b.createdAt) - Date.parse(a.createdAt);
+      if (this.currentSort === 'updated-desc')
+        return Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
+      if (this.currentSort === 'updated-asc')
+        return Date.parse(a.updatedAt) - Date.parse(b.updatedAt);
+      return 0;
     });
 
-    if (gists.length === 0) return '<div class="empty-state">No gists found</div>';
+    if (gists.length === 0) {
+      return '<div class="empty-state">No gists found</div>';
+    }
+
     return gists.map((g) => renderCard(g)).join('');
   }
 
-  private setupNavigation(): void {
-    if (!this.container) return;
-    this.container.querySelectorAll('[data-route]').forEach((el) => {
-      el.addEventListener('click', () => {
-        const route = (el as HTMLElement).dataset.route as Route;
-        if (route) {
-          void this.navigate(route);
-        }
-      });
-    });
-    this.container.querySelector('#menu-btn')?.addEventListener('click', () => {
-      void this.showMobileMenu();
-    });
-    this.container
-      .querySelector('#theme-toggle')
-      ?.addEventListener('click', () => this.toggleTheme());
-    this.container.querySelector('#settings-btn')?.addEventListener('click', () => {
-      void this.navigate('settings');
-    this.container.querySelector('#theme-select')?.addEventListener('change', (e) => {
-      const theme = (e.target as HTMLSelectElement).value;
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('theme-preference', theme);
-    });
-    this.setupRouteHandlers();
-  }
-
-  private async navigate(route: Route): Promise<void> {
-    this.currentRoute = route;
-    announcer.announce(`Navigating to ${route} page`);
-    if (route === 'home') {
-      this.currentFilter = 'all';
-      this.searchQuery = '';
-    } else if (route === 'starred') {
-      this.currentFilter = 'starred';
-      this.searchQuery = '';
-    }
-
-    await withViewTransition(async () => {
-      this.render();
-      this.setupNavigation();
-      if (route === 'home' || route === 'starred') await this.updateGistList();
-      if (route === 'settings') {
-        await this.loadTokenInfo();
-        await this.loadDiagnostics();
-      }
-      if (route === 'offline') await this.updateOfflineStatus();
-      if (route === 'conflicts') {
-        const container = this.container?.querySelector('#conflicts-container');
-        if (container) {
-          await loadConflictResolution(container as HTMLElement);
-        }
-      }
-    });
-  }
-
   private async updateGistList(): Promise<void> {
-    const listEl = this.container?.querySelector('#gist-list');
-    if (listEl) {
-      listEl.innerHTML = this.renderGistList();
-      bindCardEvents(listEl as HTMLElement, (id) => {
-        void this.navigateToDetail(id);
+    const list = this.container?.querySelector('#gist-list');
+    if (list) {
+      list.innerHTML = this.renderGistList();
+      bindCardEvents(list as HTMLElement, (id: string) => {
+        this.currentGistId = id;
+        void this.navigate('detail');
       });
     }
   }
 
-  private async navigateToDetail(id: string): Promise<void> {
-    this.currentRoute = 'detail';
-    await withViewTransition(async () => {
-      this.render();
-      this.setupNavigation();
-      const container = this.container?.querySelector('#gist-detail-container');
-      if (container) {
-        await loadGistDetail(
-          id,
-          container as HTMLElement,
+  private bindRouteEvents(): void {
+    if (!this.container) return;
+
+    if (this.currentRoute === 'detail' && this.currentGistId) {
+      const detailContainer = this.container.querySelector('#gist-detail-container');
+      if (detailContainer instanceof HTMLElement) {
+        void loadGistDetail(
+          this.currentGistId,
+          detailContainer,
           () => {
             void this.navigate('home');
           },
-          (gid) => {
-            void this.navigateToEdit(gid);
+          (id: string) => {
+            this.currentGistId = id;
+            void this.navigate('edit');
           },
-          (gid) => {
-            void this.navigateToRevisions(gid);
+          (id: string) => {
+            this.currentGistId = id;
+            void this.navigate('revisions');
           }
         );
       }
-    });
-  }
+    }
 
-  private async navigateToEdit(id: string): Promise<void> {
-    this.currentRoute = 'edit';
-    await withViewTransition(async () => {
-      this.render();
-      this.setupNavigation();
-      const container = this.container?.querySelector('#gist-edit-container');
-      if (container) {
-        await loadEditForm(id, container as HTMLElement, () => {
-          void this.navigateToDetail(id);
+    if (this.currentRoute === 'edit' && this.currentGistId) {
+      const editContainer = this.container.querySelector('#gist-edit-container');
+      if (editContainer instanceof HTMLElement) {
+        void loadEditForm(this.currentGistId, editContainer, () => {
+          void this.navigate('detail');
         });
       }
-    });
-  }
+    }
 
-  private async navigateToRevisions(id: string): Promise<void> {
-    this.currentRoute = 'revisions';
-    await withViewTransition(async () => {
-      this.render();
-      this.setupNavigation();
-      const container = this.container?.querySelector('#gist-revisions-container');
-      if (container) {
-        try {
-          const revisions = await GitHub.listGistRevisions(id);
-          container.innerHTML = renderRevisions(id, revisions);
-          container.querySelector('#gist-back-btn')?.addEventListener('click', () => {
-            void this.navigateToDetail(id);
-          });
-        } catch {
-          toast.error('FAILED TO LOAD REVISIONS');
-        }
+    if (this.currentRoute === 'revisions' && this.currentGistId) {
+      const revisionsContainer = this.container.querySelector('#gist-revisions-container');
+      if (revisionsContainer instanceof HTMLElement) {
+        void (async () => {
+          const revisions = await GitHub.listGistRevisions(this.currentGistId!);
+          revisionsContainer.innerHTML = renderRevisions(this.currentGistId!, revisions);
+        })();
       }
-    });
-  }
-
-  private setupRouteHandlers(): void {
-    if (!this.container) return;
-
-    // Sort control
-    this.container.querySelector('#sort-select')?.addEventListener('change', (e) => {
-      const select = e.target as HTMLSelectElement;
-      const [sortKey, sortOrder] = select.value.split('-') as [SortKey, SortOrder];
-      this.currentSortKey = sortKey;
-      this.currentSortOrder = sortOrder;
-      void this.updateGistList().catch(safeError);
-    });
+    }
 
     // Search
-    const searchInput = this.container.querySelector('.search-input') as HTMLInputElement | null;
+    const searchInput = this.container.querySelector('#gist-search') as HTMLInputElement;
     searchInput?.addEventListener('input', (e) => {
       clearTimeout(this.searchTimeout);
       const val = (e.target as HTMLInputElement).value;
@@ -542,97 +487,100 @@ export class App {
       this.currentFilter = (chip.dataset.filter as Filter) || 'all';
       void this.updateGistList();
     });
-    this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
-      void (async () => {
-        e.preventDefault();
-        const desc = (this.container?.querySelector('#gist-description') as HTMLInputElement).value;
-        const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement)
-          .value;
-        await gistStore.createGist(desc, true, { 'index.js': content });
-        this.navigate('home');
-      })();
-    });
-    this.container.querySelector('#save-token-btn')?.addEventListener('click', () => {
-      void (async () => {
-        const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
-        if (input.value) {
-          await saveToken(input.value);
-          toast.success('Token Saved');
-          void this.loadTokenInfo();
-        } else {
-          toast.error('Token Required');
-        }
-      })();
+
+    // Sort
+    this.container.querySelector('#sort-select')?.addEventListener('change', (e) => {
+      this.currentSort = (e.target as HTMLSelectElement).value as Sort;
+      void this.updateGistList();
     });
 
-    // Forms
+    // Create Form
     this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const desc = (this.container?.querySelector('#gist-description') as HTMLInputElement).value;
       const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement).value;
       void (async () => {
         await gistStore.createGist(desc, true, { 'index.js': content });
-        await this.navigate('home');
+        void this.navigate('home');
       })();
     });
 
-    // Settings
+    // Settings Token
     this.container.querySelector('#save-token-btn')?.addEventListener('click', () => {
       const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
       if (input.value) {
         void (async () => {
           await saveToken(input.value);
           toast.success('TOKEN SAVED');
-          await this.loadTokenInfo();
+          void this.loadTokenInfo();
+          input.value = '';
         })();
       } else {
         toast.error('ENTER A TOKEN');
       }
-      // Reset input
-      (e.target as HTMLInputElement).value = '';
     });
 
-    this.container.querySelector('#export-all-btn')?.addEventListener('click', async () => {
-      const { exportAllGists } = await import('../services/export-import');
-      const blob = await exportAllGists();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `gists-export-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success('EXPORT COMPLETE');
+    this.container.querySelector('#remove-token-btn')?.addEventListener('click', () => {
+      void (async () => {
+        const { setMetadata } = await import('../services/db');
+        await setMetadata('github-pat', null);
+        toast.success('TOKEN REMOVED');
+        void this.loadTokenInfo();
+      })();
+    });
+
+    // Settings Export/Import
+    this.container.querySelector('#export-all-btn')?.addEventListener('click', () => {
+      void (async () => {
+        const { exportAllGists } = await import('../services/export-import');
+        const blob = await exportAllGists();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gists-export-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success('EXPORT COMPLETE');
+      })();
     });
 
     this.container.querySelector('#import-btn')?.addEventListener('click', () => {
-      (this.container?.querySelector('#import-input') as HTMLInputElement)?.click();
+      (this.container?.querySelector('#import-file-input') as HTMLInputElement)?.click();
     });
 
-    this.container.querySelector('#import-input')?.addEventListener('change', async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
+    this.container.querySelector('#import-file-input')?.addEventListener('change', (e) => {
+      void (async () => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
 
-      try {
-        const { importGists } = await import('../services/export-import');
-        const result = await importGists(file);
-        await gistStore.reloadFromDb();
-        toast.success(
-          `IMPORT COMPLETE: ${result.imported} NEW, ${result.updated} UPDATED, ${result.conflicts} CONFLICTS`
-        );
-      } catch (err) {
-        toast.error('IMPORT FAILED');
-        safeError('Import failed', err);
-      } finally {
-        (e.target as HTMLInputElement).value = '';
-      }
+        try {
+          const { importGists } = await import('../services/export-import');
+          const result = await importGists(file);
+          await gistStore.reloadFromDb();
+          toast.success(
+            `IMPORT COMPLETE: ${result.imported} NEW, ${result.updated} UPDATED, ${result.conflicts} CONFLICTS`
+          );
+        } catch (err) {
+          toast.error('IMPORT FAILED');
+          safeError('Import failed', err);
+        } finally {
+          (e.target as HTMLInputElement).value = '';
+        }
+      })();
     });
 
-    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
-      if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
-        const { clearAllData } = await import('../services/db');
-        await clearAllData();
-        window.location.reload();
-      }
+    // Settings Cache
+    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', () => {
+      void (async () => {
+        if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
+          const { clearAllData } = await import('../services/db');
+          await clearAllData();
+          window.location.reload();
+        }
+      })();
+    });
+
+    // Settings Export Data
     this.container.querySelector('#export-data-btn')?.addEventListener('click', () => {
       void (async () => {
         try {
@@ -650,16 +598,6 @@ export class App {
           toast.success('DATA EXPORTED');
         } catch {
           toast.error('EXPORT FAILED');
-        }
-      })();
-    });
-
-    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', () => {
-      void (async () => {
-        if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
-          const { clearAllData } = await import('../services/db');
-          await clearAllData();
-          window.location.reload();
         }
       })();
     });
@@ -729,12 +667,6 @@ export class App {
     });
   }
 
-  private toggleTheme(): void {
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('theme-preference', next);
-  }
-
   private async showMobileMenu(): Promise<void> {
     const content = `
       <div class="mobile-menu" style="display: grid; gap: var(--space-2); padding: var(--space-4);">
@@ -799,5 +731,11 @@ export class App {
         },
       },
     ]);
+  }
+
+  public mount(element: HTMLElement): void {
+    this.container = element;
+    this.render();
+    this.setupNavigation();
   }
 }
