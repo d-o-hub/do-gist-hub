@@ -7,7 +7,7 @@ import gistStore from '../stores/gist-store';
 import { renderCard, bindCardEvents } from './gist-card';
 import networkMonitor from '../services/network/offline-monitor';
 import syncQueue from '../services/sync/queue';
-import { getToken, saveToken, removeToken } from '../services/github/auth';
+import { getToken, saveToken } from '../services/github/auth';
 import { loadGistDetail } from './gist-detail';
 import { APP } from '../config/app.config';
 import { redactToken } from '../services/security';
@@ -70,7 +70,6 @@ export class App {
               <span class="micro-label">SYNC</span>
             </div>
             <button class="btn btn-ghost" id="theme-toggle" aria-label="Toggle theme">🌓</button>
-            <button class="btn btn-ghost" id="settings-btn" aria-label="Settings" data-testid="settings-btn">⚙️</button>
             <button class="btn btn-ghost" id="menu-btn" aria-label="Menu">☰</button>
           </div>
         </header>
@@ -106,7 +105,7 @@ export class App {
     return items
       .map(
         (item) => `
-      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}" data-testid="nav-${item.id}">
+      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}" data-route="${item.id}">
         <span class="${type}-icon">${item.icon}</span>
         <span class="${type}-label">${item.label}</span>
       </button>
@@ -156,7 +155,7 @@ export class App {
     return `
       <div class="route-starred">
         <header class="detail-header">
-            <h2 class="detail-title">Starred Gists</h2>
+            <h1 class="detail-title">STARRED GISTS</h1>
         </header>
         <div class="gist-list" id="gist-list">${this.renderGistList()}</div>
       </div>
@@ -167,7 +166,7 @@ export class App {
     return `
       <div class="route-create">
         <header class="detail-header">
-            <h2 class="detail-title">Create New Gist</h2>
+            <h1 class="detail-title">CREATE NEW GIST</h1>
         </header>
         <form id="create-gist-form" class="gist-form">
           <div class="form-group">
@@ -185,61 +184,27 @@ export class App {
   }
 
   private getSettingsRoute(): string {
-    const storedTheme = localStorage.getItem('theme-preference') || 'dark';
     return `
       <div class="route-settings">
         <header class="detail-header">
-            <h2 class="detail-title">Settings</h2>
+            <h1 class="detail-title">SETTINGS</h1>
         </header>
         <div class="settings-panel">
-          <details class="settings-section" open>
-            <summary class="settings-section-header">
-              <h3>Authentication</h3>
-              <span class="section-toggle-icon">▼</span>
-            </summary>
-            <div class="settings-section-content">
-              <div class="form-group">
-                <label class="form-label" for="pat-input">GITHUB TOKEN</label>
+            <div class="form-group">
+                <label class="form-label">GITHUB TOKEN</label>
                 <input type="password" id="pat-input" class="form-input" placeholder="ghp_..." />
-              </div>
-              <div class="form-actions" style="margin-top: var(--space-2); display: flex; gap: var(--space-2);">
-                <button id="save-token-btn" class="btn btn-primary">SAVE</button>
-                <button id="remove-token-btn" class="btn btn-ghost">REMOVE</button>
-              </div>
-              <div id="token-status" style="margin-top: var(--space-2);"></div>
+                <div class="form-actions" style="margin-top: var(--space-2); display: flex; gap: var(--space-2);">
+                    <button id="save-token-btn" class="btn btn-primary">SAVE</button>
+                    <button id="remove-token-btn" class="btn btn-ghost">REMOVE</button>
+                </div>
+                <div id="token-status" style="margin-top: var(--space-2);"></div>
             </div>
-          </details>
-
-          <details class="settings-section" open>
-            <summary class="settings-section-header">
-              <h3>Preferences</h3>
-              <span class="section-toggle-icon">▼</span>
-            </summary>
-            <div class="settings-section-content">
-              <div class="form-group">
-                <label class="form-label" for="theme-select">Theme</label>
-                <select id="theme-select" class="form-input">
-                  <option value="light" ${storedTheme === 'light' ? 'selected' : ''}>Light</option>
-                  <option value="dark" ${storedTheme === 'dark' ? 'selected' : ''}>Dark</option>
-                  <option value="auto" ${storedTheme === 'auto' ? 'selected' : ''}>Auto (System)</option>
-                </select>
-              </div>
+            <div class="form-group">
+                <label class="form-label">DATA MANAGEMENT</label>
+                <div class="form-actions" style="display: flex; gap: var(--space-2);">
+                    <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
+                </div>
             </div>
-          </details>
-
-          <details class="settings-section">
-            <summary class="settings-section-header">
-              <h3>Data & Diagnostics</h3>
-              <span class="section-toggle-icon">▼</span>
-            </summary>
-            <div class="settings-section-content">
-              <div class="form-actions" style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
-                <button id="export-data-btn" class="btn btn-ghost">Export Data</button>
-                <button id="clear-cache-btn" class="btn btn-danger">Clear Cache</button>
-              </div>
-              <div id="diagnostics-info" style="margin-top: var(--space-4);"></div>
-            </div>
-          </details>
         </div>
       </div>
     `;
@@ -249,7 +214,7 @@ export class App {
     return `
       <div class="route-offline">
         <header class="detail-header">
-            <h2 class="detail-title">Offline Status</h2>
+            <h1 class="detail-title">OFFLINE STATUS</h1>
         </header>
         <div class="stat-card">
             <div class="stat-icon">📴</div>
@@ -291,9 +256,6 @@ export class App {
     this.container
       .querySelector('#theme-toggle')
       ?.addEventListener('click', () => this.toggleTheme());
-    this.container
-      .querySelector('#settings-btn')
-      ?.addEventListener('click', () => this.navigate('settings'));
     this.setupRouteHandlers();
   }
 
@@ -369,56 +331,9 @@ export class App {
     this.container.querySelector('#save-token-btn')?.addEventListener('click', async () => {
       const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
       if (input.value) {
-        const result = await saveToken(input.value);
-        if (result.success) {
-          toast.success('TOKEN SAVED');
-          input.value = '';
-          this.loadTokenInfo();
-        } else {
-          toast.error(result.error || 'FAILED TO SAVE TOKEN');
-        }
-      } else {
-        toast.error('PLEASE ENTER A TOKEN');
-      }
-    });
-
-    this.container.querySelector('#remove-token-btn')?.addEventListener('click', async () => {
-      if (await showConfirmDialog('REMOVE GITHUB TOKEN?')) {
-        await removeToken();
-        toast.success('TOKEN REMOVED');
+        await saveToken(input.value);
+        toast.success('TOKEN SAVED');
         this.loadTokenInfo();
-      }
-    });
-
-    this.container.querySelector('#theme-select')?.addEventListener('change', (e) => {
-      const select = e.target as HTMLSelectElement;
-      const theme = select.value;
-      if (theme === 'auto') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-        localStorage.removeItem('theme-preference');
-      } else {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme-preference', theme);
-      }
-    });
-
-    this.container.querySelector('#export-data-btn')?.addEventListener('click', async () => {
-      try {
-        const { exportData } = await import('../services/db');
-        const data = await exportData();
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast.success('DATA EXPORTED');
-      } catch {
-        toast.error('FAILED TO EXPORT DATA');
       }
     });
 
@@ -429,11 +344,6 @@ export class App {
         window.location.reload();
       }
     });
-
-    if (this.currentRoute === 'settings') {
-      this.loadTokenInfo();
-      this.loadDiagnostics();
-    }
   }
 
   private async loadTokenInfo(): Promise<void> {
@@ -443,22 +353,6 @@ export class App {
       el.innerHTML = token
         ? `<p class="micro-label">TOKEN ACTIVE: ${redactToken(token)}</p>`
         : '<p class="micro-label">NO TOKEN SAVED</p>';
-  }
-
-  private async loadDiagnostics(): Promise<void> {
-    const container = this.container?.querySelector('#diagnostics-info');
-    if (!container) return;
-
-    const token = await getToken();
-    const gists = gistStore.getGists();
-
-    container.innerHTML = `
-      <div class="glass-card" style="padding: var(--space-3); font-size: var(--text-xs);">
-        <p>Online: ${navigator.onLine ? 'YES' : 'NO'}</p>
-        <p>Gists: ${gists.length}</p>
-        <p>Authenticated: ${token ? 'YES' : 'NO'}</p>
-      </div>
-    `;
   }
 
   private async updateSyncIndicator(): Promise<void> {
@@ -507,10 +401,10 @@ export class App {
 
   private initializeCommandPalette(): void {
     commandPalette.setCommands([
-      { id: 'home', title: 'Home', action: () => this.navigate('home') },
-      { id: 'starred', title: 'Starred Gists', action: () => this.navigate('starred') },
-      { id: 'create', title: 'Create New Gist', action: () => this.navigate('create') },
-      { id: 'settings', title: 'Settings', action: () => this.navigate('settings') },
+      { id: 'home', title: 'HOME', action: () => this.navigate('home') },
+      { id: 'starred', title: 'STARRED GISTS', action: () => this.navigate('starred') },
+      { id: 'create', title: 'CREATE NEW GIST', action: () => this.navigate('create') },
+      { id: 'settings', title: 'SETTINGS', action: () => this.navigate('settings') },
     ]);
   }
 }

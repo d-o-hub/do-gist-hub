@@ -4,13 +4,13 @@
     {
       "id": 1,
       "prompt": "Set up Playwright for cross-browser testing of the Gist Hub app. Configure Chromium, Firefox, Webkit, and mobile emulation for iPhone 12 and Pixel 5.",
-      "expected_output": "playwright.config.ts with projects for Chromium, Firefox, Webkit, Mobile Chrome (Pixel 5), and Mobile Safari (iPhone 12). Config uses baseURL from preview server, enables tracing on retry, fully parallel tests, and forbids flaky-only tests in CI. Web server configured to run npm run preview on port 4173.",
+      "expected_output": "playwright.config.ts with projects for Chromium, Firefox, Webkit, Mobile Chrome (Pixel 5), and Mobile Safari (iPhone 12). Config uses baseURL from preview server, enables tracing on retry, fully parallel tests, and forbids flaky-only tests in CI. Web server configured to run pnpm run preview on port 4173.",
       "files": [],
       "assertions": [
         "playwright.config.ts created with defineConfig",
         "Projects configured for Chromium, Firefox, and Webkit",
         "Mobile Chrome (Pixel 5) and Mobile Safari (iPhone 12) projects added",
-        "Web server config runs npm run preview on port 4173",
+        "Web server config runs pnpm run preview on port 4173",
         "Tracing enabled on first retry",
         "fullyParallel: true and forbidOnly for CI"
       ]

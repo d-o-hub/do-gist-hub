@@ -330,38 +330,38 @@ Comprehensive review of lint, format, test, and CI/CD configuration against 2026
 
 ---
 
-## Quick Reference: All npm Scripts
+## Quick Reference: All pnpm Scripts
 
 ```bash
-npm run dev              # Start development server
-npm run build            # Build for production
-npm run preview          # Preview production build
+pnpm run dev              # Start development server
+pnpm run build            # Build for production
+pnpm run preview          # Preview production build
 
-npm run check            # Typecheck + lint + format check
-npm run typecheck        # TypeScript type check
-npm run lint             # ESLint
-npm run lint:fix         # ESLint with auto-fix
-npm run format           # Prettier format
-npm run format:check     # Prettier check
+pnpm run check            # Typecheck + lint + format check
+pnpm run typecheck        # TypeScript type check
+pnpm run lint             # ESLint
+pnpm run lint:fix         # ESLint with auto-fix
+pnpm run format           # Prettier format
+pnpm run format:check     # Prettier check
 
-npm run test             # Run all Playwright tests
-npm run test:ui          # Playwright UI mode
-npm run test:debug       # Playwright debug mode
-npm run test:coverage    # Test with coverage
-npm run test:browser     # Browser tests only
-npm run test:mobile      # Mobile tests only
-npm run test:offline     # Offline tests only
-npm run test:android     # Android tests only
-npm run test:visual      # Visual regression
-npm run test:a11y        # Accessibility tests
-npm run test:report      # Show test report
+pnpm run test             # Run all Playwright tests
+pnpm run test:ui          # Playwright UI mode
+pnpm run test:debug       # Playwright debug mode
+pnpm run test:coverage    # Test with coverage
+pnpm run test:browser     # Browser tests only
+pnpm run test:mobile      # Mobile tests only
+pnpm run test:offline     # Offline tests only
+pnpm run test:android     # Android tests only
+pnpm run test:visual      # Visual regression
+pnpm run test:a11y        # Accessibility tests
+pnpm run test:report      # Show test report
 
-npm run init:design      # Initialize design tokens
-npm run generate:icons   # Generate PWA icons
-npm run cap:sync         # Sync Capacitor
-npm run cap:android:open # Open Android project
-npm run build:android    # Build for Android
-npm run quality          # Run quality gate
+pnpm run init:design      # Initialize design tokens
+pnpm run generate:icons   # Generate PWA icons
+pnpm run cap:sync         # Sync Capacitor
+pnpm run cap:android:open # Open Android project
+pnpm run build:android    # Build for Android
+pnpm run quality          # Run quality gate
 ```
 
 ---
@@ -381,9 +381,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm audit
-      - run: npm outdated || true
-      - run: npm run test:coverage
+      - run: ppnpm audit
+      - run: ppnpm outdated || true
+      - run: pnpm run test:coverage
 ```
 
 ---

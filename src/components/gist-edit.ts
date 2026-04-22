@@ -7,7 +7,6 @@ import type { GistRecord } from '../services/db';
 import { getGist } from '../services/db';
 import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
-import { UpdateGistRequest } from '../types/api';
 // import { customConfirm } from './app';
 
 const esc = (text: string): string => {
@@ -71,7 +70,6 @@ export function renderEditForm(gist: GistRecord): string {
 
 export function bindEditEvents(container: HTMLElement, onBack: () => void): void {
   const gistId = (container.querySelector('.route-edit') as HTMLElement | null)?.dataset.gistId;
-  const deletedFileKeys = new Set<string>();
 
   container.querySelector('#edit-back-btn')?.addEventListener('click', onBack);
   container.querySelector('#edit-cancel-btn')?.addEventListener('click', onBack);
@@ -106,11 +104,8 @@ export function bindEditEvents(container: HTMLElement, onBack: () => void): void
   container.querySelectorAll('.remove-file-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const section = container.querySelector('#edit-files-section');
-      const editor = (btn as HTMLElement).closest('.file-editor');
-      if (section && section.querySelectorAll('.file-editor').length > 1 && editor) {
-        const key = (editor as HTMLElement).dataset.fileKey;
-        if (key) deletedFileKeys.add(key);
-        editor.remove();
+      if (section && section.querySelectorAll('.file-editor').length > 1) {
+        (btn as HTMLElement).closest('.file-editor')?.remove();
       } else {
         toast.error('AT LEAST ONE FILE IS REQUIRED');
       }
@@ -121,16 +116,9 @@ export function bindEditEvents(container: HTMLElement, onBack: () => void): void
     e.preventDefault();
     if (!gistId) return;
 
-    const files: UpdateGistRequest['files'] = {};
+    const files: Record<string, string> = {};
     let valid = true;
-    const editors = container.querySelectorAll('.file-editor');
-
-    if (editors.length === 0) {
-      toast.error('AT LEAST ONE FILE IS REQUIRED');
-      return;
-    }
-
-    editors.forEach((editor) => {
+    container.querySelectorAll('.file-editor').forEach((editor) => {
       const existingKey = (editor as HTMLElement).dataset.fileKey;
       const filename = (editor.querySelector('.filename-input') as HTMLInputElement)?.value.trim();
       const content = (editor.querySelector('.content-editor') as HTMLTextAreaElement)?.value || '';
@@ -138,29 +126,13 @@ export function bindEditEvents(container: HTMLElement, onBack: () => void): void
         valid = false;
         return;
       }
-
-      if (existingKey) {
-        if (filename !== existingKey) {
-          files[existingKey] = { filename, content };
-        } else {
-          files[existingKey] = { content };
-        }
-      } else {
-        files[filename] = { content };
-      }
+      files[existingKey || filename] = content;
     });
 
-    if (!valid) {
+    if (!valid || Object.keys(files).length === 0) {
       toast.error('ALL FILES MUST HAVE FILENAMES');
       return;
     }
-
-    // Add deleted files
-    deletedFileKeys.forEach((key) => {
-      if (!(key in files)) {
-        files[key] = null;
-      }
-    });
 
     const description = (
       container.querySelector('#edit-description') as HTMLInputElement

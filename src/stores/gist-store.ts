@@ -153,17 +153,15 @@ class GistStore {
 
   async updateGist(
     id: string,
-    updates: {
-      description?: string;
-      public?: boolean;
-      files?: UpdateGistRequest['files'];
-    }
+    updates: { description?: string; public?: boolean; files?: Record<string, string> }
   ): Promise<boolean> {
     try {
       const payload: UpdateGistRequest = {
         description: updates.description,
         public: updates.public,
-        files: updates.files,
+        files: updates.files
+          ? Object.fromEntries(Object.entries(updates.files).map(([n, c]) => [n, { content: c }]))
+          : undefined,
       };
       if (networkMonitor.isOnline()) {
         const gist = await GitHub.updateGist(id, payload);

@@ -34,7 +34,7 @@ A state-of-the-art, web-first GitHub Gist management application. Built with 202
 
 ```bash
 # Install dependencies
-pnpm install
+ppnpm install
 
 # Start dev server
 pnpm dev
