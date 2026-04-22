@@ -213,13 +213,13 @@ export class SyncQueue {
 
 ```bash
 # Test offline behavior
-pnpm run test:offline
+npm run test:offline
 
 # Verify IndexedDB in DevTools
 # Application > IndexedDB > gist-hub
 
 # Check sync queue processing
-pnpm run test:browser
+npm run test:browser
 ```
 
 ## References

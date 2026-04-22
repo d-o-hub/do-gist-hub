@@ -87,7 +87,7 @@ function reportToAnalytics(metric: string, value: number) {
 
 ```bash
 # Analyze bundle size
-pnpm run build
+npm run build
 npx vite-bundle-visualizer
 
 # Check gzipped sizes
@@ -193,11 +193,11 @@ export default defineConfig({
 
 ```bash
 # Build and analyze
-pnpm run build
+npm run build
 npx vite-bundle-visualizer
 
 # Check budgets
-pnpm run test:browser
+npm run test:browser
 
 # Lighthouse audit
 npx lighthouse http://localhost:4173 --output=json

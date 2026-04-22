@@ -72,12 +72,12 @@ function performanceBudgetPlugin(): Plugin {
 jobs:
   quality-gate:
     steps:
-      - run: pnpm run quality # typecheck + lint + format
+      - run: npm run quality # typecheck + lint + format
   tests:
     steps:
-      - run: pnpm run test:browser
-      - run: pnpm run test:mobile
-      - run: pnpm run test:offline
+      - run: npm run test:browser
+      - run: npm run test:mobile
+      - run: npm run test:offline
 ```
 
 ---
@@ -147,18 +147,18 @@ Offline-first GitHub Gist management app.
 ## Quick Start
 
 \`\`\`bash
-pnpm install
-pnpm run dev
+npm install
+npm run dev
 \`\`\`
 
 ## Scripts
 
 | Command         | Purpose                   |
 | --------------- | ------------------------- |
-| `pnpm run dev`   | Development server        |
-| `pnpm run check` | Typecheck + lint + format |
-| `pnpm run test`  | Run tests                 |
-| `pnpm run build` | Production build          |
+| `npm run dev`   | Development server        |
+| `npm run check` | Typecheck + lint + format |
+| `npm run test`  | Run tests                 |
+| `npm run build` | Production build          |
 
 ## Configuration
 
@@ -173,9 +173,9 @@ See `plans/016-configuration-analysis.md` for details.
 ## Development Setup
 
 1. Install Node 22+: `nvm install 22`
-2. Install dependencies: `pnpm install`
+2. Install dependencies: `npm install`
 3. Setup git hooks: `cp scripts/pre-commit-hook.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit`
-4. Run quality check: `pnpm run check`
+4. Run quality check: `npm run check`
 
 ## Code Standards
 
