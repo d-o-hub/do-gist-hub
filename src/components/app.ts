@@ -53,9 +53,15 @@ export class App {
     this.initializeCommandPalette();
     this.subscribeStore();
 
-    window.addEventListener('app:sync-complete', () => this.updateGistList());
-    window.addEventListener('online', () => this.updateSyncIndicator());
-    window.addEventListener('offline', () => this.updateSyncIndicator());
+    window.addEventListener('app:sync-complete', () => {
+      void this.updateGistList();
+    });
+    window.addEventListener('online', () => {
+      void this.updateSyncIndicator();
+    });
+    window.addEventListener('offline', () => {
+      void this.updateSyncIndicator();
+    });
   }
 
   private initializeTheme(): void {
@@ -66,9 +72,9 @@ export class App {
   private subscribeStore(): void {
     gistStore.subscribe(() => {
       if (this.currentRoute === 'home' || this.currentRoute === 'starred') {
-        this.updateGistList();
+        void this.updateGistList();
       }
-      this.updateSyncIndicator();
+      void this.updateSyncIndicator();
     });
   }
 
@@ -372,22 +378,24 @@ export class App {
     this.container.querySelectorAll('[data-route]').forEach((el) => {
       el.addEventListener('click', () => {
         const route = (el as HTMLElement).dataset.route as Route;
-        if (route) this.navigate(route);
+        if (route) {
+          void this.navigate(route);
+        }
       });
     });
-    this.container
-      .querySelector('#menu-btn')
-      ?.addEventListener('click', () => this.showMobileMenu());
+    this.container.querySelector('#menu-btn')?.addEventListener('click', () => {
+      void this.showMobileMenu();
+    });
     this.container
       .querySelector('#theme-toggle')
       ?.addEventListener('click', () => this.toggleTheme());
-    this.container
-      .querySelector('#settings-btn')
-      ?.addEventListener('click', () => this.navigate('settings'));
+    this.container.querySelector('#settings-btn')?.addEventListener('click', () => {
+      void this.navigate('settings');
+    });
     this.setupRouteHandlers();
   }
 
-  private navigate(route: Route): void {
+  private async navigate(route: Route): Promise<void> {
     this.currentRoute = route;
     if (route === 'home') {
       this.currentFilter = 'all';
@@ -397,15 +405,15 @@ export class App {
       this.searchQuery = '';
     }
 
-    void withViewTransition(async () => {
+    await withViewTransition(async () => {
       this.render();
       this.setupNavigation();
-      if (route === 'home' || route === 'starred') this.updateGistList();
+      if (route === 'home' || route === 'starred') await this.updateGistList();
       if (route === 'settings') {
         await this.loadTokenInfo();
         await this.loadDiagnostics();
       }
-      if (route === 'offline') this.updateOfflineStatus();
+      if (route === 'offline') await this.updateOfflineStatus();
       if (route === 'conflicts') {
         const container = this.container?.querySelector('#conflicts-container');
         if (container) {
@@ -415,17 +423,19 @@ export class App {
     });
   }
 
-  private updateGistList(): void {
+  private async updateGistList(): Promise<void> {
     const listEl = this.container?.querySelector('#gist-list');
     if (listEl) {
       listEl.innerHTML = this.renderGistList();
-      bindCardEvents(listEl as HTMLElement, (_id) => this.navigateToDetail(_id));
+      bindCardEvents(listEl as HTMLElement, (id) => {
+        void this.navigateToDetail(id);
+      });
     }
   }
 
-  private navigateToDetail(id: string): void {
+  private async navigateToDetail(id: string): Promise<void> {
     this.currentRoute = 'detail';
-    void withViewTransition(async () => {
+    await withViewTransition(async () => {
       this.render();
       this.setupNavigation();
       const container = this.container?.querySelector('#gist-detail-container');
@@ -433,29 +443,37 @@ export class App {
         await loadGistDetail(
           id,
           container as HTMLElement,
-          () => this.navigate('home'),
-          (gid) => this.navigateToEdit(gid),
-          (gid) => this.navigateToRevisions(gid)
+          () => {
+            void this.navigate('home');
+          },
+          (gid) => {
+            void this.navigateToEdit(gid);
+          },
+          (gid) => {
+            void this.navigateToRevisions(gid);
+          }
         );
       }
     });
   }
 
-  private navigateToEdit(id: string): void {
+  private async navigateToEdit(id: string): Promise<void> {
     this.currentRoute = 'edit';
-    void withViewTransition(async () => {
+    await withViewTransition(async () => {
       this.render();
       this.setupNavigation();
       const container = this.container?.querySelector('#gist-edit-container');
       if (container) {
-        await loadEditForm(id, container as HTMLElement, () => this.navigateToDetail(id));
+        await loadEditForm(id, container as HTMLElement, () => {
+          void this.navigateToDetail(id);
+        });
       }
     });
   }
 
-  private navigateToRevisions(id: string): void {
+  private async navigateToRevisions(id: string): Promise<void> {
     this.currentRoute = 'revisions';
-    void withViewTransition(async () => {
+    await withViewTransition(async () => {
       this.render();
       this.setupNavigation();
       const container = this.container?.querySelector('#gist-revisions-container');
@@ -463,9 +481,9 @@ export class App {
         try {
           const revisions = await GitHub.listGistRevisions(id);
           container.innerHTML = renderRevisions(id, revisions);
-          container
-            .querySelector('#gist-back-btn')
-            ?.addEventListener('click', () => this.navigateToDetail(id));
+          container.querySelector('#gist-back-btn')?.addEventListener('click', () => {
+            void this.navigateToDetail(id);
+          });
         } catch {
           toast.error('FAILED TO LOAD REVISIONS');
         }
@@ -502,7 +520,7 @@ export class App {
         this.container!.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
         c.classList.add('active');
         this.currentFilter = (c as HTMLElement).dataset.filter as Filter;
-        this.updateGistList();
+        void this.updateGistList();
       });
     });
 
@@ -651,11 +669,11 @@ export class App {
 
   private initializeCommandPalette(): void {
     commandPalette.setCommands([
-      { id: 'home', title: 'Home', action: () => this.navigate('home') },
-      { id: 'starred', title: 'Starred Gists', action: () => this.navigate('starred') },
-      { id: 'create', title: 'Create New Gist', action: () => this.navigate('create') },
-      { id: 'conflicts', title: 'Sync Conflicts', action: () => this.navigate('conflicts') },
-      { id: 'settings', title: 'Settings', action: () => this.navigate('settings') },
+      { id: 'home', title: 'Home', action: () => { void this.navigate('home'); } },
+      { id: 'starred', title: 'Starred Gists', action: () => { void this.navigate('starred'); } },
+      { id: 'create', title: 'Create New Gist', action: () => { void this.navigate('create'); } },
+      { id: 'conflicts', title: 'Sync Conflicts', action: () => { void this.navigate('conflicts'); } },
+      { id: 'settings', title: 'Settings', action: () => { void this.navigate('settings'); } },
     ]);
   }
 }
