@@ -54,8 +54,8 @@ test.describe('Gist List', () => {
     await sortSelect.selectOption('created-desc');
     await expect(sortSelect).toHaveValue('created-desc');
 
-    await sortSelect.selectOption('title-asc');
-    await expect(sortSelect).toHaveValue('title-asc');
+    await sortSelect.selectOption('updated-asc');
+    await expect(sortSelect).toHaveValue('updated-asc');
 
     await sortSelect.selectOption('updated-desc');
     await expect(sortSelect).toHaveValue('updated-desc');
