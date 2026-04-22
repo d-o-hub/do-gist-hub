@@ -37,8 +37,12 @@ export class App {
     this.subscribeStore();
 
     window.addEventListener('app:sync-complete', () => this.updateGistList());
-    window.addEventListener('online', () => this.updateSyncIndicator());
-    window.addEventListener('offline', () => this.updateSyncIndicator());
+    window.addEventListener('online', () => {
+      void this.updateSyncIndicator();
+    });
+    window.addEventListener('offline', () => {
+      void this.updateSyncIndicator();
+    });
   }
 
   private initializeTheme(): void {
@@ -51,7 +55,7 @@ export class App {
       if (this.currentRoute === 'home' || this.currentRoute === 'starred') {
         this.updateGistList();
       }
-      this.updateSyncIndicator();
+      void this.updateSyncIndicator();
     });
   }
 
@@ -301,8 +305,8 @@ export class App {
       this.render();
       this.setupNavigation();
       if (route === 'home' || route === 'starred') this.updateGistList();
-      if (route === 'settings') this.loadTokenInfo();
-      if (route === 'offline') this.updateOfflineStatus();
+      if (route === 'settings') void this.loadTokenInfo();
+      if (route === 'offline') void this.updateOfflineStatus();
     });
   }
 
@@ -362,32 +366,38 @@ export class App {
     });
 
     // Forms
-    this.container.querySelector('#create-gist-form')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const desc = (this.container?.querySelector('#gist-description') as HTMLInputElement).value;
-      const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement).value;
-      await gistStore.createGist(desc, true, { 'index.js': content });
-      this.navigate('home');
+    this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
+      void (async () => {
+        e.preventDefault();
+        const desc = (this.container?.querySelector('#gist-description') as HTMLInputElement).value;
+        const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement).value;
+        await gistStore.createGist(desc, true, { 'index.js': content });
+        this.navigate('home');
+      })();
     });
 
     // Settings
-    this.container.querySelector('#save-token-btn')?.addEventListener('click', async () => {
-      const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
-      if (input.value) {
-        await saveToken(input.value);
-        toast.success('Token Saved');
-        this.loadTokenInfo();
-      } else {
-        toast.error('Token Required');
-      }
+    this.container.querySelector('#save-token-btn')?.addEventListener('click', () => {
+      void (async () => {
+        const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
+        if (input.value) {
+          await saveToken(input.value);
+          toast.success('Token Saved');
+          void this.loadTokenInfo();
+        } else {
+          toast.error('Token Required');
+        }
+      })();
     });
 
-    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
-      if (await showConfirmDialog('Clear all local data?')) {
-        const { clearAllData } = await import('../services/db');
-        await clearAllData();
-        window.location.reload();
-      }
+    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', () => {
+      void (async () => {
+        if (await showConfirmDialog('Clear all local data?')) {
+          const { clearAllData } = await import('../services/db');
+          await clearAllData();
+          window.location.reload();
+        }
+      })();
     });
   }
 
