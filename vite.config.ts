@@ -215,6 +215,7 @@ export default defineConfig({
           if (id.includes('node_modules')) {
             return 'vendor';
           }
+          return null;
         },
         // Consistent file naming
         chunkFileNames: 'assets/[name]-[hash].js',
