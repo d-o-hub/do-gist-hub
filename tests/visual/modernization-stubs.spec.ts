@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test.describe('UI Modernization - Stubs', () => {
   test.fixme('should verify View Transitions API triggers on navigation', async () => {});

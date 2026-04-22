@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test.describe('Performance - Stubs', () => {
   test.fixme('should verify LCP is within 2026 budget (< 1.2s, async () => {})');

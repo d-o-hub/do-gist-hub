@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test.describe('Memory Safety - Stubs', () => {
   test.fixme('should verify AbortController cancels pending requests on navigation', async () => {});
