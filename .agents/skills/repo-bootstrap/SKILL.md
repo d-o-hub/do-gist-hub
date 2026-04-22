@@ -142,14 +142,14 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 echo "Running quality gates..."
 
 # Type check
-if command -v npm &> /dev/null; then
-  npm run typecheck || { echo "✗ Type check failed"; exit 1; }
+if command -v pnpm &> /dev/null; then
+  pnpm run typecheck || { echo "✗ Type check failed"; exit 1; }
   echo "✓ Type check passed"
 fi
 
 # Lint
-if command -v npm &> /dev/null; then
-  npm run lint || { echo "✗ Lint failed"; exit 1; }
+if command -v pnpm &> /dev/null; then
+  pnpm run lint || { echo "✗ Lint failed"; exit 1; }
   echo "✓ Lint passed"
 fi
 

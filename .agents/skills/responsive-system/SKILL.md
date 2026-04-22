@@ -224,13 +224,13 @@ const desktopGrid = `
 
 ```bash
 # Test responsiveness
-npm run dev
+pnpm run dev
 
 # Check on multiple viewports
 # 320px, 390px, 768px, 1024px, 1280px, 1536px
 
 # Run mobile tests
-npm run test:mobile
+pnpm run test:mobile
 
 # Verify no horizontal scroll
 # Resize browser from 320px to 1536px+

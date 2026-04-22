@@ -224,10 +224,10 @@ export function revokeAllBlobURLs(): void {
 # Verify no growing heap in Performance tab
 
 # Run memory leak tests
-npm run test
+pnpm run test
 
 # Check for unclosed resources
-npm run lint
+pnpm run lint
 ```
 
 ## References
