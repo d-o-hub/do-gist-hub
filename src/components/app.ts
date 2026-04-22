@@ -18,7 +18,15 @@ import { toast } from './ui/toast';
 import { showConfirmDialog } from '../utils/dialog';
 import { loadConflictResolution } from './conflict-resolution';
 
-type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings' | 'detail' | 'edit' | 'conflicts';
+type Route =
+  | 'home'
+  | 'starred'
+  | 'create'
+  | 'offline'
+  | 'settings'
+  | 'detail'
+  | 'edit'
+  | 'conflicts';
 type Filter = 'all' | 'mine' | 'starred';
 
 export class App {
@@ -428,7 +436,11 @@ export class App {
       { id: 'home', title: 'HOME', action: () => this.navigate('home') },
       { id: 'starred', title: 'STARRED GISTS', action: () => this.navigate('starred') },
       { id: 'create', title: 'CREATE NEW GIST', action: () => this.navigate('create') },
-      { id: 'conflicts', title: 'RESOLVE SYNC CONFLICTS', action: () => this.navigate('conflicts') },
+      {
+        id: 'conflicts',
+        title: 'RESOLVE SYNC CONFLICTS',
+        action: () => this.navigate('conflicts'),
+      },
       { id: 'settings', title: 'SETTINGS', action: () => this.navigate('settings') },
     ]);
   }

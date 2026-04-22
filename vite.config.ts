@@ -210,8 +210,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Separate vendor chunks
-        manualChunks: {
-          vendor: ['idb'],
+        manualChunks(id) {
+          if (id.includes('node_modules/idb/')) {
+            return 'vendor';
+          }
         },
         // Consistent file naming
         chunkFileNames: 'assets/[name]-[hash].js',

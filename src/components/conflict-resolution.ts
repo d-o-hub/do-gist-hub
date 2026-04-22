@@ -156,11 +156,15 @@ export function bindConflictEvents(container: HTMLElement, _onResolve: () => voi
   });
 
   container.querySelector('#keep-local-btn')?.addEventListener('click', () => {
-    container.dispatchEvent(new CustomEvent('conflict:resolve', { detail: { strategy: 'local-wins' } }));
+    container.dispatchEvent(
+      new CustomEvent('conflict:resolve', { detail: { strategy: 'local-wins' } })
+    );
   });
 
   container.querySelector('#use-remote-btn')?.addEventListener('click', () => {
-    container.dispatchEvent(new CustomEvent('conflict:resolve', { detail: { strategy: 'remote-wins' } }));
+    container.dispatchEvent(
+      new CustomEvent('conflict:resolve', { detail: { strategy: 'remote-wins' } })
+    );
   });
 }
 
@@ -174,7 +178,7 @@ export async function loadConflictResolution(container: HTMLElement): Promise<vo
   const render = async (): Promise<void> => {
     const selectedConflict = conflicts.find((c) => c.gistId === selectedConflictId);
 
-    await withViewTransition(() => {
+    await withViewTransition(async () => {
       if (selectedConflict) {
         container.innerHTML = renderConflictDetail(selectedConflict);
       } else {
@@ -189,12 +193,13 @@ export async function loadConflictResolution(container: HTMLElement): Promise<vo
       }
 
       bindConflictEvents(container, () => {});
+      return Promise.resolve();
     });
   };
 
   container.addEventListener('conflict:select', ((e: Event) => {
     const customEvent = e as CustomEvent;
-    selectedConflictId = customEvent.detail.id;
+    selectedConflictId = (customEvent.detail as { id: string }).id;
     void render();
   }) as EventListener);
 
@@ -209,8 +214,11 @@ export async function loadConflictResolution(container: HTMLElement): Promise<vo
     if (selectedConflict) {
       const resolve = async (): Promise<void> => {
         try {
-          const strategy = customEvent.detail.strategy;
-          const resolved = resolveConflict(selectedConflict, strategy);
+          const strategy = (customEvent.detail as { strategy: string }).strategy;
+          const resolved = resolveConflict(
+            selectedConflict,
+            strategy as 'local-wins' | 'remote-wins' | 'manual'
+          );
           await saveGist(resolved);
           await clearConflict(selectedConflict.gistId);
 
