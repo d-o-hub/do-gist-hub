@@ -7,14 +7,13 @@ import fs from 'fs';
  * so the HTML title and meta tags derive from the single source of truth.
  */
 function appConfigHtmlPlugin(): Plugin {
-  const env = process.env;
-  const appName = env.VITE_APP_NAME || 'd.o. Gist Hub';
-  const appDesc = env.VITE_APP_DESCRIPTION || '';
-  const themeColor = env.VITE_APP_THEME_COLOR || '#2563eb';
-
   return {
     name: 'app-config-html',
     transformIndexHtml(html) {
+      const appName = process.env.VITE_APP_NAME || 'd.o. Gist Hub';
+      const appDesc = process.env.VITE_APP_DESCRIPTION || 'Offline-first GitHub Gist management app';
+      const themeColor = process.env.VITE_APP_THEME_COLOR || '#2563eb';
+
       return html
         .replaceAll('%VITE_APP_NAME%', appName)
         .replaceAll('%VITE_APP_DESCRIPTION%', appDesc)
@@ -32,9 +31,9 @@ function cspPlugin(): Plugin {
   const csp = [
     "default-src 'self'",
     "script-src 'self'",
-    "style-src 'self' 'unsafe-inline'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
-    "font-src 'self'",
+    "font-src 'self' https://fonts.gstatic.com",
     "connect-src 'self' https://api.github.com",
     "media-src 'self'",
     "object-src 'none'",
@@ -53,7 +52,9 @@ function cspPlugin(): Plugin {
 
       // Add CSP as meta tag in <head>
       const metaTag = `<meta http-equiv="Content-Security-Policy" content="${csp}" />`;
-      return html.replace('<head>', `<head>\n    ${metaTag}`);
+      // Remove any existing CSP meta tag from index.html to avoid duplicates
+      const cleanedHtml = html.replace(/<meta\s+http-equiv="Content-Security-Policy"[^>]*>/i, '');
+      return cleanedHtml.replace('<head>', `<head>\n    ${metaTag}`);
     },
   };
 }
@@ -210,8 +211,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Separate vendor chunks
-        manualChunks: {
-          vendor: ['idb'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+          return null;
         },
         // Consistent file naming
         chunkFileNames: 'assets/[name]-[hash].js',
