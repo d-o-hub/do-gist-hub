@@ -328,11 +328,11 @@ toast.success("Gist created", {
 
 ```bash
 # Initialize design tokens
-npm run init:design
+pnpm run init:design
 
 # Test responsive at specific breakpoint
-npm run test:responsive -- --viewport=768
+pnpm run test:responsive -- --viewport=768
 
 # Check accessibility
-npm run test:a11y
+pnpm run test:a11y
 ```

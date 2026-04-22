@@ -29,7 +29,7 @@ function reportMetric(metric: Metric): void {
   performance.mark(`web-vitals-${name}`, { detail: value });
 
   // Store in IndexedDB for diagnostics
-  void storeMetric(name, value, rating);
+  storeMetric(name, value, rating);
 }
 
 /**

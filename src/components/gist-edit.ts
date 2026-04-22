@@ -112,46 +112,41 @@ export function bindEditEvents(container: HTMLElement, onBack: () => void): void
     });
   });
 
-  container.querySelector('#edit-gist-form')?.addEventListener('submit', (e) => {
-    void (async () => {
-      e.preventDefault();
-      if (!gistId) return;
+  container.querySelector('#edit-gist-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!gistId) return;
 
-      const files: Record<string, string> = {};
-      let valid = true;
-      container.querySelectorAll('.file-editor').forEach((editor) => {
-        const existingKey = (editor as HTMLElement).dataset.fileKey;
-        const filename = (
-          editor.querySelector('.filename-input') as HTMLInputElement
-        )?.value.trim();
-        const content =
-          (editor.querySelector('.content-editor') as HTMLTextAreaElement)?.value || '';
-        if (!filename) {
-          valid = false;
-          return;
-        }
-        files[existingKey || filename] = content;
-      });
-
-      if (!valid || Object.keys(files).length === 0) {
-        toast.error('ALL FILES MUST HAVE FILENAMES');
+    const files: Record<string, string> = {};
+    let valid = true;
+    container.querySelectorAll('.file-editor').forEach((editor) => {
+      const existingKey = (editor as HTMLElement).dataset.fileKey;
+      const filename = (editor.querySelector('.filename-input') as HTMLInputElement)?.value.trim();
+      const content = (editor.querySelector('.content-editor') as HTMLTextAreaElement)?.value || '';
+      if (!filename) {
+        valid = false;
         return;
       }
+      files[existingKey || filename] = content;
+    });
 
-      const description = (
-        container.querySelector('#edit-description') as HTMLInputElement
-      )?.value.trim();
+    if (!valid || Object.keys(files).length === 0) {
+      toast.error('ALL FILES MUST HAVE FILENAMES');
+      return;
+    }
 
-      try {
-        const result = await gistStore.updateGist(gistId, { description, files });
-        if (result) {
-          toast.success('GIST UPDATED');
-          onBack();
-        }
-      } catch {
-        toast.error('FAILED TO UPDATE GIST');
+    const description = (
+      container.querySelector('#edit-description') as HTMLInputElement
+    )?.value.trim();
+
+    try {
+      const result = await gistStore.updateGist(gistId, { description, files });
+      if (result) {
+        toast.success('GIST UPDATED');
+        onBack();
       }
-    })();
+    } catch {
+      toast.error('FAILED TO UPDATE GIST');
+    }
   });
 }
 

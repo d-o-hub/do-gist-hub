@@ -10,6 +10,9 @@ Get up and running in seconds:
 # Install dependencies
 pnpm install
 
+# Initialize design tokens
+pnpm run init:design
+
 # Start development server
 pnpm dev
 ```

@@ -6,7 +6,7 @@ allowed-tools: Bash(npx agent-browser:*), Bash(agent-browser:*)
 
 # Browser Automation with agent-browser
 
-The CLI uses Chrome/Chromium via CDP directly. Install via `npm i -g agent-browser`, `brew install agent-browser`, or `cargo install agent-browser`. Run `agent-browser install` to download Chrome. Existing Chrome, Brave, Playwright, and Puppeteer installations are detected automatically. Run `agent-browser upgrade` to update to the latest version.
+The CLI uses Chrome/Chromium via CDP directly. Install via `pnpm i -g agent-browser`, `brew install agent-browser`, or `cargo install agent-browser`. Run `agent-browser install` to download Chrome. Existing Chrome, Brave, Playwright, and Puppeteer installations are detected automatically. Run `agent-browser upgrade` to update to the latest version.
 
 ## Core Workflow
 
@@ -487,7 +487,7 @@ agent-browser -p ios screenshot mobile.png
 agent-browser -p ios close
 ```
 
-**Requirements:** macOS with Xcode, Appium (`npm install -g appium && appium driver install xcuitest`)
+**Requirements:** macOS with Xcode, Appium (`pnpm install -g appium && appium driver install xcuitest`)
 
 **Real devices:** Works with physical iOS devices if pre-configured. Use `--device "<UDID>"` where UDID is from `xcrun xctrace list devices`.
 

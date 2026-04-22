@@ -58,7 +58,7 @@ safeLog(
     app.mount(mountPoint);
 
     // Register service worker for PWA support
-    void registerServiceWorker();
+    await registerServiceWorker();
 
     // Initialize Web Vitals monitoring
     initWebVitals();

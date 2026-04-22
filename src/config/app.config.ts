@@ -4,7 +4,7 @@
  */
 
 export const APP = {
-  /** Canonical package name (npm, repo ID) */
+  /** Canonical package name (pnpm, repo ID) */
   id: 'd-o-gist-hub',
 
   /** Display name (UI title, PWA name, Capacitor appName) */
@@ -13,7 +13,7 @@ export const APP = {
   /** Short name for PWA (icon label, Android launcher) */
   shortName: 'd.o. Gists',
 
-  /** One-line description shown in npm search and PWA install prompt */
+  /** One-line description shown in pnpm search and PWA install prompt */
   description:
     'd.o. Gist Hub — offline-first GitHub Gist management app with token-driven design and Android support',
 

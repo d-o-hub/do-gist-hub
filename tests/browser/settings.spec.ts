@@ -4,8 +4,7 @@ test.describe('Settings', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
     await page.waitForLoadState('networkidle');
-    // Use .first() or a specific container to avoid strict mode violations
-    await page.locator('[data-testid="settings-btn"]').first().click();
+    await page.locator('[data-testid="settings-btn"]').click();
     await expect(page.locator('h2')).toContainText('Settings');
   });
 
@@ -32,8 +31,8 @@ test.describe('Settings', () => {
   test('should validate token input requires value', async ({ page }) => {
     // Try to save without entering token
     await page.locator('#save-token-btn').click();
-    // Should show error toast - check for generic toast or specific error class
-    await expect(page.locator('.toast')).toBeVisible();
+    // Should show error toast
+    await expect(page.locator('.toast-error')).toBeVisible();
   });
 
   test('should change theme via select', async ({ page }) => {

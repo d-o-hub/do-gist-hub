@@ -173,29 +173,25 @@ export function bindDetailEvents(
     if (gistId) onEdit(gistId);
   });
 
-  container.querySelector('[data-action="revisions"]')?.addEventListener('click', () => {
-    void (async () => {
-      if (!gistId) return;
-      try {
-        const revisions = await GitHub.listGistRevisions(gistId);
-        container.innerHTML = renderRevisions(gistId, revisions);
-        bindRevisionEvents(container, {
-          onBack: () => void loadGistDetail(gistId, container, onBack, onEdit, onViewRevision),
-          onViewRevision,
-        });
-      } catch {
-        toast.error('FAILED TO LOAD REVISIONS');
-      }
-    })();
+  container.querySelector('[data-action="revisions"]')?.addEventListener('click', async () => {
+    if (!gistId) return;
+    try {
+      const revisions = await GitHub.listGistRevisions(gistId);
+      container.innerHTML = renderRevisions(gistId, revisions);
+      bindRevisionEvents(container, {
+        onBack: () => loadGistDetail(gistId, container, onBack, onEdit, onViewRevision),
+        onViewRevision,
+      });
+    } catch {
+      toast.error('FAILED TO LOAD REVISIONS');
+    }
   });
 
   // Star button
-  container.querySelector('[data-action="star"]')?.addEventListener('click', () => {
-    void (async () => {
-      if (!gistId) return;
-      const ok = await (await import('../stores/gist-store')).default.toggleStar(gistId);
-      if (ok) void loadGistDetail(gistId, container, onBack, onEdit, onViewRevision);
-    })();
+  container.querySelector('[data-action="star"]')?.addEventListener('click', async () => {
+    if (!gistId) return;
+    const ok = await (await import('../stores/gist-store')).default.toggleStar(gistId);
+    if (ok) loadGistDetail(gistId, container, onBack, onEdit, onViewRevision);
   });
 }
 
@@ -207,7 +203,7 @@ function bindRevisionEvents(
   }: { onBack: () => void; onViewRevision: (id: string, version: string) => void }
 ): void {
   const gistId = container.querySelector('.revisions-list')?.getAttribute('data-gist-id');
-  container.querySelector('#gist-back-btn')?.addEventListener('click', () => onBack());
+  container.querySelector('#gist-back-btn')?.addEventListener('click', onBack);
   container.querySelectorAll('[data-action="view-revision"]').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       const version = (e.currentTarget as HTMLElement).getAttribute('data-version');
