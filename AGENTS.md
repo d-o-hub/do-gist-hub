@@ -9,7 +9,7 @@
 
 ```bash
 # Start development
-npm install && ./scripts/setup-skills.sh && npm run dev
+pnpm install && ./scripts/setup-skills.sh && pnpm dev
 
 # Before every commit
 ./scripts/quality_gate.sh
@@ -18,9 +18,9 @@ npm install && ./scripts/setup-skills.sh && npm run dev
 ./scripts/analyze-codebase.sh --fix --validate
 
 # Common tasks
-npm run check        # typecheck + lint + format:check
-npm run lint:fix     # auto-fix issues
-npm run cap:sync     # sync Capacitor after build
+pnpm run check        # typecheck + lint + format:check
+pnpm run lint:fix     # auto-fix issues
+pnpm run cap:sync     # sync Capacitor after build
 ```
 
 **Critical Rules**: No unstyled elements | Mobile-first CSS | Tokens only | Validate before commit
@@ -54,9 +54,8 @@ readonly RETRY_BACKOFF_MS=1000
 ## Setup & Quality Gate
 
 ```bash
-npm install && ./scripts/setup-skills.sh
-cp scripts/pre-commit-hook.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
-npm run init:design && npm run dev
+pnpm install && ./scripts/setup-skills.sh
+pnpm run init:design && pnpm dev
 ```
 
 **MANDATORY**: Run `./scripts/quality_gate.sh` before every commit. If blocked: `git config --global --unset core.hooksPath`
@@ -158,14 +157,14 @@ All outputs (screenshots, diffs, captures) MUST use `analysis/`:
 
 Docs contradict assumptions → Stop → Document → Propose correction → Wait for confirmation → Update docs. **Never guess. Verify.**
 
-## Key npm Scripts
+## Key pnpm Scripts
 
 ```bash
-npm run check        # typecheck + lint + format:check
-npm run lint:fix     # auto-fix issues
-npm run test:debug   # Playwright debug mode
-npm run quality      # run quality_gate.sh
-npm run cap:sync     # sync Capacitor after build
+pnpm run check        # typecheck + lint + format:check
+pnpm run lint:fix     # auto-fix issues
+pnpm run test:debug   # Playwright debug mode
+pnpm run quality      # run quality_gate.sh
+pnpm run cap:sync     # sync Capacitor after build
 ```
 
 ## Available Skills
@@ -415,11 +414,11 @@ test.beforeEach(async ({ page }) => {
 ### Running Tests
 
 ```bash
-npm run test           # All tests
-npm run test:browser   # Desktop browsers
-npm run test:mobile    # Mobile emulation
-npm run test:offline   # Offline scenarios
-npm run test:a11y      # Accessibility
+pnpm run test           # All tests
+pnpm run test:browser   # Desktop browsers
+pnpm run test:mobile    # Mobile emulation
+pnpm run test:offline   # Offline scenarios
+pnpm run test:a11y      # Accessibility
 ```
 
 ---
@@ -455,7 +454,7 @@ chmod +x .git/hooks/pre-commit
 ### Quality Gate
 
 ```bash
-npm run check           # typecheck + lint + format
+pnpm run check           # typecheck + lint + format
 ./scripts/quality_gate.sh  # full validation
 ```
 
