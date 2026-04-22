@@ -46,8 +46,8 @@ export class App {
 
     // Simple custom event for sync queue since it doesn't have a formal subscribe yet
     window.addEventListener('app:sync-change', () => {
-        void this.updateSyncIndicator();
-        if (this.currentRoute === 'offline') void this.updateOfflineStatus();
+      void this.updateSyncIndicator();
+      if (this.currentRoute === 'offline') void this.updateOfflineStatus();
     });
 
     // Theme initialization
@@ -378,8 +378,12 @@ export class App {
     if (this.currentRoute === 'detail' && this.currentGistId) {
       const detailContainer = this.container.querySelector('#gist-detail-container');
       if (detailContainer instanceof HTMLElement) {
-        void loadGistDetail(this.currentGistId, detailContainer,
-          () => void this.navigate('home'),
+        void loadGistDetail(
+          this.currentGistId,
+          detailContainer,
+          () => {
+            void this.navigate('home');
+          },
           () => {},
           () => {}
         );
@@ -435,39 +439,43 @@ export class App {
     });
 
     // Settings Export/Import
-    this.container.querySelector('#export-all-btn')?.addEventListener('click', async () => {
-      const { exportAllGists } = await import('../services/export-import');
-      const blob = await exportAllGists();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `gists-export-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success('EXPORT COMPLETE');
+    this.container.querySelector('#export-all-btn')?.addEventListener('click', () => {
+      void (async () => {
+        const { exportAllGists } = await import('../services/export-import');
+        const blob = await exportAllGists();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gists-export-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success('EXPORT COMPLETE');
+      })();
     });
 
     this.container.querySelector('#import-btn')?.addEventListener('click', () => {
       (this.container?.querySelector('#import-input') as HTMLInputElement)?.click();
     });
 
-    this.container.querySelector('#import-input')?.addEventListener('change', async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
+    this.container.querySelector('#import-input')?.addEventListener('change', (e) => {
+      void (async () => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
 
-      try {
-        const { importGists } = await import('../services/export-import');
-        const result = await importGists(file);
-        await gistStore.reloadFromDb();
-        toast.success(
-          `IMPORT COMPLETE: ${result.imported} NEW, ${result.updated} UPDATED, ${result.conflicts} CONFLICTS`
-        );
-      } catch (err) {
-        toast.error('IMPORT FAILED');
-        safeError('Import failed', err);
-      } finally {
-        (e.target as HTMLInputElement).value = '';
-      }
+        try {
+          const { importGists } = await import('../services/export-import');
+          const result = await importGists(file);
+          await gistStore.reloadFromDb();
+          toast.success(
+            `IMPORT COMPLETE: ${result.imported} NEW, ${result.updated} UPDATED, ${result.conflicts} CONFLICTS`
+          );
+        } catch (err) {
+          toast.error('IMPORT FAILED');
+          safeError('Import failed', err);
+        } finally {
+          (e.target as HTMLInputElement).value = '';
+        }
+      })();
     });
 
     // Settings Cache
@@ -568,7 +576,6 @@ export class App {
     });
   }
 
-
   private async showMobileMenu(): Promise<void> {
     const content = `
       <div class="mobile-menu" style="display: grid; gap: var(--space-2); padding: var(--space-4);">
@@ -636,8 +643,8 @@ export class App {
   }
 
   public mount(element: HTMLElement): void {
-      this.container = element;
-      this.render();
-      this.setupNavigation();
+    this.container = element;
+    this.render();
+    this.setupNavigation();
   }
 }

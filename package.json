@@ -24,7 +24,7 @@
     "test:android": "playwright test tests/android/",
     "test:visual": "playwright test --update-snapshots",
     "test:a11y": "playwright test tests/accessibility/",
-    "test:benchmark": "playwright test tests/benchmarks/",
+    "test:benchmark": "playwright test --config=playwright.benchmarks.config.ts",
     "test:report": "playwright show-report",
     "init:design": "node scripts/init-design-tokens.js",
     "generate:icons": "node scripts/generate-icons.mjs",
