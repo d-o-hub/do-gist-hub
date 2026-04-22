@@ -147,7 +147,7 @@ Offline-first GitHub Gist management app.
 ## Quick Start
 
 \`\`\`bash
-ppnpm install
+pnpm install
 pnpm run dev
 \`\`\`
 
@@ -173,7 +173,7 @@ See `plans/016-configuration-analysis.md` for details.
 ## Development Setup
 
 1. Install Node 22+: `nvm install 22`
-2. Install dependencies: `ppnpm install`
+2. Install dependencies: `pnpm install`
 3. Setup git hooks: `cp scripts/pre-commit-hook.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit`
 4. Run quality check: `pnpm run check`
 

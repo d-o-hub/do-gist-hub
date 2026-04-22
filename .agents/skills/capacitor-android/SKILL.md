@@ -19,7 +19,7 @@ Package the PWA as a native Android app using Capacitor with proper configuratio
 ### Step 1: Install Capacitor Dependencies
 
 ```bash
-ppnpm install @capacitor/core @capacitor/cli @capacitor/android
+pnpm install @capacitor/core @capacitor/cli @capacitor/android
 npx cap init
 ```
 

@@ -9,7 +9,7 @@
 
 ```bash
 # Start development
-ppnpm install && ./scripts/setup-skills.sh && pnpm dev
+pnpm install && ./scripts/setup-skills.sh && pnpm dev
 
 # Before every commit
 ./scripts/quality_gate.sh
@@ -54,7 +54,7 @@ readonly RETRY_BACKOFF_MS=1000
 ## Setup & Quality Gate
 
 ```bash
-ppnpm install && ./scripts/setup-skills.sh
+pnpm install && ./scripts/setup-skills.sh
 pnpm run init:design && pnpm dev
 ```
 

@@ -131,7 +131,7 @@ sudo ./install.sh /usr/local
 
 **From pnpm**:
 ```bash
-ppnpm install -g bats
+pnpm install -g bats
 ```
 
 ### Helper Libraries

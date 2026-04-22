@@ -96,10 +96,10 @@
     {
       "id": 8,
       "prompt": "Add Android packaging commands and Capacitor setup instructions to the AGENTS.md setup section. Include the npx cap commands we need.",
-      "expected_output": "AGENTS.md updated with Android packaging commands in the setup or a dedicated Android section. Includes: ppnpm install @capacitor/core @capacitor/cli @capacitor/android, npx cap init, npx cap add android, npx cap sync android, npx cap open android. Also references the capacitor-android skill.",
+      "expected_output": "AGENTS.md updated with Android packaging commands in the setup or a dedicated Android section. Includes: pnpm install @capacitor/core @capacitor/cli @capacitor/android, npx cap init, npx cap add android, npx cap sync android, npx cap open android. Also references the capacitor-android skill.",
       "files": [],
       "assertions": [
-        "Includes ppnpm install command for Capacitor dependencies",
+        "Includes pnpm install command for Capacitor dependencies",
         "Includes npx cap init, npx cap add android, npx cap sync, npx cap open android commands",
         "References the capacitor-android skill in available skills or cross-references",
         "Commands are in a setup or build commands section",

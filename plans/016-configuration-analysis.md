@@ -381,8 +381,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: ppnpm audit
-      - run: ppnpm outdated || true
+      - run: pnpm audit
+      - run: pnpm outdated || true
       - run: pnpm run test:coverage
 ```
 

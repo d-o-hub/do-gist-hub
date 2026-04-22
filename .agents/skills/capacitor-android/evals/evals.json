@@ -11,7 +11,7 @@
         "webDir is set to 'dist' (Vite's default output directory)",
         "server.androidScheme is set to 'https'",
         "cleartext traffic is disabled",
-        "Commands include ppnpm install @capacitor/core @capacitor/cli @capacitor/android"
+        "Commands include pnpm install @capacitor/core @capacitor/cli @capacitor/android"
       ]
     },
     {
