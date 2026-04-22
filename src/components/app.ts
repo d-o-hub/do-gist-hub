@@ -19,12 +19,14 @@ import { showConfirmDialog } from '../utils/dialog';
 import { safeError } from '../services/security/logger';
 
 type Route = 'home' | 'starred' | 'create' | 'settings' | 'offline' | 'detail' | 'conflicts';
-type Filter = 'all' | 'starred';
+type Filter = 'all' | 'mine' | 'starred';
+type Sort = 'created-desc' | 'updated-desc' | 'updated-asc';
 
 export class App {
   private container: HTMLElement | null = null;
   private currentRoute: Route = 'home';
   private currentFilter: Filter = 'all';
+  private currentSort: Sort = 'updated-desc';
   private searchQuery: string = '';
   private searchTimeout: number | undefined;
   private currentGistId: string | null = null;
@@ -71,8 +73,10 @@ export class App {
       void this.showMobileMenu();
     });
 
-    this.container?.querySelector('#settings-btn')?.addEventListener('click', () => {
-      void this.navigate('settings');
+    this.container?.querySelectorAll('#settings-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        void this.navigate('settings');
+      });
     });
 
     this.container?.querySelector('#theme-select')?.addEventListener('change', (e) => {
@@ -128,7 +132,7 @@ export class App {
           <button class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">Starred</button>
           <button class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">Create</button>
           <button class="sidebar-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">Offline</button>
-          <button class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings">Settings</button>
+          <button class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" id="settings-btn" data-testid="settings-btn">Settings</button>
         </aside>
 
         <aside class="rail-nav">
@@ -136,7 +140,7 @@ export class App {
           <button class="rail-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">⭐</button>
           <button class="rail-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">➕</button>
           <button class="rail-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">📶</button>
-          <button class="rail-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings">⚙️</button>
+          <button class="rail-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" id="settings-btn" data-testid="settings-btn">⚙️</button>
         </aside>
 
         <header class="app-header">
@@ -146,6 +150,7 @@ export class App {
           <div class="header-right">
             <div id="sync-indicator" class="sync-indicator"></div>
             <button id="mobile-menu-btn" class="icon-button" aria-label="Menu">☰</button>
+            <button id="settings-btn" class="icon-button" aria-label="Settings" data-testid="settings-btn" data-route="settings">⚙️</button>
           </div>
         </header>
 
@@ -198,12 +203,20 @@ export class App {
   private getHomeRoute(): string {
     return `
       <div class="route-home">
-        <div class="search-bar">
-          <input type="text" id="gist-search" class="form-input" placeholder="Search gists..." value="${this.searchQuery}">
+        <div class="search-container">
+          <input type="text" id="gist-search" class="search-input" placeholder="Search gists..." value="${this.searchQuery}">
         </div>
-        <div class="filter-chips">
-          <button class="chip ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">All Gists</button>
-          <button class="chip ${this.currentFilter === 'starred' ? 'active' : ''}" data-filter="starred">Starred</button>
+        <div class="filter-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+            <div class="filter-buttons filter-chips">
+              <button class="chip ${this.currentFilter === 'all' ? 'active' : ''}" data-filter="all">All</button>
+              <button class="chip ${this.currentFilter === 'mine' ? 'active' : ''}" data-filter="mine">Mine</button>
+              <button class="chip ${this.currentFilter === 'starred' ? 'active' : ''}" data-filter="starred">Starred</button>
+            </div>
+            <select id="sort-select" class="form-input" style="width: auto; margin-bottom: 0;">
+                <option value="updated-desc" ${this.currentSort === 'updated-desc' ? 'selected' : ''}>Recent</option>
+                <option value="created-desc" ${this.currentSort === 'created-desc' ? 'selected' : ''}>Newest</option>
+                <option value="updated-asc" ${this.currentSort === 'updated-asc' ? 'selected' : ''}>Oldest</option>
+            </select>
         </div>
         <div id="gist-list" class="gist-list">
           ${this.renderGistList()}
@@ -255,6 +268,7 @@ export class App {
                 <div style="display: flex; gap: var(--space-2);">
                     <input type="password" id="pat-input" class="form-input" style="flex: 1;" placeholder="ghp_...">
                     <button id="save-token-btn" class="btn btn-primary">SAVE</button>
+                    <button id="remove-token-btn" class="btn btn-ghost">REMOVE</button>
                 </div>
                 <div id="token-status" style="margin-top: var(--space-2);"></div>
               </div>
@@ -270,7 +284,7 @@ export class App {
                     <div style="display: flex; gap: var(--space-2);">
                         <button id="export-all-btn" class="btn btn-secondary" style="flex: 1;">EXPORT ALL GISTS</button>
                         <button id="import-btn" class="btn btn-secondary" style="flex: 1;">IMPORT GISTS</button>
-                        <input type="file" id="import-input" accept=".json" style="display: none;" />
+                        <input type="file" id="import-file-input" accept=".json" style="display: none;" />
                     </div>
                 </div>
             </div>
@@ -352,7 +366,9 @@ export class App {
         .join('');
     }
 
-    let gists = gistStore.filterGists(this.currentFilter);
+    let gists = gistStore.filterGists(
+      this.currentFilter === 'mine' ? 'all' : (this.currentFilter as 'all' | 'starred')
+    );
 
     if (this.searchQuery) {
       const q = this.searchQuery.toLowerCase();
@@ -362,6 +378,17 @@ export class App {
           Object.values(g.files).some((f) => f.filename.toLowerCase().includes(q))
       );
     }
+
+    // Sort gists
+    gists = [...gists].sort((a, b) => {
+      if (this.currentSort === 'created-desc')
+        return Date.parse(b.createdAt) - Date.parse(a.createdAt);
+      if (this.currentSort === 'updated-desc')
+        return Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
+      if (this.currentSort === 'updated-asc')
+        return Date.parse(a.updatedAt) - Date.parse(b.updatedAt);
+      return 0;
+    });
 
     if (gists.length === 0) {
       return '<div class="empty-state">No gists found</div>';
@@ -421,6 +448,12 @@ export class App {
       void this.updateGistList();
     });
 
+    // Sort
+    this.container.querySelector('#sort-select')?.addEventListener('change', (e) => {
+      this.currentSort = (e.target as HTMLSelectElement).value as Sort;
+      void this.updateGistList();
+    });
+
     // Create Form
     this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -447,6 +480,15 @@ export class App {
       }
     });
 
+    this.container.querySelector('#remove-token-btn')?.addEventListener('click', () => {
+      void (async () => {
+        const { setMetadata } = await import('../services/db');
+        await setMetadata('github-pat', null);
+        toast.success('TOKEN REMOVED');
+        void this.loadTokenInfo();
+      })();
+    });
+
     // Settings Export/Import
     this.container.querySelector('#export-all-btn')?.addEventListener('click', () => {
       void (async () => {
@@ -463,10 +505,10 @@ export class App {
     });
 
     this.container.querySelector('#import-btn')?.addEventListener('click', () => {
-      (this.container?.querySelector('#import-input') as HTMLInputElement)?.click();
+      (this.container?.querySelector('#import-file-input') as HTMLInputElement)?.click();
     });
 
-    this.container.querySelector('#import-input')?.addEventListener('change', (e) => {
+    this.container.querySelector('#import-file-input')?.addEventListener('change', (e) => {
       void (async () => {
         const file = (e.target as HTMLInputElement).files?.[0];
         if (!file) return;
