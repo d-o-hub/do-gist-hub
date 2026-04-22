@@ -34,10 +34,11 @@ export function cancelAllRequests(): void {
 
 /**
  * Get stored PAT from IndexedDB
+ * 2026: Uses encrypted storage via auth service
  */
 async function getAuthToken(): Promise<string | null> {
-  const { getMetadata } = await import('../db');
-  return (await getMetadata<string>('github-pat')) || null;
+  const { getToken } = await import('./auth');
+  return await getToken();
 }
 
 /**
