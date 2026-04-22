@@ -179,7 +179,7 @@ test.describe('Sync Queue and Offline Operations', () => {
       for (const action of actionsToQueue) {
         await queueWrite({
           gistId: `gist-${action}`,
-          action: action as any,
+          action: action,
           payload: {},
         });
       }
@@ -197,6 +197,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
   test('queue length is tracked correctly', async ({ page }) => {
     await page.evaluate(async () => {
+      const w = window as unknown as { __queueLen1: number; __queueLen2: number; __queueLen3: number; };
       const { initIndexedDB, queueWrite, removePendingWrite, getPendingWrites } = await import('../../src/services/db');
       await initIndexedDB();
 
@@ -204,22 +205,22 @@ test.describe('Sync Queue and Offline Operations', () => {
       const id2 = await queueWrite({ gistId: 'len-2', action: 'update', payload: {} });
 
       let count = (await getPendingWrites()).length;
-      (window as any).__queueLen1 = count;
+      w.__queueLen1 = count;
 
       await removePendingWrite(id1);
 
       count = (await getPendingWrites()).length;
-      (window as any).__queueLen2 = count;
+      w.__queueLen2 = count;
 
       await removePendingWrite(id2);
 
       count = (await getPendingWrites()).length;
-      (window as any).__queueLen3 = count;
+      w.__queueLen3 = count;
     });
 
-    const len1 = await page.evaluate(() => (window as any).__queueLen1);
-    const len2 = await page.evaluate(() => (window as any).__queueLen2);
-    const len3 = await page.evaluate(() => (window as any).__queueLen3);
+    const len1 = await page.evaluate<number>(() => (window as unknown as { __queueLen1: number }).__queueLen1);
+    const len2 = await page.evaluate(() => (window as Window & { __queueLen2: number }).__queueLen2);
+    const len3 = await page.evaluate(() => (window as Window & { __queueLen3: number }).__queueLen3);
 
     expect(len1).toBe(2);
     expect(len2).toBe(1);
