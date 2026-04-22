@@ -11,7 +11,7 @@ Run these commands once to initialize the Android project:
 
 ```bash
 # Build the web app first
-pnpm run build
+npm run build
 
 # Initialize Capacitor (if not already done)
 npx cap init
@@ -20,22 +20,22 @@ npx cap init
 npx cap add android
 
 # Sync web assets to Android
-pnpm run cap:sync
+npm run cap:sync
 ```
 
 ## Development Workflow
 
 ```bash
 # Build and sync changes
-pnpm run build:android
+npm run build:android
 
 # Open Android Studio
-pnpm run cap:android:open
+npm run cap:android:open
 ```
 
 ## Building APK
 
-1. Open Android Studio via `pnpm run cap:android:open`
+1. Open Android Studio via `npm run cap:android:open`
 2. Go to Build > Build Bundle(s) / APK(s) > Build APK(s)
 3. APK will be in `android/app/build/outputs/apk/debug/`
 
@@ -59,5 +59,5 @@ export PATH=$ANDROID_HOME/tools:$PATH
 # Clean and resync
 rm -rf android
 npx cap add android
-pnpm run cap:sync
+npm run cap:sync
 ```

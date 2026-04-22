@@ -129,8 +129,8 @@ jobs:
 ## Quality Gate
 
 ```bash
-pnpm run check  # typecheck + lint + format:check
-pnpm run test   # playwright
+npm run check  # typecheck + lint + format:check
+npm run test   # playwright
 ```
 
 **Pre-commit**:
