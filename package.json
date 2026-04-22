@@ -44,7 +44,7 @@
     "@playwright/test": "^1.45.0",
     "@types/node": "^22.0.0",
     "canvas": "^3.2.3",
-    "eslint": "^9.0.0",
+    "eslint": "^10.2.1",
     "globals": "^16.0.0",
     "prettier": "^3.3.0",
     "typescript": "^5.5.0",
