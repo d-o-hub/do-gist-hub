@@ -8,7 +8,13 @@ import { safeError } from '../services/security/logger';
 import * as GitHub from '../services/github/client';
 import networkMonitor from '../services/network/offline-monitor';
 import syncQueue from '../services/sync/queue';
-import { detectConflict, resolveConflict, storeConflict } from '../services/sync/conflict-detector';
+import {
+  detectConflict,
+  resolveConflict,
+  storeConflict,
+  getConflicts,
+  clearConflict,
+} from '../services/sync/conflict-detector';
 import { GitHubGist, UpdateGistRequest } from '../types/api';
 import { AppError } from '../services/github/error-handler';
 
@@ -92,7 +98,7 @@ class GistStore {
       const conflict = detectConflict(existing, gist);
       if (conflict) {
         await storeConflict(conflict);
-        record = resolveConflict(conflict, 'remote-wins');
+        record = resolveConflict(conflict, 'manual');
       } else {
         record = this.githubGistToRecord(gist, isStarred);
       }
@@ -246,6 +252,30 @@ class GistStore {
       syncStatus: 'synced',
       lastSyncedAt: new Date().toISOString(),
     };
+  }
+
+  async resolveGistConflict(gistId: string, strategy: 'local-wins' | 'remote-wins'): Promise<void> {
+    const conflicts = await getConflicts();
+    const conflict = conflicts.find((c) => c.gistId === gistId);
+    if (!conflict) return;
+
+    const resolvedRecord = resolveConflict(conflict, strategy);
+    await dbSaveGist(resolvedRecord);
+    await clearConflict(gistId);
+
+    const idx = this.gists.findIndex((g) => g.id === gistId);
+    if (idx !== -1) {
+      this.gists[idx] = resolvedRecord;
+    } else {
+      this.gists.push(resolvedRecord);
+    }
+
+    this.sortGists();
+    this.notifyListeners();
+
+    if (strategy === 'local-wins' && networkMonitor.isOnline()) {
+      void syncQueue.processQueue();
+    }
   }
 
   private notifyListeners(): void {
