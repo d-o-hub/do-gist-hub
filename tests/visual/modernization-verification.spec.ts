@@ -29,10 +29,10 @@ test.describe('UI Modernization Verification', () => {
     const transitionTriggered = await page.evaluate(() => {
       let triggered = false;
       if ('startViewTransition' in document) {
-        const original = (document as any).startViewTransition;
-        (document as any).startViewTransition = (cb: any) => {
+        const original = (document as Document & { startViewTransition(callback: () => unknown): Promise<unknown> }).startViewTransition.bind(document);
+        (document as Document & { startViewTransition(callback: () => unknown): Promise<unknown> }).startViewTransition = (cb: () => unknown): Promise<unknown> => {
           triggered = true;
-          return original.call(document, cb);
+          return original(cb);
         };
       }
       return triggered;

@@ -144,7 +144,7 @@ test.describe('Offline Cache', () => {
           const getAll = store.getAll();
           getAll.onsuccess = () => {
             const gists = getAll.result;
-            resolve(gists.map((g: any) => g.syncStatus || 'unknown'));
+            resolve(gists.map((g: { syncStatus?: string }) => g.syncStatus || 'unknown'));
           };
           getAll.onerror = () => resolve([]);
         };
