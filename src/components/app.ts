@@ -16,8 +16,9 @@ import { bottomSheet } from './ui/bottom-sheet';
 import { withViewTransition } from '../utils/view-transitions';
 import { toast } from './ui/toast';
 import { showConfirmDialog } from '../utils/dialog';
+import { loadConflictResolution } from './conflict-resolution';
 
-type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings' | 'detail' | 'edit';
+type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings' | 'detail' | 'edit' | 'conflicts';
 type Filter = 'all' | 'mine' | 'starred';
 
 export class App {
@@ -128,6 +129,8 @@ export class App {
         return this.getSettingsRoute();
       case 'detail':
         return '<div id="gist-detail-container"></div>';
+      case 'conflicts':
+        return '<div id="conflict-resolution-container"></div>';
       default:
         return this.getHomeRoute();
     }
@@ -216,12 +219,22 @@ export class App {
         <header class="detail-header">
             <h1 class="detail-title">OFFLINE STATUS</h1>
         </header>
-        <div class="stat-card">
-            <div class="stat-icon">📴</div>
-            <div class="stat-info">
-                <div class="stat-label">PENDING WRITES</div>
-                <div class="stat-value" id="pending-count">0</div>
-            </div>
+        <div class="stat-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-4);">
+          <div class="stat-card">
+              <div class="stat-icon">📴</div>
+              <div class="stat-info">
+                  <div class="stat-label">PENDING WRITES</div>
+                  <div class="stat-value" id="pending-count">0</div>
+              </div>
+          </div>
+          <div class="stat-card">
+              <div class="stat-icon" style="background: rgba(248, 113, 113, 0.12); color: var(--color-error);">⚠️</div>
+              <div class="stat-info">
+                  <div class="stat-label">SYNC CONFLICTS</div>
+                  <div class="stat-value" id="conflict-count">0</div>
+                  <button class="btn btn-ghost btn-sm" data-route="conflicts" style="margin-top: var(--space-2);">RESOLVE</button>
+              </div>
+          </div>
         </div>
         <div id="logs-list" class="glass-card" style="margin-top: var(--space-6); padding: var(--space-4); max-height: 400px; overflow-y: auto;">
             <div class="micro-label">OFFLINE LOGS</div>
@@ -267,6 +280,10 @@ export class App {
       if (route === 'home' || route === 'starred') this.updateGistList();
       if (route === 'settings') this.loadTokenInfo();
       if (route === 'offline') this.updateOfflineStatus();
+      if (route === 'conflicts') {
+        const container = this.container?.querySelector('#conflict-resolution-container');
+        if (container) void loadConflictResolution(container as HTMLElement);
+      }
     });
   }
 
@@ -365,8 +382,15 @@ export class App {
   }
 
   private async updateOfflineStatus(): Promise<void> {
-    const el = this.container?.querySelector('#pending-count');
-    if (el) el.textContent = String(await syncQueue.getQueueLength());
+    const pendingEl = this.container?.querySelector('#pending-count');
+    if (pendingEl) pendingEl.textContent = String(await syncQueue.getQueueLength());
+
+    const conflictEl = this.container?.querySelector('#conflict-count');
+    if (conflictEl) {
+      const { getConflicts } = await import('../services/sync/conflict-detector');
+      const conflicts = await getConflicts();
+      conflictEl.textContent = String(conflicts.length);
+    }
   }
 
   private toggleTheme(): void {
@@ -404,6 +428,7 @@ export class App {
       { id: 'home', title: 'HOME', action: () => this.navigate('home') },
       { id: 'starred', title: 'STARRED GISTS', action: () => this.navigate('starred') },
       { id: 'create', title: 'CREATE NEW GIST', action: () => this.navigate('create') },
+      { id: 'conflicts', title: 'RESOLVE SYNC CONFLICTS', action: () => this.navigate('conflicts') },
       { id: 'settings', title: 'SETTINGS', action: () => this.navigate('settings') },
     ]);
   }
