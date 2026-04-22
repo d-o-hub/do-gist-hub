@@ -16,6 +16,9 @@ import { withViewTransition } from '../utils/view-transitions';
 import { toast } from './ui/toast';
 import { announcer } from '../utils/announcer';
 import { showConfirmDialog } from '../utils/dialog';
+import { safeError } from '../services/security/logger';
+
+type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings' | 'detail' | 'edit';
 import { loadConflictResolution } from './conflict-resolution';
 import { loadEditForm } from './gist-edit';
 import { renderRevisions } from './gist-detail';
@@ -254,6 +257,16 @@ export class App {
                 <div id="token-status" style="margin-top: var(--space-2);"></div>
               </div>
             </div>
+            <div class="form-group">
+                <label class="form-label">DATA MANAGEMENT</label>
+                <div class="form-actions" style="display: flex; flex-direction: column; gap: var(--space-2);">
+                    <div style="display: flex; gap: var(--space-2);">
+                        <button id="export-all-btn" class="btn btn-secondary" style="flex: 1;">EXPORT ALL GISTS</button>
+                        <button id="import-btn" class="btn btn-secondary" style="flex: 1;">IMPORT GISTS</button>
+                        <input type="file" id="import-input" accept=".json" style="display: none;" />
+                    </div>
+                    <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
+                </div>
           </details>
 
           <details class="settings-section">
@@ -579,6 +592,47 @@ export class App {
       (e.target as HTMLInputElement).value = '';
     });
 
+    this.container.querySelector('#export-all-btn')?.addEventListener('click', async () => {
+      const { exportAllGists } = await import('../services/export-import');
+      const blob = await exportAllGists();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gists-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('EXPORT COMPLETE');
+    });
+
+    this.container.querySelector('#import-btn')?.addEventListener('click', () => {
+      (this.container?.querySelector('#import-input') as HTMLInputElement)?.click();
+    });
+
+    this.container.querySelector('#import-input')?.addEventListener('change', async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      try {
+        const { importGists } = await import('../services/export-import');
+        const result = await importGists(file);
+        await gistStore.reloadFromDb();
+        toast.success(
+          `IMPORT COMPLETE: ${result.imported} NEW, ${result.updated} UPDATED, ${result.conflicts} CONFLICTS`
+        );
+      } catch (err) {
+        toast.error('IMPORT FAILED');
+        safeError('Import failed', err);
+      } finally {
+        (e.target as HTMLInputElement).value = '';
+      }
+    });
+
+    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
+      if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
+        const { clearAllData } = await import('../services/db');
+        await clearAllData();
+        window.location.reload();
+      }
     this.container.querySelector('#export-data-btn')?.addEventListener('click', () => {
       void (async () => {
         try {

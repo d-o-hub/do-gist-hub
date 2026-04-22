@@ -54,6 +54,13 @@ class GistStore {
   getGists(): GistRecord[] {
     return this.gists;
   }
+
+  async reloadFromDb(): Promise<void> {
+    this.gists = await dbGetAllGists();
+    this.sortGists();
+    this.notifyListeners();
+  }
+
   getGist(id: string): GistRecord | undefined {
     return this.gists.find((g) => g.id === id);
   }
