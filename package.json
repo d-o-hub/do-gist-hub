@@ -13,7 +13,7 @@
     "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
-    "check": "npm run typecheck && npm run lint && npm run format:check",
+    "check": "pnpm run typecheck && pnpm run lint && pnpm run format:check",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
@@ -24,12 +24,13 @@
     "test:android": "playwright test tests/android/",
     "test:visual": "playwright test --update-snapshots",
     "test:a11y": "playwright test tests/accessibility/",
+    "test:benchmark": "playwright test tests/benchmarks/",
     "test:report": "playwright show-report",
     "init:design": "node scripts/init-design-tokens.js",
     "generate:icons": "node scripts/generate-icons.mjs",
     "cap:sync": "npx cap sync android",
     "cap:android:open": "npx cap open android",
-    "build:android": "npm run build && npm run cap:sync",
+    "build:android": "pnpm run build && pnpm run cap:sync",
     "quality": "./scripts/quality_gate.sh"
   },
   "dependencies": {
