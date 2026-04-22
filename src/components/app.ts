@@ -370,7 +370,8 @@ export class App {
       void (async () => {
         e.preventDefault();
         const desc = (this.container?.querySelector('#gist-description') as HTMLInputElement).value;
-        const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement).value;
+        const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement)
+          .value;
         await gistStore.createGist(desc, true, { 'index.js': content });
         this.navigate('home');
       })();
