@@ -184,8 +184,11 @@ export function bindDetailEvents(
       const revisions = await GitHub.listGistRevisions(gistId);
       container.innerHTML = renderRevisions(gistId, revisions);
       bindRevisionEvents(container, {
-        onBack: () =>
-          void loadGistDetail(gistId, container, onBack, onEdit, onViewRevision, onForkSuccess),
+        onBack: () => {
+          loadGistDetail(gistId, container, onBack, onEdit, onViewRevision, onForkSuccess).catch(
+            (err) => safeError('[GistDetail] onBack failed', err)
+          );
+        },
         onViewRevision,
       });
     } catch {
@@ -214,7 +217,11 @@ export function bindDetailEvents(
   container.querySelector('[data-action="star"]')?.addEventListener('click', async () => {
     if (!gistId) return;
     const ok = await gistStore.toggleStar(gistId);
-    if (ok) void loadGistDetail(gistId, container, onBack, onEdit, onViewRevision, onForkSuccess);
+    if (ok) {
+      loadGistDetail(gistId, container, onBack, onEdit, onViewRevision, onForkSuccess).catch(
+        (err) => safeError('[GistDetail] star refresh failed', err)
+      );
+    }
   });
 }
 
