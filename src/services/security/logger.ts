@@ -123,7 +123,7 @@ export async function persistLog(
       const toDelete = logs.slice(0, count - MAX_LOGS);
       const tx = db.transaction('logs', 'readwrite');
       for (const id of toDelete) {
-        tx.objectStore('logs').delete(id);
+        void tx.objectStore('logs').delete(id);
       }
       await tx.done;
     }
@@ -140,7 +140,11 @@ export function safeLog(message: string, ...args: unknown[]): void {
   const redactedArgs = args.map((arg) => redactAny(arg));
   const redactedMessage = redactSecrets(message);
 
-  persistLog('info', redactedMessage, redactedArgs.length === 1 ? redactedArgs[0] : redactedArgs);
+  void persistLog(
+    'info',
+    redactedMessage,
+    redactedArgs.length === 1 ? redactedArgs[0] : redactedArgs
+  );
 }
 
 /**
@@ -152,7 +156,11 @@ export function safeError(message: string, ...args: unknown[]): void {
 
   console.error(redactedMessage, ...redactedArgs);
 
-  persistLog('error', redactedMessage, redactedArgs.length === 1 ? redactedArgs[0] : redactedArgs);
+  void persistLog(
+    'error',
+    redactedMessage,
+    redactedArgs.length === 1 ? redactedArgs[0] : redactedArgs
+  );
 }
 
 /**
@@ -164,7 +172,11 @@ export function safeWarn(message: string, ...args: unknown[]): void {
 
   console.warn(redactedMessage, ...redactedArgs);
 
-  persistLog('warn', redactedMessage, redactedArgs.length === 1 ? redactedArgs[0] : redactedArgs);
+  void persistLog(
+    'warn',
+    redactedMessage,
+    redactedArgs.length === 1 ? redactedArgs[0] : redactedArgs
+  );
 }
 
 /**

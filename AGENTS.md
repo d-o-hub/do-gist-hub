@@ -9,7 +9,7 @@
 
 ```bash
 # Start development
-pnpm install && ./scripts/setup-skills.sh && pnpm dev
+npm install && ./scripts/setup-skills.sh && npm run dev
 
 # Before every commit
 ./scripts/quality_gate.sh
@@ -18,9 +18,9 @@ pnpm install && ./scripts/setup-skills.sh && pnpm dev
 ./scripts/analyze-codebase.sh --fix --validate
 
 # Common tasks
-pnpm run check        # typecheck + lint + format:check
-pnpm run lint:fix     # auto-fix issues
-pnpm run cap:sync     # sync Capacitor after build
+npm run check        # typecheck + lint + format:check
+npm run lint:fix     # auto-fix issues
+npm run cap:sync     # sync Capacitor after build
 ```
 
 **Critical Rules**: No unstyled elements | Mobile-first CSS | Tokens only | Validate before commit
@@ -54,8 +54,9 @@ readonly RETRY_BACKOFF_MS=1000
 ## Setup & Quality Gate
 
 ```bash
-pnpm install && ./scripts/setup-skills.sh
-pnpm run init:design && pnpm dev
+npm install && ./scripts/setup-skills.sh
+cp scripts/pre-commit-hook.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+npm run init:design && npm run dev
 ```
 
 **MANDATORY**: Run `./scripts/quality_gate.sh` before every commit. If blocked: `git config --global --unset core.hooksPath`
@@ -136,7 +137,7 @@ Typed client → Pagination via `Link` headers → Rate limit tracking → `Acce
 ## Validation-Before-Commit
 
 1. `./scripts/quality_gate.sh` passes
-2. Type check, lint, format check pass (`pnpm run check`)
+2. Type check, lint, format check pass (`npm run check`)
 3. No console errors, responsive on 2+ viewports
 4. Memory profile stable, no leaks
 
@@ -157,14 +158,14 @@ All outputs (screenshots, diffs, captures) MUST use `analysis/`:
 
 Docs contradict assumptions → Stop → Document → Propose correction → Wait for confirmation → Update docs. **Never guess. Verify.**
 
-## Key pnpm Scripts
+## Key npm Scripts
 
 ```bash
-pnpm run check        # typecheck + lint + format:check
-pnpm run lint:fix     # auto-fix issues
-pnpm run test:debug   # Playwright debug mode
-pnpm run quality      # run quality_gate.sh
-pnpm run cap:sync     # sync Capacitor after build
+npm run check        # typecheck + lint + format:check
+npm run lint:fix     # auto-fix issues
+npm run test:debug   # Playwright debug mode
+npm run quality      # run quality_gate.sh
+npm run cap:sync     # sync Capacitor after build
 ```
 
 ## Available Skills
@@ -414,11 +415,11 @@ test.beforeEach(async ({ page }) => {
 ### Running Tests
 
 ```bash
-pnpm run test           # All tests
-pnpm run test:browser   # Desktop browsers
-pnpm run test:mobile    # Mobile emulation
-pnpm run test:offline   # Offline scenarios
-pnpm run test:a11y      # Accessibility
+npm run test           # All tests
+npm run test:browser   # Desktop browsers
+npm run test:mobile    # Mobile emulation
+npm run test:offline   # Offline scenarios
+npm run test:a11y      # Accessibility
 ```
 
 ---
@@ -454,7 +455,7 @@ chmod +x .git/hooks/pre-commit
 ### Quality Gate
 
 ```bash
-pnpm run check           # typecheck + lint + format
+npm run check           # typecheck + lint + format
 ./scripts/quality_gate.sh  # full validation
 ```
 
