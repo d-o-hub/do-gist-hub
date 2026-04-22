@@ -17,6 +17,7 @@ import { withViewTransition } from '../utils/view-transitions';
 import { toast } from './ui/toast';
 import { showConfirmDialog } from '../utils/dialog';
 import { loadConflictResolution } from './conflict-resolution';
+import { getConflicts } from '../services/sync/conflict-detector';
 
 type Route =
   | 'home'
@@ -45,9 +46,15 @@ export class App {
     this.initializeCommandPalette();
     this.subscribeStore();
 
-    window.addEventListener('app:sync-complete', () => this.updateGistList());
-    window.addEventListener('online', () => this.updateSyncIndicator());
-    window.addEventListener('offline', () => this.updateSyncIndicator());
+    window.addEventListener('app:sync-complete', () => {
+      this.updateGistList();
+    });
+    window.addEventListener('online', () => {
+      void this.updateSyncIndicator();
+    });
+    window.addEventListener('offline', () => {
+      void this.updateSyncIndicator();
+    });
   }
 
   private initializeTheme(): void {
@@ -60,7 +67,7 @@ export class App {
       if (this.currentRoute === 'home' || this.currentRoute === 'starred') {
         this.updateGistList();
       }
-      this.updateSyncIndicator();
+      void this.updateSyncIndicator();
     });
   }
 
@@ -286,8 +293,8 @@ export class App {
       this.render();
       this.setupNavigation();
       if (route === 'home' || route === 'starred') this.updateGistList();
-      if (route === 'settings') this.loadTokenInfo();
-      if (route === 'offline') this.updateOfflineStatus();
+      if (route === 'settings') void this.loadTokenInfo();
+      if (route === 'offline') void this.updateOfflineStatus();
       if (route === 'conflicts') {
         const container = this.container?.querySelector('#conflict-resolution-container');
         if (container) void loadConflictResolution(container as HTMLElement);
@@ -344,30 +351,34 @@ export class App {
     });
 
     // Forms
-    this.container.querySelector('#create-gist-form')?.addEventListener('submit', async (e) => {
+    this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const desc = (this.container?.querySelector('#gist-description') as HTMLInputElement).value;
       const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement).value;
-      await gistStore.createGist(desc, true, { 'index.js': content });
-      this.navigate('home');
+      void gistStore.createGist(desc, true, { 'index.js': content }).then(() => {
+        this.navigate('home');
+      });
     });
 
     // Settings
-    this.container.querySelector('#save-token-btn')?.addEventListener('click', async () => {
+    this.container.querySelector('#save-token-btn')?.addEventListener('click', () => {
       const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
       if (input.value) {
-        await saveToken(input.value);
-        toast.success('TOKEN SAVED');
-        this.loadTokenInfo();
+        void saveToken(input.value).then(() => {
+          toast.success('TOKEN SAVED');
+          void this.loadTokenInfo();
+        });
       }
     });
 
-    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
-      if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
-        const { clearAllData } = await import('../services/db');
-        await clearAllData();
-        window.location.reload();
-      }
+    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', () => {
+      void (async () => {
+        if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
+          const { clearAllData } = await import('../services/db');
+          await clearAllData();
+          window.location.reload();
+        }
+      })();
     });
   }
 
@@ -395,7 +406,6 @@ export class App {
 
     const conflictEl = this.container?.querySelector('#conflict-count');
     if (conflictEl) {
-      const { getConflicts } = await import('../services/sync/conflict-detector');
       const conflicts = await getConflicts();
       conflictEl.textContent = String(conflicts.length);
     }
