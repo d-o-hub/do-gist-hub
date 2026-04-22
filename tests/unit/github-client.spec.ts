@@ -9,8 +9,8 @@ test.describe('GitHub Client Authentication', () => {
   test('should use encrypted token from auth service', async ({ page }) => {
     const result = await page.evaluate(async () => {
       // Mock the database to have an encrypted token
-      const { setMetadata } = await import('@/services/db');
-      const { encrypt } = await import('@/services/security/crypto');
+      const { setMetadata } = await import('./src/services/db');
+      const { encrypt } = await import('./src/services/security/crypto');
 
       const testToken = 'ghp_test_token_1234567890';
       const encrypted = await encrypt(testToken);
@@ -20,7 +20,7 @@ test.describe('GitHub Client Authentication', () => {
       await setMetadata('github-pat', null);
 
       // Now call a client function that uses getAuthToken
-      const { listGists } = await import('@/services/github/client');
+      const { listGists } = await import('./src/services/github/client');
 
       // We don't want to actually make a network request, so we can check if it tries to use the token
       // or we can just test the internal getAuthToken if it was exported, but it's not.

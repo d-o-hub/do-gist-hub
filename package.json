@@ -33,23 +33,23 @@
     "quality": "./scripts/quality_gate.sh"
   },
   "dependencies": {
-    "@capacitor/android": "^6.0.0",
-    "@capacitor/cli": "^6.0.0",
-    "@capacitor/core": "^6.0.0",
-    "idb": "^8.0.3",
-    "web-vitals": "^5.2.0"
+    "@capacitor/android": "6.2.1",
+    "@capacitor/cli": "6.2.1",
+    "@capacitor/core": "6.2.1",
+    "idb": "8.0.3",
+    "web-vitals": "5.2.0"
   },
   "devDependencies": {
     "@eslint/js": "9.39.4",
     "@playwright/test": "1.59.1",
-    "@types/node": "^22.0.0",
-    "canvas": "^3.2.3",
+    "@types/node": "22.19.17",
+    "canvas": "3.2.3",
     "esbuild": "0.21.5",
     "eslint": "9.39.4",
     "globals": "16.5.0",
-    "prettier": "3.8.3",
+    "prettier": "3.8.2",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.58.2",
+    "typescript-eslint": "8.58.1",
     "vite": "5.4.21"
   }
 }

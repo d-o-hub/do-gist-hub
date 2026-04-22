@@ -7,7 +7,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
   test('queueWrite adds operation to pendingWrites store', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, getPendingWrites } = await import('@/services/db');
+      const { initIndexedDB, queueWrite, getPendingWrites } = await import('./src/services/db');
       await initIndexedDB();
 
       const writeId = await queueWrite({
@@ -38,7 +38,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
   test('multiple queued writes are stored in order', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, getPendingWrites } = await import('@/services/db');
+      const { initIndexedDB, queueWrite, getPendingWrites } = await import('./src/services/db');
       await initIndexedDB();
 
       // Queue multiple operations
@@ -83,7 +83,7 @@ test.describe('Sync Queue and Offline Operations', () => {
     const before = Date.now();
 
     const writeTime = await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, getPendingWrites } = await import('@/services/db');
+      const { initIndexedDB, queueWrite, getPendingWrites } = await import('./src/services/db');
       await initIndexedDB();
 
       await queueWrite({
@@ -104,7 +104,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
   test('removePendingWrite deletes operation after successful sync', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, getPendingWrites, removePendingWrite } = await import('@/services/db');
+      const { initIndexedDB, queueWrite, getPendingWrites, removePendingWrite } = await import('./src/services/db');
       await initIndexedDB();
 
       await queueWrite({ gistId: 'gist-a', action: 'create', payload: {} });
@@ -129,7 +129,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
   test('updatePendingWriteError increments retry count and stores error', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, getPendingWrites, updatePendingWriteError } = await import('@/services/db');
+      const { initIndexedDB, queueWrite, getPendingWrites, updatePendingWriteError } = await import('./src/services/db');
       await initIndexedDB();
 
       const id = await queueWrite({
@@ -173,7 +173,7 @@ test.describe('Sync Queue and Offline Operations', () => {
     ];
 
     const result = await page.evaluate(async (actionsToQueue: string[]) => {
-      const { initIndexedDB, queueWrite, getPendingWrites } = await import('@/services/db');
+      const { initIndexedDB, queueWrite, getPendingWrites } = await import('./src/services/db');
       await initIndexedDB();
 
       for (const action of actionsToQueue) {
@@ -197,7 +197,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
   test('queue length is tracked correctly', async ({ page }) => {
     await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, removePendingWrite, getPendingWrites } = await import('@/services/db');
+      const { initIndexedDB, queueWrite, removePendingWrite, getPendingWrites } = await import('./src/services/db');
       await initIndexedDB();
 
       const id1 = await queueWrite({ gistId: 'len-1', action: 'create', payload: {} });
@@ -228,7 +228,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
   test('pending writes can be filtered by gistId using index', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, getPendingWrites } = await import('@/services/db');
+      const { initIndexedDB, queueWrite, getPendingWrites } = await import('./src/services/db');
       await initIndexedDB();
 
       // Queue writes for different gists
@@ -258,7 +258,7 @@ test.describe('Sync Queue and Offline Operations', () => {
   test('queue operations persist across page navigation', async ({ page }) => {
     // Queue writes on first page visit
     await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite } = await import('@/services/db');
+      const { initIndexedDB, queueWrite } = await import('./src/services/db');
       await initIndexedDB();
 
       await queueWrite({ gistId: 'persist-1', action: 'create', payload: {} });
@@ -270,7 +270,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
     // Verify writes still exist
     const persistCount = await page.evaluate(async () => {
-      const { initIndexedDB, getPendingWrites } = await import('@/services/db');
+      const { initIndexedDB, getPendingWrites } = await import('./src/services/db');
       await initIndexedDB();
       const pending = await getPendingWrites();
       return pending.length;
@@ -283,7 +283,7 @@ test.describe('Sync Queue and Offline Operations', () => {
     await page.context().setOffline(true);
 
     const queueState = await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, getPendingWrites } = await import('@/services/db');
+      const { initIndexedDB, queueWrite, getPendingWrites } = await import('./src/services/db');
       await initIndexedDB();
 
       // Queue a write while offline
@@ -308,7 +308,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
   test('payload is stored with queued write for later sync', async ({ page }) => {
     const payloadData = await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, getPendingWrites } = await import('@/services/db');
+      const { initIndexedDB, queueWrite, getPendingWrites } = await import('./src/services/db');
       await initIndexedDB();
 
       const complexPayload = {
@@ -342,7 +342,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
   test('queued writes sorted by createdAt for processing order', async ({ page }) => {
     const sorted = await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, getPendingWrites } = await import('@/services/db');
+      const { initIndexedDB, queueWrite, getPendingWrites } = await import('./src/services/db');
       await initIndexedDB();
 
       // Queue in specific order with small delays
