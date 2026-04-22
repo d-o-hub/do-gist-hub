@@ -10,6 +10,7 @@ import syncQueue from '../services/sync/queue';
 import { getToken, saveToken } from '../services/github/auth';
 import { loadGistDetail } from './gist-detail';
 import { APP } from '../config/app.config';
+import { redactToken, sanitizeHtml } from '../services/security';
 import { commandPalette } from './ui/command-palette';
 import { bottomSheet } from './ui/bottom-sheet';
 import { withViewTransition } from '../utils/view-transitions';
@@ -559,8 +560,7 @@ export class App {
     const token = await getToken();
     if (el) {
       if (token) {
-        const masked = token.slice(0, 6) + '••••' + token.slice(-4);
-        el.innerHTML = `<p class="micro-label token-saved">Token saved: ${masked}</p>`;
+        el.innerHTML = `<p class="micro-label token-saved">Token saved: ${redactToken(token)}</p>`;
       } else {
         el.innerHTML = '<p class="micro-label token-missing">No token saved. Add one above.</p>';
       }
@@ -581,7 +581,7 @@ export class App {
       <div class="diagnostics-content micro-label">
         <p>Online: ${info.online ? 'Yes' : 'No'}</p>
         <p>Gists: ${info.gistsCount}</p>
-        <p>Theme: ${info.theme}</p>
+        <p>Theme: ${sanitizeHtml(info.theme || 'auto')}</p>
       </div>
     `;
   }
