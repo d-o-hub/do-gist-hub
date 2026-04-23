@@ -14,42 +14,53 @@ test.describe('Security & Coverage', () => {
 
   test('should verify that PAT is encrypted in IndexedDB storage', async ({ page }) => {
     await page.evaluate(async () => {
-        const dbName = 'd-o-gist-hub-db';
+      const dbName = 'd-o-gist-hub-db';
+      return new Promise((resolve, reject) => {
         const request = indexedDB.open(dbName);
-        return new Promise((resolve, reject) => {
-            request.onsuccess = async () => {
-                const db = request.result;
-                const tx = db.transaction(['metadata'], 'readwrite');
-                const store = tx.objectStore('metadata');
-                await store.put({
-                    key: 'github-pat-enc',
-                    value: { data: 'fake-encrypted-data', iv: 'fake-iv' },
-                    updatedAt: Date.now()
-                });
-                await store.delete('github-pat');
-                tx.oncomplete = () => resolve(true);
-            };
-            request.onerror = () => reject();
-        });
+        request.onsuccess = () => {
+          const db = request.result;
+          const tx = db.transaction(['metadata'], 'readwrite');
+          const store = tx.objectStore('metadata');
+          store.put({
+            key: 'github-pat-enc',
+            value: { data: 'fake-encrypted-data', iv: 'fake-iv' },
+            updatedAt: Date.now(),
+          });
+          store.delete('github-pat');
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => reject(new Error('Transaction failed'));
+        };
+        request.onerror = () => reject(new Error('Open failed'));
+        request.onblocked = () => reject(new Error('Open blocked'));
+      });
     });
 
     const encryptionStatus: any = await page.evaluate(async () => {
-        const dbName = 'd-o-gist-hub-db';
-        return new Promise((resolve) => {
-            const request = indexedDB.open(dbName);
-            request.onsuccess = () => {
-                const db = request.result;
-                const tx = db.transaction('metadata', 'readonly');
-                const store = tx.objectStore('metadata');
-                const getEnc = store.get('github-pat-enc');
-                getEnc.onsuccess = () => {
-                    const encVal = getEnc.result?.value;
-                    const isEncrypted = !!(encVal && typeof encVal === 'object' && 'data' in encVal && 'iv' in encVal);
-                    const getLegacy = store.get('github-pat');
-                    getLegacy.onsuccess = () => resolve({ isEncrypted, noLegacy: !getLegacy.result });
-                };
-            };
-        });
+      const dbName = 'd-o-gist-hub-db';
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName);
+        request.onsuccess = () => {
+          const db = request.result;
+          const tx = db.transaction('metadata', 'readonly');
+          const store = tx.objectStore('metadata');
+          const getEnc = store.get('github-pat-enc');
+          getEnc.onsuccess = () => {
+            const encVal = getEnc.result?.value;
+            const isEncrypted = !!(
+              encVal &&
+              typeof encVal === 'object' &&
+              'data' in encVal &&
+              'iv' in encVal
+            );
+            const getLegacy = store.get('github-pat');
+            getLegacy.onsuccess = () => resolve({ isEncrypted, noLegacy: !getLegacy.result });
+            getLegacy.onerror = () => reject(new Error('Get legacy failed'));
+          };
+          getEnc.onerror = () => reject(new Error('Get encrypted failed'));
+        };
+        request.onerror = () => reject(new Error('Open failed'));
+        request.onblocked = () => reject(new Error('Open blocked'));
+      });
     });
 
     expect(encryptionStatus.isEncrypted).toBe(true);
