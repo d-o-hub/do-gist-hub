@@ -24,7 +24,7 @@ test.describe('Performance Metrics', () => {
   });
 
   test('should verify FID/INP interaction latency is low', async ({ page }) => {
-    await page.locator('[data-route="settings"]').first().click();
+    await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
 
     const interactionMetrics = await page.evaluate(() => {
       const entries = performance.getEntriesByType('event');
@@ -62,7 +62,7 @@ test.describe('Performance Metrics', () => {
     await page.waitForLoadState('networkidle');
     const initialScriptCount = loadedScripts.size;
 
-    await page.locator('[data-route="settings"]').first().click();
+    await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
     await page.waitForLoadState('networkidle');
     expect(loadedScripts.size).toBeGreaterThanOrEqual(initialScriptCount);
   });

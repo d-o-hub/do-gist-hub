@@ -30,7 +30,7 @@ test.describe('Export/Import Functionality', () => {
       });
     });
 
-    await page.locator('[data-testid="settings-btn"]').first().click();
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
 
     // Start waiting for download before clicking
     const downloadPromise = page.waitForEvent('download');
@@ -51,7 +51,7 @@ test.describe('Export/Import Functionality', () => {
   });
 
   test('should import gists from JSON', async ({ page }) => {
-    await page.locator('[data-testid="settings-btn"]').first().click();
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
 
     const backupData = {
       version: '1.0.0',
@@ -78,7 +78,7 @@ test.describe('Export/Import Functionality', () => {
     await page.setInputFiles('#import-file-input', importFilePath);
 
     // Check for success toast - use first() to avoid strict mode violation if body matches too
-    await expect(page.locator('.toast-success').first()).toContainText('IMPORT COMPLETE: 1', {
+    await expect(page.locator('.toast-success').filter({ visible: true }).first()).toContainText('IMPORT COMPLETE: 1', {
       timeout: 15000,
     });
 
@@ -122,7 +122,7 @@ test.describe('Export/Import Functionality', () => {
         });
       });
 
-    await page.locator('[data-testid="settings-btn"]').first().click();
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
 
     const backupData = {
       version: '1.0.0',
