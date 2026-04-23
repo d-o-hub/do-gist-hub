@@ -73,7 +73,7 @@ export class App {
       void this.showMobileMenu();
     });
 
-    this.container?.querySelectorAll('#settings-btn').forEach((btn) => {
+    this.container?.querySelectorAll('[data-route="settings"]').forEach((btn) => {
       btn.addEventListener('click', () => {
         void this.navigate('settings');
       });
@@ -132,7 +132,7 @@ export class App {
           <button class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">Starred</button>
           <button class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">Create</button>
           <button class="sidebar-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">Offline</button>
-          <button class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" id="settings-btn" data-testid="settings-btn">Settings</button>
+          <button class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="settings-btn">Settings</button>
         </aside>
 
         <aside class="rail-nav">
@@ -140,7 +140,7 @@ export class App {
           <button class="rail-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">⭐</button>
           <button class="rail-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">➕</button>
           <button class="rail-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">📶</button>
-          <button class="rail-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" id="settings-btn" data-testid="settings-btn">⚙️</button>
+          <button class="rail-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="settings-btn">⚙️</button>
         </aside>
 
         <header class="app-header">
@@ -149,8 +149,8 @@ export class App {
           </div>
           <div class="header-right">
             <div id="sync-indicator" class="sync-indicator"></div>
-            <button id="mobile-menu-btn" class="icon-button" aria-label="Menu">☰</button>
-            <button id="settings-btn" class="icon-button" aria-label="Settings" data-testid="settings-btn" data-route="settings">⚙️</button>
+            <button id="mobile-menu-btn" class="icon-button" aria-label="Menu" data-testid="mobile-menu-btn">☰</button>
+            <button class="icon-button" aria-label="Settings" data-testid="settings-btn" data-route="settings">⚙️</button>
           </div>
         </header>
 
@@ -630,11 +630,11 @@ export class App {
   private async showMobileMenu(): Promise<void> {
     const content = `
       <div class="mobile-menu" style="display: grid; gap: var(--space-2); padding: var(--space-4);">
-        <button class="btn btn-ghost" data-route="home">Home</button>
-        <button class="btn btn-ghost" data-route="starred">Starred Gists</button>
-        <button class="btn btn-ghost" data-route="create">Create New Gist</button>
-        <button class="btn btn-ghost" data-route="offline">Offline Status</button>
-        <button class="btn btn-ghost" data-route="settings">Settings</button>
+        <button class="btn btn-ghost menu-item" data-route="home">Home</button>
+        <button class="btn btn-ghost menu-item" data-route="starred">Starred Gists</button>
+        <button class="btn btn-ghost menu-item" data-route="create">Create New Gist</button>
+        <button class="btn btn-ghost menu-item" data-route="offline">Offline Status</button>
+        <button class="btn btn-ghost menu-item" data-route="settings">Settings</button>
       </div>
     `;
     await bottomSheet.open(content, 'MENU');

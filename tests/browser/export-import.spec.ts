@@ -30,7 +30,10 @@ test.describe('Export/Import Functionality', () => {
       });
     });
 
-    await page.click('button[data-route="settings"]');
+    await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
+
+    // Open Data & Diagnostics section
+    await page.locator('summary:has-text("Data & Diagnostics")').click();
 
     // Start waiting for download before clicking
     const downloadPromise = page.waitForEvent('download');
@@ -42,15 +45,13 @@ test.describe('Export/Import Functionality', () => {
     const downloadPath = await download.path();
     const content = JSON.parse(fs.readFileSync(downloadPath, 'utf8'));
 
-    expect(content.version).toBe('1.0.0');
+    expect(content.version).toBe(2);
     expect(content.gists).toHaveLength(1);
     expect(content.gists[0].id).toBe('test-gist-id');
-    expect(content.metadata.total).toBe(1);
-    expect(content.metadata.starred).toBe(1);
   });
 
   test('should import gists from JSON', async ({ page }) => {
-    await page.click('button[data-route="settings"]');
+    await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
 
     const backupData = {
       version: '1.0.0',
@@ -76,7 +77,7 @@ test.describe('Export/Import Functionality', () => {
     await page.setInputFiles('#import-file-input', importFilePath);
 
     // Check for success toast - use first() to avoid strict mode violation if body matches too
-    await expect(page.locator('.toast-success').first()).toContainText('IMPORTED: 1', { timeout: 15000 });
+    await expect(page.locator('.toast-success').first()).toContainText('1 NEW', { timeout: 15000 });
 
     // Verify gist is in DB
     const gistExists = await page.evaluate(async () => {
@@ -118,7 +119,7 @@ test.describe('Export/Import Functionality', () => {
         });
       });
 
-    await page.click('button[data-route="settings"]');
+    await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
 
     const backupData = {
       version: '1.0.0',

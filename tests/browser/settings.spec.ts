@@ -4,8 +4,8 @@ test.describe('Settings', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
     await page.waitForLoadState('networkidle');
-    // Use .first() or a specific container to avoid strict mode violations
-    await page.locator('[data-testid="settings-btn"]').first().click();
+    // Use .filter({ visible: true }) to find the visible button across different breakpoints
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
     await expect(page.locator('h2')).toContainText('Settings');
   });
 
