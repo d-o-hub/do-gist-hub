@@ -228,7 +228,7 @@ export async function saveGist(gist: GistRecord): Promise<void> {
  */
 export async function getGist(id: string): Promise<GistRecord | undefined> {
   const db = getDB();
-  return db.get('gists', id);
+  return await db.get('gists', id);
 }
 
 /**
@@ -236,7 +236,7 @@ export async function getGist(id: string): Promise<GistRecord | undefined> {
  */
 export async function getAllGists(): Promise<GistRecord[]> {
   const db = getDB();
-  return db.getAll('gists');
+  return await db.getAll('gists');
 }
 
 /**
@@ -267,7 +267,7 @@ export async function queueWrite(
  */
 export async function getPendingWrites(): Promise<PendingWrite[]> {
   const db = getDB();
-  return db.getAll('pendingWrites');
+  return await db.getAll('pendingWrites');
 }
 
 /**
