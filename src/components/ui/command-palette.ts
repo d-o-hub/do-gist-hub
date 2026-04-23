@@ -88,11 +88,15 @@ export class CommandPalette {
     this.container.classList.add('open');
     this.container.setAttribute('aria-expanded', 'true');
 
-    const input = this.container.querySelector('input');
-    input?.focus();
-
-    focusTrap.activate(this.container);
-    announcer.announce('Command palette opened');
+    // Ensure container is visible before focusing to prevent race conditions in tests
+    requestAnimationFrame(() => {
+      if (this.container) {
+        focusTrap.activate(this.container);
+        const input = this.container.querySelector('input');
+        input?.focus();
+        announcer.announce('Command palette opened');
+      }
+    });
   }
 
   close(): void {

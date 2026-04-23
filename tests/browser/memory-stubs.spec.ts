@@ -7,7 +7,7 @@ test.describe('Memory Safety & Lifecycle', () => {
   });
 
   const clickNav = async (page: any, route: string) => {
-    await page.locator(`.sidebar-nav [data-route="${route}"], .rail-nav [data-route="${route}"], .bottom-nav [data-route="${route}"]`).first().click();
+    await page.locator(`[data-route="${route}"]`).filter({ visible: true }).first().click();
   };
 
   test('should verify AbortController cancels pending requests on navigation', async ({ page }) => {

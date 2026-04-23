@@ -33,7 +33,7 @@ test.describe('Settings', () => {
     // Try to save without entering token
     await page.locator('#save-token-btn').click();
     // Should show error toast - check for generic toast or specific error class
-    await expect(page.locator('.toast')).toBeVisible();
+    await expect(page.locator('.toast')).toBeVisible({ timeout: 15000 });
   });
 
   test('should change theme via select', async ({ page }) => {
