@@ -6,6 +6,7 @@
 import { GistConflict, getConflicts } from '../services/sync/conflict-detector';
 import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
+import { EmptyState } from './ui/empty-state';
 import { withViewTransition } from '../utils/view-transitions';
 import { announcer } from '../utils/announcer';
 import { sanitizeHtml } from '../services/security/dom';
@@ -17,12 +18,13 @@ let currentConflictId: string | null = null;
  */
 export function renderConflictList(conflicts: GistConflict[]): string {
   if (conflicts.length === 0) {
-    return `
-      <div class="empty-state">
-        <div class="empty-icon">✅</div>
-        <p>NO CONFLICTS DETECTED</p>
-      </div>
-    `;
+    return EmptyState.render({
+      title: 'NO CONFLICTS',
+      description: 'ALL YOUR GISTS ARE IN SYNC WITH GITHUB',
+      icon: '✅',
+      actionLabel: 'GO HOME',
+      actionRoute: 'home',
+    });
   }
 
   return `

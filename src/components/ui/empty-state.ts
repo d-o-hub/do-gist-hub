@@ -3,7 +3,7 @@
  * Guides users toward the next step when no content is available.
  */
 
-import { sanitizeHtml } from '../../services/security';
+import { sanitizeHtml } from '../../services/security/dom';
 
 export interface EmptyStateOptions {
   title: string;
@@ -11,24 +11,28 @@ export interface EmptyStateOptions {
   icon?: string;
   actionLabel?: string;
   actionRoute?: string;
-  onAction?: () => void;
+  actionType?: string;
 }
 
 export class EmptyState {
   static render(options: EmptyStateOptions): string {
-    const { title, description, icon = '📭', actionLabel, actionRoute } = options;
+    const { title, description, icon = '📭', actionLabel, actionRoute, actionType } = options;
+
+    const actionAttr = actionRoute
+      ? `data-route="${actionRoute}"`
+      : actionType
+        ? `data-action="${actionType}"`
+        : '';
 
     return `
       <div class="empty-state-container" role="status">
-        <div class="empty-state-icon">${icon}</div>
+        <div class="empty-state-icon">${sanitizeHtml(icon)}</div>
         <h3 class="empty-state-title">${sanitizeHtml(title)}</h3>
         <p class="empty-state-description">${sanitizeHtml(description)}</p>
         ${
           actionLabel
             ? `
-          <button class="primary-btn empty-state-action"
-                  data-route="${actionRoute || ''}"
-                  onclick="${actionRoute ? `window.dispatchEvent(new CustomEvent('app:navigate', { detail: '${actionRoute}' }))` : "window.dispatchEvent(new CustomEvent('app:clear-search'))"}">
+          <button class="btn btn-primary empty-state-action" ${actionAttr}>
             ${sanitizeHtml(actionLabel)}
           </button>
         `

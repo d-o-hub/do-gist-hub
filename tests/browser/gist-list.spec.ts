@@ -22,12 +22,12 @@ test.describe('Gist List', () => {
   });
 
   test('should show empty state when no gists exist', async ({ page }) => {
-    const emptyState = page.locator('.empty-state');
+    const emptyState = page.locator('.empty-state-container');
     // May show loading initially, then empty state
     await page.waitForTimeout(1000);
     const emptyVisible = await emptyState.isVisible().catch(() => false);
     const listVisible = await page.locator('.gist-list').isVisible();
-    
+
     // Either empty state or loading is acceptable
     expect(emptyVisible || listVisible).toBe(true);
   });

@@ -10,6 +10,7 @@ import { getToken, saveToken } from '../services/github/auth';
 import { loadGistDetail } from './gist-detail';
 import { APP } from '../config/app.config';
 import { redactToken, sanitizeHtml } from '../services/security';
+import { EmptyState } from './ui/empty-state';
 import { commandPalette } from './ui/command-palette';
 import { bottomSheet } from './ui/bottom-sheet';
 import { withViewTransition } from '../utils/view-transitions';
@@ -61,22 +62,31 @@ export class App {
   }
 
   private setupNavigation(): void {
-    this.container?.querySelectorAll('[data-route]').forEach((el) => {
-      el.addEventListener('click', (e) => {
+    if (this.container?.dataset.navBound) return;
+
+    // Universal data-route/action listener with event delegation
+    this.container?.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+
+      const routeBtn = target.closest('[data-route]') as HTMLElement;
+      if (routeBtn) {
         e.preventDefault();
-        const route = (el as HTMLElement).dataset.route as Route;
+        const route = routeBtn.dataset.route as Route;
         if (route) void this.navigate(route);
-      });
+        return;
+      }
+
+      const actionBtn = target.closest('[data-action]') as HTMLElement;
+      if (actionBtn && actionBtn.dataset.action === 'clear-search') {
+        this.searchQuery = '';
+        const searchInput = this.container?.querySelector('#gist-search') as HTMLInputElement;
+        if (searchInput) searchInput.value = '';
+        void this.updateGistList();
+      }
     });
 
     this.container?.querySelector('#mobile-menu-btn')?.addEventListener('click', () => {
       void this.showMobileMenu();
-    });
-
-    this.container?.querySelectorAll('#settings-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        void this.navigate('settings');
-      });
     });
 
     this.container?.querySelector('#theme-select')?.addEventListener('change', (e) => {
@@ -84,6 +94,8 @@ export class App {
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('theme-preference', theme);
     });
+
+    if (this.container) this.container.dataset.navBound = 'true';
   }
 
   private async navigate(route: Route): Promise<void> {
@@ -391,7 +403,26 @@ export class App {
     });
 
     if (gists.length === 0) {
-      return '<div class="empty-state">No gists found</div>';
+      if (this.searchQuery) {
+        return EmptyState.render({
+          title: 'NO MATCHES FOUND',
+          description: `WE COULDN'T FIND ANY GISTS MATCHING "${this.searchQuery}"`,
+          icon: '🔍',
+          actionLabel: 'CLEAR SEARCH',
+          actionType: 'clear-search',
+        });
+      }
+
+      const isStarred = this.currentFilter === 'starred';
+      return EmptyState.render({
+        title: isStarred ? 'NO STARRED GISTS' : 'NO GISTS FOUND',
+        description: isStarred
+          ? "YOU HAVEN'T STARRED ANY GISTS YET"
+          : 'START BY CREATING YOUR FIRST GIST OR SYNCING FROM GITHUB',
+        icon: isStarred ? '⭐' : '📝',
+        actionLabel: isStarred ? 'VIEW ALL GISTS' : 'CREATE NEW GIST',
+        actionRoute: isStarred ? 'home' : 'create',
+      });
     }
 
     return gists.map((g) => renderCard(g)).join('');
@@ -608,12 +639,20 @@ export class App {
 
     const opsEl = this.container?.querySelector('#pending-ops');
     if (opsEl) {
-      if (count > 0) {
-        opsEl.innerHTML = `<h3>Pending Operations</h3><div class="empty-state"><p>${count} operation${count !== 1 ? 's' : ''} waiting</p></div>`;
-      } else {
-        opsEl.innerHTML =
-          '<h3>Pending Operations</h3><div class="empty-state"><p>No pending operations</p></div>';
-      }
+      const content =
+        count > 0
+          ? `<div class="glass-card" style="padding: var(--space-6); text-align: center;">
+               <p class="micro-label">${count} operation${count !== 1 ? 's' : ''} waiting for connection</p>
+             </div>`
+          : EmptyState.render({
+              title: 'ALL SYNCED',
+              description: 'YOUR LOCAL CHANGES ARE FULLY SYNCED WITH GITHUB',
+              icon: '✅',
+              actionLabel: 'GO HOME',
+              actionRoute: 'home',
+            });
+
+      opsEl.innerHTML = `<h3 class="form-label" style="margin-bottom: var(--space-4);">Pending Operations</h3>${content}`;
     }
 
     const { getConflicts } = await import('../services/sync/conflict-detector');
