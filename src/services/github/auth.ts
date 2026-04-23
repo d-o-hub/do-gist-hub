@@ -1,7 +1,7 @@
 /**
  * Authentication Service
  * Manages GitHub PAT storage and validation
- * 2026: Encrypted at rest using Web Cryptography API
+ * Encrypted at rest using Web Cryptography API
  */
 
 import { validateToken, clearUsernameCache } from './client';
@@ -25,7 +25,7 @@ export async function saveToken(token: string): Promise<{ success: boolean; erro
       };
     }
 
-    // 2026: Encrypt token before storing
+    // Encrypt token before storing
     const encrypted = await encrypt(token);
     await setMetadata('github-pat-enc', encrypted);
 
