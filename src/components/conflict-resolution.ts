@@ -19,10 +19,10 @@ let currentConflictId: string | null = null;
 export function renderConflictList(conflicts: GistConflict[]): string {
   if (conflicts.length === 0) {
     return EmptyState.render({
-      title: 'NO CONFLICTS',
-      description: 'ALL YOUR GISTS ARE IN SYNC WITH GITHUB',
+      title: 'No Conflicts',
+      description: 'All your gists are in sync with GitHub',
       icon: '✅',
-      actionLabel: 'GO HOME',
+      actionLabel: 'Go Home',
       actionRoute: 'home',
     });
   }

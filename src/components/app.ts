@@ -62,51 +62,86 @@ export class App {
   }
 
   private setupNavigation(): void {
-    // Only attach delegation listeners ONCE to the persistent container
-    if (!this.container?.dataset.navBound) {
-      this.container?.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement;
+    if (!this.container || this.container.dataset.navBound) return;
 
-        // Route delegation
-        const routeBtn = target.closest('[data-route]') as HTMLElement;
-        if (routeBtn) {
-          e.preventDefault();
-          const route = routeBtn.dataset.route as Route;
-          if (route) void this.navigate(route);
-          return;
+    // Click Delegation (Routes, Actions, Buttons)
+    this.container.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+
+      // Route delegation
+      const routeBtn = target.closest('[data-route]') as HTMLElement;
+      if (routeBtn) {
+        e.preventDefault();
+        const route = routeBtn.dataset.route as Route;
+        if (route) void this.navigate(route);
+        return;
+      }
+
+      // Action delegation
+      const actionBtn = target.closest('[data-action]') as HTMLElement;
+      if (actionBtn) {
+        const action = actionBtn.dataset.action;
+        if (action === 'clear-search') {
+          this.searchQuery = '';
+          const input = this.container?.querySelector('#gist-search') as HTMLInputElement;
+          if (input) input.value = '';
+          void this.updateGistList();
         }
+        return;
+      }
 
-        // Action delegation
-        const actionBtn = target.closest('[data-action]') as HTMLElement;
-        if (actionBtn) {
-          const action = actionBtn.dataset.action;
-          if (action === 'clear-search') {
-            this.searchQuery = '';
-            const input = this.container?.querySelector('#gist-search') as HTMLInputElement;
-            if (input) input.value = '';
-            void this.updateGistList();
-          }
-          return;
-        }
+      // Filter chip delegation
+      const chip = target.closest('.chip') as HTMLElement;
+      if (chip && chip.dataset.filter) {
+        this.container!.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
+        chip.classList.add('active');
+        this.currentFilter = (chip.dataset.filter as Filter) || 'all';
+        void this.updateGistList();
+        return;
+      }
 
-        // Mobile menu delegation
-        if (target.closest('#mobile-menu-btn')) {
-          void this.showMobileMenu();
-        }
-      });
+      // Mobile menu delegation
+      if (target.closest('#mobile-menu-btn')) {
+        void this.showMobileMenu();
+      }
+    });
 
-      // Theme select delegation (change event)
-      this.container?.addEventListener('change', (e) => {
-        const target = e.target as HTMLElement;
-        if (target.id === 'theme-select') {
-          const theme = (target as HTMLSelectElement).value;
-          document.documentElement.setAttribute('data-theme', theme);
-          localStorage.setItem('theme-preference', theme);
-        }
-      });
+    // Change Delegation (Sort, Theme)
+    this.container.addEventListener('change', (e) => {
+      const target = e.target as HTMLElement;
 
-      if (this.container) this.container.dataset.navBound = 'true';
-    }
+      // Theme select
+      if (target.id === 'theme-select') {
+        const theme = (target as HTMLSelectElement).value;
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme-preference', theme);
+        return;
+      }
+
+      // Sort select
+      if (target.id === 'sort-select') {
+        this.currentSort = (target as HTMLSelectElement).value as Sort;
+        void this.updateGistList();
+        return;
+      }
+    });
+
+    // Input Delegation (Search)
+    this.container.addEventListener('input', (e) => {
+      const target = e.target as HTMLElement;
+
+      // Gist search
+      if (target.id === 'gist-search') {
+        clearTimeout(this.searchTimeout);
+        const val = (target as HTMLInputElement).value;
+        this.searchTimeout = window.setTimeout(() => {
+          this.searchQuery = val;
+          void this.updateGistList();
+        }, 300);
+      }
+    });
+
+    this.container.dataset.navBound = 'true';
   }
 
   private async navigate(route: Route): Promise<void> {
@@ -124,10 +159,10 @@ export class App {
     await withViewTransition(async () => {
       this.render();
       this.setupNavigation();
-      if (route === 'home' || route === 'starred') this.updateGistList();
+      if (route === 'home' || route === 'starred') await this.updateGistList();
       if (route === 'settings') {
         await this.loadTokenInfo();
-        this.loadDiagnostics();
+        await this.loadDiagnostics();
       }
       if (route === 'offline') {
         await this.updateOfflineStatus();
@@ -416,22 +451,22 @@ export class App {
     if (gists.length === 0) {
       if (this.searchQuery) {
         return EmptyState.render({
-          title: 'NO MATCHES FOUND',
-          description: `WE COULDN'T FIND ANY GISTS MATCHING "${this.searchQuery}"`,
+          title: 'No Matches Found',
+          description: `We couldn't find any gists matching "${this.searchQuery}"`,
           icon: '🔍',
-          actionLabel: 'CLEAR SEARCH',
+          actionLabel: 'Clear Search',
           actionType: 'clear-search',
         });
       }
 
       const isStarred = this.currentFilter === 'starred';
       return EmptyState.render({
-        title: isStarred ? 'NO STARRED GISTS' : 'NO GISTS FOUND',
+        title: isStarred ? 'No Starred Gists' : 'No Gists Found',
         description: isStarred
-          ? "YOU HAVEN'T STARRED ANY GISTS YET"
-          : 'START BY CREATING YOUR FIRST GIST OR SYNCING FROM GITHUB',
+          ? "You haven't starred any gists yet"
+          : 'Start by creating your first gist or syncing from GitHub',
         icon: isStarred ? '⭐' : '📝',
-        actionLabel: isStarred ? 'VIEW ALL GISTS' : 'CREATE NEW GIST',
+        actionLabel: isStarred ? 'View All Gists' : 'Create New Gist',
         actionRoute: isStarred ? 'home' : 'create',
       });
     }
@@ -439,7 +474,7 @@ export class App {
     return gists.map((g) => renderCard(g)).join('');
   }
 
-  private updateGistList(): void {
+  private async updateGistList(): Promise<void> {
     const list = this.container?.querySelector('#gist-list');
     if (list) {
       list.innerHTML = this.renderGistList();
@@ -467,34 +502,6 @@ export class App {
         );
       }
     }
-
-    // Search
-    const searchInput = this.container.querySelector('#gist-search') as HTMLInputElement;
-    searchInput?.addEventListener('input', (e) => {
-      clearTimeout(this.searchTimeout);
-      const val = (e.target as HTMLInputElement).value;
-      this.searchTimeout = window.setTimeout(() => {
-        this.searchQuery = val;
-        this.updateGistList();
-      }, 300);
-    });
-
-    // Chips
-    this.container.querySelector('.filter-chips')?.addEventListener('click', (e) => {
-      const chip = (e.target as HTMLElement).closest('.chip') as HTMLElement;
-      if (!chip) return;
-
-      this.container!.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
-      chip.classList.add('active');
-      this.currentFilter = (chip.dataset.filter as Filter) || 'all';
-      this.updateGistList();
-    });
-
-    // Sort
-    this.container.querySelector('#sort-select')?.addEventListener('change', (e) => {
-      this.currentSort = (e.target as HTMLSelectElement).value as Sort;
-      this.updateGistList();
-    });
 
     // Create Form
     this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
@@ -617,7 +624,7 @@ export class App {
     }
   }
 
-  private loadDiagnostics(): void {
+  private async loadDiagnostics(): Promise<void> {
     const container = this.container?.querySelector('#diagnostics-info');
     if (!container) return;
 
@@ -656,10 +663,10 @@ export class App {
                <p class="micro-label">${count} operation${count !== 1 ? 's' : ''} waiting for connection</p>
              </div>`
           : EmptyState.render({
-              title: 'ALL SYNCED',
-              description: 'YOUR LOCAL CHANGES ARE FULLY SYNCED WITH GITHUB',
+              title: 'All Synced',
+              description: 'Your local changes are fully synced with GitHub',
               icon: '✅',
-              actionLabel: 'GO HOME',
+              actionLabel: 'Go Home',
               actionRoute: 'home',
             });
 

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 
 test.describe('Performance Metrics', () => {
   test.beforeEach(async ({ page }) => {
@@ -24,8 +24,7 @@ test.describe('Performance Metrics', () => {
   });
 
   test('should verify FID/INP interaction latency is low', async ({ page }) => {
-    await page.goto('http://localhost:3000/#settings');
-    await page.waitForLoadState('networkidle');
+    await page.locator('[data-route="settings"]').first().click();
 
     const interactionMetrics = await page.evaluate(() => {
       const entries = performance.getEntriesByType('event');
@@ -63,8 +62,7 @@ test.describe('Performance Metrics', () => {
     await page.waitForLoadState('networkidle');
     const initialScriptCount = loadedScripts.size;
 
-    await page.goto('http://localhost:3000/#settings');
-    await page.waitForLoadState('networkidle');
+    await page.locator('[data-route="settings"]').first().click();
     await page.waitForLoadState('networkidle');
     expect(loadedScripts.size).toBeGreaterThanOrEqual(initialScriptCount);
   });

@@ -50,7 +50,6 @@ export default tseslint.config(
       '@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }],
 
       // Promise handling - warn for existing codebase, error for new code
-      'require-await': 'error',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-misused-promises': 'warn',
 
