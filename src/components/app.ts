@@ -62,40 +62,51 @@ export class App {
   }
 
   private setupNavigation(): void {
-    if (this.container?.dataset.navBound) return;
+    // Only attach delegation listeners ONCE to the persistent container
+    if (!this.container?.dataset.navBound) {
+      this.container?.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
 
-    // Universal data-route/action listener with event delegation
-    this.container?.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
+        // Route delegation
+        const routeBtn = target.closest('[data-route]') as HTMLElement;
+        if (routeBtn) {
+          e.preventDefault();
+          const route = routeBtn.dataset.route as Route;
+          if (route) void this.navigate(route);
+          return;
+        }
 
-      const routeBtn = target.closest('[data-route]') as HTMLElement;
-      if (routeBtn) {
-        e.preventDefault();
-        const route = routeBtn.dataset.route as Route;
-        if (route) void this.navigate(route);
-        return;
-      }
+        // Action delegation
+        const actionBtn = target.closest('[data-action]') as HTMLElement;
+        if (actionBtn) {
+          const action = actionBtn.dataset.action;
+          if (action === 'clear-search') {
+            this.searchQuery = '';
+            const input = this.container?.querySelector('#gist-search') as HTMLInputElement;
+            if (input) input.value = '';
+            void this.updateGistList();
+          }
+          return;
+        }
 
-      const actionBtn = target.closest('[data-action]') as HTMLElement;
-      if (actionBtn && actionBtn.dataset.action === 'clear-search') {
-        this.searchQuery = '';
-        const searchInput = this.container?.querySelector('#gist-search') as HTMLInputElement;
-        if (searchInput) searchInput.value = '';
-        void this.updateGistList();
-      }
-    });
+        // Mobile menu delegation
+        if (target.closest('#mobile-menu-btn')) {
+          void this.showMobileMenu();
+        }
+      });
 
-    this.container?.querySelector('#mobile-menu-btn')?.addEventListener('click', () => {
-      void this.showMobileMenu();
-    });
+      // Theme select delegation (change event)
+      this.container?.addEventListener('change', (e) => {
+        const target = e.target as HTMLElement;
+        if (target.id === 'theme-select') {
+          const theme = (target as HTMLSelectElement).value;
+          document.documentElement.setAttribute('data-theme', theme);
+          localStorage.setItem('theme-preference', theme);
+        }
+      });
 
-    this.container?.querySelector('#theme-select')?.addEventListener('change', (e) => {
-      const theme = (e.target as HTMLSelectElement).value;
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('theme-preference', theme);
-    });
-
-    if (this.container) this.container.dataset.navBound = 'true';
+      if (this.container) this.container.dataset.navBound = 'true';
+    }
   }
 
   private async navigate(route: Route): Promise<void> {
