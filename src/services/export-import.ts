@@ -29,7 +29,7 @@ export interface ImportResult {
  */
 function createExportBlob(gists: GistRecord[]): Blob {
   const data: ExportData = {
-    version: '1.0.0',
+    version: '2.0.0',
     exportedAt: new Date().toISOString(),
     gists,
     metadata: {

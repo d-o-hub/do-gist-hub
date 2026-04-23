@@ -96,7 +96,7 @@ class GistStore {
       const gistMap = new Map(this.gists.map((g) => [g.id, g]));
 
       // BOLT: Optimize by processing all gists in parallel and batching DB writes
-      const processGist = async (gist: GitHubGist, isStarred: boolean): Promise<void> => {
+      const processGist = (gist: GitHubGist, isStarred: boolean): void => {
         const existing = gistMap.get(gist.id);
         let record: GistRecord;
 
@@ -115,17 +115,16 @@ class GistStore {
         processedRecords.push(record);
       };
 
-      const tasks: Promise<void>[] = [];
       for (const gist of ownGists) {
-        tasks.push(processGist(gist, starredIds.has(gist.id)));
+        processGist(gist, starredIds.has(gist.id));
       }
       for (const gist of starredGists) {
         if (!ownIds.has(gist.id)) {
-          tasks.push(processGist(gist, true));
+          processGist(gist, true);
         }
       }
 
-      await Promise.all(tasks);
+      // Parallel processing complete
 
       // BOLT: Batch store conflicts to prevent race conditions
       if (newConflicts.length > 0) {
