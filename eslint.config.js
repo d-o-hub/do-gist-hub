@@ -46,7 +46,8 @@ export default tseslint.config(
     rules: {
       // TypeScript strict rules
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['error', { caughtErrors: 'all' }],
+      'no-unused-vars': 'off',
       '@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }],
 
       // Promise handling - warn for existing codebase, error for new code
