@@ -30,7 +30,7 @@ test.describe('Export/Import Functionality', () => {
       });
     });
 
-    await page.click('button[data-route="settings"]');
+    await page.locator('[data-testid="settings-btn"]').first().click();
 
     // Start waiting for download before clicking
     const downloadPromise = page.waitForEvent('download');
