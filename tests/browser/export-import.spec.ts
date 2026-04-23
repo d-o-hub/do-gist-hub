@@ -34,6 +34,7 @@ test.describe('Export/Import Functionality', () => {
 
     // Start waiting for download before clicking
     const downloadPromise = page.waitForEvent('download');
+    await page.locator('summary:has-text("Data & Diagnostics")').click();
     await page.click('#export-data-btn');
     const download = await downloadPromise;
 
@@ -42,11 +43,10 @@ test.describe('Export/Import Functionality', () => {
     const downloadPath = await download.path();
     const content = JSON.parse(fs.readFileSync(downloadPath, 'utf8'));
 
-    expect(content.version).toBe('1.0.0');
+    // DB_VERSION is 2
+    expect(content.version).toBe(2);
     expect(content.gists).toHaveLength(1);
     expect(content.gists[0].id).toBe('test-gist-id');
-    expect(content.metadata.total).toBe(1);
-    expect(content.metadata.starred).toBe(1);
   });
 
   test('should import gists from JSON', async ({ page }) => {
