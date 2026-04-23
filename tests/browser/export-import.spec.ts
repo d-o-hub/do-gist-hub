@@ -73,6 +73,9 @@ test.describe('Export/Import Functionality', () => {
     const importFilePath = path.join(process.cwd(), 'tests/test-import.json');
     fs.writeFileSync(importFilePath, JSON.stringify(backupData));
 
+    // Open Data & Diagnostics section
+    await page.locator('summary:has-text("Data & Diagnostics")').click();
+
     // Upload file
     await page.setInputFiles('#import-file-input', importFilePath);
 
@@ -139,6 +142,9 @@ test.describe('Export/Import Functionality', () => {
 
     const conflictFilePath = path.join(process.cwd(), 'tests/test-conflict.json');
     fs.writeFileSync(conflictFilePath, JSON.stringify(backupData));
+
+    // Open Data & Diagnostics section
+    await page.locator('summary:has-text("Data & Diagnostics")').click();
 
     await page.setInputFiles('#import-file-input', conflictFilePath);
 
