@@ -15,8 +15,9 @@ test.describe('Security & Coverage', () => {
   test('should verify that PAT is encrypted in IndexedDB storage', async ({ page }) => {
     await page.evaluate(async () => {
       const dbName = 'd-o-gist-hub-db';
+      const dbVersion = 2;
       return new Promise((resolve, reject) => {
-        const request = indexedDB.open(dbName);
+        const request = indexedDB.open(dbName, dbVersion);
         request.onsuccess = () => {
           const db = request.result;
           const tx = db.transaction(['metadata'], 'readwrite');
@@ -27,8 +28,14 @@ test.describe('Security & Coverage', () => {
             updatedAt: Date.now(),
           });
           store.delete('github-pat');
-          tx.oncomplete = () => resolve(true);
-          tx.onerror = () => reject(new Error('Transaction failed'));
+          tx.oncomplete = () => {
+            db.close();
+            resolve(true);
+          };
+          tx.onerror = () => {
+            db.close();
+            reject(new Error('Transaction failed'));
+          };
         };
         request.onerror = () => reject(new Error('Open failed'));
         request.onblocked = () => reject(new Error('Open blocked'));
@@ -37,8 +44,9 @@ test.describe('Security & Coverage', () => {
 
     const encryptionStatus = (await page.evaluate(async () => {
       const dbName = 'd-o-gist-hub-db';
+      const dbVersion = 2;
       return new Promise((resolve, reject) => {
-        const request = indexedDB.open(dbName);
+        const request = indexedDB.open(dbName, dbVersion);
         request.onsuccess = () => {
           const db = request.result;
           const tx = db.transaction('metadata', 'readonly');
@@ -53,10 +61,19 @@ test.describe('Security & Coverage', () => {
               'iv' in encVal
             );
             const getLegacy = store.get('github-pat');
-            getLegacy.onsuccess = () => resolve({ isEncrypted, noLegacy: !getLegacy.result });
-            getLegacy.onerror = () => reject(new Error('Get legacy failed'));
+            getLegacy.onsuccess = () => {
+              db.close();
+              resolve({ isEncrypted, noLegacy: !getLegacy.result });
+            };
+            getLegacy.onerror = () => {
+              db.close();
+              reject(new Error('Get legacy failed'));
+            };
           };
-          getEnc.onerror = () => reject(new Error('Get encrypted failed'));
+          getEnc.onerror = () => {
+            db.close();
+            reject(new Error('Get encrypted failed'));
+          };
         };
         request.onerror = () => reject(new Error('Open failed'));
         request.onblocked = () => reject(new Error('Open blocked'));

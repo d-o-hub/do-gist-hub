@@ -11,16 +11,26 @@ export function redactAny(item: unknown, seen = new WeakSet()): unknown {
   if (typeof item === 'string') return redactSecrets(item);
   if (item && typeof item === 'object') {
     if (seen.has(item as object)) return '[CIRCULAR]';
-    seen.add(item as object);
-    if (Array.isArray(item)) return item.map((v) => redactAny(v, seen));
+    // Only recurse into plain objects and arrays to avoid hanging on complex instances
+    const proto = Object.getPrototypeOf(item);
+    const isPlain = proto === null || proto === Object.prototype;
+
+    if (Array.isArray(item)) {
+      seen.add(item);
+      return item.map((v) => redactAny(v, seen));
+    }
+    if (isPlain) {
+      seen.add(item);
+      const r: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(item as Record<string, unknown>))
+        r[k] = redactAny(v, seen);
+      return r;
+    }
     if (item instanceof Error) {
       const e = new Error(redactSecrets(item.message));
       e.stack = item.stack ? redactSecrets(item.stack) : undefined;
       return e;
     }
-    const r: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(item as Record<string, unknown>)) r[k] = redactAny(v, seen);
-    return r;
   }
   return item;
 }
