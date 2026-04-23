@@ -17,6 +17,7 @@ import {
 } from '../services/sync/conflict-detector';
 import { GitHubGist, UpdateGistRequest } from '../types/api';
 import { AppError } from '../services/github/error-handler';
+import { Filter, SortKey, SortOrder } from '../types/ui';
 
 export type GistStoreListener = (gists: GistRecord[]) => void;
 
@@ -135,6 +136,41 @@ class GistStore {
         g.description?.toLowerCase().includes(q) ||
         Object.values(g.files).some((f) => f.filename.toLowerCase().includes(q))
     );
+  }
+
+  getFilteredGists(
+    filter: Filter,
+    query: string,
+    sortKey: SortKey,
+    sortOrder: SortOrder
+  ): GistRecord[] {
+    let result = this.filterGists(filter);
+
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      result = result.filter(
+        (g) =>
+          g.description?.toLowerCase().includes(q) ||
+          Object.values(g.files).some((f) => f.filename.toLowerCase().includes(q))
+      );
+    }
+
+    result.sort((a, b) => {
+      let comparison = 0;
+      if (sortKey === 'updated') {
+        comparison = Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
+      } else if (sortKey === 'created') {
+        comparison = Date.parse(b.createdAt) - Date.parse(a.createdAt);
+      } else if (sortKey === 'title') {
+        const titleA = a.description || '';
+        const titleB = b.description || '';
+        comparison = titleA.localeCompare(titleB);
+      }
+
+      return sortOrder === 'desc' ? comparison : -comparison;
+    });
+
+    return result;
   }
 
   async createGist(

@@ -42,13 +42,22 @@ export function redactSecrets(input: string): string {
 }
 
 /**
+ * Check if a value is a plain object (not a class instance or DOM element)
+ */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== 'object' || value === null) return false;
+  const proto = Object.getPrototypeOf(value);
+  return proto === null || proto === Object.prototype;
+}
+
+/**
  * Recursively redact secrets in any value.
  * Handles strings, Errors, arrays, and nested objects.
  * Implements cycle detection and depth limiting.
  */
 export function redactAny(arg: unknown, depth = 0, seen = new WeakSet()): unknown {
   // Bounded recursion
-  if (depth > 10) return '[DEPTH_EXCEEDED]';
+  if (depth > 5) return '[DEPTH_EXCEEDED]';
 
   if (typeof arg === 'string') {
     return redactSecrets(arg);
@@ -79,17 +88,23 @@ export function redactAny(arg: unknown, depth = 0, seen = new WeakSet()): unknow
 
   if (arg !== null && typeof arg === 'object') {
     if (seen.has(arg)) return '[CIRCULAR]';
-    seen.add(arg);
 
     if (Array.isArray(arg)) {
+      seen.add(arg);
       return arg.map((item) => redactAny(item, depth + 1, seen));
     }
 
-    const redactedObj: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(arg)) {
-      redactedObj[key] = redactAny(value, depth + 1, seen);
+    if (isPlainObject(arg)) {
+      seen.add(arg);
+      const redactedObj: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(arg)) {
+        redactedObj[key] = redactAny(value, depth + 1, seen);
+      }
+      return redactedObj;
     }
-    return redactedObj;
+
+    // For complex objects (class instances, DOM elements), return a redacted string representation
+    return redactSecrets(String(arg));
   }
 
   return arg;

@@ -28,7 +28,7 @@ jobs:
           java-version: '17'
           distribution: 'zulu'
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
       - name: Read VERSION
         id: version
         run: echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT

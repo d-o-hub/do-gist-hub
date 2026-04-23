@@ -1,152 +1,124 @@
-/**
- * Root App Component
- */
-
-import gistStore from '../stores/gist-store';
-import { renderCard, bindCardEvents } from './gist-card';
-import networkMonitor from '../services/network/offline-monitor';
-import syncQueue from '../services/sync/queue';
-import { getToken, saveToken } from '../services/github/auth';
-import { loadGistDetail } from './gist-detail';
-import { APP } from '../config/app.config';
-import { redactToken, sanitizeHtml, safeError } from '../services/security';
-import { commandPalette } from './ui/command-palette';
+import { Route, Filter, SortKey, SortOrder } from '../types/ui';
+import { getToken, saveToken, removeToken } from '../services/github/auth';
+import { redactToken, safeLog, safeError } from '../services/security/logger';
+import { sanitizeHtml } from '../services/security/dom';
+import { gistStore } from '../stores/gist-store';
+import { networkMonitor } from '../services/network';
+import { syncQueue } from '../services/sync-queue';
+import { toast } from '../utils/toast';
 import { bottomSheet } from './ui/bottom-sheet';
-import { withViewTransition } from '../utils/view-transitions';
-import { toast } from './ui/toast';
-import { announcer } from '../utils/announcer';
+import { commandPalette } from './ui/command-palette';
 import { showConfirmDialog } from '../utils/dialog';
-import { safeError } from '../services/security/logger';
-
-type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings' | 'detail' | 'edit';
-import { loadConflictResolution } from './conflict-resolution';
-import { loadEditForm } from './gist-edit';
-import { renderRevisions } from './gist-detail';
-import * as GitHub from '../services/github';
-
-type Route =
-  | 'home'
-  | 'starred'
-  | 'create'
-  | 'offline'
-  | 'settings'
-  | 'detail'
-  | 'edit'
-  | 'revisions'
-  | 'conflicts';
-type Filter = 'all' | 'mine' | 'starred';
-type SortKey = 'updated' | 'created' | 'title';
-type SortOrder = 'asc' | 'desc';
 
 export class App {
   private container: HTMLElement | null = null;
   private currentRoute: Route = 'home';
-  private currentFilter: Filter = 'all';
   private searchQuery = '';
-  private searchTimeout?: number;
+  private currentFilter: Filter = 'all';
   private currentSortKey: SortKey = 'updated';
   private currentSortOrder: SortOrder = 'desc';
+  private searchTimeout: number | undefined;
 
-  mount(container: HTMLElement): void {
-    if (!container) throw new Error('App container not found');
-    this.container = container;
-    this.initializeTheme();
-    this.render();
-    this.setupNavigation();
-    this.initializeCommandPalette();
-    this.subscribeStore();
-
-    window.addEventListener('app:sync-complete', () => {
-      void this.updateGistList().catch(safeError);
-    });
-    window.addEventListener('online', () => {
-      void this.updateSyncIndicator().catch(safeError);
-    });
-    window.addEventListener('offline', () => {
-      void this.updateSyncIndicator().catch(safeError);
-    });
+  constructor() {
+    this.initialize();
   }
 
-  private initializeTheme(): void {
-    const stored = localStorage.getItem('theme-preference') || 'dark';
-    document.documentElement.setAttribute('data-theme', stored);
-  }
-
-  private subscribeStore(): void {
-    gistStore.subscribe(() => {
-      if (this.currentRoute === 'home' || this.currentRoute === 'starred') {
-        void this.updateGistList().catch(safeError);
-      }
-      void this.updateSyncIndicator().catch(safeError);
-    });
-  }
-
-  private render(): void {
+  private async initialize(): Promise<void> {
+    this.container = document.getElementById('app-container');
     if (!this.container) return;
 
-    this.container.innerHTML = `
-      <div class="app-shell" data-testid="app-shell">
+    window.addEventListener('popstate', () => {
+      const route = (window.location.hash.replace('#', '') as Route) || 'home';
+      void this.navigate(route, false);
+    });
+
+    const initialRoute = (window.location.hash.replace('#', '') as Route) || 'home';
+    void this.navigate(initialRoute, false);
+
+    networkMonitor.onStatusChange(() => {
+      void this.updateSyncIndicator();
+    });
+
+    this.initializeCommandPalette();
+  }
+
+  public async navigate(route: Route, pushState = true): Promise<void> {
+    this.currentRoute = route;
+    if (pushState) {
+      window.history.pushState(null, '', `#${route}`);
+    }
+
+    await this.render();
+    window.scrollTo(0, 0);
+  }
+
+  private async render(): Promise<void> {
+    if (!this.container) return;
+
+    this.container.innerHTML = this.getLayout();
+    await this.bindEvents();
+
+    if (this.currentRoute === 'settings') {
+      void this.loadTokenInfo();
+      void this.loadDiagnostics();
+    } else if (this.currentRoute === 'offline') {
+      void this.updateOfflineStatus();
+    }
+  }
+
+  private getLayout(): string {
+    return `
+      <div class="app-shell">
         <header class="app-header">
           <div class="header-left">
-            <h1 class="app-title" data-testid="app-title">${APP.name.toUpperCase()}</h1>
+            <h1 class="app-title">d.o. Gist Hub</h1>
           </div>
-          <div class="header-actions">
-            <div id="sync-indicator" class="sync-indicator">
-              <span class="sync-dot"></span>
-              <span class="micro-label">Sync</span>
-            </div>
-            <button class="btn btn-ghost icon-button" id="theme-toggle" aria-label="Toggle theme" data-testid="theme-toggle">🌓</button>
-            <button class="btn btn-ghost icon-button" id="settings-btn" aria-label="Settings" data-testid="settings-btn">⚙️</button>
-            <button class="btn btn-ghost icon-button" id="menu-btn" aria-label="Menu" data-testid="mobile-menu-btn">☰</button>
+          <div class="header-right">
+            <div id="sync-indicator" class="sync-indicator"></div>
+            <button class="icon-button" id="menu-btn" aria-label="Menu" data-testid="mobile-menu-btn">☰</button>
           </div>
         </header>
 
-        <nav class="sidebar-nav" data-testid="sidebar-nav">
-          ${this.renderNavItems('sidebar')}
+        <nav class="sidebar-nav">
+          <button class="nav-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home">Home</button>
+          <button class="nav-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" data-testid="nav-starred">Starred Gists</button>
+          <button class="nav-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create">Create Gist</button>
+          <button class="nav-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="nav-offline">Offline Status</button>
+          <button class="nav-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="settings-btn">Settings</button>
         </nav>
 
-        <nav class="rail-nav" data-testid="rail-nav">
-          ${this.renderNavItems('rail')}
-        </nav>
-
-        <main class="app-main" id="main-content" data-testid="main-content">
+        <main class="app-main">
           ${this.getRouteContent()}
         </main>
 
-        <nav class="bottom-nav" data-testid="bottom-nav">
-          ${this.renderNavItems('bottom')}
+        <nav class="bottom-nav">
+          <button class="nav-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Home</span>
+          </button>
+          <button class="nav-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" data-testid="nav-starred">
+            <span class="nav-icon">⭐</span>
+            <span class="nav-label">Starred Gists</span>
+          </button>
+          <button class="nav-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create">
+            <span class="nav-icon">➕</span>
+            <span class="nav-label">Create Gist</span>
+          </button>
+          <button class="nav-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="nav-offline">
+            <span class="nav-icon">📶</span>
+            <span class="nav-label">Offline Status</span>
+          </button>
+          <button class="nav-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="settings-btn">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Settings</span>
+          </button>
         </nav>
       </div>
     `;
   }
 
-  private renderNavItems(type: 'sidebar' | 'rail' | 'bottom'): string {
-    const items = [
-      { id: 'home', label: 'HOME', icon: '🏠', testId: 'nav-home' },
-      { id: 'starred', label: 'STARRED', icon: '⭐', testId: 'nav-starred' },
-      { id: 'create', label: 'CREATE', icon: '➕', testId: 'nav-create' },
-      { id: 'offline', label: 'OFFLINE', icon: '📴', testId: 'nav-offline' },
-      { id: 'settings', label: 'SETTINGS', icon: '⚙️', testId: 'settings-btn' },
-    ];
-
-    return items
-      .map(
-        (item) => `
-      <button class="${type}-item ${this.currentRoute === item.id ? 'active' : ''}"
-              data-route="${item.id}"
-              data-testid="${type === 'sidebar' ? 'sidebar-' + item.id : 'nav-' + item.id}">
-        <span class="${type}-icon">${item.icon}</span>
-        <span class="${type}-label">${item.label}</span>
-      </button>
-    `
-      )
-      .join('');
-  }
-
   private getRouteContent(): string {
     switch (this.currentRoute) {
-      case 'home':
-        return this.getHomeRoute();
       case 'starred':
         return this.getStarredRoute();
       case 'create':
@@ -213,29 +185,39 @@ export class App {
     `;
   }
 
+  private renderGistList(): string {
+    const gists = gistStore.getFilteredGists(this.currentFilter, this.searchQuery, this.currentSortKey, this.currentSortOrder);
+    if (gists.length === 0) {
+      return '<div class="empty-state"><p>No gists found.</p></div>';
+    }
+    return gists.map(gist => `<div class="gist-card-stub" data-id="${gist.id}" data-testid="gist-item">${gist.description || 'No description'}</div>`).join('');
+  }
+
   private getCreateRoute(): string {
     return `
       <div class="route-create">
         <header class="detail-header">
             <h2 class="detail-title">Create New Gist</h2>
         </header>
-        <form id="create-gist-form" class="gist-form">
+        <form id="create-gist-form" class="glass-card" style="padding: var(--space-6);">
           <div class="form-group">
-            <label class="form-label">Description</label>
-            <input type="text" id="gist-description" class="form-input" placeholder="Enter description..." />
+            <label class="form-label" for="gist-description">Description</label>
+            <input type="text" id="gist-description" class="form-input" placeholder="Gist description..." required>
           </div>
           <div class="form-group">
-            <label class="form-label">File: index.js</label>
-            <textarea id="gist-content" class="form-textarea" placeholder="Enter content..."></textarea>
+            <label class="form-label" for="gist-content">index.js</label>
+            <textarea id="gist-content" class="form-input code-editor" placeholder="Gist content..." required style="min-height: 200px;"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">Create Gist</button>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create Gist</button>
+          </div>
         </form>
       </div>
     `;
   }
 
   private getSettingsRoute(): string {
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'auto';
     return `
       <div class="route-settings">
         <header class="detail-header">
@@ -248,25 +230,15 @@ export class App {
             </summary>
             <div class="settings-section-content" style="padding-top: var(--space-4);">
               <div class="form-group">
-                <label class="form-label">GitHub Token</label>
-                <input type="password" id="pat-input" class="form-input" placeholder="ghp_..." />
-                <div class="form-actions" style="margin-top: var(--space-2); display: flex; gap: var(--space-2);">
-                    <button id="save-token-btn" class="btn btn-primary">SAVE</button>
-                    <button id="remove-token-btn" class="btn btn-ghost">REMOVE</button>
+                <label class="form-label" for="pat-input">GitHub Personal Access Token</label>
+                <div style="display: flex; gap: var(--space-2);">
+                    <input type="password" id="pat-input" class="form-input" style="flex: 1;" placeholder="ghp_...">
+                    <button id="save-token-btn" class="btn btn-primary">Save</button>
+                    <button id="remove-token-btn" class="btn btn-ghost">Remove</button>
                 </div>
                 <div id="token-status" style="margin-top: var(--space-2);"></div>
               </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">DATA MANAGEMENT</label>
-                <div class="form-actions" style="display: flex; flex-direction: column; gap: var(--space-2);">
-                    <div style="display: flex; gap: var(--space-2);">
-                        <button id="export-all-btn" class="btn btn-secondary" style="flex: 1;">EXPORT ALL GISTS</button>
-                        <button id="import-btn" class="btn btn-secondary" style="flex: 1;">IMPORT GISTS</button>
-                        <input type="file" id="import-input" accept=".json" style="display: none;" />
-                    </div>
-                    <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
-                </div>
           </details>
 
           <details class="settings-section">
@@ -291,8 +263,13 @@ export class App {
             </summary>
             <div class="settings-section-content" style="padding-top: var(--space-4);">
               <div class="form-actions" style="display: flex; flex-direction: column; gap: var(--space-2);">
+                <div style="display: flex; gap: var(--space-2); margin-top: var(--space-2);">
+                  <button id="export-all-btn" class="btn btn-secondary" style="flex: 1;">Export All Gists</button>
+                  <button id="import-btn" class="btn btn-secondary" style="flex: 1;">Import Gists</button>
+                  <input type="file" id="import-input" accept=".json" style="display: none;" />
+                </div>
                 <button id="export-data-btn" class="btn btn-ghost">Export Data (JSON)</button>
-                <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
+                <button id="clear-cache-btn" class="btn btn-danger">Clear Local Cache</button>
               </div>
               <div id="diagnostics-info" class="diagnostics-info" style="margin-top: var(--space-4);"></div>
             </div>
@@ -312,287 +289,88 @@ export class App {
             <div class="stat-card">
                 <div class="stat-icon">📴</div>
                 <div class="stat-info">
-                    <div class="stat-label">PENDING WRITES</div>
+                    <div class="stat-label">Pending Writes</div>
                     <div class="stat-value" id="pending-count">0</div>
                 </div>
             </div>
-            <div class="stat-card clickable" id="conflicts-stat-card">
-                <div class="stat-icon">⚠️</div>
-                <div class="stat-info">
-                    <div class="stat-label">SYNC CONFLICTS</div>
-                    <div class="stat-value" id="conflict-count">0</div>
-                </div>
-            </div>
         </div>
-        <div class="pending-operations" id="pending-ops" style="margin-top: var(--space-6);"></div>
-        <div id="logs-list" class="glass-card" style="margin-top: var(--space-6); padding: var(--space-4); max-height: 400px; overflow-y: auto;">
-            <div class="micro-label">Offline Logs</div>
-            <div id="logs-content" style="margin-top: var(--space-2);"></div>
-        </div>
+        <div id="pending-ops" style="margin-top: var(--space-6);"></div>
       </div>
     `;
   }
 
-  private renderGistList(): string {
-    if (gistStore.getLoading() && gistStore.getGists().length === 0) {
-      return Array(3)
-        .fill('')
-        .map(
-          () => `
-        <div class="gist-card">
-          <div class="gist-card-header">
-            <div class="loading-skeleton" style="height:20px;flex:1;"></div>
-          </div>
-          <div class="loading-skeleton" style="height:14px;width:60%;margin-bottom:8px;"></div>
-          <div class="loading-skeleton" style="height:12px;width:40%;"></div>
-        </div>
-      `
-        )
-        .join('');
-    }
-
-    let gists = gistStore.filterGists(this.currentFilter);
-
-    if (this.searchQuery) {
-      const q = this.searchQuery.toLowerCase();
-      gists = gists.filter(
-        (g) =>
-          g.description?.toLowerCase().includes(q) ||
-          Object.values(g.files).some((f) => f.filename.toLowerCase().includes(q))
-      );
-    }
-
-    // Apply sorting
-    gists = [...gists].sort((a, b) => {
-      let comparison = 0;
-      switch (this.currentSortKey) {
-        case 'updated':
-          comparison = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-          break;
-        case 'created':
-          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          break;
-        case 'title': {
-          const titleA = (a.description || Object.values(a.files)[0]?.filename || '').toLowerCase();
-          const titleB = (b.description || Object.values(b.files)[0]?.filename || '').toLowerCase();
-          comparison = titleA.localeCompare(titleB);
-          break;
-        }
-      }
-      return this.currentSortOrder === 'desc' ? -comparison : comparison;
-    });
-
-    if (gists.length === 0) return '<div class="empty-state">No gists found</div>';
-    return gists.map((g) => renderCard(g)).join('');
-  }
-
-  private setupNavigation(): void {
-    if (!this.container) return;
-    this.container.querySelectorAll('[data-route]').forEach((el) => {
+  private async bindEvents(): Promise<void> {
+    // Navigation
+    this.container!.querySelectorAll('[data-route]').forEach(el => {
       el.addEventListener('click', () => {
-        const route = (el as HTMLElement).dataset.route as Route;
-        if (route) {
-          void this.navigate(route);
-        }
+        const route = el.getAttribute('data-route') as Route;
+        if (route) void this.navigate(route);
       });
     });
-    this.container.querySelector('#menu-btn')?.addEventListener('click', () => {
+
+    // Menu button
+    this.container!.querySelector('#menu-btn')?.addEventListener('click', () => {
       void this.showMobileMenu();
-    });
-    this.container
-      .querySelector('#theme-toggle')
-      ?.addEventListener('click', () => this.toggleTheme());
-    this.container.querySelector('#settings-btn')?.addEventListener('click', () => {
-      void this.navigate('settings');
-    this.container.querySelector('#theme-select')?.addEventListener('change', (e) => {
-      const theme = (e.target as HTMLSelectElement).value;
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('theme-preference', theme);
-    });
-    this.setupRouteHandlers();
-  }
-
-  private async navigate(route: Route): Promise<void> {
-    this.currentRoute = route;
-    announcer.announce(`Navigating to ${route} page`);
-    if (route === 'home') {
-      this.currentFilter = 'all';
-      this.searchQuery = '';
-    } else if (route === 'starred') {
-      this.currentFilter = 'starred';
-      this.searchQuery = '';
-    }
-
-    await withViewTransition(async () => {
-      this.render();
-      this.setupNavigation();
-      if (route === 'home' || route === 'starred') await this.updateGistList();
-      if (route === 'settings') {
-        await this.loadTokenInfo();
-        await this.loadDiagnostics();
-      }
-      if (route === 'offline') await this.updateOfflineStatus();
-      if (route === 'conflicts') {
-        const container = this.container?.querySelector('#conflicts-container');
-        if (container) {
-          await loadConflictResolution(container as HTMLElement);
-        }
-      }
-    });
-  }
-
-  private async updateGistList(): Promise<void> {
-    const listEl = this.container?.querySelector('#gist-list');
-    if (listEl) {
-      listEl.innerHTML = this.renderGistList();
-      bindCardEvents(listEl as HTMLElement, (id) => {
-        void this.navigateToDetail(id);
-      });
-    }
-  }
-
-  private async navigateToDetail(id: string): Promise<void> {
-    this.currentRoute = 'detail';
-    await withViewTransition(async () => {
-      this.render();
-      this.setupNavigation();
-      const container = this.container?.querySelector('#gist-detail-container');
-      if (container) {
-        await loadGistDetail(
-          id,
-          container as HTMLElement,
-          () => {
-            void this.navigate('home');
-          },
-          (gid) => {
-            void this.navigateToEdit(gid);
-          },
-          (gid) => {
-            void this.navigateToRevisions(gid);
-          }
-        );
-      }
-    });
-  }
-
-  private async navigateToEdit(id: string): Promise<void> {
-    this.currentRoute = 'edit';
-    await withViewTransition(async () => {
-      this.render();
-      this.setupNavigation();
-      const container = this.container?.querySelector('#gist-edit-container');
-      if (container) {
-        await loadEditForm(id, container as HTMLElement, () => {
-          void this.navigateToDetail(id);
-        });
-      }
-    });
-  }
-
-  private async navigateToRevisions(id: string): Promise<void> {
-    this.currentRoute = 'revisions';
-    await withViewTransition(async () => {
-      this.render();
-      this.setupNavigation();
-      const container = this.container?.querySelector('#gist-revisions-container');
-      if (container) {
-        try {
-          const revisions = await GitHub.listGistRevisions(id);
-          container.innerHTML = renderRevisions(id, revisions);
-          container.querySelector('#gist-back-btn')?.addEventListener('click', () => {
-            void this.navigateToDetail(id);
-          });
-        } catch {
-          toast.error('FAILED TO LOAD REVISIONS');
-        }
-      }
-    });
-  }
-
-  private setupRouteHandlers(): void {
-    if (!this.container) return;
-
-    // Sort control
-    this.container.querySelector('#sort-select')?.addEventListener('change', (e) => {
-      const select = e.target as HTMLSelectElement;
-      const [sortKey, sortOrder] = select.value.split('-') as [SortKey, SortOrder];
-      this.currentSortKey = sortKey;
-      this.currentSortOrder = sortOrder;
-      void this.updateGistList().catch(safeError);
     });
 
     // Search
-    const searchInput = this.container.querySelector('.search-input') as HTMLInputElement | null;
+    const searchInput = this.container!.querySelector('.search-input') as HTMLInputElement;
     searchInput?.addEventListener('input', (e) => {
       clearTimeout(this.searchTimeout);
       const val = (e.target as HTMLInputElement).value;
       this.searchTimeout = window.setTimeout(() => {
         this.searchQuery = val;
-        void this.updateGistList();
+        void this.render(); // Re-render to update list
       }, 300);
     });
 
-    // Chips
-    this.container.querySelector('.filter-chips')?.addEventListener('click', (e) => {
-      const chip = (e.target as HTMLElement).closest('.chip') as HTMLElement;
-      if (!chip) return;
+    // Sort
+    this.container!.querySelector('#sort-select')?.addEventListener('change', (e) => {
+      const val = (e.target as HTMLSelectElement).value;
+      const [key, order] = val.split('-') as [SortKey, SortOrder];
+      this.currentSortKey = key;
+      this.currentSortOrder = order;
+      void this.render();
+    });
 
-      this.container!.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
-      chip.classList.add('active');
-      this.currentFilter = (chip.dataset.filter as Filter) || 'all';
-      void this.updateGistList();
-    });
-    this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
-      void (async () => {
-        e.preventDefault();
-        const desc = (this.container?.querySelector('#gist-description') as HTMLInputElement).value;
-        const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement)
-          .value;
+    // Form submission
+    this.container!.querySelector('#create-gist-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const desc = (this.container!.querySelector('#gist-description') as HTMLInputElement).value;
+      const content = (this.container!.querySelector('#gist-content') as HTMLTextAreaElement).value;
+      try {
         await gistStore.createGist(desc, true, { 'index.js': content });
-        this.navigate('home');
-      })();
+        toast.success('Gist created offline');
+        void this.navigate('home');
+      } catch (err) {
+        toast.error('Failed to create gist');
+        safeError('Create failed', err);
+      }
     });
-    this.container.querySelector('#save-token-btn')?.addEventListener('click', () => {
-      void (async () => {
-        const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
-        if (input.value) {
-          await saveToken(input.value);
+
+    // Settings actions
+    this.container!.querySelector('#save-token-btn')?.addEventListener('click', async () => {
+      const input = this.container!.querySelector('#pat-input') as HTMLInputElement;
+      if (input.value) {
+        const res = await saveToken(input.value);
+        if (res.success) {
           toast.success('Token Saved');
           void this.loadTokenInfo();
         } else {
-          toast.error('Token Required');
+          toast.error(res.error || 'Save Failed');
         }
-      })();
-    });
-
-    // Forms
-    this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const desc = (this.container?.querySelector('#gist-description') as HTMLInputElement).value;
-      const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement).value;
-      void (async () => {
-        await gistStore.createGist(desc, true, { 'index.js': content });
-        await this.navigate('home');
-      })();
-    });
-
-    // Settings
-    this.container.querySelector('#save-token-btn')?.addEventListener('click', () => {
-      const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
-      if (input.value) {
-        void (async () => {
-          await saveToken(input.value);
-          toast.success('TOKEN SAVED');
-          await this.loadTokenInfo();
-        })();
-      } else {
-        toast.error('ENTER A TOKEN');
       }
-      // Reset input
-      (e.target as HTMLInputElement).value = '';
     });
 
-    this.container.querySelector('#export-all-btn')?.addEventListener('click', async () => {
+    this.container!.querySelector('#remove-token-btn')?.addEventListener('click', async () => {
+      if (await showConfirmDialog('Remove Token?')) {
+        await removeToken();
+        toast.success('Token Removed');
+        void this.loadTokenInfo();
+      }
+    });
+
+    this.container!.querySelector('#export-all-btn')?.addEventListener('click', async () => {
       const { exportAllGists } = await import('../services/export-import');
       const blob = await exportAllGists();
       const url = URL.createObjectURL(blob);
@@ -601,14 +379,14 @@ export class App {
       a.download = `gists-export-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success('EXPORT COMPLETE');
+      toast.success('Export Complete');
     });
 
-    this.container.querySelector('#import-btn')?.addEventListener('click', () => {
-      (this.container?.querySelector('#import-input') as HTMLInputElement)?.click();
+    this.container!.querySelector('#import-btn')?.addEventListener('click', () => {
+      (this.container!.querySelector('#import-input') as HTMLInputElement)?.click();
     });
 
-    this.container.querySelector('#import-input')?.addEventListener('change', async (e) => {
+    this.container!.querySelector('#import-input')?.addEventListener('change', async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
@@ -617,51 +395,46 @@ export class App {
         const result = await importGists(file);
         await gistStore.reloadFromDb();
         toast.success(
-          `IMPORT COMPLETE: ${result.imported} NEW, ${result.updated} UPDATED, ${result.conflicts} CONFLICTS`
+          `Import Complete: ${result.imported} New, ${result.updated} Updated, ${result.conflicts} Conflicts`
         );
       } catch (err) {
-        toast.error('IMPORT FAILED');
+        toast.error('Import Failed');
         safeError('Import failed', err);
       } finally {
         (e.target as HTMLInputElement).value = '';
       }
     });
 
-    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
-      if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
+    this.container!.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
+      if (await showConfirmDialog('Clear All Local Data?')) {
         const { clearAllData } = await import('../services/db');
         await clearAllData();
         window.location.reload();
       }
-    this.container.querySelector('#export-data-btn')?.addEventListener('click', () => {
-      void (async () => {
-        try {
-          const { exportData } = await import('../services/db');
-          const data = await exportData();
-          const blob = new Blob([data], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          toast.success('DATA EXPORTED');
-        } catch {
-          toast.error('EXPORT FAILED');
-        }
-      })();
     });
 
-    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', () => {
-      void (async () => {
-        if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
-          const { clearAllData } = await import('../services/db');
-          await clearAllData();
-          window.location.reload();
-        }
-      })();
+    this.container!.querySelector('#export-data-btn')?.addEventListener('click', async () => {
+      try {
+        const { exportData } = await import('../services/db');
+        const data = await exportData();
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success('Data Exported');
+      } catch (err) {
+        toast.error('Export Failed');
+        safeError('Export failed', err);
+      }
+    });
+
+    this.container!.querySelector('#theme-select')?.addEventListener('change', (e) => {
+      const theme = (e.target as HTMLSelectElement).value;
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme-preference', theme);
     });
   }
 
@@ -713,48 +486,29 @@ export class App {
       if (count > 0) {
         opsEl.innerHTML = `<h3>Pending Operations</h3><div class="empty-state"><p>${count} operation${count !== 1 ? 's' : ''} waiting</p></div>`;
       } else {
-        opsEl.innerHTML =
-          '<h3>Pending Operations</h3><div class="empty-state"><p>No pending operations</p></div>';
+        opsEl.innerHTML = '<h3>Pending Operations</h3><div class="empty-state"><p>No pending operations</p></div>';
       }
     }
-
-    const { getConflicts } = await import('../services/sync/conflict-detector');
-    const conflicts = await getConflicts();
-    const conflictEl = this.container?.querySelector('#conflict-count');
-    if (conflictEl) conflictEl.textContent = String(conflicts.length);
-
-    const conflictCard = this.container?.querySelector('#conflicts-stat-card');
-    conflictCard?.addEventListener('click', () => {
-      void this.navigate('conflicts');
-    });
-  }
-
-  private toggleTheme(): void {
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('theme-preference', next);
   }
 
   private async showMobileMenu(): Promise<void> {
     const content = `
       <div class="mobile-menu" style="display: grid; gap: var(--space-2); padding: var(--space-4);">
-        <button class="btn btn-ghost" data-route="home">Home</button>
-        <button class="btn btn-ghost" data-route="starred">Starred Gists</button>
-        <button class="btn btn-ghost" data-route="create">Create New Gist</button>
-        <button class="btn btn-ghost" data-route="offline">Offline Status</button>
-        <button class="btn btn-ghost" data-route="settings">Settings</button>
+        <button class="btn btn-ghost menu-item" data-route="home">Home</button>
+        <button class="btn btn-ghost menu-item" data-route="starred">Starred Gists</button>
+        <button class="btn btn-ghost menu-item" data-route="create">Create New Gist</button>
+        <button class="btn btn-ghost menu-item" data-route="offline">Offline Status</button>
+        <button class="btn btn-ghost menu-item" data-route="settings">Settings</button>
       </div>
     `;
-    await bottomSheet.open(content, 'MENU');
+    await bottomSheet.open(content, 'Menu');
     setTimeout(() => {
-      document.querySelectorAll('.mobile-menu .btn').forEach((b) => {
+      document.querySelectorAll('.mobile-menu .btn').forEach(b => {
         b.addEventListener('click', () => {
           const r = (b as HTMLElement).dataset.route as Route;
           if (r) {
-            void (async () => {
-              await this.navigate(r);
-              await bottomSheet.close();
-            })();
+            void this.navigate(r);
+            void bottomSheet.close();
           }
         });
       });
@@ -763,41 +517,11 @@ export class App {
 
   private initializeCommandPalette(): void {
     commandPalette.setCommands([
-      {
-        id: 'home',
-        title: 'Home',
-        action: () => {
-          void this.navigate('home');
-        },
-      },
-      {
-        id: 'starred',
-        title: 'Starred Gists',
-        action: () => {
-          void this.navigate('starred');
-        },
-      },
-      {
-        id: 'create',
-        title: 'Create New Gist',
-        action: () => {
-          void this.navigate('create');
-        },
-      },
-      {
-        id: 'conflicts',
-        title: 'Sync Conflicts',
-        action: () => {
-          void this.navigate('conflicts');
-        },
-      },
-      {
-        id: 'settings',
-        title: 'Settings',
-        action: () => {
-          void this.navigate('settings');
-        },
-      },
+      { id: 'home', title: 'Home', action: () => { void this.navigate('home'); } },
+      { id: 'starred', title: 'Starred Gists', action: () => { void this.navigate('starred'); } },
+      { id: 'create', title: 'Create New Gist', action: () => { void this.navigate('create'); } },
+      { id: 'settings', title: 'Settings', action: () => { void this.navigate('settings'); } },
+      { id: 'offline', title: 'Offline Status', action: () => { void this.navigate('offline'); } },
     ]);
   }
 }
