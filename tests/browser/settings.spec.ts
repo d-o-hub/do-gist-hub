@@ -4,8 +4,8 @@ test.describe('Settings', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
     await page.waitForLoadState('networkidle');
-    // Use .first() or a specific container to avoid strict mode violations
-    await page.locator('[data-testid="settings-btn"]').first().click();
+    // Use .filter({ visible: true }).first() or a specific container to avoid strict mode violations
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
     await expect(page.locator('h2')).toContainText('Settings');
   });
 
@@ -33,7 +33,7 @@ test.describe('Settings', () => {
     // Try to save without entering token
     await page.locator('#save-token-btn').click();
     // Should show error toast - check for generic toast or specific error class
-    await expect(page.locator('.toast').first()).toBeVisible();
+    await expect(page.locator('.toast')).toBeVisible();
   });
 
   test('should change theme via select', async ({ page }) => {
