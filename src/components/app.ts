@@ -101,10 +101,10 @@ export class App {
     await withViewTransition(async () => {
       this.render();
       this.setupNavigation();
-      if (route === 'home' || route === 'starred') this.updateGistList();
+      if (route === 'home' || route === 'starred') await this.updateGistList();
       if (route === 'settings') {
         await this.loadTokenInfo();
-        this.loadDiagnostics();
+        await this.loadDiagnostics();
       }
       if (route === 'offline') {
         await this.updateOfflineStatus();
@@ -397,7 +397,7 @@ export class App {
     return gists.map((g) => renderCard(g)).join('');
   }
 
-  private updateGistList(): void {
+  private async updateGistList(): Promise<void> {
     const list = this.container?.querySelector('#gist-list');
     if (list) {
       list.innerHTML = this.renderGistList();
@@ -433,7 +433,7 @@ export class App {
       const val = (e.target as HTMLInputElement).value;
       this.searchTimeout = window.setTimeout(() => {
         this.searchQuery = val;
-        this.updateGistList();
+        void this.updateGistList();
       }, 300);
     });
 
@@ -445,13 +445,13 @@ export class App {
       this.container!.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
       chip.classList.add('active');
       this.currentFilter = (chip.dataset.filter as Filter) || 'all';
-      this.updateGistList();
+      void this.updateGistList();
     });
 
     // Sort
     this.container.querySelector('#sort-select')?.addEventListener('change', (e) => {
       this.currentSort = (e.target as HTMLSelectElement).value as Sort;
-      this.updateGistList();
+      void this.updateGistList();
     });
 
     // Create Form
@@ -575,7 +575,7 @@ export class App {
     }
   }
 
-  private loadDiagnostics(): void {
+  private async loadDiagnostics(): Promise<void> {
     const container = this.container?.querySelector('#diagnostics-info');
     if (!container) return;
 
