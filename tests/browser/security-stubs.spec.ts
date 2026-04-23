@@ -15,20 +15,18 @@ test.describe('Security & Coverage', () => {
   test('should verify that PAT is encrypted in IndexedDB storage', async ({ page }) => {
     await page.evaluate(async () => {
         const dbName = 'd-o-gist-hub-db';
+        const request = indexedDB.open(dbName);
         return new Promise((resolve, reject) => {
-            const request = window.indexedDB.open(dbName);
-            request.onupgradeneeded = (e) => {
-                const db = e.target.result;
-                if (!db.objectStoreNames.contains('metadata')) {
-                    db.createObjectStore('metadata', { keyPath: 'key' });
-                }
-            };
             request.onsuccess = async () => {
                 const db = request.result;
                 const tx = db.transaction(['metadata'], 'readwrite');
                 const store = tx.objectStore('metadata');
-                store.put({ key: 'github-pat-enc', value: { data: 'fake-encrypted-data', iv: 'fake-iv' }, updatedAt: Date.now() });
-                store.delete('github-pat');
+                await store.put({
+                    key: 'github-pat-enc',
+                    value: { data: 'fake-encrypted-data', iv: 'fake-iv' },
+                    updatedAt: Date.now()
+                });
+                await store.delete('github-pat');
                 tx.oncomplete = () => resolve(true);
             };
             request.onerror = () => reject();
@@ -38,7 +36,7 @@ test.describe('Security & Coverage', () => {
     const encryptionStatus: any = await page.evaluate(async () => {
         const dbName = 'd-o-gist-hub-db';
         return new Promise((resolve) => {
-            const request = window.indexedDB.open(dbName);
+            const request = indexedDB.open(dbName);
             request.onsuccess = () => {
                 const db = request.result;
                 const tx = db.transaction('metadata', 'readonly');

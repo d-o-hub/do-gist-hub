@@ -1,4 +1,5 @@
-import { GistRecord, getAllGists, saveGist, getGist, getDB } from './db';
+
+import { GistRecord, getAllGists, saveGist, getGist } from './db';
 import { detectConflict, storeConflict } from './sync/conflict-detector';
 import { GitHubGist } from '../types/api';
 import { safeError } from './security/logger';
@@ -13,6 +14,43 @@ export interface ExportData {
   };
 }
 
+export interface ImportResult {
+  imported: number;
+  updated: number;
+  conflicts: number;
+  errors: number;
+}
+
+/**
+ * Export all gists from the local database as a JSON Blob
+ */
+export async function exportAllGists(): Promise<Blob> {
+  const gists = await getAllGists();
+  const starred = gists.filter((g) => g.starred).length;
+
+  const data: ExportData = {
+    version: '1.0',
+    exportedAt: new Date().toISOString(),
+    gists,
+    metadata: {
+      total: gists.length,
+      starred,
+    },
+  };
+
+  return new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+}
+
+/**
+ * Export specific gists by their IDs as a JSON Blob
+ */
+export async function exportSelectedGists(ids: string[]): Promise<Blob> {
+  const allGists = await getAllGists();
+  const gists = allGists.filter((g) => ids.includes(g.id));
+  const starred = gists.filter((g) => g.starred).length;
+
+  const data: ExportData = {
+    version: '1.0',
 /**
  * Import Result Summary
  */
@@ -25,24 +63,7 @@ export interface ImportResult {
 }
 
 /**
- * Helper to create the export Blob
- */
-function createExportBlob(gists: GistRecord[]): Blob {
-  const data: ExportData = {
-    version: '2.0.0',
-    exportedAt: new Date().toISOString(),
-    gists,
-    metadata: {
-      total: gists.length,
-      starred: gists.filter((g) => g.starred).length,
-    },
-  };
-
-  return new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-}
-
-/**
- * Export all gists from the local database as a JSON Blob
+ * Export all gists to a JSON Blob
  */
 export async function exportAllGists(): Promise<Blob> {
   const gists = await getAllGists();
@@ -50,12 +71,35 @@ export async function exportAllGists(): Promise<Blob> {
 }
 
 /**
- * Export specific gists by their IDs as a JSON Blob
+ * Export specific gists to a JSON Blob
  */
 export async function exportSelectedGists(ids: string[]): Promise<Blob> {
   const allGists = await getAllGists();
   const selectedGists = allGists.filter((g) => ids.includes(g.id));
   return createExportBlob(selectedGists);
+}
+
+/**
+ * Helper to create the export Blob
+ */
+function createExportBlob(gists: GistRecord[]): Blob {
+  const data: ExportData = {
+    version: '1.0.0', // Format version
+    exportedAt: new Date().toISOString(),
+    gists,
+    metadata: {
+      total: gists.length,
+      starred,
+    },
+  };
+
+  return new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      starred: gists.filter((g) => g.starred).length,
+    },
+  };
+
+  const json = JSON.stringify(data, null, 2);
+  return new Blob([json], { type: 'application/json' });
 }
 
 /**
@@ -65,6 +109,8 @@ export async function importGists(file: File): Promise<ImportResult> {
   const result: ImportResult = {
     imported: 0,
     updated: 0,
+    conflicts: 0,
+    errors: 0,
     skipped: 0,
     conflicts: 0,
     errors: [],
@@ -72,6 +118,29 @@ export async function importGists(file: File): Promise<ImportResult> {
 
   try {
     const text = await file.text();
+    const data: ExportData = JSON.parse(text);
+
+    if (!data.gists || !Array.isArray(data.gists)) {
+      throw new Error('Invalid export file format');
+    }
+
+    for (const importedGist of data.gists) {
+      try {
+        const existing = await getGist(importedGist.id);
+
+        if (!existing) {
+          await saveGist(importedGist);
+          result.imported++;
+        } else {
+          // Check for conflicts
+          // We need to convert GistRecord to GitHubGist for detectConflict
+          const importedAsGitHubGist = recordToGitHubGist(importedGist);
+          const conflict = detectConflict(existing, importedAsGitHubGist);
+
+          if (conflict) {
+            await storeConflict(conflict);
+            await saveGist({
+              ...existing,
     const data = JSON.parse(text) as ExportData;
 
     if (!data.gists || !Array.isArray(data.gists)) {
@@ -79,44 +148,50 @@ export async function importGists(file: File): Promise<ImportResult> {
     }
 
     const db = getDB();
-    if (!db) throw new Error('Database not initialized');
 
     for (const importedGist of data.gists) {
       try {
-        const existing = await getGist(importedGist.id);
+        const existingGist = await db.get('gists', importedGist.id);
 
-        if (!existing) {
+        if (!existingGist) {
           // New gist
-          await saveGist(importedGist);
+          await db.put('gists', importedGist);
           result.imported++;
         } else {
           // Existing gist - check for updates/conflicts
-          const hasChanges = JSON.stringify(existing) !== JSON.stringify(importedGist);
+          const hasChanges = JSON.stringify(existingGist) !== JSON.stringify(importedGist);
 
           if (!hasChanges) {
             result.skipped++;
             continue;
           }
 
-          // Check for conflicts
-          const importedAsGitHubGist = recordToGitHubGist(importedGist);
-          const conflict = detectConflict(existing, importedAsGitHubGist);
-
-          if (conflict) {
-            await storeConflict(conflict);
+          // Simple conflict detection: if local has pending changes, mark as conflict
+          if (existingGist.syncStatus === 'pending' || existingGist.syncStatus === 'conflict') {
             await db.put('gists', {
-              ...existing,
+              ...importedGist,
               syncStatus: 'conflict',
             });
             result.conflicts++;
           } else {
-            // Local is clean, check for newer timestamp
-            if (new Date(importedGist.updatedAt) > new Date(existing.updatedAt)) {
+            // No conflict, but maybe it's an update (newer timestamp)
+            if (importedGist.updatedAt > existing.updatedAt) {
               await saveGist(importedGist);
               result.updated++;
-            } else {
-              result.skipped++;
             }
+          }
+        }
+      } catch (err) {
+        safeError(`Failed to import gist ${importedGist.id}`, err);
+        result.errors++;
+      }
+    }
+  } catch (err) {
+    safeError('Import failed', err);
+    throw err;
+            // Local is clean, safe to update from import
+            await db.put('gists', importedGist);
+            result.updated++;
           }
         }
       } catch (err) {

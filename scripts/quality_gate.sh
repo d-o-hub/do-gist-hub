@@ -1,13 +1,31 @@
 #!/bin/bash
 set -euo pipefail
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+
 echo "Running quality gates..."
-pnpm run typecheck || false
-pnpm run lint || false
-pnpm run format:check || false
-"$SCRIPT_DIR/validate-skills.sh" || false
-if command -v agent-browser &> /dev/null; then
-  "$SCRIPT_DIR/dogfood-agent-browser.sh" || false
+
+# Type check
+if command -v npm &> /dev/null && [[ -f "$ROOT_DIR/package.json" ]]; then
+  cd "$ROOT_DIR"
+
+  echo "→ Type checking..."
+  npm run typecheck || { echo "✗ Type check failed"; exit 1; }
+  echo "✓ Type check passed"
+
+  echo "→ Linting..."
+  npm run lint || { echo "✗ Lint failed"; exit 1; }
+  echo "✓ Lint passed"
+
+  echo "→ Format checking..."
+  npm run format:check || { echo "✗ Format check failed (run 'npm run format' to fix)"; exit 1; }
+  echo "✓ Format check passed"
 fi
-"$SCRIPT_DIR/benchmark.sh" || false
+
+# Validate skills
+"$SCRIPT_DIR/validate-skills.sh" || { echo "✗ Skill validation failed"; exit 1; }
+echo "✓ Skill validation passed"
+
+echo ""
 echo "✓ All quality gates passed"
