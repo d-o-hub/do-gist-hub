@@ -3,6 +3,7 @@ import {
   getAllGists as dbGetAllGists,
   saveGist as dbSaveGist,
   deleteGist as dbDeleteGist,
+  saveGists,
 } from '../services/db';
 import { safeError } from '../services/security/logger';
 import * as GitHub from '../services/github/client';
@@ -85,35 +86,56 @@ class GistStore {
         GitHub.listGists(),
         GitHub.listStarredGists(),
       ]);
+
       const starredIds = new Set(starredGists.map((g) => g.id));
-      for (const gist of ownGists) await this.processIncomingGist(gist, starredIds.has(gist.id));
-      for (const gist of starredGists)
-        if (!ownGists.find((g) => g.id === gist.id)) await this.processIncomingGist(gist, true);
+      const ownIds = new Set(ownGists.map((g) => g.id));
+
+      const processedRecords: GistRecord[] = [];
+      const gistMap = new Map(this.gists.map((g) => [g.id, g]));
+
+      // BOLT: Optimize by processing all gists in parallel and batching DB writes
+      const processGist = async (gist: GitHubGist, isStarred: boolean): Promise<void> => {
+        const existing = gistMap.get(gist.id);
+        let record: GistRecord;
+
+        if (existing) {
+          const conflict = detectConflict(existing, gist);
+          if (conflict) {
+            await storeConflict(conflict);
+            record = resolveConflict(conflict, 'manual');
+          } else {
+            record = this.githubGistToRecord(gist, isStarred);
+          }
+        } else {
+          record = this.githubGistToRecord(gist, isStarred);
+        }
+
+        processedRecords.push(record);
+        this.mergeGistRecord(record, isStarred, true);
+      };
+
+      const tasks: Promise<void>[] = [];
+      for (const gist of ownGists) {
+        tasks.push(processGist(gist, starredIds.has(gist.id)));
+      }
+      for (const gist of starredGists) {
+        if (!ownIds.has(gist.id)) {
+          tasks.push(processGist(gist, true));
+        }
+      }
+
+      await Promise.all(tasks);
+
+      // BOLT: Use new batch save method
+      await saveGists(processedRecords);
+
       this.sortGists();
-    } catch {
-      safeError('[GistStore] Load failed');
+    } catch (err) {
+      safeError('[GistStore] Load failed', err);
     } finally {
       this.isLoading = false;
       this.notifyListeners();
     }
-  }
-
-  private async processIncomingGist(gist: GitHubGist, isStarred: boolean): Promise<void> {
-    const existing = this.gists.find((g) => g.id === gist.id);
-    let record: GistRecord;
-    if (existing) {
-      const conflict = detectConflict(existing, gist);
-      if (conflict) {
-        await storeConflict(conflict);
-        record = resolveConflict(conflict, 'manual');
-      } else {
-        record = this.githubGistToRecord(gist, isStarred);
-      }
-    } else {
-      record = this.githubGistToRecord(gist, isStarred);
-    }
-    await dbSaveGist(record);
-    this.mergeGistRecord(record, isStarred, true);
   }
 
   filterGists(filter: 'all' | 'mine' | 'starred'): GistRecord[] {

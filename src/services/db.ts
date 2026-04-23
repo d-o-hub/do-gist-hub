@@ -224,6 +224,26 @@ export async function saveGist(gist: GistRecord): Promise<void> {
 }
 
 /**
+ * Store multiple gists in local database using a single transaction
+ */
+export async function saveGists(gists: GistRecord[]): Promise<void> {
+  const db = getDB();
+  const tx = db.transaction('gists', 'readwrite');
+  const now = new Date().toISOString();
+
+  await Promise.all([
+    ...gists.map((gist) =>
+      tx.store.put({
+        ...gist,
+        syncStatus: gist.syncStatus || 'synced',
+        lastSyncedAt: now,
+      })
+    ),
+    tx.done,
+  ]);
+}
+
+/**
  * Get gist from local database
  */
 export async function getGist(id: string): Promise<GistRecord | undefined> {
