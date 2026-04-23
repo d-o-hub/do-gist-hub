@@ -5,6 +5,9 @@ test.describe('Security & Coverage', () => {
     await page.goto('http://localhost:3000');
     // Wait for app shell to ensure IndexedDB is initialized by the app
     await page.waitForSelector('.app-shell');
+
+    // Bolt: Wait for a moment to ensure DB initialization is definitely complete
+    await page.waitForTimeout(1000);
   });
 
   test('should verify strict CSP meta tag is present', async ({ page }) => {
@@ -21,6 +24,11 @@ test.describe('Security & Coverage', () => {
         const request = indexedDB.open(dbName);
         request.onsuccess = () => {
           const db = request.result;
+          // Bolt: Check if store exists, if not, wait or fail early
+          if (!db.objectStoreNames.contains('metadata')) {
+            reject(new Error('metadata store not found in ' + db.objectStoreNames.length + ' stores'));
+            return;
+          }
           try {
             const tx = db.transaction(['metadata'], 'readwrite');
             const store = tx.objectStore('metadata');
@@ -48,6 +56,10 @@ test.describe('Security & Coverage', () => {
         const request = indexedDB.open(dbName);
         request.onsuccess = () => {
           const db = request.result;
+          if (!db.objectStoreNames.contains('metadata')) {
+            reject(new Error('metadata store not found'));
+            return;
+          }
           try {
             const tx = db.transaction('metadata', 'readonly');
             const store = tx.objectStore('metadata');
