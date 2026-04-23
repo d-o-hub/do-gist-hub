@@ -1,5 +1,6 @@
 export function redactToken(t: string): string {
-  return t.length > 10 ? t.slice(0, 6) + '...' : '[REDACTED]';
+  if (!t) return '[EMPTY]';
+  return t.length > 6 ? t.slice(0, 6) + '...' : '[REDACTED]';
 }
 export function redactSecrets(input: string): string {
   if (!input) return input;
@@ -11,20 +12,13 @@ export function redactAny(item: unknown, seen = new WeakSet()): unknown {
   if (typeof item === 'string') return redactSecrets(item);
   if (item && typeof item === 'object') {
     if (seen.has(item as object)) return '[CIRCULAR]';
-    // Only recurse into plain objects and arrays to avoid hanging on complex instances
     const proto = Object.getPrototypeOf(item);
-    const isPlain = proto === null || proto === Object.prototype;
-
-    if (Array.isArray(item)) {
-      seen.add(item);
-      return item.map((v) => redactAny(v, seen));
-    }
-    if (isPlain) {
-      seen.add(item);
-      const r: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(item as Record<string, unknown>))
-        r[k] = redactAny(v, seen);
-      return r;
+    if (proto === null || proto === Object.prototype || Array.isArray(item)) {
+      seen.add(item as object);
+      if (Array.isArray(item)) return item.map((v) => redactAny(v, seen));
+      return Object.fromEntries(
+        Object.entries(item as Record<string, unknown>).map(([k, v]) => [k, redactAny(v, seen)])
+      );
     }
     if (item instanceof Error) {
       const e = new Error(redactSecrets(item.message));
