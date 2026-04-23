@@ -482,8 +482,8 @@ export class App {
 
     this.container.querySelector('#remove-token-btn')?.addEventListener('click', () => {
       void (async () => {
-        const { setMetadata } = await import('../services/db');
-        await setMetadata('github-pat', null);
+        const { removeToken } = await import('../services/github/auth');
+        await removeToken();
         toast.success('TOKEN REMOVED');
         void this.loadTokenInfo();
       })();
