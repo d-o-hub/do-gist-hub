@@ -4,7 +4,7 @@
  * Provides resolution strategies (local-wins, remote-wins, manual).
  */
 
-import type { GistRecord } from '../db';
+import { GistRecord, getDB } from '../db';
 import type { GitHubGist } from '../../types/api';
 
 /**
@@ -168,17 +168,36 @@ function githubGistToResolvedRecord(remote: GitHubGist, starred: boolean): GistR
  * Store conflict in IndexedDB for later retrieval.
  */
 export async function storeConflict(conflict: GistConflict): Promise<void> {
-  const { getMetadata, setMetadata } = await import('../db');
-  const conflicts = (await getMetadata<GistConflict[]>('sync-conflicts')) || [];
-  const existingIndex = conflicts.findIndex((c) => c.gistId === conflict.gistId);
+  await storeConflicts([conflict]);
+}
 
-  if (existingIndex >= 0) {
-    conflicts[existingIndex] = conflict;
-  } else {
-    conflicts.push(conflict);
+/**
+ * Store multiple conflicts in IndexedDB in a single operation.
+ * Prevents race conditions during parallel processing.
+ */
+export async function storeConflicts(newConflicts: GistConflict[]): Promise<void> {
+  if (newConflicts.length === 0) return;
+
+  const db = getDB();
+  const tx = db.transaction('metadata', 'readwrite');
+  const store = tx.objectStore('metadata');
+
+  // Use a transaction-safe read-modify-write pattern
+  const record = await store.get('sync-conflicts');
+  const conflicts = (record?.value as GistConflict[]) || [];
+  const conflictMap = new Map(conflicts.map((c) => [c.gistId, c]));
+
+  for (const conflict of newConflicts) {
+    conflictMap.set(conflict.gistId, conflict);
   }
 
-  await setMetadata('sync-conflicts', conflicts);
+  await store.put({
+    key: 'sync-conflicts',
+    value: Array.from(conflictMap.values()),
+    updatedAt: Date.now(),
+  });
+
+  await tx.done;
 }
 
 /**

@@ -13,6 +13,7 @@ import {
   detectConflict,
   resolveConflict,
   storeConflict,
+  storeConflicts,
   getConflicts,
   clearConflict,
 } from '../services/sync/conflict-detector';
@@ -91,6 +92,7 @@ class GistStore {
       const ownIds = new Set(ownGists.map((g) => g.id));
 
       const processedRecords: GistRecord[] = [];
+      const newConflicts: any[] = [];
       const gistMap = new Map(this.gists.map((g) => [g.id, g]));
 
       // BOLT: Optimize by processing all gists in parallel and batching DB writes
@@ -101,7 +103,7 @@ class GistStore {
         if (existing) {
           const conflict = detectConflict(existing, gist);
           if (conflict) {
-            await storeConflict(conflict);
+            newConflicts.push(conflict);
             record = resolveConflict(conflict, 'manual');
           } else {
             record = this.githubGistToRecord(gist, isStarred);
@@ -124,6 +126,11 @@ class GistStore {
       }
 
       await Promise.all(tasks);
+
+      // BOLT: Batch store conflicts to prevent race conditions
+      if (newConflicts.length > 0) {
+        await storeConflicts(newConflicts);
+      }
 
       // BOLT: Use new batch save method
       await saveGists(processedRecords);

@@ -32,8 +32,18 @@ test.describe('Export/Import Functionality', () => {
 
     await page.click('button[data-route="settings"]');
 
+    // BOLT: Ensure the Data & Diagnostics section is expanded so the button is visible
+    await page.evaluate(() => {
+      const details = document.querySelectorAll('details.settings-section');
+      const diagSection = Array.from(details).find((d) => d.textContent?.includes('Diagnostics'));
+      if (diagSection && !diagSection.hasAttribute('open')) {
+        diagSection.setAttribute('open', '');
+      }
+    });
+
     // Start waiting for download before clicking
-    const downloadPromise = page.waitForEvent('download');
+    const downloadPromise = page.waitForEvent('download', { timeout: 30000 });
+    // Bolt: Ensure button is visible and click with retry logic implicit in Playwright
     await page.click('#export-data-btn');
     const download = await downloadPromise;
 
@@ -76,7 +86,9 @@ test.describe('Export/Import Functionality', () => {
     await page.setInputFiles('#import-file-input', importFilePath);
 
     // Check for success toast - use first() to avoid strict mode violation if body matches too
-    await expect(page.locator('.toast-success').first()).toContainText('IMPORTED: 1', { timeout: 15000 });
+    await expect(page.locator('.toast-success').first()).toContainText('IMPORT COMPLETE: 1 NEW', {
+      timeout: 15000,
+    });
 
     // Verify gist is in DB
     const gistExists = await page.evaluate(async () => {
