@@ -111,7 +111,6 @@ class GistStore {
         }
 
         processedRecords.push(record);
-        this.mergeGistRecord(record, isStarred, true);
       };
 
       const tasks: Promise<void>[] = [];
@@ -128,6 +127,11 @@ class GistStore {
 
       // BOLT: Use new batch save method
       await saveGists(processedRecords);
+
+      // BOLT: Only update in-memory state after successful DB write
+      for (const record of processedRecords) {
+        this.mergeGistRecord(record, record.starred, true);
+      }
 
       this.sortGists();
     } catch (err) {
