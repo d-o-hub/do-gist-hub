@@ -35,7 +35,7 @@ test.describe('Security & Coverage', () => {
       });
     });
 
-    const encryptionStatus: any = await page.evaluate(async () => {
+    const encryptionStatus = (await page.evaluate(async () => {
       const dbName = 'd-o-gist-hub-db';
       return new Promise((resolve, reject) => {
         const request = indexedDB.open(dbName);
@@ -61,7 +61,7 @@ test.describe('Security & Coverage', () => {
         request.onerror = () => reject(new Error('Open failed'));
         request.onblocked = () => reject(new Error('Open blocked'));
       });
-    });
+    })) as { isEncrypted: boolean; noLegacy: boolean };
 
     expect(encryptionStatus.isEncrypted).toBe(true);
     expect(encryptionStatus.noLegacy).toBe(true);
