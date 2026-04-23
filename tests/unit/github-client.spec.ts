@@ -22,13 +22,13 @@ test.describe('GitHub Client Authentication', () => {
       // Now call a client function that uses getAuthToken
       const { listGists } = await import('./src/services/github/client');
 
-      // We don't want to actually make a network request, so we can check if it tries to use the token
-      // or we can just test the internal getAuthToken if it was exported, but it's not.
-      // However, we can mock fetch to see the headers.
-      let capturedHeaders: HeadersInit | null = null;
+      let capturedAuthHeader: string | null = null;
       const originalFetch = window.fetch;
-      window.fetch = async (input, init) => {
-        capturedHeaders = init?.headers || null;
+      window.fetch = async (_input, init) => {
+        if (init?.headers) {
+          const h = new Headers(init.headers);
+          capturedAuthHeader = h.get('Authorization');
+        }
         return new Response(JSON.stringify([]), { status: 200 });
       };
 
@@ -41,8 +41,8 @@ test.describe('GitHub Client Authentication', () => {
       }
 
       return {
-        hasAuthHeader: !!capturedHeaders && (capturedHeaders as any)['Authorization'] === `token ${testToken}`,
-        tokenUsed: (capturedHeaders as any)?.['Authorization']
+        hasAuthHeader: capturedAuthHeader === `token ${testToken}`,
+        tokenUsed: capturedAuthHeader
       };
     });
 

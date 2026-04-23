@@ -34,7 +34,7 @@ export function cancelAllRequests(): void {
 
 /**
  * Get stored PAT from IndexedDB
- * 2026: Uses encrypted storage via auth service
+ * Uses encrypted storage via auth service
  */
 async function getAuthToken(): Promise<string | null> {
   const { getToken } = await import('./auth');
