@@ -1,25 +1,30 @@
-/* 2026 Design System Tokens */
+/* ✅ App Mode Design System — do-gemini-ui-ux-skill */
 :root {
-  /* Colors - Zinc/Slate Dark Theme */
+  /* Surfaces */
   --color-bg: #050505;
-  --color-surface: #121212;
-  --color-surface-2: #1a1a1a;
-  --color-surface-elevated: #242424;
-  --color-border: rgba(255, 255, 255, 0.1);
+  --color-surface: rgba(255, 255, 255, 0.03);
+  --color-surface-2: rgba(255, 255, 255, 0.05);
+  --color-surface-elevated: rgba(255, 255, 255, 0.07);
+  --color-border: rgba(255, 255, 255, 0.08);
   --color-divider: rgba(255, 255, 255, 0.05);
 
-  --color-text: #f8fafc;
-  --color-text-muted: #94a3b8;
-  --color-text-faint: #475569;
+  /* Text */
+  --color-text: #fafafa;
+  --color-text-muted: rgba(250, 250, 250, 0.55);
+  --color-text-faint: rgba(250, 250, 250, 0.3);
 
+  /* Accent — Blue 600/400 */
   --color-accent: #3b82f6;
   --color-accent-hover: #2563eb;
-  --color-accent-subtle: rgba(59, 130, 246, 0.1);
   --color-accent-text: #60a5fa;
+  --color-accent-subtle: rgba(59, 130, 246, 0.12);
+  --color-accent-glow: rgba(59, 130, 246, 0.5);
 
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
+  /* Status */
+  --color-success: #4ade80;
+  --color-warning: #facc15;
+  --color-error: #f87171;
+  --color-info: #22d3ee;
 
   /* Typography */
   --font-display: 'Anton', 'Impact', sans-serif;
@@ -61,20 +66,6 @@
   --motion-duration-fast: 120ms;
   --motion-duration-base: 200ms;
   --motion-easing: cubic-bezier(0.16, 1, 0.3, 1);
-
-  /* Safe Areas */
-  --safe-area-top: env(safe-area-inset-top, 0px);
-  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-.sidebar-nav {
-  display: none;
-}
-.rail-nav {
-  display: none;
-}
-.bottom-nav {
-  display: none;
 }
 
 /* App Shell */
@@ -137,7 +128,7 @@ body {
   cursor: pointer;
   transition: all var(--motion-duration-fast) var(--motion-easing);
   gap: var(--space-2);
-  min-height: 44px;
+  min-height: 40px;
 }
 
 .btn-ghost {

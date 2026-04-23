@@ -133,7 +133,7 @@ analyze_css() {
     # Check 1: Sidebar has base display:none before media queries
     if ! grep -q "\.sidebar-nav\s*{" "$css_file" 2>/dev/null || \
        ! grep -A2 "\.sidebar-nav\s*{" "$css_file" | grep -q "display:\s*none"; then
-        log_error "CSS Issue: .sidebar-nav missing base display:none"
+        log_error "CSS Issue: .sidebar-nav missing base 'display: none'"
         issues_found=$((issues_found + 1))
         
         document_issue "css-sidebar-visibility" \

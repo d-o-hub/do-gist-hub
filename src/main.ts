@@ -31,7 +31,7 @@ safeLog(
   CSS.supports('container-type', 'inline-size') ? 'supported' : 'not supported'
 );
 
-void (async function init(): Promise<void> {
+(async function init(): Promise<void> {
   try {
     // Initialize IndexedDB
     await initIndexedDB();
