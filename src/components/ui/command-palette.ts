@@ -92,12 +92,6 @@ export class CommandPalette {
     });
 
     focusTrap.activate(this.container);
-    const input = this.container.querySelector('input');
-    if (input) {
-      input.focus();
-      // Ensure focus is applied even if there's a rendering lag
-      setTimeout(() => input.focus(), 0);
-    }
     announcer.announce('Command palette opened');
   }
 
