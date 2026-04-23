@@ -30,10 +30,11 @@ test.describe('Export/Import Functionality', () => {
       });
     });
 
-    await page.click('button[data-route="settings"]');
+    await page.locator('[data-testid="settings-btn"]').first().click();
 
     // Start waiting for download before clicking
     const downloadPromise = page.waitForEvent('download');
+    await page.locator('summary:has-text("Data & Diagnostics")').click();
     await page.click('#export-data-btn');
     const download = await downloadPromise;
 
@@ -50,7 +51,7 @@ test.describe('Export/Import Functionality', () => {
   });
 
   test('should import gists from JSON', async ({ page }) => {
-    await page.click('button[data-route="settings"]');
+    await page.locator('[data-testid="settings-btn"]').first().click();
 
     const backupData = {
       version: '1.0.0',
@@ -73,10 +74,13 @@ test.describe('Export/Import Functionality', () => {
     fs.writeFileSync(importFilePath, JSON.stringify(backupData));
 
     // Upload file
+    await page.locator('summary:has-text("Data & Diagnostics")').click();
     await page.setInputFiles('#import-file-input', importFilePath);
 
     // Check for success toast - use first() to avoid strict mode violation if body matches too
-    await expect(page.locator('.toast-success').first()).toContainText('IMPORTED: 1', { timeout: 15000 });
+    await expect(page.locator('.toast-success').first()).toContainText('IMPORT COMPLETE: 1', {
+      timeout: 15000,
+    });
 
     // Verify gist is in DB
     const gistExists = await page.evaluate(async () => {
@@ -118,7 +122,7 @@ test.describe('Export/Import Functionality', () => {
         });
       });
 
-    await page.click('button[data-route="settings"]');
+    await page.locator('[data-testid="settings-btn"]').first().click();
 
     const backupData = {
       version: '1.0.0',
