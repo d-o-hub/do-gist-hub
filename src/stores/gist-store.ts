@@ -12,10 +12,10 @@ import syncQueue from '../services/sync/queue';
 import {
   detectConflict,
   resolveConflict,
-  storeConflict,
   storeConflicts,
   getConflicts,
   clearConflict,
+  GistConflict,
 } from '../services/sync/conflict-detector';
 import { GitHubGist, UpdateGistRequest } from '../types/api';
 import { AppError } from '../services/github/error-handler';
@@ -92,7 +92,7 @@ class GistStore {
       const ownIds = new Set(ownGists.map((g) => g.id));
 
       const processedRecords: GistRecord[] = [];
-      const newConflicts: any[] = [];
+      const newConflicts: GistConflict[] = [];
       const gistMap = new Map(this.gists.map((g) => [g.id, g]));
 
       // BOLT: Optimize by processing all gists in parallel and batching DB writes
