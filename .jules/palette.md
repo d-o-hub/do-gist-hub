@@ -5,3 +5,7 @@
 ## 2026-06-15 - [Adaptive Layouts with Container Queries]
 **Learning:** Container Queries (`@container`) are superior to Media Queries for component-based architecture. They allow components like `GistCard` to adjust their internal layout (e.g., stacking header elements) based on their actual width on the screen, which is essential when the sidebar can be toggled or when using multi-column layouts.
 **Action:** Prefer Container Queries for internal component responsive logic; use Media Queries only for the global app shell.
+
+## 2026-06-15 - [Responsive Test Stability]
+**Learning:** Responsive layouts often have duplicate functional elements (sidebar vs header). Use `.filter({ visible: true })` to avoid clicking hidden elements. Unique `data-testid` and avoiding duplicate HTML IDs in `App.ts` is critical for valid DOM selection.
+**Action:** Always filter by visibility for responsive navigation elements and enforce ID uniqueness in components.
