@@ -127,7 +127,7 @@ export class App {
 
     this.container.innerHTML = `
       <div class="app-shell">
-        <aside class="sidebar-nav">
+        <aside class="sidebar-nav" data-testid="sidebar-nav">
           <button class="sidebar-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home">Home</button>
           <button class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">Starred</button>
           <button class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">Create</button>
@@ -158,7 +158,7 @@ export class App {
           ${this.renderRoute()}
         </main>
 
-        <nav class="bottom-nav">
+        <nav class="bottom-nav" data-testid="bottom-nav">
           <button class="nav-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home">
             <span class="nav-icon">🏠</span>
             <span class="nav-label">Home</span>
@@ -167,7 +167,7 @@ export class App {
             <span class="nav-icon">⭐</span>
             <span class="nav-label">Starred</span>
           </button>
-          <button class="nav-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">
+          <button class="nav-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create">
             <span class="nav-icon">➕</span>
             <span class="nav-label">Create</span>
           </button>

@@ -39,6 +39,7 @@ test.describe('Command Palette', () => {
   test('should navigate via command palette', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('.app-shell');
+    await page.waitForLoadState('networkidle');
     await page.focus('body');
     await page.keyboard.press('Control+k');
     await page.locator('.command-palette input').fill('Settings');

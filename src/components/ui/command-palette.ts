@@ -6,6 +6,7 @@
 import { focusTrap } from '../../utils/focus-trap';
 import { announcer } from '../../utils/announcer';
 import { sanitizeHtml } from '../../services/security';
+import { withViewTransition } from '../../utils/view-transitions';
 
 export interface Command {
   id: string;
@@ -75,7 +76,7 @@ export class CommandPalette {
     this.filteredCommands = commands;
   }
 
-  open(): void {
+  async open(): Promise<void> {
     if (!this.container || !this.backdrop || this.isOpen) return;
 
     this.isOpen = true;
@@ -84,30 +85,33 @@ export class CommandPalette {
 
     this.render();
 
-    this.backdrop.classList.add('visible');
-    this.container.classList.add('open');
-    this.container.setAttribute('aria-expanded', 'true');
-
-    // Ensure container is visible before focusing to prevent race conditions in tests
-    requestAnimationFrame(() => {
-      if (this.container) {
-        focusTrap.activate(this.container);
-        const input = this.container.querySelector('input');
-        input?.focus();
-        announcer.announce('Command palette opened');
-      }
+    await withViewTransition(() => {
+      this.backdrop!.classList.add('visible');
+      this.container!.classList.add('open');
+      this.container!.setAttribute('aria-expanded', 'true');
     });
+
+    focusTrap.activate(this.container);
+    const input = this.container.querySelector('input');
+    if (input) {
+      input.focus();
+      // Ensure focus is applied even if there's a rendering lag
+      setTimeout(() => input.focus(), 0);
+    }
+    announcer.announce('Command palette opened');
   }
 
-  close(): void {
+  async close(): Promise<void> {
     if (!this.container || !this.backdrop || !this.isOpen) return;
 
-    this.isOpen = false;
     focusTrap.deactivate();
+    this.isOpen = false;
 
-    this.backdrop.classList.remove('visible');
-    this.container.classList.remove('open');
-    this.container.setAttribute('aria-expanded', 'false');
+    await withViewTransition(() => {
+      this.backdrop!.classList.remove('visible');
+      this.container!.classList.remove('open');
+      this.container!.setAttribute('aria-expanded', 'false');
+    });
   }
 
   private render(): void {
@@ -116,7 +120,7 @@ export class CommandPalette {
     this.container.innerHTML = `
       <div class="command-palette-search">
         <span class="search-icon">🔍</span>
-        <input type="text" placeholder="Search commands..." spellcheck="false" />
+        <input type="text" placeholder="Search commands..." spellcheck="false" autofocus />
       </div>
       <div class="command-palette-results" role="listbox">
         ${this.renderResults()}

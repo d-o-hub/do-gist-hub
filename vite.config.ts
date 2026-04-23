@@ -10,6 +10,7 @@ import { APP } from './src/config/app.config';
 function appConfigHtmlPlugin(): Plugin {
   return {
     name: 'app-config-html',
+    enforce: 'pre',
     transformIndexHtml(html) {
       const appName = process.env.VITE_APP_NAME || APP.name;
       const appDesc = process.env.VITE_APP_DESCRIPTION || APP.description;
