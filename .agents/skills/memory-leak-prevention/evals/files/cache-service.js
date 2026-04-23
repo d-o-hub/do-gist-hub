@@ -1,7 +1,8 @@
 const EventEmitter = require('events');
 
-// Global cache object - grows unbounded!
-const globalCache = {};
+// Global cache object - bounded LRU
+const globalCache = new Map();
+const MAX_GLOBAL_CACHE_SIZE = 500;
 
 // Global counter for debugging
 let globalRequestCount = 0;
@@ -9,34 +10,61 @@ let globalRequestCount = 0;
 // Event emitter for application events
 const appEvents = new EventEmitter();
 
+const MAX_LOCAL_CACHE_SIZE = 100;
+
 class CacheService {
   constructor() {
-    this.cache = {};
+    this.cache = new Map();
     this.hitCount = 0;
     this.missCount = 0;
     
-    // Add listener on every instance creation - never removed!
-    appEvents.on('cache-invalidate', (key) => {
-      delete this.cache[key];
-    });
+    this.onInvalidate = (key) => {
+      this.cache.delete(key);
+    };
+
+    // Add listener on every instance creation
+    appEvents.on('cache-invalidate', this.onInvalidate);
   }
   
   get(key) {
     globalRequestCount++;
     
-    if (this.cache[key]) {
+    if (this.cache.has(key)) {
       this.hitCount++;
-      return this.cache[key];
+      const value = this.cache.get(key);
+      // Refresh order for LRU: delete and re-set to move to the end
+      this.cache.delete(key);
+      this.cache.set(key, value);
+      return value;
     }
     
     this.missCount++;
     return null;
   }
+
+  destroy() {
+    appEvents.removeListener('cache-invalidate', this.onInvalidate);
+    this.cache.clear();
+  }
   
   set(key, value) {
-    // BUG: No limit on cache size - will grow forever!
-    this.cache[key] = value;
-    globalCache[key] = value;
+    // Implement LRU for local cache
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    } else if (this.cache.size >= MAX_LOCAL_CACHE_SIZE) {
+      const oldestKey = this.cache.keys().next().value;
+      this.cache.delete(oldestKey);
+    }
+    this.cache.set(key, value);
+
+    // Implement LRU for global cache
+    if (globalCache.has(key)) {
+      globalCache.delete(key);
+    } else if (globalCache.size >= MAX_GLOBAL_CACHE_SIZE) {
+      const oldestKey = globalCache.keys().next().value;
+      globalCache.delete(oldestKey);
+    }
+    globalCache.set(key, value);
   }
   
   // Simulate expensive operation
@@ -51,10 +79,10 @@ class CacheService {
   
   getStats() {
     return {
-      size: Object.keys(this.cache).length,
+      size: this.cache.size,
       hits: this.hitCount,
       misses: this.missCount,
-      globalCacheSize: Object.keys(globalCache).length,
+      globalCacheSize: globalCache.size,
       globalRequests: globalRequestCount,
       listenerCount: appEvents.listenerCount('cache-invalidate')
     };
