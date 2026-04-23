@@ -73,7 +73,6 @@ export class App {
       void this.showMobileMenu();
     });
 
-
     this.container?.querySelector('#theme-select')?.addEventListener('change', (e) => {
       const theme = (e.target as HTMLSelectElement).value;
       document.documentElement.setAttribute('data-theme', theme);
