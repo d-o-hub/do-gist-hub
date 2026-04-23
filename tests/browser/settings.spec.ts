@@ -2,10 +2,17 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Settings', () => {
   test.beforeEach(async ({ page }) => {
+    page.on('console', msg => {
+      if (msg.type() === 'error') console.log(`BROWSER ERROR: ${msg.text()}`);
+    });
     await page.goto('http://localhost:3000');
     await page.waitForLoadState('networkidle');
+    // Wait for the app shell to be visible first
+    await expect(page.locator('[data-testid="app-shell"]')).toBeVisible();
     // Use .first() or a specific container to avoid strict mode violations
-    await page.locator('[data-testid="settings-btn"]').first().click();
+    const settingsBtn = page.locator('[data-testid="settings-btn"]').first();
+    await expect(settingsBtn).toBeVisible();
+    await settingsBtn.click();
     await expect(page.locator('h2')).toContainText('Settings');
   });
 
@@ -33,7 +40,8 @@ test.describe('Settings', () => {
     // Try to save without entering token
     await page.locator('#save-token-btn').click();
     // Should show error toast - check for generic toast or specific error class
-    await expect(page.locator('.toast')).toBeVisible();
+    // Use first() to avoid strict mode violation if multiple toasts appear
+    await expect(page.locator('.toast').first()).toBeVisible();
   });
 
   test('should change theme via select', async ({ page }) => {

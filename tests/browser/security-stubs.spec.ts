@@ -17,19 +17,26 @@ test.describe('Security & Coverage', () => {
         const dbName = 'd-o-gist-hub-db';
         const request = indexedDB.open(dbName);
         return new Promise((resolve, reject) => {
-            request.onsuccess = async () => {
+            request.onsuccess = () => {
                 const db = request.result;
                 const tx = db.transaction(['metadata'], 'readwrite');
                 const store = tx.objectStore('metadata');
-                await store.put({
+                store.put({
                     key: 'github-pat-enc',
                     value: { data: 'fake-encrypted-data', iv: 'fake-iv' },
                     updatedAt: Date.now()
                 });
-                await store.delete('github-pat');
-                tx.oncomplete = () => resolve(true);
+                store.delete('github-pat');
+                tx.oncomplete = () => {
+                    db.close();
+                    resolve(true);
+                };
+                tx.onerror = () => {
+                    db.close();
+                    reject(new Error('Transaction failed'));
+                };
             };
-            request.onerror = () => reject();
+            request.onerror = () => reject(new Error('Open failed'));
         });
     });
 
@@ -46,9 +53,21 @@ test.describe('Security & Coverage', () => {
                     const encVal = getEnc.result?.value;
                     const isEncrypted = !!(encVal && typeof encVal === 'object' && 'data' in encVal && 'iv' in encVal);
                     const getLegacy = store.get('github-pat');
-                    getLegacy.onsuccess = () => resolve({ isEncrypted, noLegacy: !getLegacy.result });
+                    getLegacy.onsuccess = () => {
+                        db.close();
+                        resolve({ isEncrypted, noLegacy: !getLegacy.result });
+                    };
+                    getLegacy.onerror = () => {
+                        db.close();
+                        resolve({ isEncrypted, noLegacy: false });
+                    };
+                };
+                getEnc.onerror = () => {
+                    db.close();
+                    resolve({ isEncrypted: false, noLegacy: false });
                 };
             };
+            request.onerror = () => resolve({ isEncrypted: false, noLegacy: false });
         });
     });
 

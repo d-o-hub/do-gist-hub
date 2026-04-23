@@ -14,7 +14,7 @@ export class ErrorBoundary {
     container.querySelector('#error-clear-cache-btn')?.addEventListener('click', () => {
       void (async () => {
         const { showConfirmDialog } = await import('../../utils/dialog');
-        if (await showConfirmDialog('CLEAR DATA?')) {
+        if (await showConfirmDialog('Clear Data?')) {
           const { clearAllData } = await import('../../services/db');
           await clearAllData();
           window.location.reload();

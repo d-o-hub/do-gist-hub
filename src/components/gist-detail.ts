@@ -14,13 +14,13 @@ function formatRelativeTime(dateStr: string): string {
   const date = new Date(dateStr);
   const diffMs = now.getTime() - date.getTime();
   const diffSec = Math.floor(diffMs / 1000);
-  if (diffSec < 60) return 'JUST NOW';
+  if (diffSec < 60) return 'Just now';
   const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `${diffMin}M AGO`;
+  if (diffMin < 60) return `${diffMin}m ago`;
   const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}H AGO`;
+  if (diffHr < 24) return `${diffHr}h ago`;
   const diffDay = Math.floor(diffHr / 24);
-  return `${diffDay}D AGO`;
+  return `${diffDay}d ago`;
 }
 
 const esc = (text: string): string => {
@@ -38,10 +38,10 @@ export function renderFileContent(content: string, language?: string): string {
 }
 
 export function renderGistDetail(gist: GistRecord): string {
-  const title = gist.description || 'UNTITLED GIST';
+  const title = gist.description || 'Untitled Gist';
   const fileCount = Object.keys(gist.files).length;
-  const visibility = gist.public ? 'PUBLIC' : 'SECRET';
-  const starLabel = gist.starred ? 'UNSTAR' : 'STAR';
+  const visibility = gist.public ? 'Public' : 'Secret';
+  const starLabel = gist.starred ? 'Unstar' : 'Star';
   const starIcon = gist.starred ? '★' : '☆';
 
   const fileTabs =
@@ -64,30 +64,30 @@ export function renderGistDetail(gist: GistRecord): string {
   const firstFile = firstFileKey ? gist.files[firstFileKey] : null;
   const content = firstFile?.content
     ? renderFileContent(firstFile.content, firstFile.language)
-    : '<p class="empty-content">NO CONTENT AVAILABLE</p>';
+    : '<p class="empty-content">No content available</p>';
 
   return `
     <div class="gist-detail" data-gist-id="${esc(gist.id)}">
       <header class="detail-header">
         <div class="header-top">
-          <button class="btn btn-ghost" id="gist-back-btn" aria-label="Go back">← BACK</button>
-          <span class="micro-label">GIST DETAIL</span>
+          <button class="btn btn-ghost" id="gist-back-btn" aria-label="Go back">← Back</button>
+          <span class="micro-label">Gist Detail</span>
         </div>
-        <h1 class="detail-title">${esc(title.toUpperCase())}</h1>
+        <h1 class="detail-title">${esc(title)}</h1>
         <div class="detail-meta-row">
-          <span class="detail-chip">${fileCount} FILES</span>
+          <span class="detail-chip">${fileCount} Files</span>
           <span class="detail-chip">${visibility}</span>
           <time class="micro-label" datetime="${gist.updatedAt}">
-            UPDATED ${formatRelativeTime(gist.updatedAt)}
+            Updated ${formatRelativeTime(gist.updatedAt)}
           </time>
         </div>
         <div class="gist-detail-actions">
           <button class="btn ${gist.starred ? 'btn-danger' : 'btn-primary'}" data-action="star">
             ${starIcon} ${starLabel}
           </button>
-          <button class="btn btn-ghost" data-action="fork">🍴 FORK</button>
-          <button class="btn btn-ghost" data-action="edit">✏️ EDIT</button>
-          <button class="btn btn-ghost" data-action="revisions">📜 REVISIONS</button>
+          <button class="btn btn-ghost" data-action="fork">🍴 Fork</button>
+          <button class="btn btn-ghost" data-action="edit">✏️ Edit</button>
+          <button class="btn btn-ghost" data-action="revisions">📜 Revisions</button>
         </div>
       </header>
 
@@ -101,8 +101,8 @@ export function renderGistDetail(gist: GistRecord): string {
         ${
           firstFile
             ? `
-          <span class="micro-label">LANGUAGE: ${esc(firstFile.language || 'UNKNOWN')}</span>
-          <span class="micro-label">RAW URL: <a href="${esc(firstFile.rawUrl || '')}" target="_blank">LINK</a></span>
+          <span class="micro-label">Language: ${esc(firstFile.language || 'Unknown')}</span>
+          <span class="micro-label">Raw URL: <a href="${esc(firstFile.rawUrl || '')}" target="_blank">Link</a></span>
         `
             : ''
         }
@@ -124,7 +124,7 @@ export async function loadGistDetail(
     bindDetailEvents(container, { onBack, onEdit, onViewRevision });
   } catch (err) {
     safeError('[GistDetail] Failed to load gist', err);
-    toast.error('FAILED TO LOAD GIST DETAILS');
+    toast.error('Failed to load gist details');
   }
 }
 
@@ -135,10 +135,10 @@ export function renderRevisions(gistId: string, revisions: GistRevision[]): stri
       return `
       <div class="revision-item glass-card" data-version="${esc(rev.version)}">
         <div class="revision-meta">
-          <span class="stat-number">${date.toUpperCase()}</span>
-          <span class="micro-label">BY ${esc(rev.user?.login || 'UNKNOWN').toUpperCase()}</span>
+          <span class="stat-number">${date}</span>
+          <span class="micro-label">By ${esc(rev.user?.login || 'Unknown')}</span>
         </div>
-        <button class="btn btn-ghost btn-sm" data-action="view-revision" data-version="${esc(rev.version)}">VIEW</button>
+        <button class="btn btn-ghost btn-sm" data-action="view-revision" data-version="${esc(rev.version)}">View</button>
       </div>
     `;
     })
@@ -147,8 +147,8 @@ export function renderRevisions(gistId: string, revisions: GistRevision[]): stri
   return `
     <div class="revisions-list" data-gist-id="${esc(gistId)}">
       <header class="detail-header">
-        <button class="btn btn-ghost" id="gist-back-btn">← BACK</button>
-        <h1 class="detail-title">REVISIONS (${revisions.length})</h1>
+        <button class="btn btn-ghost" id="gist-back-btn">← Back</button>
+        <h1 class="detail-title">Revisions (${revisions.length})</h1>
       </header>
       <div class="revisions-container">${revisionsHtml}</div>
     </div>
@@ -184,7 +184,7 @@ export function bindDetailEvents(
           onViewRevision,
         });
       } catch {
-        toast.error('FAILED TO LOAD REVISIONS');
+        toast.error('Failed to load revisions');
       }
     })();
   });
