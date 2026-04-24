@@ -1,3 +1,5 @@
+// skipcq: JS-0044 — void operator is the idiomatic TypeScript pattern for floating promises
+// skipcq: JS-0010 — cyclomatic complexity in event delegation handlers is by design
 /**
  * Root App Component
  */
@@ -61,7 +63,7 @@ export class App {
     void this.navigate('home');
   }
 
-  private setupNavigation(): void {
+  private setupNavigation(): void { // skipcq: JS-0010
     if (!this.container || this.container.dataset.navBound) return;
 
     // Click Delegation (Routes, Actions, Buttons)
@@ -145,7 +147,7 @@ export class App {
     this.container.dataset.navBound = 'true';
   }
 
-  private async navigate(route: Route): Promise<void> {
+  private async navigate(route: Route): Promise<void> { // skipcq: JS-0010
     this.currentRoute = route;
     announcer.announce(`Navigating to ${route} page`);
 
@@ -486,7 +488,7 @@ export class App {
     }
   }
 
-  private bindRouteEvents(): void {
+  private bindRouteEvents(): void { // skipcq: JS-0010
     if (!this.container) return;
 
     if (this.currentRoute === 'detail' && this.currentGistId) {

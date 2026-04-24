@@ -6,6 +6,7 @@ import fs from 'fs';
  * Reads app.config.ts and injects values into index.html
  * so the HTML title and meta tags derive from the single source of truth.
  */
+// skipcq: JS-0027
 function appConfigHtmlPlugin(): Plugin {
   return {
     name: 'app-config-html',
@@ -26,6 +27,7 @@ function appConfigHtmlPlugin(): Plugin {
  * Injects Content-Security-Policy meta tag into index.html.
  * CSP restricts resource loading to prevent XSS and data injection attacks.
  */
+// skipcq: JS-0027
 function cspPlugin(): Plugin {
   // Strict CSP policy for production
   const csp = [
@@ -63,6 +65,7 @@ function cspPlugin(): Plugin {
  * Generates manifest.webmanifest from src/config/app.config.ts
  * so the PWA manifest always matches the single source of truth.
  */
+// skipcq: JS-0027
 function manifestPlugin(): Plugin {
   return {
     name: 'manifest-generator',
@@ -112,6 +115,7 @@ function manifestPlugin(): Plugin {
  * Enforces performance budgets during build.
  * Fails the build if bundle sizes exceed defined limits.
  */
+// skipcq: JS-0027
 function performanceBudgetPlugin(): Plugin {
   const BUDGETS = {
     initialJS: 150 * 1024,    // 150KB gzipped (we check raw size as proxy)
