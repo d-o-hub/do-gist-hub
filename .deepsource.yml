@@ -13,5 +13,3 @@ analyzers:
         - "JS-0044"  # void operator is idiomatic for TypeScript floating promises
         - "JS-0010"  # cyclomatic complexity — app.ts event delegation is intentional
         - "JS-0027"  # module-level functions required by Vite plugin API
-        - "JS-0327"  # non-null assertion — guarded by explicit null check
-        - "JS-0388"  # async without await — promise-returning functions don't need async
