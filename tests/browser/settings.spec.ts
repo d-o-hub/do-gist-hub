@@ -5,7 +5,7 @@ test.describe('Settings', () => {
     await page.goto('http://localhost:3000');
     await page.waitForSelector('.app-shell');
     await page.waitForLoadState('networkidle');
-    // Use .filter({ visible: true }) to find the visible button across different breakpoints
+    // Use .filter({ visible: true }).first() to find the visible button across different breakpoints
     await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
     await expect(page.locator('h2')).toContainText('Settings');
   });

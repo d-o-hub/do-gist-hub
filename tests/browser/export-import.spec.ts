@@ -30,12 +30,13 @@ test.describe('Export/Import Functionality', () => {
       });
     });
 
-    await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
+
+    // Open Data & Diagnostics section
+    await page.locator('summary:has-text("Data & Diagnostics")').click();
 
     // Start waiting for download before clicking
     const downloadPromise = page.waitForEvent('download');
-    // Open Data & Diagnostics section
-    await page.locator('summary:has-text("Data & Diagnostics")').click();
     await page.click('#export-data-btn');
     const download = await downloadPromise;
 
@@ -50,7 +51,7 @@ test.describe('Export/Import Functionality', () => {
   });
 
   test('should import gists from JSON', async ({ page }) => {
-    await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
 
     const backupData = {
       version: 2,
@@ -74,10 +75,14 @@ test.describe('Export/Import Functionality', () => {
 
     // Open Data & Diagnostics section
     await page.locator('summary:has-text("Data & Diagnostics")').click();
+
+    // Upload file
     await page.setInputFiles('#import-file-input', importFilePath);
 
     // Check for success toast - use first() to avoid strict mode violation if body matches too
-    await expect(page.locator('.toast-success').first()).toContainText('1 NEW', { timeout: 15000 });
+    await expect(page.locator('.toast-success').filter({ visible: true }).first()).toContainText('IMPORT COMPLETE: 1', {
+      timeout: 15000,
+    });
 
     // Verify gist is in DB
     const gistExists = await page.evaluate(async () => {
@@ -119,7 +124,7 @@ test.describe('Export/Import Functionality', () => {
         });
       });
 
-    await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
 
     const backupData = {
       version: 2,
@@ -142,6 +147,7 @@ test.describe('Export/Import Functionality', () => {
 
     // Open Data & Diagnostics section
     await page.locator('summary:has-text("Data & Diagnostics")').click();
+
     await page.setInputFiles('#import-file-input', conflictFilePath);
 
     // Verify gist in DB has conflict status
