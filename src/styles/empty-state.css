@@ -28,7 +28,13 @@
 .empty-state-description {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  max-width: 400px;
+  max-width: var(--max-w-empty-state);
   margin-bottom: var(--space-6);
   line-height: 1.5;
+}
+
+/* Empty state action button extends .btn.btn-primary via component,
+   only add overrides that differ from base button styles */
+.empty-state-action {
+  margin-top: var(--space-2);
 }

@@ -43,7 +43,7 @@ test.describe('Memory Safety & Lifecycle', () => {
   test('should verify no memory growth after multiple navigation cycles', async ({ page }) => {
     const getHeapSize = async () => {
       return await page.evaluate(() => {
-        // @ts-ignore
+        // @ts-expect-error -- performance.memory is Chrome-only
         return window.performance.memory ? window.performance.memory.usedJSHeapSize : 0;
       });
     };
@@ -71,7 +71,7 @@ test.describe('Memory Safety & Lifecycle', () => {
       try {
         const request = indexedDB.open('d-o-gist-hub-db');
         return !!request;
-      } catch (e) {
+      } catch {
         return false;
       }
     });

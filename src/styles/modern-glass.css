@@ -85,7 +85,7 @@
 }
 
 .confirm-dialog {
-  max-width: 400px;
+  max-width: var(--max-w-dialog);
   width: 100%;
   padding: var(--space-8);
   display: flex;

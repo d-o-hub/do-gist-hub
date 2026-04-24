@@ -62,6 +62,10 @@
   --motion-duration-base: 200ms;
   --motion-easing: cubic-bezier(0.16, 1, 0.3, 1);
 
+  /* Max-width constraints (semantic) */
+  --max-w-empty-state: 25rem;
+  --max-w-dialog: 25rem;
+
   /* Safe Areas */
   --safe-area-top: env(safe-area-inset-top, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);

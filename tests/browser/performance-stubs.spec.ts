@@ -25,6 +25,7 @@ test.describe('Performance Metrics', () => {
 
   test('should verify FID/INP interaction latency is low', async ({ page }) => {
     await page.locator('[data-route="settings"]').first().click();
+    await page.waitForLoadState('networkidle');
 
     const interactionMetrics = await page.evaluate(() => {
       const entries = performance.getEntriesByType('event');

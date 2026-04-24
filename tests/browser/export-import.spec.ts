@@ -30,18 +30,21 @@ test.describe('Export/Import Functionality', () => {
       });
     });
 
-    await page.locator('[data-testid="settings-btn"]').first().click();
+    await page.locator('button[data-route="settings"]').first().click();
+    await page.waitForLoadState('networkidle');
+
+    // Open Data & Diagnostics section to reveal export button
+    await page.locator('summary:has-text("Data & Diagnostics")').click();
 
     // Start waiting for download before clicking
     const downloadPromise = page.waitForEvent('download');
-    await page.locator('summary:has-text("Data & Diagnostics")').click();
     await page.click('#export-data-btn');
     const download = await downloadPromise;
 
     expect(download.suggestedFilename()).toMatch(/gist-hub-backup-.*\.json/);
 
     const downloadPath = await download.path();
-    const content = JSON.parse(fs.readFileSync(downloadPath, 'utf8'));
+    const content = JSON.parse(fs.readFileSync(downloadPath!, 'utf8'));
 
     // DB_VERSION is 2
     expect(content.version).toBe(2);
@@ -50,7 +53,8 @@ test.describe('Export/Import Functionality', () => {
   });
 
   test('should import gists from JSON', async ({ page }) => {
-    await page.click('button[data-route="settings"]');
+    await page.locator('button[data-route="settings"]').first().click();
+    await page.waitForLoadState('networkidle');
 
     const backupData = {
       version: '1.0.0',
@@ -120,7 +124,8 @@ test.describe('Export/Import Functionality', () => {
         });
       });
 
-    await page.click('button[data-route="settings"]');
+    await page.locator('button[data-route="settings"]').first().click();
+    await page.waitForLoadState('networkidle');
 
     const backupData = {
       version: '1.0.0',

@@ -7,6 +7,7 @@ A state-of-the-art, web-first GitHub Gist management application. Built with 202
 - **Adaptive UI**: Powered by **Container Queries** and a 7-breakpoint responsive system.
 - **Fluid Transitions**: Native feel with **View Transitions API** for all routing.
 - **Power User Tools**: Integrated **Command Palette (Cmd+K)** for rapid navigation and action.
+- **Actionable Empty States**: Guided CTAs instead of dead ends — every empty state offers a next step.
 - **Mobile-First Experience**: Innovative **Bottom Sheet** navigation and gesture-friendly interactions.
 - **Hardened Security**:
   - **Encryption at Rest**: Personal Access Tokens are encrypted with AES-GCM (Web Cryptography API).
@@ -51,12 +52,14 @@ pnpm build
 - **Command Palette**: Press `Ctrl+K` (or `Cmd+K`) to search and execute commands.
 - **Diagnostics**: Export app state for debugging from Settings.
 - **Backups**: Full IndexedDB export/import support.
+- **Event Delegation**: All navigation uses `data-route`/`data-action` attributes with container-level listeners — no per-element binding.
 
 ## Documentation
 
-- [AGENTS.md](AGENTS.md) - Engineering principles and Agent workflows
-- [Plans](plans/) - Architecture decisions (ADRs) and roadmaps
-- [Modern Patterns](agent-docs/2026-patterns.md) - Deep dive into 2026 implementations
+- [AGENTS.md](AGENTS.md) — Engineering principles and Agent workflows
+- [Plans](plans/) — Architecture decisions (ADRs) and roadmaps
+- [Modern Patterns](agent-docs/2026-patterns.md) — Deep dive into 2026 implementations
+- [Testing Strategy](plans/011-testing-strategy.md) — Playwright stability guidelines
 
 ## License
 

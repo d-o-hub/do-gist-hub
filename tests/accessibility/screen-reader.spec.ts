@@ -100,7 +100,7 @@ test.describe('Accessibility - Screen Reader', () => {
     expect(themeLabel).toBeTruthy();
 
     // Settings button should have label
-    const settingsBtn = page.locator('[data-testid="settings-btn"]');
+    const settingsBtn = page.locator('[data-route="settings"][aria-label]').first();
     const settingsLabel = await settingsBtn.getAttribute('aria-label');
     expect(settingsLabel).toBeTruthy();
   });
@@ -147,7 +147,7 @@ test.describe('Accessibility - Screen Reader', () => {
 
   test('should use aria-describedby for help text', async ({ page }) => {
     // Navigate to settings
-    await page.locator('[data-testid="settings-btn"]').click();
+    await page.locator('[data-route="settings"]').first().click();
 
     // PAT input should have help text
     const patInput = page.locator('#pat-input');

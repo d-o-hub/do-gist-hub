@@ -5,7 +5,7 @@ test.describe('Settings', () => {
     await page.goto('http://localhost:3000');
     await page.waitForLoadState('networkidle');
     // Use .first() or a specific container to avoid strict mode violations
-    await page.locator('[data-testid="settings-btn"]').first().click();
+    await page.locator('[data-route="settings"]').first().click();
     await expect(page.locator('h2')).toContainText('Settings');
   });
 

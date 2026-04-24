@@ -1,11 +1,24 @@
-## 2026-06-15 - [Actionable Empty States]
-**Learning:** Empty states are not just "no data" messages; they are opportunities to guide the user. Providing a primary CTA (e.g., "Create Gist") directly in the empty state significantly improves task completion rates compared to a static message.
-**Action:** Every empty state must include a Title, Description, Icon, and a clear primary Action button.
+# Learnings & Patterns
 
-## 2026-06-15 - [Adaptive Layouts with Container Queries]
-**Learning:** Container Queries (`@container`) are superior to Media Queries for component-based architecture. They allow components like `GistCard` to adjust their internal layout (e.g., stacking header elements) based on their actual width on the screen, which is essential when the sidebar can be toggled or when using multi-column layouts.
-**Action:** Prefer Container Queries for internal component responsive logic; use Media Queries only for the global app shell.
+## Navigation & Event Delegation
+- **Container-level delegation** over per-element binding: Use `data-route` and `data-action` attributes with a single container listener (guard via `dataset.navBound`) — eliminates memory leaks and ensures all dynamic content (empty states, list items) is interactive without extra code.
+- **Unique test IDs per nav location**: Each navigation target (sidebar, rail, header) must have a unique `data-testid` to prevent strict-mode violations in Playwright. Prefer `data-route` selectors in tests for resilience.
+- **Clear pending debounces**: When handling `clear-search` or similar reset actions, always `clearTimeout()` before resetting state to avoid orphaned callbacks firing after the UI has been reset.
 
-## 2026-06-20 - [Universal Navigation via Delegation]
-**Learning:** Hardbinding navigation listeners to every dynamic element is prone to memory leaks and maintenance overhead. Implementing a single 'data-route' listener on the app container (with a guard to prevent multiple registrations) ensures all dynamic content, including empty states and list items, is interactive without extra code.
-**Action:** Use 'data-route' and 'data-action' attributes combined with container-level event delegation for all navigation-heavy components.
+## CSS Token Architecture
+- **No hardcoded px/rem values** outside `:root` token definitions. Every `max-width`, `padding`, `margin` must reference a semantic token (e.g., `--max-w-empty-state`, `--max-w-dialog`). Define tokens in `base.css` `:root` — never rely solely on fallback values.
+- **Component buttons extend base classes**: `.empty-state-action` should not duplicate `.btn.btn-primary` styles; only add overrides that differ (e.g., `margin-top`). The component already applies both classes.
+
+## Empty States (Actionable)
+- Every empty state must include: Title, Description, Icon, and a clear primary Action button.
+- Action buttons use `data-route` (for navigation) or `data-action` (for app logic like `clear-search`) so delegation handles them automatically.
+
+## Playwright Test Stability
+- **Always use `.first()`** for selectors that match multiple nav elements across sidebar/rail/header.
+- **Wait for `networkidle`** after navigation clicks before asserting DOM state.
+- **Open collapsed `<details>` sections** before interacting with elements inside them (e.g., "Data & Diagnostics" must be expanded before clicking `#export-data-btn`).
+- **Prefer `@ts-expect-error`** over `@ts-ignore` for type suppression — it fails the build if the suppressed error no longer exists.
+
+## PR CI Patterns
+- **DeepSource JavaScript** failures are typically: unused vars, `any` types, catch-block unused params. Use `catch {}` (no param) when the error is unused.
+- **Duplicate test IDs** cause strict-mode violations in Playwright on multi-nav layouts.

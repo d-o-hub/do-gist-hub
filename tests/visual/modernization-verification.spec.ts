@@ -26,16 +26,13 @@ test.describe('UI Modernization Verification', () => {
   test('should trigger View Transition on navigation', async ({ page }) => {
     // This is hard to test directly, but we can check if withViewTransition is called
     // by mocking the startViewTransition API
-    const _transitionTriggered = await page.evaluate(() => {
-      let triggered = false;
+    await page.evaluate(() => {
       if ('startViewTransition' in document) {
         const original = (document as any).startViewTransition;
         (document as any).startViewTransition = (cb: any) => {
-          triggered = true;
           return original.call(document, cb);
         };
       }
-      return triggered;
     });
 
     // Perform navigation

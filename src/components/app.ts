@@ -82,6 +82,7 @@ export class App {
       if (actionBtn) {
         const action = actionBtn.dataset.action;
         if (action === 'clear-search') {
+          clearTimeout(this.searchTimeout);
           this.searchQuery = '';
           const input = this.container?.querySelector('#gist-search') as HTMLInputElement;
           if (input) input.value = '';
@@ -190,7 +191,7 @@ export class App {
           <button class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">Starred</button>
           <button class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">Create</button>
           <button class="sidebar-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">Offline</button>
-          <button class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" id="settings-btn" data-testid="settings-btn">Settings</button>
+          <button class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings">Settings</button>
         </aside>
 
         <aside class="rail-nav">
@@ -198,7 +199,7 @@ export class App {
           <button class="rail-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">⭐</button>
           <button class="rail-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">➕</button>
           <button class="rail-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">📶</button>
-          <button class="rail-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="settings-btn">⚙️</button>
+          <button class="rail-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings">⚙️</button>
         </aside>
 
         <header class="app-header">
@@ -208,7 +209,7 @@ export class App {
           <div class="header-right">
             <div id="sync-indicator" class="sync-indicator"></div>
             <button id="mobile-menu-btn" data-testid="mobile-menu-btn" class="icon-button" aria-label="Menu">☰</button>
-            <button class="icon-button" aria-label="Settings" data-testid="settings-btn" data-route="settings">⚙️</button>
+            <button class="icon-button" aria-label="Settings" data-route="settings">⚙️</button>
           </div>
         </header>
 
