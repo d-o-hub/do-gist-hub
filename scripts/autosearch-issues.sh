@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
-AGENT_DOCS="$ROOT_DIR/agent-docs"
+AGENT_DOCS="$ROOT_DIR/agents-docs"
 DATE=$(date +%Y-%m-%d)
 
 # Search patterns for common issues
