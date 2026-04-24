@@ -103,7 +103,7 @@ export class SyncQueue {
         fork: () => SyncQueue.syncFork(write.gistId),
       };
       const handler = handlers[write.action];
-      if (handler) return await handler();
+      if (handler) return handler();
       return { success: false, error: `Unknown action: ${write.action}`, shouldRetry: false };
     } catch (error) {
       return {

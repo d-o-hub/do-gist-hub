@@ -61,7 +61,7 @@ export async function getToken(): Promise<string | null> {
   }
 
   try {
-    return await decrypt(enc.data, enc.iv);
+    return decrypt(enc.data, enc.iv);
   } catch (err) {
     safeError('[Auth] Failed to decrypt token:', err);
     return null;
