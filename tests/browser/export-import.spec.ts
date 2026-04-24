@@ -32,11 +32,10 @@ test.describe('Export/Import Functionality', () => {
 
     await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
 
-    // Open Data & Diagnostics section
-    await page.locator('summary:has-text("Data & Diagnostics")').click();
-
     // Start waiting for download before clicking
     const downloadPromise = page.waitForEvent('download');
+    // Open Data & Diagnostics section
+    await page.locator('summary:has-text("Data & Diagnostics")').click();
     await page.click('#export-data-btn');
     const download = await downloadPromise;
 
@@ -54,7 +53,7 @@ test.describe('Export/Import Functionality', () => {
     await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
 
     const backupData = {
-      version: '1.0.0',
+      version: 2,
       exportedAt: new Date().toISOString(),
       gists: [
         {
@@ -75,8 +74,6 @@ test.describe('Export/Import Functionality', () => {
 
     // Open Data & Diagnostics section
     await page.locator('summary:has-text("Data & Diagnostics")').click();
-
-    // Upload file
     await page.setInputFiles('#import-file-input', importFilePath);
 
     // Check for success toast - use first() to avoid strict mode violation if body matches too
@@ -125,7 +122,7 @@ test.describe('Export/Import Functionality', () => {
     await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
 
     const backupData = {
-      version: '1.0.0',
+      version: 2,
       exportedAt: new Date(Date.now() + 10000).toISOString(), // Newer
       gists: [
         {
@@ -145,7 +142,6 @@ test.describe('Export/Import Functionality', () => {
 
     // Open Data & Diagnostics section
     await page.locator('summary:has-text("Data & Diagnostics")').click();
-
     await page.setInputFiles('#import-file-input', conflictFilePath);
 
     // Verify gist in DB has conflict status
