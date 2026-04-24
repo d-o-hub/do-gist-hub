@@ -16,9 +16,6 @@ import { withViewTransition } from '../utils/view-transitions';
 import { toast } from './ui/toast';
 import { announcer } from '../utils/announcer';
 import { showConfirmDialog } from '../utils/dialog';
-import { safeError } from '../services/security/logger';
-
-type Route = 'home' | 'starred' | 'create' | 'offline' | 'settings' | 'detail' | 'edit';
 import { loadConflictResolution } from './conflict-resolution';
 import { loadEditForm } from './gist-edit';
 import { renderRevisions } from './gist-detail';
@@ -57,13 +54,13 @@ export class App {
     this.subscribeStore();
 
     window.addEventListener('app:sync-complete', () => {
-      void this.updateGistList().catch(safeError);
+      this.updateGistList().catch(safeError);
     });
     window.addEventListener('online', () => {
-      void this.updateSyncIndicator().catch(safeError);
+      this.updateSyncIndicator().catch(safeError);
     });
     window.addEventListener('offline', () => {
-      void this.updateSyncIndicator().catch(safeError);
+      this.updateSyncIndicator().catch(safeError);
     });
   }
 
@@ -75,9 +72,9 @@ export class App {
   private subscribeStore(): void {
     gistStore.subscribe(() => {
       if (this.currentRoute === 'home' || this.currentRoute === 'starred') {
-        void this.updateGistList().catch(safeError);
+        this.updateGistList().catch(safeError);
       }
-      void this.updateSyncIndicator().catch(safeError);
+      this.updateSyncIndicator().catch(safeError);
     });
   }
 
@@ -257,7 +254,7 @@ export class App {
                 <div id="token-status" style="margin-top: var(--space-2);"></div>
               </div>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="padding: 0 var(--space-4) var(--space-4);">
                 <label class="form-label">DATA MANAGEMENT</label>
                 <div class="form-actions" style="display: flex; flex-direction: column; gap: var(--space-2);">
                     <div style="display: flex; gap: var(--space-2);">
@@ -265,8 +262,8 @@ export class App {
                         <button id="import-btn" class="btn btn-secondary" style="flex: 1;">IMPORT GISTS</button>
                         <input type="file" id="import-input" accept=".json" style="display: none;" />
                     </div>
-                    <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
                 </div>
+            </div>
           </details>
 
           <details class="settings-section">
@@ -292,7 +289,7 @@ export class App {
             <div class="settings-section-content" style="padding-top: var(--space-4);">
               <div class="form-actions" style="display: flex; flex-direction: column; gap: var(--space-2);">
                 <button id="export-data-btn" class="btn btn-ghost">Export Data (JSON)</button>
-                <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
+                <button id="clear-cache-btn" class="btn btn-danger">CLEAR ALL LOCAL DATA</button>
               </div>
               <div id="diagnostics-info" class="diagnostics-info" style="margin-top: var(--space-4);"></div>
             </div>
@@ -392,18 +389,19 @@ export class App {
       el.addEventListener('click', () => {
         const route = (el as HTMLElement).dataset.route as Route;
         if (route) {
-          void this.navigate(route);
+          this.navigate(route).catch(safeError);
         }
       });
     });
     this.container.querySelector('#menu-btn')?.addEventListener('click', () => {
-      void this.showMobileMenu();
+      this.showMobileMenu().catch(safeError);
     });
     this.container
       .querySelector('#theme-toggle')
       ?.addEventListener('click', () => this.toggleTheme());
     this.container.querySelector('#settings-btn')?.addEventListener('click', () => {
-      void this.navigate('settings');
+      this.navigate('settings').catch(safeError);
+    });
     this.container.querySelector('#theme-select')?.addEventListener('change', (e) => {
       const theme = (e.target as HTMLSelectElement).value;
       document.documentElement.setAttribute('data-theme', theme);
@@ -446,7 +444,7 @@ export class App {
     if (listEl) {
       listEl.innerHTML = this.renderGistList();
       bindCardEvents(listEl as HTMLElement, (id) => {
-        void this.navigateToDetail(id);
+        this.navigateToDetail(id).catch(safeError);
       });
     }
   }
@@ -462,13 +460,13 @@ export class App {
           id,
           container as HTMLElement,
           () => {
-            void this.navigate('home');
+            this.navigate('home').catch(safeError);
           },
           (gid) => {
-            void this.navigateToEdit(gid);
+            this.navigateToEdit(gid).catch(safeError);
           },
           (gid) => {
-            void this.navigateToRevisions(gid);
+            this.navigateToRevisions(gid).catch(safeError);
           }
         );
       }
@@ -483,7 +481,7 @@ export class App {
       const container = this.container?.querySelector('#gist-edit-container');
       if (container) {
         await loadEditForm(id, container as HTMLElement, () => {
-          void this.navigateToDetail(id);
+          this.navigateToDetail(id).catch(safeError);
         });
       }
     });
@@ -500,7 +498,7 @@ export class App {
           const revisions = await GitHub.listGistRevisions(id);
           container.innerHTML = renderRevisions(id, revisions);
           container.querySelector('#gist-back-btn')?.addEventListener('click', () => {
-            void this.navigateToDetail(id);
+            this.navigateToDetail(id).catch(safeError);
           });
         } catch {
           toast.error('FAILED TO LOAD REVISIONS');
@@ -518,7 +516,7 @@ export class App {
       const [sortKey, sortOrder] = select.value.split('-') as [SortKey, SortOrder];
       this.currentSortKey = sortKey;
       this.currentSortOrder = sortOrder;
-      void this.updateGistList().catch(safeError);
+      this.updateGistList().catch(safeError);
     });
 
     // Search
@@ -528,7 +526,7 @@ export class App {
       const val = (e.target as HTMLInputElement).value;
       this.searchTimeout = window.setTimeout(() => {
         this.searchQuery = val;
-        void this.updateGistList();
+        this.updateGistList().catch(safeError);
       }, 300);
     });
 
@@ -540,29 +538,7 @@ export class App {
       this.container!.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
       chip.classList.add('active');
       this.currentFilter = (chip.dataset.filter as Filter) || 'all';
-      void this.updateGistList();
-    });
-    this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
-      void (async () => {
-        e.preventDefault();
-        const desc = (this.container?.querySelector('#gist-description') as HTMLInputElement).value;
-        const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement)
-          .value;
-        await gistStore.createGist(desc, true, { 'index.js': content });
-        this.navigate('home');
-      })();
-    });
-    this.container.querySelector('#save-token-btn')?.addEventListener('click', () => {
-      void (async () => {
-        const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
-        if (input.value) {
-          await saveToken(input.value);
-          toast.success('Token Saved');
-          void this.loadTokenInfo();
-        } else {
-          toast.error('Token Required');
-        }
-      })();
+      this.updateGistList().catch(safeError);
     });
 
     // Forms
@@ -570,71 +546,97 @@ export class App {
       e.preventDefault();
       const desc = (this.container?.querySelector('#gist-description') as HTMLInputElement).value;
       const content = (this.container?.querySelector('#gist-content') as HTMLTextAreaElement).value;
-      void (async () => {
-        await gistStore.createGist(desc, true, { 'index.js': content });
-        await this.navigate('home');
-      })();
+      (async () => {
+        try {
+          await gistStore.createGist(desc, true, { 'index.js': content });
+          await this.navigate('home');
+        } catch (err) {
+          safeError('Create failed', err);
+          toast.error('CREATE FAILED');
+        }
+      })().catch(safeError);
     });
 
     // Settings
     this.container.querySelector('#save-token-btn')?.addEventListener('click', () => {
       const input = this.container?.querySelector('#pat-input') as HTMLInputElement;
       if (input.value) {
-        void (async () => {
-          await saveToken(input.value);
-          toast.success('TOKEN SAVED');
-          await this.loadTokenInfo();
-        })();
+        (async () => {
+          try {
+            await saveToken(input.value);
+            toast.success('TOKEN SAVED');
+            await this.loadTokenInfo();
+            input.value = '';
+          } catch (err) {
+            safeError('Save token failed', err);
+            toast.error('SAVE FAILED');
+          }
+        })().catch(safeError);
       } else {
         toast.error('ENTER A TOKEN');
       }
-      // Reset input
-      (e.target as HTMLInputElement).value = '';
     });
 
-    this.container.querySelector('#export-all-btn')?.addEventListener('click', async () => {
-      const { exportAllGists } = await import('../services/export-import');
-      const blob = await exportAllGists();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `gists-export-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success('EXPORT COMPLETE');
+    this.container.querySelector('#remove-token-btn')?.addEventListener('click', () => {
+      (async () => {
+        try {
+          const { removeToken } = await import('../services/github/auth');
+          await removeToken();
+          toast.success('TOKEN REMOVED');
+          await this.loadTokenInfo();
+        } catch (err) {
+          safeError('Remove token failed', err);
+        }
+      })().catch(safeError);
+    });
+
+    // Data Management
+    this.container.querySelector('#export-all-btn')?.addEventListener('click', () => {
+      (async () => {
+        try {
+          const { exportAllGists } = await import('../services/export-import');
+          const blob = await exportAllGists();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `gists-export-${new Date().toISOString().split('T')[0]}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+          toast.success('EXPORT COMPLETE');
+        } catch (err) {
+          safeError('Export failed', err);
+          toast.error('EXPORT FAILED');
+        }
+      })().catch(safeError);
     });
 
     this.container.querySelector('#import-btn')?.addEventListener('click', () => {
       (this.container?.querySelector('#import-input') as HTMLInputElement)?.click();
     });
 
-    this.container.querySelector('#import-input')?.addEventListener('change', async (e) => {
+    this.container.querySelector('#import-input')?.addEventListener('change', (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
-      try {
-        const { importGists } = await import('../services/export-import');
-        const result = await importGists(file);
-        await gistStore.reloadFromDb();
-        toast.success(
-          `IMPORT COMPLETE: ${result.imported} NEW, ${result.updated} UPDATED, ${result.conflicts} CONFLICTS`
-        );
-      } catch (err) {
-        toast.error('IMPORT FAILED');
-        safeError('Import failed', err);
-      } finally {
-        (e.target as HTMLInputElement).value = '';
-      }
+      (async () => {
+        try {
+          const { importGists } = await import('../services/export-import');
+          const result = await importGists(file);
+          await gistStore.reloadFromDb();
+          toast.success(
+            `IMPORTED: ${result.imported}, UPDATED: ${result.updated}, CONFLICTS: ${result.conflicts}`
+          );
+        } catch (err) {
+          toast.error('IMPORT FAILED');
+          safeError('Import failed', err);
+        } finally {
+          (e.target as HTMLInputElement).value = '';
+        }
+      })().catch(safeError);
     });
 
-    this.container.querySelector('#clear-cache-btn')?.addEventListener('click', async () => {
-      if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
-        const { clearAllData } = await import('../services/db');
-        await clearAllData();
-        window.location.reload();
-      }
     this.container.querySelector('#export-data-btn')?.addEventListener('click', () => {
-      void (async () => {
+      (async () => {
         try {
           const { exportData } = await import('../services/db');
           const data = await exportData();
@@ -648,20 +650,25 @@ export class App {
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
           toast.success('DATA EXPORTED');
-        } catch {
+        } catch (err) {
+          safeError('Data export failed', err);
           toast.error('EXPORT FAILED');
         }
-      })();
+      })().catch(safeError);
     });
 
     this.container.querySelector('#clear-cache-btn')?.addEventListener('click', () => {
-      void (async () => {
+      (async () => {
         if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
-          const { clearAllData } = await import('../services/db');
-          await clearAllData();
-          window.location.reload();
+          try {
+            const { clearAllData } = await import('../services/db');
+            await clearAllData();
+            window.location.reload();
+          } catch (err) {
+            safeError('Clear failed', err);
+          }
         }
-      })();
+      })().catch(safeError);
     });
   }
 
@@ -725,7 +732,7 @@ export class App {
 
     const conflictCard = this.container?.querySelector('#conflicts-stat-card');
     conflictCard?.addEventListener('click', () => {
-      void this.navigate('conflicts');
+      this.navigate('conflicts').catch(safeError);
     });
   }
 
@@ -751,10 +758,10 @@ export class App {
         b.addEventListener('click', () => {
           const r = (b as HTMLElement).dataset.route as Route;
           if (r) {
-            void (async () => {
+            (async () => {
               await this.navigate(r);
               await bottomSheet.close();
-            })();
+            })().catch(safeError);
           }
         });
       });
@@ -767,35 +774,35 @@ export class App {
         id: 'home',
         title: 'Home',
         action: () => {
-          void this.navigate('home');
+          this.navigate('home').catch(safeError);
         },
       },
       {
         id: 'starred',
         title: 'Starred Gists',
         action: () => {
-          void this.navigate('starred');
+          this.navigate('starred').catch(safeError);
         },
       },
       {
         id: 'create',
         title: 'Create New Gist',
         action: () => {
-          void this.navigate('create');
+          this.navigate('create').catch(safeError);
         },
       },
       {
         id: 'conflicts',
         title: 'Sync Conflicts',
         action: () => {
-          void this.navigate('conflicts');
+          this.navigate('conflicts').catch(safeError);
         },
       },
       {
         id: 'settings',
         title: 'Settings',
         action: () => {
-          void this.navigate('settings');
+          this.navigate('settings').catch(safeError);
         },
       },
     ]);
