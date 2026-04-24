@@ -93,8 +93,8 @@ export class App {
 
       // Filter chip delegation
       const chip = target.closest('.chip') as HTMLElement;
-      if (chip && chip.dataset.filter) {
-        this.container!.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
+      if (chip && chip.dataset.filter && this.container) {
+        this.container.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
         chip.classList.add('active');
         this.currentFilter = (chip.dataset.filter as Filter) || 'all';
         void this.updateGistList();

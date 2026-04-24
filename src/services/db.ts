@@ -231,7 +231,7 @@ export async function saveGist(gist: GistRecord): Promise<void> {
 /**
  * Get gist from local database
  */
-export async function getGist(id: string): Promise<GistRecord | undefined> {
+export function getGist(id: string): Promise<GistRecord | undefined> {
   const db = getDB();
   return db.get('gists', id);
 }
@@ -239,7 +239,7 @@ export async function getGist(id: string): Promise<GistRecord | undefined> {
 /**
  * Get all gists from local database
  */
-export async function getAllGists(): Promise<GistRecord[]> {
+export function getAllGists(): Promise<GistRecord[]> {
   const db = getDB();
   return db.getAll('gists');
 }
@@ -270,7 +270,7 @@ export async function queueWrite(
 /**
  * Get all pending writes
  */
-export async function getPendingWrites(): Promise<PendingWrite[]> {
+export function getPendingWrites(): Promise<PendingWrite[]> {
   const db = getDB();
   return db.getAll('pendingWrites');
 }
