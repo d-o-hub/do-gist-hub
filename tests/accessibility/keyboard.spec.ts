@@ -53,7 +53,7 @@ test.describe('Accessibility - Keyboard', () => {
 
   test('should activate buttons with Enter key', async ({ page }) => {
     // Navigate to settings button
-    const settingsBtn = page.locator('[data-route="settings"]').first();
+    const settingsBtn = page.locator('[data-testid="settings-btn"]');
     await settingsBtn.focus();
     await expect(settingsBtn).toBeFocused();
 
@@ -150,7 +150,7 @@ test.describe('Accessibility - Keyboard', () => {
 
   test('should close modals with Escape key (if any)', async ({ page }) => {
     // Navigate to settings
-    await page.locator('[data-route="settings"]').first().click();
+    await page.locator('[data-testid="settings-btn"]').click();
     
     // Press Escape (shouldn't break anything even if no modal)
     await page.keyboard.press('Escape');

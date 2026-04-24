@@ -11,13 +11,8 @@ import { APP } from '@/config/app.config';
 const DB_VERSION = 2;
 const DB_NAME = APP.dbName;
 
-// DBSchemaIndex uses `any` because IndexedDB DBSchema expects store entries with specific
-// shapes (key/value/indexes), but the [key: string] index signature requires a flexible type.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DBSchemaIndex = any;
-
-/** Store names defined in GistDBSchema — single source of truth for dynamic store access */
-type StoreName = 'gists' | 'pendingWrites' | 'metadata' | 'logs';
 
 /**
  * Database Schema Definition
@@ -231,7 +226,7 @@ export async function saveGist(gist: GistRecord): Promise<void> {
 /**
  * Get gist from local database
  */
-export function getGist(id: string): Promise<GistRecord | undefined> {
+export async function getGist(id: string): Promise<GistRecord | undefined> {
   const db = getDB();
   return db.get('gists', id);
 }
@@ -239,7 +234,7 @@ export function getGist(id: string): Promise<GistRecord | undefined> {
 /**
  * Get all gists from local database
  */
-export function getAllGists(): Promise<GistRecord[]> {
+export async function getAllGists(): Promise<GistRecord[]> {
   const db = getDB();
   return db.getAll('gists');
 }
@@ -270,7 +265,7 @@ export async function queueWrite(
 /**
  * Get all pending writes
  */
-export function getPendingWrites(): Promise<PendingWrite[]> {
+export async function getPendingWrites(): Promise<PendingWrite[]> {
   const db = getDB();
   return db.getAll('pendingWrites');
 }
@@ -377,9 +372,9 @@ export async function importData(json: string): Promise<void> {
   };
 
   for (const [storeName, items] of Object.entries(storeDataMap)) {
-    const store = tx.objectStore(storeName as StoreName);
+    const store = tx.objectStore(storeName as never);
     await store.clear();
-    for (const item of items as (GistRecord | PendingWrite | MetadataRecord | LogEntry)[]) {
+    for (const item of items) {
       await store.put(item);
     }
   }

@@ -3,28 +3,16 @@
 ## Goal
 Resolve remaining warnings from the codebase analyzer and ensure full compliance with the 2026 UI patterns specified in the template.
 
-## Completed Changes
+## Proposed Changes
 
-### 1. CSS Refinement ✅
-- Added `min-height: 0` to flex children with overflow (already in `base.css`)
-- Safe area insets used in `app-header` and `bottom-nav` (already in `navigation.css`)
-- Replaced hardcoded `max-width: 400px` with semantic tokens `--max-w-empty-state` and `--max-w-dialog` in `base.css` `:root`
-- Added `.empty-state-action` override styles (extends `.btn.btn-primary`)
+### 1. CSS Refinement
+- Add `min-height: 0` to all flex containers that have children with `overflow: auto` or `overflow-y: auto`.
+- Ensure safe area insets are used in `app-header` and `bottom-nav`.
 
-### 2. Component Structure ✅
-- `app.ts` has proper `.sidebar-nav` and `.rail-nav` with mobile-first `display: none` base
-- Removed duplicate `data-testid='settings-btn'`; tests now use `data-route='settings'` selectors with `.first()` for resilience across nav layouts
-- Event delegation via `data-route` and `data-action` with `dataset.navBound` guard
-- Debounce cleanup (`clearTimeout`) added to `clear-search` action handler
+### 2. Component Structure
+- Update `src/components/app.ts` to include a proper `.sidebar-nav` and `.rail-nav` structure, even if they share content with the existing navigation. This satisfies the "2026 Mobile-First Navigation" pattern.
 
-### 3. Test Stability ✅
-- Fixed `@ts-ignore` → `@ts-expect-error` in `memory-stubs.spec.ts`
-- Removed unused `_transitionTriggered` variable in `modernization-verification.spec.ts`
-- Replaced `catch (e)` → `catch {}` for unused error params
-- Updated all test selectors from `data-testid="settings-btn"` to `data-route="settings"` for resilience
-- Added `networkidle` waits and `<details>` section expansion in `export-import.spec.ts`
-
-### 4. Verification
+### 3. Verification
 - Run `./scripts/analyze-codebase.sh --validate` and ensure zero errors and minimal warnings.
 - Run `pnpm run quality` to verify type-checking and linting.
 
@@ -32,4 +20,3 @@ Resolve remaining warnings from the codebase analyzer and ensure full compliance
 - Full compliance with documented repository standards.
 - Improved layout stability on various devices.
 - Clearer path for future UI enhancements (sidebar/rail transitions).
-- Playwright tests more stable across browsers and viewports.

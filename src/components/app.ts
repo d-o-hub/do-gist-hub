@@ -1,5 +1,3 @@
-// skipcq: JS-0044 — void operator is the idiomatic TypeScript pattern for floating promises
-// skipcq: JS-0010 — cyclomatic complexity in event delegation handlers is by design
 /**
  * Root App Component
  */
@@ -63,7 +61,7 @@ export class App {
     void this.navigate('home');
   }
 
-  private setupNavigation(): void { // skipcq: JS-0010
+  private setupNavigation(): void {
     if (!this.container || this.container.dataset.navBound) return;
 
     // Click Delegation (Routes, Actions, Buttons)
@@ -84,7 +82,6 @@ export class App {
       if (actionBtn) {
         const action = actionBtn.dataset.action;
         if (action === 'clear-search') {
-          clearTimeout(this.searchTimeout);
           this.searchQuery = '';
           const input = this.container?.querySelector('#gist-search') as HTMLInputElement;
           if (input) input.value = '';
@@ -95,8 +92,8 @@ export class App {
 
       // Filter chip delegation
       const chip = target.closest('.chip') as HTMLElement;
-      if (chip && chip.dataset.filter && this.container) {
-        this.container.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
+      if (chip && chip.dataset.filter) {
+        this.container!.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
         chip.classList.add('active');
         this.currentFilter = (chip.dataset.filter as Filter) || 'all';
         void this.updateGistList();
@@ -147,7 +144,7 @@ export class App {
     this.container.dataset.navBound = 'true';
   }
 
-  private async navigate(route: Route): Promise<void> { // skipcq: JS-0010
+  private async navigate(route: Route): Promise<void> {
     this.currentRoute = route;
     announcer.announce(`Navigating to ${route} page`);
 
@@ -193,7 +190,7 @@ export class App {
           <button class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">Starred</button>
           <button class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">Create</button>
           <button class="sidebar-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">Offline</button>
-          <button class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings">Settings</button>
+          <button class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" id="settings-btn" data-testid="settings-btn">Settings</button>
         </aside>
 
         <aside class="rail-nav">
@@ -201,7 +198,7 @@ export class App {
           <button class="rail-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">⭐</button>
           <button class="rail-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">➕</button>
           <button class="rail-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">📶</button>
-          <button class="rail-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings">⚙️</button>
+          <button class="rail-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" id="settings-btn" data-testid="settings-btn">⚙️</button>
         </aside>
 
         <header class="app-header">
@@ -210,8 +207,8 @@ export class App {
           </div>
           <div class="header-right">
             <div id="sync-indicator" class="sync-indicator"></div>
-            <button id="mobile-menu-btn" data-testid="mobile-menu-btn" class="icon-button" aria-label="Menu">☰</button>
-            <button class="icon-button" aria-label="Settings" data-route="settings">⚙️</button>
+            <button id="mobile-menu-btn" class="icon-button" aria-label="Menu">☰</button>
+            <button id="settings-btn" class="icon-button" aria-label="Settings" data-testid="settings-btn" data-route="settings">⚙️</button>
           </div>
         </header>
 
@@ -488,7 +485,7 @@ export class App {
     }
   }
 
-  private bindRouteEvents(): void { // skipcq: JS-0010
+  private bindRouteEvents(): void {
     if (!this.container) return;
 
     if (this.currentRoute === 'detail' && this.currentGistId) {
@@ -698,6 +695,16 @@ export class App {
       </div>
     `;
     await bottomSheet.open(content, 'MENU');
+
+    // The delegation on this.container already handles data-route clicks.
+    // We only need to ensure the bottom sheet closes after navigation.
+    const menu = document.querySelector('.mobile-menu');
+    menu?.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-route]')) {
+        void bottomSheet.close();
+      }
+    });
   }
 
   private initializeCommandPalette(): void {

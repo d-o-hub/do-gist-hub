@@ -268,10 +268,6 @@ npm run cap:sync     # sync Capacitor after build
 | Layout gaps | Use `flex: 1 0 auto` + `min-height: 0` |
 | Missing active states | Define `.active` for all interactive elements |
 | Hardcoded values | Use CSS custom properties only |
-| Duplicate test IDs | Unique `data-testid` per nav location (sidebar/rail/header) |
-| Orphaned debounce | `clearTimeout()` before resetting search state |
-| Playwright strict mode | Use `.first()` or `data-route` selectors for multi-match elements |
-| Collapsed section buttons | Open `<details>` before clicking elements inside |
 
 ### 2026 Patterns
 

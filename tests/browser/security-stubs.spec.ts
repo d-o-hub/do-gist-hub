@@ -33,9 +33,9 @@ test.describe('Security & Coverage', () => {
         });
     });
 
-    const encryptionStatus: any = await page.evaluate(async () => {
+    const encryptionStatus = await page.evaluate(async () => {
         const dbName = 'd-o-gist-hub-db';
-        return new Promise((resolve) => {
+        return new Promise<{ isEncrypted: boolean; noLegacy: boolean }>((resolve) => {
             const request = indexedDB.open(dbName);
             request.onsuccess = () => {
                 const db = request.result;
