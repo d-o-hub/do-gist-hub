@@ -11,7 +11,9 @@ import { APP } from '@/config/app.config';
 const DB_VERSION = 2;
 const DB_NAME = APP.dbName;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/* eslint-disable @typescript-eslint/no-explicit-any -- Required for IndexedDB DBSchema dynamic index signature
+   DBSchema expects store entries with specific shapes (key/value/indexes),
+   but the [key: string] index signature needs a flexible type for dynamic store access. */
 type DBSchemaIndex = any;
 
 /**
@@ -372,9 +374,9 @@ export async function importData(json: string): Promise<void> {
   };
 
   for (const [storeName, items] of Object.entries(storeDataMap)) {
-    const store = tx.objectStore(storeName as never);
+    const store = tx.objectStore(storeName as 'gists' | 'pendingWrites' | 'metadata' | 'logs');
     await store.clear();
-    for (const item of items) {
+    for (const item of items as (GistRecord | PendingWrite | MetadataRecord | LogEntry)[]) {
       await store.put(item);
     }
   }
