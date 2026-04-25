@@ -1,0 +1,20 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "canopywave-50m": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Canopy Wave 50M",
+      "options": {
+        "baseURL": "https://inference.canopywave.io/v1",
+        "headers": {
+          "Authorization": "Bearer 4rSK1g-OabKyfEGuot6vlOneZ436CJEmG7ExRoYchw8"
+        }
+      },
+      "models": {
+        "moonshotai/kimi-k2.6": {
+          "name": "kimi-k2.6"
+        }
+      }
+    }
+  }
+}

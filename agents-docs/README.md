@@ -5,7 +5,7 @@ Self-learning knowledge base for codebase optimization.
 ## Structure
 
 ```
-agent-docs/
+agents-docs/
 ├── patterns/           # Detected code patterns (good practices and anti-patterns)
 ├── issues/            # Documented issues with context and root cause
 ├── fixes/             # Applied fixes with verification steps

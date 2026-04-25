@@ -30,7 +30,7 @@ test.describe('Export/Import Functionality', () => {
       });
     });
 
-    await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
 
     // Start waiting for download before clicking
     const downloadPromise = page.waitForEvent('download');
@@ -44,16 +44,16 @@ test.describe('Export/Import Functionality', () => {
     const downloadPath = await download.path();
     const content = JSON.parse(fs.readFileSync(downloadPath, 'utf8'));
 
-    expect(content.version).toBe(2);
+    expect(content.version).toBe('1.0.0');
     expect(content.gists).toHaveLength(1);
     expect(content.gists[0].id).toBe('test-gist-id');
   });
 
   test('should import gists from JSON', async ({ page }) => {
-    await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
 
     const backupData = {
-      version: 2,
+      version: '1.0.0',
       exportedAt: new Date().toISOString(),
       gists: [
         {
@@ -77,7 +77,9 @@ test.describe('Export/Import Functionality', () => {
     await page.setInputFiles('#import-file-input', importFilePath);
 
     // Check for success toast - use first() to avoid strict mode violation if body matches too
-    await expect(page.locator('.toast-success').first()).toContainText('1 NEW', { timeout: 15000 });
+    await expect(page.locator('.toast-success').filter({ visible: true }).first()).toContainText('IMPORT COMPLETE: 1', {
+      timeout: 15000,
+    });
 
     // Verify gist is in DB
     const gistExists = await page.evaluate(async () => {
@@ -119,10 +121,10 @@ test.describe('Export/Import Functionality', () => {
         });
       });
 
-    await page.locator('[data-route="settings"]').filter({ visible: true }).first().click();
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
 
     const backupData = {
-      version: 2,
+      version: '1.0.0',
       exportedAt: new Date(Date.now() + 10000).toISOString(), // Newer
       gists: [
         {
