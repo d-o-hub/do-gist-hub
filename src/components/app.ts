@@ -512,7 +512,6 @@ export class App {
       }
     }
 
-
     // Chips
     this.container.querySelector('.filter-chips')?.addEventListener('click', (e) => {
       const chip = (e.target as HTMLElement).closest('.chip') as HTMLElement;

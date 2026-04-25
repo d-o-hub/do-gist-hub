@@ -66,6 +66,27 @@ export class ErrorBoundary {
       })();
     });
   }
+
+  private static getIcon(category: ErrorCategory): string {
+    switch (category) {
+      case ErrorCategory.AUTH:
+        return '🔐';
+      case ErrorCategory.NETWORK:
+        return '🌐';
+      case ErrorCategory.RATE_LIMIT:
+        return '⏳';
+      case ErrorCategory.VALIDATION:
+        return '⚠️';
+      default:
+        return '❌';
+    }
+  }
+
+  private static escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
 }
 
 /**
