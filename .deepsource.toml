@@ -19,7 +19,8 @@ name = 'javascript'
 enabled = true
 
   [analyzers.meta]
-  runtime_version = 22  # Node.js 22 for ESLint plugin compatibility
+  runtime_version = 22
+  config_path = 'eslint.config.js'
 
 [[analyzers]]
 name = 'shell'
