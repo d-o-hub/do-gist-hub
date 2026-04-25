@@ -339,7 +339,7 @@ export async function exportData(): Promise<string> {
   const logs = await db.getAll('logs');
 
   const data = {
-    version: DB_VERSION,
+    version: '1.0.0',
     exportedAt: new Date().toISOString(),
     gists,
     pendingWrites,
