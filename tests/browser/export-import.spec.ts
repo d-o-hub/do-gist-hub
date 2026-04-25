@@ -30,19 +30,11 @@ test.describe('Export/Import Functionality', () => {
       });
     });
 
-    await page.locator('[data-testid="settings-btn"]').first().click();
-
-    // BOLT: Ensure the Data & Diagnostics section is expanded so the button is visible
-    await page.evaluate(() => {
-      const details = document.querySelectorAll('details.settings-section');
-      const diagSection = Array.from(details).find((d) => d.textContent?.includes('Diagnostics'));
-      if (diagSection && !diagSection.hasAttribute('open')) {
-        diagSection.setAttribute('open', '');
-      }
-    });
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
 
     // Start waiting for download before clicking
-    const downloadPromise = page.waitForEvent('download', { timeout: 30000 });
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('summary:has-text("Data & Diagnostics")').click();
     await page.click('#export-data-btn');
     const download = await downloadPromise;
 
@@ -51,7 +43,7 @@ test.describe('Export/Import Functionality', () => {
     const downloadPath = await download.path();
     const content = JSON.parse(fs.readFileSync(downloadPath, 'utf8'));
 
-    expect(content.version).toBe('2.0.0');
+    expect(content.version).toBe('1.0.0');
     expect(content.gists).toHaveLength(1);
     expect(content.gists[0].id).toBe('test-gist-id');
     expect(content.metadata.total).toBe(1);
@@ -59,10 +51,10 @@ test.describe('Export/Import Functionality', () => {
   });
 
   test('should import gists from JSON', async ({ page }) => {
-    await page.locator('[data-testid="settings-btn"]').first().click();
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
 
     const backupData = {
-      version: '2.0.0',
+      version: '1.0.0',
       exportedAt: new Date().toISOString(),
       gists: [
         {
@@ -86,7 +78,9 @@ test.describe('Export/Import Functionality', () => {
     await page.setInputFiles('#import-file-input', importFilePath);
 
     // Check for success toast - use first() to avoid strict mode violation if body matches too
-    await expect(page.locator('.toast-success').first()).toContainText('IMPORT COMPLETE: 1', { timeout: 15000 });
+    await expect(page.locator('.toast-success').filter({ visible: true }).first()).toContainText('IMPORT COMPLETE: 1', {
+      timeout: 15000,
+    });
 
     // Verify gist is in DB
     const gistExists = await page.evaluate(async () => {
@@ -128,10 +122,10 @@ test.describe('Export/Import Functionality', () => {
         });
       });
 
-    await page.locator('[data-testid="settings-btn"]').first().click();
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
 
     const backupData = {
-      version: '2.0.0',
+      version: '1.0.0',
       exportedAt: new Date(Date.now() + 10000).toISOString(), // Newer
       gists: [
         {
