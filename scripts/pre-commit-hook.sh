@@ -9,6 +9,11 @@ if [[ -n "$GLOBAL_HOOKS_PATH" && -z "${SKIP_GLOBAL_HOOKS_CHECK:-}" ]]; then
   exit 1
 fi
 
+# Run lint-staged on staged files only
+if command -v npx >/dev/null 2>&1; then
+  npx lint-staged
+fi
+
 # Run quality gate
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 "$SCRIPT_DIR/quality_gate.sh"
