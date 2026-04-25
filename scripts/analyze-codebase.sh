@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
-AGENT_DOCS="$ROOT_DIR/agents-docs"
+AGENT_DOCS="$ROOT_DIR/agent-docs"
 DATE=$(date +%Y-%m-%d)
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
@@ -72,7 +72,7 @@ log_error() {
     echo -e "${RED}✗${NC} $1"
 }
 
-# Ensure agents-docs structure exists
+# Ensure agent-docs structure exists
 init_agent_docs() {
     mkdir -p "$AGENT_DOCS"/{patterns,issues,fixes,references}
     
@@ -343,7 +343,7 @@ This checks:
 
 ### Issue History
 
-See `agents-docs/issues/` for documented issues and fixes.
+See `agent-docs/issues/` for documented issues and fixes.
 EOF
     fi
 }

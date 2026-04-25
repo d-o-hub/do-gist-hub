@@ -35,7 +35,9 @@ export class CommandPalette {
 
     this.backdrop = document.createElement('div');
     this.backdrop.className = 'command-palette-backdrop';
-    this.backdrop.onclick = () => this.close();
+    this.backdrop.onclick = () => {
+      void this.close();
+    };
 
     this.container = document.createElement('div');
     this.container.className = 'command-palette';
@@ -52,7 +54,7 @@ export class CommandPalette {
       if (item) {
         const index = parseInt(item.getAttribute('data-index') || '-1', 10);
         if (index >= 0 && this.filteredCommands[index]) {
-          void this.filteredCommands[index].action();
+          this.filteredCommands[index].action();
           void this.close();
         }
       }
@@ -89,6 +91,9 @@ export class CommandPalette {
       this.backdrop!.classList.add('visible');
       this.container!.classList.add('open');
       this.container!.setAttribute('aria-expanded', 'true');
+
+      const input = this.container!.querySelector('input') as HTMLInputElement;
+      input?.focus();
     });
 
     focusTrap.activate(this.container);
@@ -190,7 +195,7 @@ export class CommandPalette {
       e.preventDefault();
       const cmd = this.filteredCommands[this.selectedIndex];
       if (cmd) {
-        void cmd.action();
+        cmd.action();
         void this.close();
       }
     }

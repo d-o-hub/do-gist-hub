@@ -10,22 +10,16 @@ import { APP } from './src/config/app.config';
 function appConfigHtmlPlugin(): Plugin {
   return {
     name: 'app-config-html',
-    transformIndexHtml: {
-      order: 'pre',
-      handler(html) {
-        process.env.VITE_APP_NAME = process.env.VITE_APP_NAME || APP.name;
-        process.env.VITE_APP_DESCRIPTION = process.env.VITE_APP_DESCRIPTION || APP.description;
-        process.env.VITE_APP_THEME_COLOR = process.env.VITE_APP_THEME_COLOR || APP.themeColor;
+    enforce: 'pre',
+    transformIndexHtml(html) {
+      const appName = process.env.VITE_APP_NAME || APP.name;
+      const appDesc = process.env.VITE_APP_DESCRIPTION || APP.description;
+      const themeColor = process.env.VITE_APP_THEME_COLOR || APP.themeColor;
 
-        const appName = process.env.VITE_APP_NAME;
-        const appDesc = process.env.VITE_APP_DESCRIPTION;
-        const themeColor = process.env.VITE_APP_THEME_COLOR;
-
-        return html
-          .replaceAll('%VITE_APP_NAME%', appName)
-          .replaceAll('%VITE_APP_DESCRIPTION%', appDesc)
-          .replaceAll('%VITE_APP_THEME_COLOR%', themeColor);
-      },
+      return html
+        .replaceAll('%VITE_APP_NAME%', appName)
+        .replaceAll('%VITE_APP_DESCRIPTION%', appDesc)
+        .replaceAll('%VITE_APP_THEME_COLOR%', themeColor);
     },
   };
 }

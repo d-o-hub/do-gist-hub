@@ -84,10 +84,10 @@ Pattern Extracted → Rule Updated → Prevention Documented
 
 ## Self-Learning Database
 
-Issues and fixes are stored in `agents-docs/`:
+Issues and fixes are stored in `agent-docs/`:
 
 ```
-agents-docs/
+agent-docs/
 ├── patterns/           # Detected patterns (good and bad)
 │   ├── css-layouts.md
 │   ├── navigation-patterns.md
@@ -122,9 +122,9 @@ agents-docs/
 
 ## Required Outputs
 
-- `agents-docs/issues/` - Issue reports with context
-- `agents-docs/fixes/` - Fix documentation with verification
-- `agents-docs/patterns/` - Extracted patterns
+- `agent-docs/issues/` - Issue reports with context
+- `agent-docs/fixes/` - Fix documentation with verification
+- `agent-docs/patterns/` - Extracted patterns
 - Updated `AGENTS.md` with learned rules
 - Updated skill reference files
 
@@ -132,11 +132,11 @@ agents-docs/
 
 ```bash
 # Check analysis ran
-ls agents-docs/issues/*.md 2>/dev/null | wc -l
+ls agent-docs/issues/*.md 2>/dev/null | wc -l
 
 # Check patterns documented
-cat agents-docs/patterns/*.md | grep -c "Pattern:"
+cat agent-docs/patterns/*.md | grep -c "Pattern:"
 
 # Validate fixes applied
-grep -r "Fix Applied" agents-docs/fixes/ | wc -l
+grep -r "Fix Applied" agent-docs/fixes/ | wc -l
 ```

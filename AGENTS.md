@@ -305,8 +305,8 @@ agent-browser eval "document.documentElement.scrollWidth <= window.innerWidth"
 ```
 
 ### References
-- `agents-docs/patterns/dynamic-viewport-units.md`
-- `agents-docs/patterns/mobile-first-navigation.md`
+- `agent-docs/patterns/dynamic-viewport-units.md`
+- `agent-docs/patterns/mobile-first-navigation.md`
 
 - `.agents/skills/design-token-system/references/mobile-layout-2026.md`
 - `.agents/skills/design-token-system/references/production-ui-standards.md`
@@ -338,7 +338,7 @@ Self-learning system that analyzes, detects, fixes, and documents issues automat
 ### Self-Learning Database
 
 ```
-agents-docs/
+agent-docs/
 ├── patterns/     # Good/bad patterns
 ├── issues/       # Documented issues
 ├── fixes/        # Verified fixes
@@ -385,4 +385,4 @@ This checks:
 
 ### Issue History
 
-See `agents-docs/issues/` for documented issues and fixes.
+See `agent-docs/issues/` for documented issues and fixes.

@@ -4,7 +4,7 @@ import { GitHubGist } from '../types/api';
 import { safeError } from './security/logger';
 
 export interface ExportData {
-  version: string;
+  version: number;
   exportedAt: string;
   gists: GistRecord[];
   metadata: {
@@ -29,7 +29,7 @@ export interface ImportResult {
  */
 function createExportBlob(gists: GistRecord[]): Blob {
   const data: ExportData = {
-    version: '1.0.0',
+    version: 2,
     exportedAt: new Date().toISOString(),
     gists,
     metadata: {

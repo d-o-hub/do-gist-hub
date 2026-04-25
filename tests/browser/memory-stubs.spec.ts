@@ -7,17 +7,10 @@ test.describe('Memory Safety & Lifecycle', () => {
   });
 
   const clickNav = async (page: any, route: string) => {
-    const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
-    await page.keyboard.press(`${modifier}+k`);
-    const routeTitle = route.charAt(0).toUpperCase() + route.slice(1);
-    await page.locator('.command-palette input').fill(routeTitle);
-    await page.keyboard.press('Enter');
+    await page.locator(`[data-route="${route}"]`).filter({ visible: true }).first().click();
   };
 
-  test('should verify AbortController cancels pending requests on navigation', async ({ page, browserName }) => {
-    if (browserName === 'webkit') {
-       test.skip(true, 'WebKit layout is flaky for Settings nav button');
-    }
+  test('should verify AbortController cancels pending requests on navigation', async ({ page }) => {
     await page.route('**/gists*', async (route) => {
       await new Promise(resolve => setTimeout(resolve, 2000));
       await route.continue();
@@ -30,17 +23,14 @@ test.describe('Memory Safety & Lifecycle', () => {
       }
     });
 
-    await clickNav(page, 'settings');
     await clickNav(page, 'home');
+    await clickNav(page, 'settings');
 
     await page.waitForLoadState('networkidle');
     expect(abortedRequests.length).toBeGreaterThanOrEqual(0);
   });
 
-  test('should verify LifecycleManager cleans up event listeners on route change', async ({ page, browserName }) => {
-    if (browserName === 'webkit') {
-       test.skip(true, 'WebKit layout is flaky for Settings nav button');
-    }
+  test('should verify LifecycleManager cleans up event listeners on route change', async ({ page }) => {
     for (let i = 0; i < 3; i++) {
       await clickNav(page, 'settings');
       await expect(page.locator('h2')).toContainText('Settings');
@@ -73,10 +63,7 @@ test.describe('Memory Safety & Lifecycle', () => {
     }
   });
 
-  test('should verify IndexedDB connections are closed properly', async ({ page, browserName }) => {
-    if (browserName === 'webkit') {
-       test.skip(true, 'WebKit layout is flaky for Settings nav button');
-    }
+  test('should verify IndexedDB connections are closed properly', async ({ page }) => {
     await clickNav(page, 'settings');
     await clickNav(page, 'home');
 

@@ -73,7 +73,7 @@ export class App {
       void this.showMobileMenu();
     });
 
-    this.container?.querySelectorAll('[data-testid="settings-btn"]').forEach((btn) => {
+    this.container?.querySelectorAll('[data-route="settings"]').forEach((btn) => {
       btn.addEventListener('click', () => {
         void this.navigate('settings');
       });
