@@ -8,6 +8,7 @@ import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
 import { EmptyState } from './ui/empty-state';
 import { withViewTransition } from '../utils/view-transitions';
+import { safeError } from '../services/security/logger';
 import { announcer } from '../utils/announcer';
 import { sanitizeHtml } from '../services/security/dom';
 
@@ -178,7 +179,7 @@ export function bindConflictEvents(container: HTMLElement, onResolve: () => void
           });
         } catch (err) {
           toast.error('FAILED TO RESOLVE CONFLICT');
-          console.error(err);
+          safeError('[ConflictResolution] Failed to resolve:', err);
         }
       })();
     });

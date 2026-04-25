@@ -56,7 +56,7 @@ pnpm build
 
 - [AGENTS.md](AGENTS.md) - Engineering principles and Agent workflows
 - [Plans](plans/) - Architecture decisions (ADRs) and roadmaps
-- [Modern Patterns](agent-docs/2026-patterns.md) - Deep dive into 2026 implementations
+- [Modern Patterns](agents-docs/2026-patterns.md) - Deep dive into 2026 implementations
 
 ## License
 

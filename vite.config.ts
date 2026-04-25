@@ -9,15 +9,23 @@ import fs from 'fs';
 function appConfigHtmlPlugin(): Plugin {
   return {
     name: 'app-config-html',
-    transformIndexHtml(html) {
-      const appName = process.env.VITE_APP_NAME || 'd.o. Gist Hub';
-      const appDesc = process.env.VITE_APP_DESCRIPTION || 'Offline-first GitHub Gist management app';
-      const themeColor = process.env.VITE_APP_THEME_COLOR || '#2563eb';
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html) {
+        process.env.VITE_APP_NAME = process.env.VITE_APP_NAME || 'd.o. Gist Hub';
+        process.env.VITE_APP_DESCRIPTION =
+          process.env.VITE_APP_DESCRIPTION || 'Offline-first GitHub Gist management app';
+        process.env.VITE_APP_THEME_COLOR = process.env.VITE_APP_THEME_COLOR || '#2563eb';
 
-      return html
-        .replaceAll('%VITE_APP_NAME%', appName)
-        .replaceAll('%VITE_APP_DESCRIPTION%', appDesc)
-        .replaceAll('%VITE_APP_THEME_COLOR%', themeColor);
+        const appName = process.env.VITE_APP_NAME;
+        const appDesc = process.env.VITE_APP_DESCRIPTION;
+        const themeColor = process.env.VITE_APP_THEME_COLOR;
+
+        return html
+          .replaceAll('%VITE_APP_NAME%', appName)
+          .replaceAll('%VITE_APP_DESCRIPTION%', appDesc)
+          .replaceAll('%VITE_APP_THEME_COLOR%', themeColor);
+      },
     },
   };
 }

@@ -4,6 +4,7 @@
  */
 
 import { PERFORMANCE_BUDGETS } from './budgets';
+import { safeWarn } from '../security/logger';
 
 /**
  * Timer for measuring interaction performance.
@@ -30,7 +31,7 @@ export class InteractionTimer {
    */
   end(overrideBudget?: number): number {
     if (this.ended) {
-      console.warn(`[InteractionTimer] Timer "${this.name}" already ended`);
+      safeWarn(`[InteractionTimer] Timer "${this.name}" already ended`);
       return 0;
     }
 
@@ -42,9 +43,7 @@ export class InteractionTimer {
     performance.measure(this.name, `${this.name}-start`, `${this.name}-end`);
 
     if (duration > budget) {
-      console.warn(
-        `[Perf Budget] "${this.name}" took ${duration.toFixed(0)}ms (budget: ${budget}ms)`
-      );
+      safeWarn(`[Perf Budget] "${this.name}" took ${duration.toFixed(0)}ms (budget: ${budget}ms)`);
     }
 
     return duration;
