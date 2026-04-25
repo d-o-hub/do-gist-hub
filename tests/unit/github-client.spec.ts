@@ -8,44 +8,43 @@ test.describe('GitHub Client Authentication', () => {
 
   test('should use encrypted token from auth service', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      // Mock the database to have an encrypted token
       const { setMetadata } = await import('./src/services/db');
       const { encrypt } = await import('./src/services/security/crypto');
+      const { listGists } = await import('./src/services/github/client');
 
       const testToken = 'ghp_test_token_1234567890';
       const encrypted = await encrypt(testToken);
       await setMetadata('github-pat-enc', encrypted);
-
-      // Clear legacy token if any
       await setMetadata('github-pat', null);
 
-      // Now call a client function that uses getAuthToken
-      const { listGists } = await import('./src/services/github/client');
-
-      let capturedAuthHeader: string | null = null;
+      let capturedHeaders: Record<string, string> | null = null;
       const originalFetch = window.fetch;
-      window.fetch = async (_input, init) => {
+      window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
         if (init?.headers) {
-          const h = new Headers(init.headers);
-          capturedAuthHeader = h.get('Authorization');
+          capturedHeaders = {};
+          if (init.headers instanceof Headers) {
+            init.headers.forEach((v, k) => { capturedHeaders![k] = v; });
+          } else if (Array.isArray(init.headers)) {
+            init.headers.forEach(([k, v]) => { capturedHeaders![k] = v; });
+          } else {
+            Object.assign(capturedHeaders, init.headers);
+          }
         }
         return new Response(JSON.stringify([]), { status: 200 });
-      };
+      }) as typeof window.fetch;
 
       try {
         await listGists();
       } catch (e) {
-        // Ignore errors as we just want the headers
       } finally {
         window.fetch = originalFetch;
       }
 
       return {
-        hasAuthHeader: capturedAuthHeader === `token ${testToken}`,
-        tokenUsed: capturedAuthHeader
+        authHeader: capturedHeaders?.['Authorization'] || capturedHeaders?.['authorization']
       };
     });
 
-    expect(result.hasAuthHeader).toBe(true);
+    expect(result.authHeader).toBe('token ghp_test_token_1234567890');
   });
 });
