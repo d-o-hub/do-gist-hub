@@ -100,11 +100,12 @@ export default defineConfig({
     },
 
     // Offline scenarios
+    // NOTE: Tests must use `await context.setOffline(true)` after page load
+    // instead of `offline: true` here, because `offline: true` blocks localhost.
     {
       name: 'offline',
       use: {
         ...devices['Desktop Chrome'],
-        offline: true,
       },
       testDir: './tests/offline',
     },

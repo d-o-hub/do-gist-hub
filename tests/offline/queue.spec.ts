@@ -280,11 +280,16 @@ test.describe('Sync Queue and Offline Operations', () => {
   });
 
   test('sync queue does not process when offline', async ({ page }) => {
+    // Preload modules while online (dynamic imports fail when offline)
+    await page.evaluate(async () => {
+      const { initIndexedDB } = await import('./src/services/db');
+      await initIndexedDB();
+    });
+
     await page.context().setOffline(true);
 
     const queueState = await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, getPendingWrites } = await import('./src/services/db');
-      await initIndexedDB();
+      const { queueWrite, getPendingWrites } = await import('./src/services/db');
 
       // Queue a write while offline
       await queueWrite({

@@ -66,7 +66,7 @@ test.describe('Offline Cache', () => {
     await page.waitForTimeout(1000);
 
     // App should still render (from cache)
-    await expect(page.locator('[data-testid="app-shell"]')).toBeVisible();
+    await expect(page.locator('.app-shell')).toBeVisible();
 
     // Should show offline indicator somewhere
     const isOnline = await page.evaluate(() => navigator.onLine);
@@ -75,14 +75,14 @@ test.describe('Offline Cache', () => {
 
   test('should show offline page when navigating offline', async ({ page, context }) => {
     await context.setOffline(true);
-    await page.locator('[data-testid="nav-offline"]').click();
+    await page.locator('[data-testid="nav-offline"]').first().click();
 
-    // Should show offline mode page
-    await expect(page.locator('h2')).toContainText('Offline Mode');
-    
-    // Should show status indicator
-    const statusIndicator = page.locator('.status-indicator');
-    await expect(statusIndicator).toBeVisible();
+    // Should show offline status page
+    await expect(page.locator('h2')).toContainText('Offline Status');
+
+    // Should show pending count indicator
+    const pendingCount = page.locator('#pending-count');
+    await expect(pendingCount).toBeVisible();
   });
 
   test('should store gists in IndexedDB after load', async ({ page }) => {
@@ -123,7 +123,7 @@ test.describe('Offline Cache', () => {
     await page.waitForTimeout(1000);
 
     // App should still render without crashing
-    await expect(page.locator('[data-testid="app-shell"]')).toBeVisible();
+    await expect(page.locator('.app-shell')).toBeVisible();
     
     // Should show empty state or loading
     const emptyState = page.locator('.empty-state');
