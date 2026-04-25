@@ -224,11 +224,36 @@ export async function saveGist(gist: GistRecord): Promise<void> {
 }
 
 /**
+ * Store multiple gists in local database using a single transaction
+ */
+export async function saveGists(gists: GistRecord[]): Promise<void> {
+  if (gists.length === 0) return;
+
+  const db = getDB();
+  const tx = db.transaction('gists', 'readwrite');
+  const now = new Date().toISOString();
+
+  // Initiate all puts and await their creation
+  await Promise.all(
+    gists.map((gist) =>
+      tx.store.put({
+        ...gist,
+        syncStatus: gist.syncStatus || 'synced',
+        lastSyncedAt: now,
+      })
+    )
+  );
+
+  // Await transaction completion
+  await tx.done;
+}
+
+/**
  * Get gist from local database
  */
 export async function getGist(id: string): Promise<GistRecord | undefined> {
   const db = getDB();
-  return db.get('gists', id);
+  return await db.get('gists', id);
 }
 
 /**
@@ -236,7 +261,7 @@ export async function getGist(id: string): Promise<GistRecord | undefined> {
  */
 export async function getAllGists(): Promise<GistRecord[]> {
   const db = getDB();
-  return db.getAll('gists');
+  return await db.getAll('gists');
 }
 
 /**
@@ -267,7 +292,7 @@ export async function queueWrite(
  */
 export async function getPendingWrites(): Promise<PendingWrite[]> {
   const db = getDB();
-  return db.getAll('pendingWrites');
+  return await db.getAll('pendingWrites');
 }
 
 /**

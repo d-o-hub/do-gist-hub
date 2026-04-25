@@ -1,4 +1,4 @@
-import { GistRecord, getAllGists, saveGist, getGist, getDB } from './db';
+import { GistRecord, getAllGists, getGist, getDB, saveGists } from './db';
 import { detectConflict, storeConflict } from './sync/conflict-detector';
 import { GitHubGist } from '../types/api';
 import { safeError } from './security/logger';
@@ -29,7 +29,7 @@ export interface ImportResult {
  */
 function createExportBlob(gists: GistRecord[]): Blob {
   const data: ExportData = {
-    version: '1.0.0',
+    version: '2.0.0',
     exportedAt: new Date().toISOString(),
     gists,
     metadata: {
@@ -81,13 +81,15 @@ export async function importGists(file: File): Promise<ImportResult> {
     const db = getDB();
     if (!db) throw new Error('Database not initialized');
 
+    const gistsToSave: GistRecord[] = [];
+
     for (const importedGist of data.gists) {
       try {
         const existing = await getGist(importedGist.id);
 
         if (!existing) {
           // New gist
-          await saveGist(importedGist);
+          gistsToSave.push(importedGist);
           result.imported++;
         } else {
           // Existing gist - check for updates/conflicts
@@ -112,7 +114,7 @@ export async function importGists(file: File): Promise<ImportResult> {
           } else {
             // Local is clean, check for newer timestamp
             if (new Date(importedGist.updatedAt) > new Date(existing.updatedAt)) {
-              await saveGist(importedGist);
+              gistsToSave.push(importedGist);
               result.updated++;
             } else {
               result.skipped++;
@@ -124,6 +126,10 @@ export async function importGists(file: File): Promise<ImportResult> {
         result.errors.push(`Failed to import gist ${importedGist.id}: ${msg}`);
         safeError(`Import error for gist ${importedGist.id}`, err);
       }
+    }
+
+    if (gistsToSave.length > 0) {
+      await saveGists(gistsToSave);
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

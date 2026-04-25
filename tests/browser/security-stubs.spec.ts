@@ -3,7 +3,11 @@ import { test, expect } from '@playwright/test';
 test.describe('Security & Coverage', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
-    await page.waitForLoadState('networkidle');
+    // Wait for app shell to ensure IndexedDB is initialized by the app
+    await page.waitForSelector('.app-shell');
+
+    // Bolt: Wait for a moment to ensure DB initialization is definitely complete
+    await page.waitForTimeout(1000);
   });
 
   test('should verify strict CSP meta tag is present', async ({ page }) => {
