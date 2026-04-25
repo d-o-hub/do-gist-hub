@@ -18,10 +18,11 @@ test.describe('Mobile Navigation', () => {
 
   test('should navigate via mobile menu', async ({ page }) => {
     await page.locator('[data-testid="mobile-menu-btn"]').click();
-    await page.locator('.mobile-menu .menu-item:has-text("Offline Status")').click();
-    
-    // The sheet might still be in DOM but hidden or animating
-    // Just verify the target content is visible in main
-    await expect(page.locator('main h2')).toContainText('Offline Status');
+    // Click the exact data-route button to trigger navigation
+    await page.locator('.mobile-menu [data-route="offline"]').click();
+
+    // Verify the offline route rendered in main content area
+    await expect(page.locator('main .route-offline')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('main .detail-title')).toContainText('Offline Status');
   });
 });

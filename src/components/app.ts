@@ -193,7 +193,7 @@ export class App {
 
     this.container.innerHTML = `
       <div class="app-shell">
-        <aside class="sidebar-nav">
+        <aside class="sidebar-nav" data-testid="sidebar-nav">
           <button class="sidebar-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home">Home</button>
           <button class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">Starred</button>
           <button class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">Create</button>
@@ -224,20 +224,20 @@ export class App {
           ${this.renderRoute()}
         </main>
 
-        <nav class="bottom-nav">
-          <button class="nav-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home">
+        <nav class="bottom-nav" data-testid="bottom-nav">
+          <button class="nav-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home">
             <span class="nav-icon">🏠</span>
             <span class="nav-label">Home</span>
           </button>
-          <button class="nav-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">
+          <button class="nav-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" data-testid="nav-starred">
             <span class="nav-icon">⭐</span>
             <span class="nav-label">Starred</span>
           </button>
-          <button class="nav-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">
+          <button class="nav-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create">
             <span class="nav-icon">➕</span>
             <span class="nav-label">Create</span>
           </button>
-          <button class="nav-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">
+          <button class="nav-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="nav-offline">
             <span class="nav-icon">📶</span>
             <span class="nav-label">Offline</span>
           </button>
@@ -527,7 +527,7 @@ export class App {
     this.container.querySelector('#sort-select')?.addEventListener('change', (e) => {
       this.currentSort = (e.target as HTMLSelectElement).value as Sort;
       void this.updateGistList();
-    })
+    });
     // Create Form
     this.container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -721,13 +721,16 @@ export class App {
     `;
     await bottomSheet.open(content, 'MENU');
 
-    // The delegation on this.container already handles data-route clicks.
-    // We only need to ensure the bottom sheet closes after navigation.
+    // The bottom sheet is appended to document.body, outside this.container,
+    // so we must handle clicks here and trigger navigation manually.
     const menu = document.querySelector('.mobile-menu');
     menu?.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
-      if (target.closest('[data-route]')) {
+      const btn = target.closest('[data-route]') as HTMLElement | null;
+      if (btn) {
+        const route = btn.getAttribute('data-route') as Route;
         void bottomSheet.close();
+        void this.navigate(route);
       }
     });
   }
