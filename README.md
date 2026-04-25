@@ -1,34 +1,34 @@
-# d.o. Gist Hub (2026 Edition)
+# d.o. Gist Hub v0.2.0
 
-A state-of-the-art, web-first GitHub Gist management application. Built with 2026 best practices for security, performance, and responsive design.
+A state-of-the-art, offline-first GitHub Gist management PWA with token-driven responsive UI, PAT authentication, and Capacitor Android packaging.
 
-## Key 2026 Features
+## Key Features
 
-- **Adaptive UI**: Powered by **Container Queries** and a 7-breakpoint responsive system.
-- **Fluid Transitions**: Native feel with **View Transitions API** for all routing.
-- **Power User Tools**: Integrated **Command Palette (Cmd+K)** for rapid navigation and action.
-- **Mobile-First Experience**: Innovative **Bottom Sheet** navigation and gesture-friendly interactions.
+- **Token-Driven Design**: DTCG-aligned design tokens with 7 breakpoints (320px–1536px+).
+- **Mobile-First**: Bottom sheet navigation, `100dvh` dynamic viewport, safe area support.
+- **Command Palette**: Press `Ctrl+K` (or `Cmd+K`) for rapid navigation and actions.
+- **Actionable Empty States**: Guided CTAs instead of dead ends — every empty state offers a next step.
 - **Hardened Security**:
-  - **Encryption at Rest**: Personal Access Tokens are encrypted with AES-GCM (Web Cryptography API).
-  - **Strict CSP**: Zero `unsafe-inline`, restricted origins.
-  - **Auto-Redaction**: Sensitive data is automatically redacted from logs and UI.
+  - **AES-GCM Encryption**: Personal Access Tokens encrypted at rest (Web Cryptography API).
+  - **Strict CSP**: No `unsafe-inline`, restricted origins.
+  - **Auto-Redaction**: Sensitive data automatically redacted from logs and UI.
 - **Resilient Architecture**:
-  - **Lifecycle Management**: Auto-cleanup of subscriptions and cancellation of in-flight requests.
-  - **Layered Error Boundaries**: No silent failures; graceful recovery for fatal and non-fatal errors.
-  - **Offline-First**: Reliable performance in low-connectivity with IndexedDB and optimistic sync.
+  - **AbortController Lifecycle**: Auto-cleanup of subscriptions and cancellation of in-flight requests.
+  - **Layered Error Boundaries**: No silent failures; graceful recovery.
+  - **Offline-First**: IndexedDB source of truth, optimistic writes, sync queue with exponential backoff.
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| App Shell | Vite + TypeScript 5.5+ |
-| UI | Vanilla TS + Token-driven CSS |
-| Storage | IndexedDB (idb) |
-| Security | Web Cryptography API |
+| App Shell | Vite + TypeScript 5.5+ (strict mode) |
+| UI | Vanilla TS + DTCG-aligned CSS tokens |
+| Storage | IndexedDB via `idb` library |
+| Security | Web Cryptography API (AES-GCM) |
 | HTTP | Native Fetch + AbortController |
 | PWA | Service Worker + Manifest |
 | Android | Capacitor 6 |
-| Testing | Playwright (Cross-browser + Mobile) |
+| Testing | Playwright (cross-browser, mobile emulation, offline) |
 
 ## Quick Start
 

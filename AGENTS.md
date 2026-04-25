@@ -363,12 +363,25 @@ See `.agents/skills/codebase-optimizer/SKILL.md` for details.
 
 This section is automatically updated by `./scripts/analyze-codebase.sh`.
 
-### CSS Layout Rules
+### CSS Layout Rules (Critical)
 
-1. **Mobile-First Navigation**: Always use `display: none` base style for sidebar
-2. **Dynamic Viewport**: Use `100dvh` for app shell on mobile
-3. **Safe Areas**: Include `env(safe-area-inset-*)` for header/footer padding
-4. **Flex Scrolling**: Add `min-height: 0` to flex children with overflow
+1. **Mobile-First Navigation**: Sidebar must be `display: none` by default — CSS BEFORE media queries
+2. **Dynamic Viewport**: Use `100dvh` for app shell (not `100vh`) for mobile browser UI
+3. **Safe Areas**: Include `env(safe-area-inset-*)` for notch/home indicator support
+4. **Flex Scrolling**: Add `min-height: 0` to flex children with `overflow`
+
+### Testing Patterns (CI Stability)
+
+1. **Playwright Strict Mode**: Use `.first()` or `data-route` for multi-element locators
+2. **Responsive Test Locators**: Use `.filter({ visible: true })` for breakpoint-specific UI
+3. **Collapsed Sections**: Open `<details>` before clicking nested elements
+4. **Focus Reliability**: Use `requestAnimationFrame` for CSS transition timing
+
+### Code Quality (DeepSource/CI)
+
+1. **Inline skipcq**: Use `// skipcq: JS-XXXX` directly above lines (not `.deepsource.yml`)
+2. **No `any` Types**: Use proper generics or `unknown` with type guards
+3. **Package Versions**: Match `package.json` exactly to `package-lock.json`
 
 ### Verification Checklist
 

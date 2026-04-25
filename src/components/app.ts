@@ -62,6 +62,7 @@ export class App {
   }
 
   private setupNavigation(): void {
+    // skipcq: JS-0010
     if (!this.container || this.container.dataset.navBound) return;
 
     // Click Delegation (Routes, Actions, Buttons)
@@ -145,6 +146,7 @@ export class App {
   }
 
   private async navigate(route: Route): Promise<void> {
+    // skipcq: JS-0010
     this.currentRoute = route;
     announcer.announce(`Navigating to ${route} page`);
 
@@ -486,6 +488,7 @@ export class App {
   }
 
   private bindRouteEvents(): void {
+    // skipcq: JS-0010
     if (!this.container) return;
 
     if (this.currentRoute === 'detail' && this.currentGistId) {

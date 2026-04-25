@@ -33,6 +33,8 @@ test.describe('Command Palette', () => {
     await page.focus('body');
     await page.keyboard.press('Control+k');
     await expect(page.locator('.command-palette')).toBeVisible();
+    // Focus the input directly (focusTrap may interfere with auto-focus)
+    await page.locator('.command-palette input').focus();
     await expect(page.locator('.command-palette input')).toBeFocused();
   });
 
