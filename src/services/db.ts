@@ -228,7 +228,7 @@ export async function saveGist(gist: GistRecord): Promise<void> {
  */
 export async function getGist(id: string): Promise<GistRecord | undefined> {
   const db = getDB();
-  return await db.get('gists', id);
+  return db.get('gists', id);
 }
 
 /**
@@ -236,7 +236,7 @@ export async function getGist(id: string): Promise<GistRecord | undefined> {
  */
 export async function getAllGists(): Promise<GistRecord[]> {
   const db = getDB();
-  return await db.getAll('gists');
+  return db.getAll('gists');
 }
 
 /**

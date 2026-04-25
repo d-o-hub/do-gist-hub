@@ -34,6 +34,7 @@ export function cancelAllRequests(): void {
 
 /**
  * Get stored PAT from secure storage
+ * 🛡️ Sentinel: Uses centralized auth service for decryption/migration
  */
 async function getAuthToken(): Promise<string | null> {
   const { getToken } = await import('./auth');

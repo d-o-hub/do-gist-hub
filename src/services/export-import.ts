@@ -1,11 +1,8 @@
-import { GistRecord, getAllGists, saveGist, getGist } from './db';
+import { GistRecord, getAllGists, saveGist, getGist, getDB } from './db';
 import { detectConflict, storeConflict } from './sync/conflict-detector';
 import { GitHubGist } from '../types/api';
 import { safeError } from './security/logger';
 
-/**
- * Gist Export Data Format
- */
 export interface ExportData {
   version: string;
   exportedAt: string;
@@ -22,25 +19,9 @@ export interface ExportData {
 export interface ImportResult {
   imported: number;
   updated: number;
+  skipped: number;
   conflicts: number;
-  errors: number;
-}
-
-/**
- * Export all gists from the local database as a JSON Blob
- */
-export async function exportAllGists(): Promise<Blob> {
-  const gists = await getAllGists();
-  return createExportBlob(gists);
-}
-
-/**
- * Export specific gists by their IDs as a JSON Blob
- */
-export async function exportSelectedGists(ids: string[]): Promise<Blob> {
-  const allGists = await getAllGists();
-  const selectedGists = allGists.filter((g) => ids.includes(g.id));
-  return createExportBlob(selectedGists);
+  errors: string[];
 }
 
 /**
@@ -61,14 +42,32 @@ function createExportBlob(gists: GistRecord[]): Blob {
 }
 
 /**
+ * Export all gists from the local database as a JSON Blob
+ */
+export async function exportAllGists(): Promise<Blob> {
+  const gists = await getAllGists();
+  return createExportBlob(gists);
+}
+
+/**
+ * Export specific gists by their IDs as a JSON Blob
+ */
+export async function exportSelectedGists(ids: string[]): Promise<Blob> {
+  const allGists = await getAllGists();
+  const selectedGists = allGists.filter((g) => ids.includes(g.id));
+  return createExportBlob(selectedGists);
+}
+
+/**
  * Import gists from a JSON file
  */
 export async function importGists(file: File): Promise<ImportResult> {
   const result: ImportResult = {
     imported: 0,
     updated: 0,
+    skipped: 0,
     conflicts: 0,
-    errors: 0,
+    errors: [],
   };
 
   try {
@@ -76,53 +75,67 @@ export async function importGists(file: File): Promise<ImportResult> {
     const data = JSON.parse(text) as ExportData;
 
     if (!data.gists || !Array.isArray(data.gists)) {
-      throw new Error('Invalid export file format');
+      throw new Error('Invalid export file format: missing gists array');
     }
+
+    const db = getDB();
+    if (!db) throw new Error('Database not initialized');
 
     for (const importedGist of data.gists) {
       try {
         const existing = await getGist(importedGist.id);
 
         if (!existing) {
+          // New gist
           await saveGist(importedGist);
           result.imported++;
         } else {
-          // Check for differences
+          // Existing gist - check for updates/conflicts
           const hasChanges = JSON.stringify(existing) !== JSON.stringify(importedGist);
-          if (!hasChanges) continue;
 
+          if (!hasChanges) {
+            result.skipped++;
+            continue;
+          }
+
+          // Check for conflicts
           const importedAsGitHubGist = recordToGitHubGist(importedGist);
           const conflict = detectConflict(existing, importedAsGitHubGist);
 
           if (conflict) {
             await storeConflict(conflict);
-            await saveGist({
+            await db.put('gists', {
               ...existing,
               syncStatus: 'conflict',
             });
             result.conflicts++;
           } else {
-            if (importedGist.updatedAt > existing.updatedAt) {
+            // Local is clean, check for newer timestamp
+            if (new Date(importedGist.updatedAt) > new Date(existing.updatedAt)) {
               await saveGist(importedGist);
               result.updated++;
+            } else {
+              result.skipped++;
             }
           }
         }
       } catch (err) {
-        result.errors++;
-        safeError(`Failed to import gist ${importedGist.id}`, err);
+        const msg = err instanceof Error ? err.message : String(err);
+        result.errors.push(`Failed to import gist ${importedGist.id}: ${msg}`);
+        safeError(`Import error for gist ${importedGist.id}`, err);
       }
     }
   } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    result.errors.push(`Failed to parse import file: ${msg}`);
     safeError('Import failed', err);
-    throw err;
   }
 
   return result;
 }
 
 /**
- * Helper to convert GistRecord back to a GitHubGist structure for conflict detection
+ * Helper to convert GistRecord back to a GitHubGist-like structure for conflict detection
  */
 function recordToGitHubGist(record: GistRecord): GitHubGist {
   return {
