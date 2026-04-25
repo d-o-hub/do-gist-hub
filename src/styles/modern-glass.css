@@ -1,4 +1,4 @@
-/* ✅ App Mode — Glass Refractive Card System */
+/* App Mode — Glass Refractive Card System */
 
 .glass-card {
   background: var(--color-surface);
@@ -22,7 +22,7 @@
     0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
-/* Stat/KPI card — matches "ACTIVE NODES 1,284" style */
+/* Stat/KPI card */
 .stat-card {
   display: flex;
   align-items: center;
@@ -34,10 +34,10 @@
 }
 
 .stat-card .stat-icon {
-  width: 48px;
-  height: 48px;
+  width: var(--spacing-12);
+  height: var(--spacing-12);
   border-radius: var(--radius-lg);
-  background: rgba(74, 222, 128, 0.12); /* success tint */
+  background: rgba(74, 222, 128, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,7 +85,7 @@
 }
 
 .confirm-dialog {
-  max-width: 400px;
+  max-width: var(--spacing-80);
   width: 100%;
   padding: var(--space-8);
   display: flex;

@@ -1,18 +1,9 @@
 /**
  * Motion and Transitions (2026)
  * Animation tokens, state transitions, loading indicators
- * Modernized with: View Transitions, refined easing, micro-interactions
  */
 
-/* ===== 2026 Motion Token Usage ===== */
-/* All durations and easings derive from CSS custom properties */
-/* New easings: out-expo, in-expo, elastic for sophisticated motion */
-
 /* ===== Micro-Interaction Transitions ===== */
-/* Hover: 150ms ease-out-expo - feels responsive yet smooth */
-/* Active: 100ms ease-in - immediate tactile feedback */
-/* Focus: 200ms ease - visible but not jarring */
-
 .primary-btn,
 .secondary-btn,
 .icon-button {
@@ -43,9 +34,9 @@
 .filename-input,
 .content-editor {
   transition:
-    border-color var(--motion-duration-fast) var(--motion-easing-ease-out),
-    box-shadow var(--motion-duration-fast) var(--motion-easing-ease-out),
-    background-color var(--motion-duration-fast) var(--motion-easing-ease-out);
+    border-color var(--motion-duration-fast) var(--motion-easing-out),
+    box-shadow var(--motion-duration-fast) var(--motion-easing-out),
+    background-color var(--motion-duration-fast) var(--motion-easing-out);
 }
 
 /* ===== Card Entrance Animation ===== */
@@ -61,7 +52,7 @@
 }
 
 .gist-card {
-  animation: card-enter var(--motion-duration-normal) var(--motion-easing-ease-out) backwards;
+  animation: card-enter var(--motion-duration-normal) var(--motion-easing-out) backwards;
 }
 
 .gist-card:nth-child(1) {
@@ -117,7 +108,7 @@
 }
 
 .app-main {
-  animation: page-fade-in var(--motion-duration-normal) var(--motion-easing-ease-out);
+  animation: page-fade-in var(--motion-duration-normal) var(--motion-easing-out);
 }
 
 /* ===== Loading Spinner ===== */
@@ -130,10 +121,10 @@
 .spinner {
   width: 24px;
   height: 24px;
-  border: 2px solid var(--color-border-default);
-  border-top-color: var(--color-accent-primary);
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
   border-radius: var(--radius-full);
-  animation: spin var(--motion-duration-slow) var(--motion-easing-linear) infinite;
+  animation: spin var(--motion-duration-slow) linear infinite;
 }
 
 /* ===== Status Indicator Pulse ===== */
@@ -150,7 +141,7 @@
 }
 
 .status-indicator.offline .status-dot {
-  animation: pulse var(--motion-duration-slow) var(--motion-easing-ease-in-out) infinite;
+  animation: pulse var(--motion-duration-slow) ease-in-out infinite;
 }
 
 /* ===== Toast Slide In ===== */
@@ -177,15 +168,14 @@
 }
 
 .toast-enter {
-  animation: toast-slide-in var(--motion-duration-normal) var(--motion-easing-ease-out);
+  animation: toast-slide-in var(--motion-duration-normal) var(--motion-easing-out);
 }
 
 .toast-exit {
-  animation: toast-slide-out var(--motion-duration-fast) var(--motion-easing-ease-in);
+  animation: toast-slide-out var(--motion-duration-fast) var(--motion-easing-in);
 }
 
 /* ===== High-Motion Elements ===== */
-/* Hardware acceleration for animated elements */
 .animate-transform {
   will-change: transform;
   transform: translateZ(0);
@@ -196,9 +186,9 @@
 .loading-skeleton {
   background: linear-gradient(
     90deg,
-    var(--color-background-secondary) 25%,
-    var(--color-background-tertiary) 50%,
-    var(--color-background-secondary) 75%
+    var(--color-surface) 25%,
+    var(--color-surface-2) 50%,
+    var(--color-surface) 75%
   );
   background-size: 200% 100%;
   animation: skeleton-loading 1.8s ease-in-out infinite;
@@ -214,8 +204,7 @@
   }
 }
 
-/* ===== View Transitions API (2026) ===== */
-/* Smooth page transitions where supported */
+/* ===== View Transitions API ===== */
 @supports (view-transition-name: none) {
   ::view-transition-old(root) {
     animation: fade-out 200ms var(--motion-easing-in) forwards;
@@ -225,7 +214,6 @@
     animation: fade-in 300ms var(--motion-easing-out-expo) forwards;
   }
 
-  /* Gist card morphing transition */
   ::view-transition-group(gist-card) {
     animation-duration: 400ms;
     animation-timing-function: var(--motion-easing-out-expo);
@@ -234,13 +222,12 @@
 
 /* ===== Container Query Support Check ===== */
 @supports not (container-type: inline-size) {
-  /* Fallback for browsers without container query support */
   .gist-list-item {
     display: block;
   }
 }
 
-/* ===== Reduced Motion (2026) ===== */
+/* ===== Reduced Motion ===== */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -1,15 +1,13 @@
 /**
  * Accessibility Styles (2026)
  * WCAG 2.2 AA compliance: focus indicators, skip links, reduced motion, high contrast
- * Enhanced with focus-visible and logical properties
  */
 
-/* ===== Focus Indicators (2026) ===== */
-/* Modern :focus-visible for keyboard-only focus */
+/* ===== Focus Indicators ===== */
 :focus-visible {
-  outline: 2px solid var(--color-accent-primary);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
 }
 
 /* Remove default outline for mouse users, keep for keyboard */
@@ -24,24 +22,12 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--color-accent-primary);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--color-interactive-focus);
+  box-shadow: 0 0 0 4px var(--color-accent-subtle);
   transition:
     outline-offset 150ms ease,
     box-shadow 150ms ease;
-}
-
-/* Enhanced focus for interactive elements */
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible,
-[tabindex]:focus-visible {
-  outline: 2px solid var(--color-accent-primary);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--color-interactive-focus);
 }
 
 /* ===== Skip Links ===== */
@@ -49,15 +35,15 @@ select:focus-visible,
   position: absolute;
   top: -40px;
   left: 0;
-  background: var(--color-background-inverse);
-  color: var(--color-foreground-inverse);
-  padding: var(--spacing-2) var(--spacing-3);
-  z-index: var(--z-index-modal, 50);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium, 500);
+  background: var(--color-accent);
+  color: #fff;
+  padding: var(--space-2) var(--space-3);
+  z-index: 9999;
+  font-size: var(--text-sm);
+  font-weight: 500;
   text-decoration: none;
   border-radius: 0 0 var(--radius-md) 0;
-  transition: top var(--motion-duration-fast) var(--motion-easing-out);
+  transition: top var(--motion-duration-fast) var(--motion-easing);
 }
 
 .skip-link:focus {
@@ -76,16 +62,14 @@ select:focus-visible,
   }
 }
 
-/* ===== High Contrast & Forced Colors (2026) ===== */
+/* ===== High Contrast & Forced Colors ===== */
 @media (prefers-contrast: high) {
   :root {
-    --color-border-default: currentColor;
-    --color-border-emphasis: currentColor;
+    --color-border: currentColor;
   }
 
   .gist-card,
-  .button,
-  .input,
+  .btn,
   .nav-item {
     border-width: 2px;
   }
@@ -99,26 +83,22 @@ select:focus-visible,
 @media (forced-colors: active) {
   button,
   .btn,
-  .primary-btn,
-  .secondary-btn,
   .icon-button,
   .nav-item,
-  .filter-btn {
+  .chip {
     border: 2px solid ButtonText;
     forced-color-adjust: none;
   }
 
-  .status-dot {
+  .sync-dot {
     border: 1px solid ButtonText;
   }
 
-  /* Ensure focus rings remain visible */
   :focus-visible {
     outline: 3px solid Highlight;
     outline-offset: 2px;
   }
 
-  /* Respect user color choices */
   .gist-card {
     border: 1px solid CanvasText;
     background: Canvas;
@@ -145,6 +125,7 @@ select:focus-visible,
   .btn,
   .icon-button,
   .nav-item,
+  .chip,
   a {
     min-height: 44px;
     min-width: 44px;
