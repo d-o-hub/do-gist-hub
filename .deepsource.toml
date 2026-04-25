@@ -20,10 +20,10 @@ enabled = true
 
   [analyzers.meta]
   runtime_version = 24
-  "no-var" = "off"
-  "eqeqeq" = "off"
-  "prefer-arrow-callback" = "off"
-  "no-empty" = "off"
+  'no-var' = 'off'
+  'eqeqeq' = 'off'
+  'prefer-arrow-callback' = 'off'
+  'no-empty' = 'off'
 
 [[analyzers]]
 name = 'shell'
