@@ -33,12 +33,12 @@ export function cancelAllRequests(): void {
 }
 
 /**
- * Get stored PAT from IndexedDB
- * Uses encrypted storage via auth service
+ * Get stored PAT from secure storage
+ * 🛡️ Sentinel: Uses centralized auth service for decryption/migration
  */
 async function getAuthToken(): Promise<string | null> {
   const { getToken } = await import('./auth');
-  return await getToken();
+  return getToken();
 }
 
 /**
