@@ -20,7 +20,6 @@ enabled = true
 
   [analyzers.meta]
   runtime_version = 24
-  config_path = 'eslint.config.js'
 
 [[analyzers]]
 name = 'shell'
