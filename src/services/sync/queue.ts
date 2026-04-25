@@ -27,7 +27,8 @@ export interface SyncResult {
 }
 
 const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 1000;
+const RETRY_BACKOFF_MS = 1000;
+const RETRY_MAX_DELAY_MS = 30000;
 
 export class SyncQueue {
   private isSyncing = false;
@@ -83,7 +84,9 @@ export class SyncQueue {
             await updatePendingWriteError(write.id, result.error || 'Max retries reached');
           }
         }
-        await SyncQueue.delay(RETRY_DELAY_MS);
+        // Exponential backoff with jitter between operations
+        const backoffMs = SyncQueue.calculateBackoff(write.retryCount ?? 0);
+        await SyncQueue.delay(backoffMs);
       }
     } catch (error) {
       safeError('[SyncQueue] Error processing queue:', error);
@@ -197,6 +200,21 @@ export class SyncQueue {
       );
     }
     return false;
+  }
+
+  /**
+   * Calculate exponential backoff delay with jitter.
+   * Respects server Retry-After headers when available.
+   */
+  private static calculateBackoff(attempt: number, retryAfterMs?: number): number {
+    if (retryAfterMs && retryAfterMs > 0) {
+      return retryAfterMs;
+    }
+    const base = RETRY_BACKOFF_MS;
+    const max = RETRY_MAX_DELAY_MS;
+    const exponential = base * Math.pow(2, attempt);
+    const jitter = Math.random() * base;
+    return Math.min(exponential + jitter, max);
   }
 
   private static delay(ms: number): Promise<void> {

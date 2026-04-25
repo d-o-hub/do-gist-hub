@@ -20,6 +20,31 @@ import { handleGitHubError } from './error-handler';
 const BASE_URL = 'https://api.github.com';
 
 /**
+ * In-flight request deduplication cache.
+ * Key: METHOD:URL, Value: shared Promise.
+ * Automatically cleaned on completion or error.
+ */
+const inFlightRequests = new Map<string, Promise<unknown>>();
+
+/**
+ * Deduplicate concurrent identical requests.
+ * If a request with the same key is already in flight, return its promise.
+ */
+async function deduplicatedFetch<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+  const existing = inFlightRequests.get(key);
+  if (existing) {
+    return existing as Promise<T>;
+  }
+
+  const promise = fetcher().finally(() => {
+    inFlightRequests.delete(key);
+  });
+
+  inFlightRequests.set(key, promise);
+  return promise;
+}
+
+/**
  * Global abort controller for cancelling all in-flight requests
  */
 let globalAbortController = new AbortController();
@@ -129,21 +154,23 @@ export async function listGists(
     ...(since ? { since } : {}),
   });
 
-  try {
-    const response = await fetch(
-      `${BASE_URL}/users/${await getCurrentUsername()}/gists?${params}`,
-      await buildOptions()
-    );
+  const url = `${BASE_URL}/users/${await getCurrentUsername()}/gists?${params}`;
+  const key = `GET:listGists:${url}`;
 
-    if (!response.ok) {
-      return handleApiError(response, 'listGists');
+  return deduplicatedFetch(key, async () => {
+    try {
+      const response = await fetch(url, await buildOptions());
+
+      if (!response.ok) {
+        return handleApiError(response, 'listGists');
+      }
+
+      trackRateLimit(response);
+      return response.json() as Promise<GitHubGist[]>;
+    } catch (error) {
+      return handleApiError(error, 'listGists');
     }
-
-    trackRateLimit(response);
-    return response.json() as Promise<GitHubGist[]>;
-  } catch (error) {
-    return handleApiError(error, 'listGists');
-  }
+  });
 }
 
 /**
@@ -159,36 +186,45 @@ export async function listStarredGists(
     per_page: String(perPage),
   });
 
-  try {
-    const response = await fetch(`${BASE_URL}/gists/starred?${params}`, await buildOptions());
+  const url = `${BASE_URL}/gists/starred?${params}`;
+  const key = `GET:listStarredGists:${url}`;
 
-    if (!response.ok) {
-      return handleApiError(response, 'listStarredGists');
+  return deduplicatedFetch(key, async () => {
+    try {
+      const response = await fetch(url, await buildOptions());
+
+      if (!response.ok) {
+        return handleApiError(response, 'listStarredGists');
+      }
+
+      trackRateLimit(response);
+      return response.json() as Promise<GitHubGist[]>;
+    } catch (error) {
+      return handleApiError(error, 'listStarredGists');
     }
-
-    trackRateLimit(response);
-    return response.json() as Promise<GitHubGist[]>;
-  } catch (error) {
-    return handleApiError(error, 'listStarredGists');
-  }
+  });
 }
 
 /**
  * Get a specific gist by ID
  */
 export async function getGist(id: string): Promise<GitHubGist> {
-  try {
-    const response = await fetch(`${BASE_URL}/gists/${id}`, await buildOptions());
+  const key = `GET:getGist:${id}`;
 
-    if (!response.ok) {
-      return handleApiError(response, 'getGist');
+  return deduplicatedFetch(key, async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/gists/${id}`, await buildOptions());
+
+      if (!response.ok) {
+        return handleApiError(response, 'getGist');
+      }
+
+      trackRateLimit(response);
+      return response.json() as Promise<GitHubGist>;
+    } catch (error) {
+      return handleApiError(error, 'getGist');
     }
-
-    trackRateLimit(response);
-    return response.json() as Promise<GitHubGist>;
-  } catch (error) {
-    return handleApiError(error, 'getGist');
-  }
+  });
 }
 
 /**
@@ -288,15 +324,19 @@ export async function unstarGist(id: string): Promise<void> {
  * Check if a gist is starred
  */
 export async function checkIfStarred(id: string): Promise<boolean> {
-  try {
-    const response = await fetch(`${BASE_URL}/gists/${id}/star`, await buildOptions());
+  const key = `GET:checkIfStarred:${id}`;
 
-    trackRateLimit(response);
-    return response.status === 204;
-  } catch (error) {
-    safeError('[GitHub API] checkIfStarred:', error);
-    return false;
-  }
+  return deduplicatedFetch(key, async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/gists/${id}/star`, await buildOptions());
+
+      trackRateLimit(response);
+      return response.status === 204;
+    } catch (error) {
+      safeError('[GitHub API] checkIfStarred:', error);
+      return false;
+    }
+  });
 }
 
 /**
@@ -321,18 +361,22 @@ export async function forkGist(id: string): Promise<GitHubGist> {
  * List gist revisions
  */
 export async function listGistRevisions(id: string): Promise<GistRevision[]> {
-  try {
-    const response = await fetch(`${BASE_URL}/gists/${id}/revisions`, await buildOptions());
+  const key = `GET:listGistRevisions:${id}`;
 
-    if (!response.ok) {
-      return handleApiError(response, 'listGistRevisions');
+  return deduplicatedFetch(key, async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/gists/${id}/revisions`, await buildOptions());
+
+      if (!response.ok) {
+        return handleApiError(response, 'listGistRevisions');
+      }
+
+      trackRateLimit(response);
+      return response.json() as Promise<GistRevision[]>;
+    } catch (error) {
+      return handleApiError(error, 'listGistRevisions');
     }
-
-    trackRateLimit(response);
-    return response.json() as Promise<GistRevision[]>;
-  } catch (error) {
-    return handleApiError(error, 'listGistRevisions');
-  }
+  });
 }
 
 /**
@@ -350,25 +394,29 @@ async function getCurrentUsername(): Promise<string> {
     throw new Error('No authentication token available');
   }
 
-  try {
-    const response = await fetch(`${BASE_URL}/user`, {
-      headers: {
-        Accept: 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-        Authorization: `token ${token}`,
-      },
-    });
+  const key = `GET:getCurrentUsername:${token.slice(-8)}`;
 
-    if (!response.ok) {
-      return handleApiError(response, 'getCurrentUsername');
+  return deduplicatedFetch(key, async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/user`, {
+        headers: {
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          Authorization: `token ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        return handleApiError(response, 'getCurrentUsername');
+      }
+
+      const user = await response.json();
+      cachedUsername = user.login as string;
+      return cachedUsername;
+    } catch (error) {
+      return handleApiError(error, 'getCurrentUsername');
     }
-
-    const user = await response.json();
-    cachedUsername = user.login as string;
-    return cachedUsername;
-  } catch (error) {
-    return handleApiError(error, 'getCurrentUsername');
-  }
+  });
 }
 
 /**
