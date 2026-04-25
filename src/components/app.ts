@@ -73,6 +73,12 @@ export class App {
       void this.showMobileMenu();
     });
 
+    this.container?.querySelectorAll('[data-testid="settings-btn"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        void this.navigate('settings');
+      });
+    });
+
     this.container?.querySelector('#theme-select')?.addEventListener('change', (e) => {
       const theme = (e.target as HTMLSelectElement).value;
       document.documentElement.setAttribute('data-theme', theme);
@@ -95,10 +101,10 @@ export class App {
     await withViewTransition(async () => {
       this.render();
       this.setupNavigation();
-      if (route === 'home' || route === 'starred') this.updateGistList();
+      if (route === 'home' || route === 'starred') await this.updateGistList();
       if (route === 'settings') {
         await this.loadTokenInfo();
-        this.loadDiagnostics();
+        await this.loadDiagnostics();
       }
       if (route === 'offline') {
         await this.updateOfflineStatus();
@@ -120,52 +126,52 @@ export class App {
     if (!this.container) return;
 
     this.container.innerHTML = `
-      <div class="app-shell" data-testid="app-shell">
-        <aside class="sidebar-nav" data-testid="sidebar-nav">
-          <button class="sidebar-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home">Home</button>
-          <button class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" data-testid="nav-starred">Starred</button>
-          <button class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create">Create</button>
-          <button class="sidebar-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="nav-offline">Offline</button>
+      <div class="app-shell">
+        <aside class="sidebar-nav">
+          <button class="sidebar-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home">Home</button>
+          <button class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">Starred</button>
+          <button class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">Create</button>
+          <button class="sidebar-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">Offline</button>
           <button class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="settings-btn">Settings</button>
         </aside>
 
-        <aside class="rail-nav" data-testid="rail-nav">
-          <button class="rail-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home">🏠</button>
-          <button class="rail-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" data-testid="nav-starred">⭐</button>
-          <button class="rail-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create">➕</button>
-          <button class="rail-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="nav-offline">📶</button>
+        <aside class="rail-nav">
+          <button class="rail-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home">🏠</button>
+          <button class="rail-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">⭐</button>
+          <button class="rail-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">➕</button>
+          <button class="rail-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">📶</button>
           <button class="rail-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="settings-btn">⚙️</button>
         </aside>
 
-        <header class="app-header" data-testid="app-header">
+        <header class="app-header">
           <div class="header-left">
-            <h1 class="app-title" data-route="home" data-testid="app-title">${APP.name}</h1>
+            <h1 class="app-title" data-route="home">${APP.name}</h1>
           </div>
           <div class="header-right">
-            <div id="sync-indicator" class="sync-indicator" data-testid="sync-indicator"></div>
+            <div id="sync-indicator" class="sync-indicator"></div>
             <button id="mobile-menu-btn" class="icon-button" aria-label="Menu" data-testid="mobile-menu-btn">☰</button>
             <button class="icon-button" aria-label="Settings" data-testid="settings-btn" data-route="settings">⚙️</button>
           </div>
         </header>
 
-        <main class="app-main" id="main-content" data-testid="main-content">
+        <main class="app-main" id="main-content">
           ${this.renderRoute()}
         </main>
 
-        <nav class="bottom-nav" data-testid="bottom-nav">
-          <button class="nav-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home">
+        <nav class="bottom-nav">
+          <button class="nav-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home">
             <span class="nav-icon">🏠</span>
             <span class="nav-label">Home</span>
           </button>
-          <button class="nav-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" data-testid="nav-starred">
+          <button class="nav-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred">
             <span class="nav-icon">⭐</span>
             <span class="nav-label">Starred</span>
           </button>
-          <button class="nav-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create">
+          <button class="nav-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create">
             <span class="nav-icon">➕</span>
             <span class="nav-label">Create</span>
           </button>
-          <button class="nav-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="nav-offline">
+          <button class="nav-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline">
             <span class="nav-icon">📶</span>
             <span class="nav-label">Offline</span>
           </button>
@@ -235,7 +241,7 @@ export class App {
             <textarea id="gist-content" class="form-input code-editor" placeholder="Gist content..." required style="min-height: 200px;"></textarea>
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Create Gist</button>
+            <button type="submit" class="btn btn-primary">CREATE GIST</button>
           </div>
         </form>
       </div>
@@ -261,8 +267,8 @@ export class App {
                 <label class="form-label" for="pat-input">GitHub Personal Access Token</label>
                 <div style="display: flex; gap: var(--space-2);">
                     <input type="password" id="pat-input" class="form-input" style="flex: 1;" placeholder="ghp_...">
-                    <button id="save-token-btn" class="btn btn-primary">Save</button>
-                    <button id="remove-token-btn" class="btn btn-ghost">Remove</button>
+                    <button id="save-token-btn" class="btn btn-primary">SAVE</button>
+                    <button id="remove-token-btn" class="btn btn-ghost">REMOVE</button>
                 </div>
                 <div id="token-status" style="margin-top: var(--space-2);"></div>
               </div>
@@ -276,8 +282,8 @@ export class App {
             <div class="settings-section-content" style="padding-top: var(--space-4);">
                 <div class="form-actions" style="display: flex; flex-direction: column; gap: var(--space-2);">
                     <div style="display: flex; gap: var(--space-2);">
-                        <button id="export-all-btn" class="btn btn-secondary" style="flex: 1;">Export All Gists</button>
-                        <button id="import-btn" class="btn btn-secondary" style="flex: 1;">Import Gists</button>
+                        <button id="export-all-btn" class="btn btn-secondary" style="flex: 1;">EXPORT ALL GISTS</button>
+                        <button id="import-btn" class="btn btn-secondary" style="flex: 1;">IMPORT GISTS</button>
                         <input type="file" id="import-file-input" accept=".json" style="display: none;" />
                     </div>
                 </div>
@@ -307,7 +313,7 @@ export class App {
             <div class="settings-section-content" style="padding-top: var(--space-4);">
               <div class="form-actions" style="display: flex; flex-direction: column; gap: var(--space-2);">
                 <button id="export-data-btn" class="btn btn-ghost">Export Data (JSON)</button>
-                <button id="clear-cache-btn" class="btn btn-danger">Clear Local Cache</button>
+                <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
               </div>
               <div id="diagnostics-info" class="diagnostics-info" style="margin-top: var(--space-4);"></div>
             </div>
@@ -327,14 +333,14 @@ export class App {
             <div class="stat-card">
                 <div class="stat-icon">📴</div>
                 <div class="stat-info">
-                    <div class="stat-label">Pending Writes</div>
+                    <div class="stat-label">PENDING WRITES</div>
                     <div class="stat-value" id="pending-count">0</div>
                 </div>
             </div>
             <div class="stat-card clickable" id="conflicts-stat-card">
                 <div class="stat-icon">⚠️</div>
                 <div class="stat-info">
-                    <div class="stat-label">Sync Conflicts</div>
+                    <div class="stat-label">SYNC CONFLICTS</div>
                     <div class="stat-value" id="conflict-count">0</div>
                 </div>
             </div>
@@ -391,7 +397,7 @@ export class App {
     return gists.map((g) => renderCard(g)).join('');
   }
 
-  private updateGistList(): void {
+  private async updateGistList(): Promise<void> {
     const list = this.container?.querySelector('#gist-list');
     if (list) {
       list.innerHTML = this.renderGistList();
@@ -427,7 +433,7 @@ export class App {
       const val = (e.target as HTMLInputElement).value;
       this.searchTimeout = window.setTimeout(() => {
         this.searchQuery = val;
-        this.updateGistList();
+        void this.updateGistList();
       }, 300);
     });
 
@@ -439,13 +445,13 @@ export class App {
       this.container!.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
       chip.classList.add('active');
       this.currentFilter = (chip.dataset.filter as Filter) || 'all';
-      this.updateGistList();
+      void this.updateGistList();
     });
 
     // Sort
     this.container.querySelector('#sort-select')?.addEventListener('change', (e) => {
       this.currentSort = (e.target as HTMLSelectElement).value as Sort;
-      this.updateGistList();
+      void this.updateGistList();
     });
 
     // Create Form
@@ -465,20 +471,20 @@ export class App {
       if (input.value) {
         void (async () => {
           await saveToken(input.value);
-          toast.success('Token saved');
+          toast.success('TOKEN SAVED');
           void this.loadTokenInfo();
           input.value = '';
         })();
       } else {
-        toast.error('Enter a token');
+        toast.error('ENTER A TOKEN');
       }
     });
 
     this.container.querySelector('#remove-token-btn')?.addEventListener('click', () => {
       void (async () => {
-        const { setMetadata } = await import('../services/db');
-        await setMetadata('github-pat', null);
-        toast.success('Token removed');
+        const { removeToken } = await import('../services/github/auth');
+        await removeToken();
+        toast.success('TOKEN REMOVED');
         void this.loadTokenInfo();
       })();
     });
@@ -494,7 +500,7 @@ export class App {
         a.download = `gists-export-${new Date().toISOString().split('T')[0]}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        toast.success('Export complete');
+        toast.success('EXPORT COMPLETE');
       })();
     });
 
@@ -512,10 +518,10 @@ export class App {
           const result = await importGists(file);
           await gistStore.reloadFromDb();
           toast.success(
-            `Import complete: ${result.imported} new, ${result.updated} updated, ${result.conflicts} conflicts`
+            `IMPORT COMPLETE: ${result.imported} NEW, ${result.updated} UPDATED, ${result.conflicts} CONFLICTS`
           );
         } catch (err) {
-          toast.error('Import failed');
+          toast.error('IMPORT FAILED');
           safeError('Import failed', err);
         } finally {
           (e.target as HTMLInputElement).value = '';
@@ -526,7 +532,7 @@ export class App {
     // Settings Cache
     this.container.querySelector('#clear-cache-btn')?.addEventListener('click', () => {
       void (async () => {
-        if (await showConfirmDialog('Clear all local data?')) {
+        if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
           const { clearAllData } = await import('../services/db');
           await clearAllData();
           window.location.reload();
@@ -549,9 +555,9 @@ export class App {
           a.click();
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
-          toast.success('Data exported');
+          toast.success('DATA EXPORTED');
         } catch {
-          toast.error('Export failed');
+          toast.error('EXPORT FAILED');
         }
       })();
     });
@@ -569,7 +575,7 @@ export class App {
     }
   }
 
-  private loadDiagnostics(): void {
+  private async loadDiagnostics(): Promise<void> {
     const container = this.container?.querySelector('#diagnostics-info');
     if (!container) return;
 
@@ -631,7 +637,7 @@ export class App {
         <button class="btn btn-ghost" data-route="settings">Settings</button>
       </div>
     `;
-    await bottomSheet.open(content, 'Menu');
+    await bottomSheet.open(content, 'MENU');
     setTimeout(() => {
       document.querySelectorAll('.mobile-menu .btn').forEach((b) => {
         b.addEventListener('click', () => {

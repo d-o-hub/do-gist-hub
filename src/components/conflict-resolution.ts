@@ -7,6 +7,7 @@ import { GistConflict, getConflicts } from '../services/sync/conflict-detector';
 import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
 import { withViewTransition } from '../utils/view-transitions';
+import { safeError } from '../services/security/logger';
 import { announcer } from '../utils/announcer';
 import { sanitizeHtml } from '../services/security/dom';
 
@@ -20,7 +21,7 @@ export function renderConflictList(conflicts: GistConflict[]): string {
     return `
       <div class="empty-state">
         <div class="empty-icon">✅</div>
-        <p>No conflicts detected</p>
+        <p>NO CONFLICTS DETECTED</p>
       </div>
     `;
   }
@@ -32,14 +33,14 @@ export function renderConflictList(conflicts: GistConflict[]): string {
           (c) => `
         <div class="glass-card conflict-item" data-id="${c.gistId}">
           <div class="conflict-item-header">
-            <h3 class="conflict-item-title">${sanitizeHtml(c.localVersion.description || 'Untitled Gist')}</h3>
+            <h3 class="conflict-item-title">${sanitizeHtml(c.localVersion.description || 'UNTITLED GIST')}</h3>
             <span class="micro-label">ID: ${c.gistId.substring(0, 8)}</span>
           </div>
           <div class="conflict-item-meta">
-            <span class="detail-chip">Conflicting: ${c.conflictingFields.map(sanitizeHtml).join(', ')}</span>
-            <span class="micro-label">Detected: ${new Date(c.detectedAt).toLocaleString()}</span>
+            <span class="detail-chip">CONFLICTING: ${c.conflictingFields.map(sanitizeHtml).join(', ')}</span>
+            <span class="micro-label">DETECTED: ${new Date(c.detectedAt).toLocaleString()}</span>
           </div>
-          <button class="btn btn-primary resolve-btn" data-id="${c.gistId}">Resolve</button>
+          <button class="btn btn-primary resolve-btn" data-id="${c.gistId}">RESOLVE</button>
         </div>
       `
         )
@@ -57,29 +58,29 @@ export function renderConflictDetail(conflict: GistConflict): string {
   return `
     <div class="conflict-detail">
       <header class="detail-header">
-        <button class="btn btn-ghost back-to-list">← Back to list</button>
-        <h1 class="detail-title">Resolve Conflict</h1>
-        <p class="micro-label">Gist ID: ${conflict.gistId}</p>
+        <button class="btn btn-ghost back-to-list">← BACK TO LIST</button>
+        <h1 class="detail-title">RESOLVE CONFLICT</h1>
+        <p class="micro-label">GIST ID: ${conflict.gistId}</p>
       </header>
 
       <div class="comparison-grid">
         <!-- Local Version -->
         <div class="comparison-col local-version">
           <div class="comparison-header">
-            <h2 class="comparison-title">Local Version</h2>
-            <span class="micro-label">Your changes</span>
+            <h2 class="comparison-title">LOCAL VERSION</h2>
+            <span class="micro-label">YOUR CHANGES</span>
           </div>
           <div class="comparison-body">
             <div class="comp-field ${conflictingFields.includes('description') ? 'has-conflict' : ''}">
-              <label class="micro-label">Description</label>
+              <label class="micro-label">DESCRIPTION</label>
               <div class="comp-value">${local.description ? sanitizeHtml(local.description) : '<i>No description</i>'}</div>
             </div>
             <div class="comp-field ${conflictingFields.includes('public') ? 'has-conflict' : ''}">
-              <label class="micro-label">Visibility</label>
-              <div class="comp-value">${local.public ? 'Public' : 'Secret'}</div>
+              <label class="micro-label">VISIBILITY</label>
+              <div class="comp-value">${local.public ? 'PUBLIC' : 'SECRET'}</div>
             </div>
             <div class="comp-field ${conflictingFields.includes('content') ? 'has-conflict' : ''}">
-              <label class="micro-label">Files</label>
+              <label class="micro-label">FILES</label>
               <div class="comp-files">
                 ${Object.entries(local.files)
                   .map(
@@ -94,26 +95,26 @@ export function renderConflictDetail(conflict: GistConflict): string {
               </div>
             </div>
           </div>
-          <button class="btn btn-primary resolve-choice-btn" data-strategy="local-wins">Keep local version</button>
+          <button class="btn btn-primary resolve-choice-btn" data-strategy="local-wins">KEEP LOCAL VERSION</button>
         </div>
 
         <!-- Remote Version -->
         <div class="comparison-col remote-version">
           <div class="comparison-header">
-            <h2 class="comparison-title">Remote Version</h2>
-            <span class="micro-label">GitHub changes</span>
+            <h2 class="comparison-title">REMOTE VERSION</h2>
+            <span class="micro-label">GITHUB CHANGES</span>
           </div>
           <div class="comparison-body">
             <div class="comp-field ${conflictingFields.includes('description') ? 'has-conflict' : ''}">
-              <label class="micro-label">Description</label>
+              <label class="micro-label">DESCRIPTION</label>
               <div class="comp-value">${remote.description ? sanitizeHtml(remote.description) : '<i>No description</i>'}</div>
             </div>
             <div class="comp-field ${conflictingFields.includes('public') ? 'has-conflict' : ''}">
-              <label class="micro-label">Visibility</label>
-              <div class="comp-value">${remote.public ? 'Public' : 'Secret'}</div>
+              <label class="micro-label">VISIBILITY</label>
+              <div class="comp-value">${remote.public ? 'PUBLIC' : 'SECRET'}</div>
             </div>
             <div class="comp-field ${conflictingFields.includes('content') ? 'has-conflict' : ''}">
-              <label class="micro-label">Files</label>
+              <label class="micro-label">FILES</label>
               <div class="comp-files">
                 ${Object.entries(remote.files)
                   .map(
@@ -128,7 +129,7 @@ export function renderConflictDetail(conflict: GistConflict): string {
               </div>
             </div>
           </div>
-          <button class="btn btn-ghost resolve-choice-btn" data-strategy="remote-wins">Use remote version</button>
+          <button class="btn btn-ghost resolve-choice-btn" data-strategy="remote-wins">USE REMOTE VERSION</button>
         </div>
       </div>
     </div>
@@ -166,7 +167,7 @@ export function bindConflictEvents(container: HTMLElement, onResolve: () => void
 
         try {
           await gistStore.resolveGistConflict(currentConflictId, strategy);
-          const message = `Conflict resolved: ${strategy}`;
+          const message = `CONFLICT RESOLVED: ${strategy.toUpperCase()}`;
           toast.success(message);
           announcer.success(message);
           currentConflictId = null;
@@ -175,8 +176,8 @@ export function bindConflictEvents(container: HTMLElement, onResolve: () => void
             await loadConflictResolution(container, onResolve);
           });
         } catch (err) {
-          toast.error('Failed to resolve conflict');
-          console.error(err);
+          toast.error('FAILED TO RESOLVE CONFLICT');
+          safeError('[ConflictResolution] Failed to resolve:', err);
         }
       })();
     });
@@ -200,7 +201,7 @@ export async function loadConflictResolution(
       currentConflictId = null;
       container.innerHTML = `
         <header class="detail-header">
-          <h1 class="detail-title">Sync Conflicts</h1>
+          <h1 class="detail-title">SYNC CONFLICTS</h1>
         </header>
         ${renderConflictList(conflicts)}
       `;
@@ -208,7 +209,7 @@ export async function loadConflictResolution(
   } else {
     container.innerHTML = `
       <header class="detail-header">
-        <h1 class="detail-title">Sync Conflicts</h1>
+        <h1 class="detail-title">SYNC CONFLICTS</h1>
       </header>
       <div style="padding: 0 var(--space-6);">
         ${renderConflictList(conflicts)}
