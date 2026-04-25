@@ -1,6 +1,7 @@
 import { defineConfig, Plugin } from 'vite';
 import path from 'path';
 import fs from 'fs';
+import { APP } from './src/config/app.config';
 
 /**
  * Reads app.config.ts and injects values into index.html
@@ -12,10 +13,9 @@ function appConfigHtmlPlugin(): Plugin {
     transformIndexHtml: {
       order: 'pre',
       handler(html) {
-        process.env.VITE_APP_NAME = process.env.VITE_APP_NAME || 'd.o. Gist Hub';
-        process.env.VITE_APP_DESCRIPTION =
-          process.env.VITE_APP_DESCRIPTION || 'Offline-first GitHub Gist management app';
-        process.env.VITE_APP_THEME_COLOR = process.env.VITE_APP_THEME_COLOR || '#2563eb';
+        process.env.VITE_APP_NAME = process.env.VITE_APP_NAME || APP.name;
+        process.env.VITE_APP_DESCRIPTION = process.env.VITE_APP_DESCRIPTION || APP.description;
+        process.env.VITE_APP_THEME_COLOR = process.env.VITE_APP_THEME_COLOR || APP.themeColor;
 
         const appName = process.env.VITE_APP_NAME;
         const appDesc = process.env.VITE_APP_DESCRIPTION;

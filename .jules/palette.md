@@ -5,3 +5,7 @@
 ## 2026-06-15 - [Adaptive Layouts with Container Queries]
 **Learning:** Container Queries (`@container`) are essential for component portability. They allow `GistCard` to adapt its layout to its actual container width, decoupling component responsiveness from global viewport breakpoints.
 **Action:** Use Container Queries for component-internal responsive logic; Media Queries for the app shell only.
+
+## 2026-06-15 - [Responsive Test Stability]
+**Learning:** Responsive layouts often have duplicate functional elements (sidebar vs header). Use `.filter({ visible: true })` to avoid clicking hidden elements. Unique `data-testid` and avoiding duplicate HTML IDs in `App.ts` is critical for valid DOM selection.
+**Action:** Always filter by visibility for responsive navigation elements and enforce ID uniqueness in components.

@@ -34,6 +34,7 @@ test.describe('Export/Import Functionality', () => {
 
     // Start waiting for download before clicking
     const downloadPromise = page.waitForEvent('download');
+    // Open Data & Diagnostics section
     await page.locator('summary:has-text("Data & Diagnostics")').click();
     await page.click('#export-data-btn');
     const download = await downloadPromise;
@@ -71,7 +72,8 @@ test.describe('Export/Import Functionality', () => {
     const importFilePath = path.join(process.cwd(), 'tests/test-import.json');
     fs.writeFileSync(importFilePath, JSON.stringify(backupData));
 
-    // Upload file
+    // Open Data & Diagnostics section
+    await page.locator('summary:has-text("Data & Diagnostics")').click();
     await page.setInputFiles('#import-file-input', importFilePath);
 
     // Check for success toast - use first() to avoid strict mode violation if body matches too
@@ -140,6 +142,8 @@ test.describe('Export/Import Functionality', () => {
     const conflictFilePath = path.join(process.cwd(), 'tests/test-conflict.json');
     fs.writeFileSync(conflictFilePath, JSON.stringify(backupData));
 
+    // Open Data & Diagnostics section
+    await page.locator('summary:has-text("Data & Diagnostics")').click();
     await page.setInputFiles('#import-file-input', conflictFilePath);
 
     // Verify gist in DB has conflict status

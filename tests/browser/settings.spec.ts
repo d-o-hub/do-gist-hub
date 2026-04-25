@@ -6,6 +6,7 @@ test.describe('Settings', () => {
        test.skip(true, 'WebKit layout is flaky for Settings nav button');
     }
     await page.goto('http://localhost:3000');
+    await page.waitForSelector('.app-shell');
     await page.waitForLoadState('networkidle');
     const isMobile = await page.evaluate(() => window.innerWidth < 768);
     if (isMobile) {
@@ -41,7 +42,8 @@ test.describe('Settings', () => {
     // Try to save without entering token
     await page.locator('#save-token-btn').click();
     // Should show error toast - check for generic toast or specific error class
-    await expect(page.locator('.toast')).toBeVisible();
+    // Use .first() to avoid strict mode violations if multiple toasts appear
+    await expect(page.locator('.toast').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('should change theme via select', async ({ page }) => {

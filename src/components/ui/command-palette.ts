@@ -6,6 +6,7 @@
 import { focusTrap } from '../../utils/focus-trap';
 import { announcer } from '../../utils/announcer';
 import { sanitizeHtml } from '../../services/security';
+import { withViewTransition } from '../../utils/view-transitions';
 
 export interface Command {
   id: string;
@@ -51,8 +52,8 @@ export class CommandPalette {
       if (item) {
         const index = parseInt(item.getAttribute('data-index') || '-1', 10);
         if (index >= 0 && this.filteredCommands[index]) {
-          this.filteredCommands[index].action();
-          this.close();
+          void this.filteredCommands[index].action();
+          void this.close();
         }
       }
     });
@@ -62,10 +63,10 @@ export class CommandPalette {
     window.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        this.open();
+        void this.open();
       }
       if (e.key === 'Escape' && this.isOpen) {
-        this.close();
+        void this.close();
       }
     });
   }
@@ -75,7 +76,7 @@ export class CommandPalette {
     this.filteredCommands = commands;
   }
 
-  open(): void {
+  async open(): Promise<void> {
     if (!this.container || !this.backdrop || this.isOpen) return;
 
     this.isOpen = true;
@@ -84,26 +85,27 @@ export class CommandPalette {
 
     this.render();
 
-    this.backdrop.classList.add('visible');
-    this.container.classList.add('open');
-    this.container.setAttribute('aria-expanded', 'true');
-
-    const input = this.container.querySelector('input');
-    input?.focus();
+    await withViewTransition(() => {
+      this.backdrop!.classList.add('visible');
+      this.container!.classList.add('open');
+      this.container!.setAttribute('aria-expanded', 'true');
+    });
 
     focusTrap.activate(this.container);
     announcer.announce('Command palette opened');
   }
 
-  close(): void {
+  async close(): Promise<void> {
     if (!this.container || !this.backdrop || !this.isOpen) return;
 
-    this.isOpen = false;
     focusTrap.deactivate();
+    this.isOpen = false;
 
-    this.backdrop.classList.remove('visible');
-    this.container.classList.remove('open');
-    this.container.setAttribute('aria-expanded', 'false');
+    await withViewTransition(() => {
+      this.backdrop!.classList.remove('visible');
+      this.container!.classList.remove('open');
+      this.container!.setAttribute('aria-expanded', 'false');
+    });
   }
 
   private render(): void {
@@ -112,7 +114,7 @@ export class CommandPalette {
     this.container.innerHTML = `
       <div class="command-palette-search">
         <span class="search-icon">🔍</span>
-        <input type="text" placeholder="Search commands..." spellcheck="false" />
+        <input type="text" placeholder="Search commands..." spellcheck="false" autofocus />
       </div>
       <div class="command-palette-results" role="listbox">
         ${this.renderResults()}
@@ -188,8 +190,8 @@ export class CommandPalette {
       e.preventDefault();
       const cmd = this.filteredCommands[this.selectedIndex];
       if (cmd) {
-        cmd.action();
-        this.close();
+        void cmd.action();
+        void this.close();
       }
     }
   }
