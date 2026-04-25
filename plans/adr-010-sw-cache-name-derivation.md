@@ -1,7 +1,7 @@
 <!-- Last Audit: 2026-04-25 -->
 # ADR-010: Service Worker Cache Name Derivation from app.config.ts
 
-**Status**: Proposed
+**Status**: Deferred
 **Date**: 2026-04-25
 **Deciders**: Architect, PWA Agent
 
@@ -90,4 +90,4 @@ Roll back to hardcoded names if:
 
 ---
 
-*Created: 2026-04-25. Status: Proposed.*
+*Created: 2026-04-25. Status: Deferred.*

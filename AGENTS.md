@@ -382,6 +382,7 @@ This section is automatically updated by `./scripts/analyze-codebase.sh`.
 2. **Dynamic Viewport**: Use `100dvh` for app shell (not `100vh`) for mobile browser UI
 3. **Safe Areas**: Include `env(safe-area-inset-*)` for notch/home indicator support
 4. **Flex Scrolling**: Add `min-height: 0` to flex children with `overflow`
+5. **Header Button Redundancy**: Hide mobile-only header buttons (hamburger, settings) when sidebar/rail is visible to prevent duplicate menus
 
 ### Testing Patterns (CI Stability)
 
@@ -389,6 +390,9 @@ This section is automatically updated by `./scripts/analyze-codebase.sh`.
 2. **Responsive Test Locators**: Use `.filter({ visible: true })` for breakpoint-specific UI
 3. **Collapsed Sections**: Open `<details>` before clicking nested elements
 4. **Focus Reliability**: Use `requestAnimationFrame` for CSS transition timing
+5. **Offline Project Config**: Never set `offline: true` in `playwright.config.ts` — use `context.setOffline(true)` after `page.goto()`
+6. **Offline Dynamic Imports**: Preload modules via `page.evaluate()` before going offline; dynamic `import()` fails when browser is offline
+7. **Empty Element Visibility**: Playwright treats empty elements as hidden; always render inner content (e.g., sync indicator dot + sr-only text)
 
 ### Code Quality (DeepSource/CI)
 

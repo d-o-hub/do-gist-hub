@@ -1,7 +1,7 @@
 <!-- Last Audit: 2026-04-25 -->
 # ADR-011: Unit Testing Infrastructure with Vitest
 
-**Status**: Proposed
+**Status**: Deferred
 **Date**: 2026-04-25
 **Deciders**: Architect, Testing Agent
 
@@ -117,4 +117,4 @@ tests/
 
 ---
 
-*Created: 2026-04-25. Status: Proposed.*
+*Created: 2026-04-25. Status: Deferred.*
