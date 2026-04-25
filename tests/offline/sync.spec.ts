@@ -137,7 +137,7 @@ test.describe('Offline Sync', () => {
     await page.waitForTimeout(500);
 
     // Navigate to create gist page
-    await page.locator('[data-testid="nav-create"]').click();
+    await page.locator('[data-testid="nav-create"]').filter({ visible: true }).first().click();
 
     // Fill out form
     await page.locator('#gist-description').fill('Test Offline Gist');

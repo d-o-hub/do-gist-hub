@@ -131,7 +131,7 @@ test.describe('Mobile Responsive', () => {
 
   test('should adapt form inputs for mobile', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.locator('[data-testid="nav-create"]').click();
+    await page.locator('[data-testid="nav-create"]').filter({ visible: true }).first().click();
     await page.waitForSelector('.route-create');
 
     // Form inputs should be full width on mobile

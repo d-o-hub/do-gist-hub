@@ -94,7 +94,8 @@ test.describe('Accessibility - Semantics', () => {
 
   test('should have proper form labels', async ({ page }) => {
     // Navigate to create page to test forms
-    await page.locator('[data-testid="nav-create"]').click();
+    // Use visible filter since nav-create exists in multiple nav modes (sidebar, rail, bottom)
+    await page.locator('[data-testid="nav-create"]').filter({ visible: true }).first().click();
 
     const inputs = page.locator('input, textarea, select');
     const inputCount = await inputs.count();

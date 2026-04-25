@@ -53,7 +53,7 @@ test.describe('Accessibility - Keyboard', () => {
 
   test('should activate buttons with Enter key', async ({ page }) => {
     // Navigate to settings button
-    const settingsBtn = page.locator('[data-testid="settings-btn"]');
+    const settingsBtn = page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first();
     await settingsBtn.focus();
     await expect(settingsBtn).toBeFocused();
 
@@ -61,13 +61,13 @@ test.describe('Accessibility - Keyboard', () => {
     await page.keyboard.press('Enter');
     await page.waitForTimeout(500);
 
-    // Should navigate to settings
-    await expect(page).toHaveURL(/#settings/);
+    // Should navigate to settings (settings-specific element visible)
+    await expect(page.locator('#pat-input')).toBeVisible();
   });
 
   test('should activate buttons with Space key', async ({ page }) => {
     // Navigate to first nav item
-    const homeBtn = page.locator('[data-testid="nav-home"]');
+    const homeBtn = page.locator('[data-testid="nav-home"]').filter({ visible: true }).first();
     await homeBtn.focus();
     await expect(homeBtn).toBeFocused();
 
@@ -76,12 +76,12 @@ test.describe('Accessibility - Keyboard', () => {
     await page.waitForTimeout(500);
 
     // Should still be on home (no error)
-    await expect(page.locator('[data-testid="app-shell"]')).toBeVisible();
+    await expect(page.locator('.app-shell')).toBeVisible();
   });
 
   test('should manage focus on route navigation', async ({ page }) => {
     // Navigate to create page
-    await page.locator('[data-testid="nav-create"]').click();
+    await page.locator('[data-testid="nav-create"]').filter({ visible: true }).first().click();
     await page.waitForTimeout(300);
 
     // Focus should be somewhere in the new view
@@ -150,14 +150,14 @@ test.describe('Accessibility - Keyboard', () => {
 
   test('should close modals with Escape key (if any)', async ({ page }) => {
     // Navigate to settings
-    await page.locator('[data-testid="settings-btn"]').click();
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
     
     // Press Escape (shouldn't break anything even if no modal)
     await page.keyboard.press('Escape');
     await page.waitForTimeout(300);
 
     // Page should still be functional
-    await expect(page.locator('[data-testid="app-shell"]')).toBeVisible();
+    await expect(page.locator('.app-shell')).toBeVisible();
   });
 
   test('should navigate filter buttons with arrow keys', async ({ page }) => {
@@ -204,7 +204,7 @@ test.describe('Accessibility - Keyboard', () => {
 
   test('should support keyboard form submission', async ({ page }) => {
     // Navigate to create page
-    await page.locator('[data-testid="nav-create"]').click();
+    await page.locator('[data-testid="nav-create"]').filter({ visible: true }).first().click();
 
     // Fill form with keyboard
     const descriptionInput = page.locator('#gist-description');
