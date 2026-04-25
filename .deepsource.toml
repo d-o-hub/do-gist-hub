@@ -26,7 +26,7 @@ enabled = true
   enabled = true
 
     [analyzers.linters.meta]
-    rules = { 'no-var' = 'off', 'eqeqeq' = 'off', 'prefer-arrow-callback' = 'off', 'no-empty' = 'off' }
+    rules = { "no-var" = "off", "eqeqeq" = "off", "prefer-arrow-callback" = "off", "no-empty" = "off" }
 
 [[analyzers]]
 name = 'shell'
