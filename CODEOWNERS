@@ -1,0 +1,16 @@
+# Global fallback
+* @project-lead
+
+# Security-sensitive
+src/services/security/ @security-lead
+src/services/github/auth.ts @security-lead
+
+# UI/UX
+src/components/ @ui-lead
+src/styles/ @ui-lead
+src/tokens/ @ui-lead
+
+# Infrastructure
+.github/ @devops-lead
+scripts/ @devops-lead
+vite.config.ts @devops-lead

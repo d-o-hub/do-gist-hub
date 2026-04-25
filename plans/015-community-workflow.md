@@ -1,7 +1,7 @@
 <!-- Last Audit: 2026-04-25 -->
 # Plan-015: Contributing Guidelines and Community Workflow
 
-**Status**: Proposed
+**Status**: Implemented
 **Date**: 2026-04-25
 **Deciders**: Project Lead, Community Agent
 
