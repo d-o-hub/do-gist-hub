@@ -52,8 +52,8 @@ export class CommandPalette {
       if (item) {
         const index = parseInt(item.getAttribute('data-index') || '-1', 10);
         if (index >= 0 && this.filteredCommands[index]) {
-          this.filteredCommands[index].action();
-          this.close();
+          void this.filteredCommands[index].action();
+          void this.close();
         }
       }
     });
@@ -63,10 +63,10 @@ export class CommandPalette {
     window.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        this.open();
+        void this.open();
       }
       if (e.key === 'Escape' && this.isOpen) {
-        this.close();
+        void this.close();
       }
     });
   }
@@ -190,8 +190,8 @@ export class CommandPalette {
       e.preventDefault();
       const cmd = this.filteredCommands[this.selectedIndex];
       if (cmd) {
-        cmd.action();
-        this.close();
+        void cmd.action();
+        void this.close();
       }
     }
   }
