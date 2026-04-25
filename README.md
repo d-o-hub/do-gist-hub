@@ -1,4 +1,4 @@
-# d.o. Gist Hub v0.2.0
+# d.o. Gist Hub v0.1.0
 
 A state-of-the-art, offline-first GitHub Gist management PWA with token-driven responsive UI, PAT authentication, and Capacitor Android packaging.
 
