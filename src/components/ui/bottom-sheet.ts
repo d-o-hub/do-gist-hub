@@ -51,6 +51,15 @@ export class BottomSheet {
       <div class="bottom-sheet-content">${content}</div>
     `;
 
+    // Escape key to close
+    const handleKeydown = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        void this.close();
+      }
+    };
+    this.container.addEventListener('keydown', handleKeydown, { once: true });
+
     await withViewTransition(() => {
       this.backdrop!.classList.add('visible');
       this.container!.classList.add('open');

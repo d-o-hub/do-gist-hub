@@ -192,13 +192,54 @@ export class App {
     if (!this.container) return;
 
     this.container.innerHTML = `
+      <a href="#main-content" class="skip-link">Skip to main content</a>
       <div class="app-shell">
         <aside class="sidebar-nav" data-testid="sidebar-nav" role="navigation" aria-label="Sidebar navigation">
-          <button class="sidebar-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home" ${this.currentRoute === 'home' ? 'aria-current="page"' : ''}>Home</button>
-          <button class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" data-testid="nav-starred" ${this.currentRoute === 'starred' ? 'aria-current="page"' : ''}>Starred</button>
-          <button class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create" ${this.currentRoute === 'create' ? 'aria-current="page"' : ''}>Create</button>
-          <button class="sidebar-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="nav-offline" ${this.currentRoute === 'offline' ? 'aria-current="page"' : ''}>Offline</button>
-          <button class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="settings-btn" ${this.currentRoute === 'settings' ? 'aria-current="page"' : ''}>Settings</button>
+          <div class="nav-section">
+            <div class="nav-section-title" id="nav-primary-title">Navigation</div>
+            <ul role="menubar" aria-labelledby="nav-primary-title">
+              <li role="none">
+                <button role="menuitem" class="sidebar-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home" ${this.currentRoute === 'home' ? 'aria-current="page"' : ''}>
+                  <span class="nav-icon" aria-hidden="true">🏠</span>
+                  <span>Home</span>
+                </button>
+              </li>
+              <li role="none">
+                <button role="menuitem" class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" data-testid="nav-starred" ${this.currentRoute === 'starred' ? 'aria-current="page"' : ''}>
+                  <span class="nav-icon" aria-hidden="true">⭐</span>
+                  <span>Starred</span>
+                </button>
+              </li>
+              <li role="none">
+                <button role="menuitem" class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create" ${this.currentRoute === 'create' ? 'aria-current="page"' : ''}>
+                  <span class="nav-icon" aria-hidden="true">➕</span>
+                  <span>Create</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+          <div class="nav-section">
+            <div class="nav-section-title" id="nav-secondary-title">Offline</div>
+            <ul role="menubar" aria-labelledby="nav-secondary-title">
+              <li role="none">
+                <button role="menuitem" class="sidebar-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="nav-offline" ${this.currentRoute === 'offline' ? 'aria-current="page"' : ''}>
+                  <span class="nav-icon" aria-hidden="true">📶</span>
+                  <span>Sync Status</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+          <div class="nav-section nav-section-system">
+            <div class="nav-section-title" id="nav-system-title">System</div>
+            <ul role="menubar" aria-labelledby="nav-system-title">
+              <li role="none">
+                <button role="menuitem" class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="settings-btn" ${this.currentRoute === 'settings' ? 'aria-current="page"' : ''}>
+                  <span class="nav-icon" aria-hidden="true">⚙️</span>
+                  <span>Settings</span>
+                </button>
+              </li>
+            </ul>
+          </div>
         </aside>
 
         <aside class="rail-nav" role="navigation" aria-label="Rail navigation">
@@ -214,7 +255,7 @@ export class App {
             <h1 class="app-title" data-route="home">${APP.name}</h1>
           </div>
           <div class="header-right">
-            <div id="sync-indicator" class="sync-indicator"></div>
+            <div id="sync-indicator" class="sync-indicator" data-status="online"><span class="sync-dot" aria-hidden="true"></span><span class="sr-only">online</span></div>
             <button id="mobile-menu-btn" class="icon-button" aria-label="Open menu" data-testid="mobile-menu-btn" aria-expanded="false" aria-controls="mobile-menu">☰</button>
             <button class="icon-button" aria-label="Settings" data-testid="settings-btn" data-route="settings">⚙️</button>
           </div>
@@ -672,7 +713,11 @@ export class App {
     const el = this.container?.querySelector('#sync-indicator');
     const online = networkMonitor.isOnline();
     const len = await syncQueue.getQueueLength();
-    if (el) el.setAttribute('data-status', online ? (len > 0 ? 'syncing' : 'online') : 'offline');
+    const status = online ? (len > 0 ? 'syncing' : 'online') : 'offline';
+    if (el) {
+      el.setAttribute('data-status', status);
+      el.innerHTML = `<span class="sync-dot" aria-hidden="true"></span><span class="sr-only">${status}</span>`;
+    }
   }
 
   private async updateOfflineStatus(): Promise<void> {
@@ -711,13 +756,32 @@ export class App {
 
   private async showMobileMenu(): Promise<void> {
     const content = `
-      <div class="mobile-menu" style="display: grid; gap: var(--space-2); padding: var(--space-4);">
-        <button class="btn btn-ghost menu-item" data-route="home">Home</button>
-        <button class="btn btn-ghost menu-item" data-route="starred">Starred Gists</button>
-        <button class="btn btn-ghost menu-item" data-route="create">Create New Gist</button>
-        <button class="btn btn-ghost menu-item" data-route="offline">Offline Status</button>
-        <button class="btn btn-ghost menu-item" data-route="settings">Settings</button>
-      </div>
+      <nav class="mobile-menu" role="navigation" aria-label="Mobile menu">
+        <div class="mobile-menu-section">
+          <div class="mobile-menu-section-title">Navigation</div>
+          <button class="mobile-menu-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" role="menuitem" ${this.currentRoute === 'home' ? 'aria-current="page"' : ''}>
+            <span aria-hidden="true">🏠</span> Home
+          </button>
+          <button class="mobile-menu-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" role="menuitem" ${this.currentRoute === 'starred' ? 'aria-current="page"' : ''}>
+            <span aria-hidden="true">⭐</span> Starred Gists
+          </button>
+          <button class="mobile-menu-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" role="menuitem" ${this.currentRoute === 'create' ? 'aria-current="page"' : ''}>
+            <span aria-hidden="true">➕</span> Create New Gist
+          </button>
+        </div>
+        <div class="mobile-menu-section">
+          <div class="mobile-menu-section-title">Offline</div>
+          <button class="mobile-menu-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" role="menuitem" ${this.currentRoute === 'offline' ? 'aria-current="page"' : ''}>
+            <span aria-hidden="true">📶</span> Sync Status
+          </button>
+        </div>
+        <div class="mobile-menu-section">
+          <div class="mobile-menu-section-title">System</div>
+          <button class="mobile-menu-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" role="menuitem" ${this.currentRoute === 'settings' ? 'aria-current="page"' : ''}>
+            <span aria-hidden="true">⚙️</span> Settings
+          </button>
+        </div>
+      </nav>
     `;
     await bottomSheet.open(content, 'MENU');
 
