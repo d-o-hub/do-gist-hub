@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <title>d.o. Gist Hub — Offline</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --bg: #f8fafc;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --surface: #ffffff;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --text: #f1f5f9;
+        --text-muted: #94a3b8;
+        --border: #1e293b;
+        --surface: #1e293b;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    main {
+      text-align: center;
+      max-width: 360px;
+      width: 100%;
+      padding: 40px 24px;
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .logo {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 24px;
+      background: var(--primary);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    p {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .last-sync {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      padding: 8px 12px;
+      background: var(--bg);
+      border-radius: 8px;
+      display: inline-block;
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      background: var(--primary);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 150ms ease;
+      min-height: 44px;
+      min-width: 120px;
+    }
+
+    button:hover {
+      background: var(--primary-light);
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+
+    .status-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="logo">d.o.</div>
+    <h1>d.o. Gist Hub</h1>
+    <div class="status-icon">📴</div>
+    <p>You are currently offline. Some features may be unavailable until your connection is restored.</p>
+    <p class="last-sync" id="last-sync">Last synced: <span id="sync-time">Unknown</span></p>
+    <button onclick="location.reload()">Retry Connection</button>
+  </main>
+  <script>
+    (function() {
+      // Try to read last sync time from localStorage (set by the app on successful sync)
+      const lastSync = localStorage.getItem('gist-hub-last-sync');
+      if (lastSync) {
+        try {
+          const date = new Date(lastSync);
+          const formatted = date.toLocaleString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+          document.getElementById('sync-time').textContent = formatted;
+        } catch {
+          // Keep "Unknown" if date parsing fails
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

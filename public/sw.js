@@ -15,6 +15,7 @@ const API_CACHE = 'd-o-gist-hub-api-v1';
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
+  '/offline.html',
   '/manifest.webmanifest',
   '/favicon.svg',
   '/apple-touch-icon.png',
@@ -77,8 +78,8 @@ self.addEventListener('fetch', (event) => {
           const cachedResponse = await caches.match(request);
           if (cachedResponse) return cachedResponse;
           
-          // Return offline page if available
-          return caches.match('/index.html');
+          // Return branded offline fallback page
+          return caches.match('/offline.html');
         })
     );
     return;
