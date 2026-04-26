@@ -10,26 +10,18 @@ export function DataFetcher({ url, refreshInterval = 5000 }: DataFetcherProps) {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    const handleError = (err: Error) => {
-      if (err.name !== 'AbortError') {
-        setError(err);
-      }
-    };
-
     // Fetch data initially
-    fetch(url, { signal: controller.signal })
+    fetch(url)
       .then(res => res.json())
       .then(setData)
-      .catch(handleError);
+      .catch(setError);
 
     // Set up polling interval
     const intervalId = setInterval(() => {
-      fetch(url, { signal: controller.signal })
+      fetch(url)
         .then(res => res.json())
         .then(setData)
-        .catch(handleError);
+        .catch(setError);
     }, refreshInterval);
 
     // Add resize listener
@@ -38,11 +30,9 @@ export function DataFetcher({ url, refreshInterval = 5000 }: DataFetcherProps) {
     };
     window.addEventListener('resize', handleResize);
 
-    return () => {
-      clearInterval(intervalId);
-      window.removeEventListener('resize', handleResize);
-      controller.abort();
-    };
+    // BUG: No cleanup function - causes memory leaks!
+    // Interval continues running after unmount
+    // Event listener is never removed
   }, [url, refreshInterval]);
 
   if (error) return <div>Error: {error.message}</div>;
