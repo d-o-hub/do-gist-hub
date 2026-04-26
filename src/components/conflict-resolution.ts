@@ -51,6 +51,61 @@ export function renderConflictList(conflicts: GistConflict[]): string {
   `;
 }
 
+interface VersionData {
+  description: string | null;
+  public: boolean;
+  files: Record<string, { size?: number }>;
+}
+
+function renderFiles(files: Record<string, { size?: number }>): string {
+  return Object.entries(files)
+    .map(
+      ([name, file]) => `
+                  <div class="comp-file-item">
+                    <span class="file-name">${sanitizeHtml(name)}</span>
+                    <span class="file-size">${file.size || 0} bytes</span>
+                  </div>
+                `
+    )
+    .join('');
+}
+
+function renderComparisonColumn(
+  colClass: string,
+  title: string,
+  subtitle: string,
+  version: VersionData,
+  conflictingFields: string[],
+  btnClass: string,
+  strategy: string,
+  btnText: string
+): string {
+  return `
+        <div class="comparison-col ${colClass}">
+          <div class="comparison-header">
+            <h2 class="comparison-title">${title}</h2>
+            <span class="micro-label">${subtitle}</span>
+          </div>
+          <div class="comparison-body">
+            <div class="comp-field ${conflictingFields.includes('description') ? 'has-conflict' : ''}">
+              <label class="micro-label">DESCRIPTION</label>
+              <div class="comp-value">${version.description ? sanitizeHtml(version.description) : '<i>No description</i>'}</div>
+            </div>
+            <div class="comp-field ${conflictingFields.includes('public') ? 'has-conflict' : ''}">
+              <label class="micro-label">VISIBILITY</label>
+              <div class="comp-value">${version.public ? 'PUBLIC' : 'SECRET'}</div>
+            </div>
+            <div class="comp-field ${conflictingFields.includes('content') ? 'has-conflict' : ''}">
+              <label class="micro-label">FILES</label>
+              <div class="comp-files">
+                ${renderFiles(version.files)}
+              </div>
+            </div>
+          </div>
+          <button class="btn ${btnClass} resolve-choice-btn" data-strategy="${strategy}">${btnText}</button>
+        </div>`;
+}
+
 /**
  * Render detailed side-by-side comparison for a single conflict.
  */
@@ -67,72 +122,28 @@ export function renderConflictDetail(conflict: GistConflict): string {
 
       <div class="comparison-grid">
         <!-- Local Version -->
-        <div class="comparison-col local-version">
-          <div class="comparison-header">
-            <h2 class="comparison-title">LOCAL VERSION</h2>
-            <span class="micro-label">YOUR CHANGES</span>
-          </div>
-          <div class="comparison-body">
-            <div class="comp-field ${conflictingFields.includes('description') ? 'has-conflict' : ''}">
-              <label class="micro-label">DESCRIPTION</label>
-              <div class="comp-value">${local.description ? sanitizeHtml(local.description) : '<i>No description</i>'}</div>
-            </div>
-            <div class="comp-field ${conflictingFields.includes('public') ? 'has-conflict' : ''}">
-              <label class="micro-label">VISIBILITY</label>
-              <div class="comp-value">${local.public ? 'PUBLIC' : 'SECRET'}</div>
-            </div>
-            <div class="comp-field ${conflictingFields.includes('content') ? 'has-conflict' : ''}">
-              <label class="micro-label">FILES</label>
-              <div class="comp-files">
-                ${Object.entries(local.files)
-                  .map(
-                    ([name, file]) => `
-                  <div class="comp-file-item">
-                    <span class="file-name">${sanitizeHtml(name)}</span>
-                    <span class="file-size">${file.size || 0} bytes</span>
-                  </div>
-                `
-                  )
-                  .join('')}
-              </div>
-            </div>
-          </div>
-          <button class="btn btn-primary resolve-choice-btn" data-strategy="local-wins">KEEP LOCAL VERSION</button>
-        </div>
+        ${renderComparisonColumn(
+          'local-version',
+          'LOCAL VERSION',
+          'YOUR CHANGES',
+          local,
+          conflictingFields,
+          'btn-primary',
+          'local-wins',
+          'KEEP LOCAL VERSION'
+        )}
 
         <!-- Remote Version -->
-        <div class="comparison-col remote-version">
-          <div class="comparison-header">
-            <h2 class="comparison-title">REMOTE VERSION</h2>
-            <span class="micro-label">GITHUB CHANGES</span>
-          </div>
-          <div class="comparison-body">
-            <div class="comp-field ${conflictingFields.includes('description') ? 'has-conflict' : ''}">
-              <label class="micro-label">DESCRIPTION</label>
-              <div class="comp-value">${remote.description ? sanitizeHtml(remote.description) : '<i>No description</i>'}</div>
-            </div>
-            <div class="comp-field ${conflictingFields.includes('public') ? 'has-conflict' : ''}">
-              <label class="micro-label">VISIBILITY</label>
-              <div class="comp-value">${remote.public ? 'PUBLIC' : 'SECRET'}</div>
-            </div>
-            <div class="comp-field ${conflictingFields.includes('content') ? 'has-conflict' : ''}">
-              <label class="micro-label">FILES</label>
-              <div class="comp-files">
-                ${Object.entries(remote.files)
-                  .map(
-                    ([name, file]) => `
-                  <div class="comp-file-item">
-                    <span class="file-name">${sanitizeHtml(name)}</span>
-                    <span class="file-size">${file.size || 0} bytes</span>
-                  </div>
-                `
-                  )
-                  .join('')}
-              </div>
-            </div>
-          </div>
-          <button class="btn btn-ghost resolve-choice-btn" data-strategy="remote-wins">USE REMOTE VERSION</button>
-        </div>
+        ${renderComparisonColumn(
+          'remote-version',
+          'REMOTE VERSION',
+          'GITHUB CHANGES',
+          remote,
+          conflictingFields,
+          'btn-ghost',
+          'remote-wins',
+          'USE REMOTE VERSION'
+        )}
       </div>
     </div>
   `;
