@@ -37,37 +37,12 @@ export function renderFileContent(content: string, language?: string): string {
   return `<pre class="code-block language-${esc(language || 'text')}"><code>${esc(content)}</code></pre>`;
 }
 
-export function renderGistDetail(gist: GistRecord): string {
-  const title = gist.description || 'Untitled Gist';
-  const fileCount = Object.keys(gist.files).length;
+function renderGistHeader(gist: GistRecord, title: string, fileCount: number): string {
   const visibility = gist.public ? 'Public' : 'Secret';
   const starLabel = gist.starred ? 'Unstar' : 'Star';
   const starIcon = gist.starred ? '★' : '☆';
 
-  const fileTabs =
-    fileCount > 1
-      ? `
-    <div class="file-tabs scroll-x" role="tablist">
-      ${Object.entries(gist.files)
-        .map(
-          ([key, file], index) => `
-        <button class="chip file-tab ${index === 0 ? 'active' : ''}" data-file-key="${esc(key)}" id="tab-${index}" role="tab" aria-selected="${index === 0}" aria-controls="file-content-area">
-          ${esc(file.filename.toUpperCase())}
-        </button>
-      `
-        )
-        .join('')}
-    </div>`
-      : '';
-
-  const firstFileKey = Object.keys(gist.files)[0];
-  const firstFile = firstFileKey ? gist.files[firstFileKey] : null;
-  const content = firstFile?.content
-    ? renderFileContent(firstFile.content, firstFile.language)
-    : '<p class="empty-content">No content available</p>';
-
   return `
-    <div class="gist-detail" data-gist-id="${esc(gist.id)}">
       <header class="detail-header">
         <div class="header-top">
           <button class="btn btn-ghost" id="gist-back-btn" aria-label="Go back">← Back</button>
@@ -89,23 +64,56 @@ export function renderGistDetail(gist: GistRecord): string {
           <button class="btn btn-ghost" data-action="edit">✏️ Edit</button>
           <button class="btn btn-ghost" data-action="revisions">📜 Revisions</button>
         </div>
-      </header>
+      </header>`;
+}
 
-      ${fileTabs}
+function renderFileTabs(gist: GistRecord, fileCount: number): string {
+  if (fileCount <= 1) return '';
+  return `
+    <div class="file-tabs scroll-x" role="tablist">
+      ${Object.entries(gist.files)
+        .map(
+          ([key, file], index) => `
+        <button class="chip file-tab ${index === 0 ? 'active' : ''}" data-file-key="${esc(key)}" id="tab-${index}" role="tab" aria-selected="${index === 0}" aria-controls="file-content-area">
+          ${esc(file.filename.toUpperCase())}
+        </button>
+      `
+        )
+        .join('')}
+    </div>`;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function renderFileInfo(firstFile: any): string {
+  if (!firstFile) return '';
+  return `
+          <span class="micro-label">Language: ${esc(firstFile.language || 'Unknown')}</span>
+          <span class="micro-label">Raw URL: <a href="${esc(firstFile.rawUrl || '')}" target="_blank">Link</a></span>
+        `;
+}
+
+export function renderGistDetail(gist: GistRecord): string {
+  const title = gist.description || 'Untitled Gist';
+  const fileCount = Object.keys(gist.files).length;
+
+  const firstFileKey = Object.keys(gist.files)[0];
+  const firstFile = firstFileKey ? gist.files[firstFileKey] : null;
+  const content = firstFile?.content
+    ? renderFileContent(firstFile.content, firstFile.language)
+    : '<p class="empty-content">No content available</p>';
+
+  return `
+    <div class="gist-detail" data-gist-id="${esc(gist.id)}">
+      ${renderGistHeader(gist, title, fileCount)}
+
+      ${renderFileTabs(gist, fileCount)}
 
       <div class="file-content-area" id="file-content-area" role="tabpanel" aria-labelledby="tab-0">
         ${content}
       </div>
 
       <div class="file-info" id="file-info">
-        ${
-          firstFile
-            ? `
-          <span class="micro-label">Language: ${esc(firstFile.language || 'Unknown')}</span>
-          <span class="micro-label">Raw URL: <a href="${esc(firstFile.rawUrl || '')}" target="_blank">Link</a></span>
-        `
-            : ''
-        }
+        ${renderFileInfo(firstFile)}
       </div>
     </div>
   `;
