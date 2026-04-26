@@ -137,3 +137,51 @@ test.describe('Security & Coverage', () => {
     expect(logs.some(log => log.includes('[REDACTED]'))).toBe(true);
   });
 });
+
+test.describe('XSS Mitigation', () => {
+  test('should safely render malicious gist content without executing scripts', async ({ page }) => {
+    await page.goto('http://localhost:3000');
+    await page.waitForSelector('.app-shell');
+
+    // Inject a malicious gist directly into the store
+    await page.evaluate(async () => {
+      const { default: gistStore } = await import('./src/stores/gist-store');
+      const maliciousGist = {
+        id: 'malicious-123',
+        description: '<img src=x onerror=window.xssTriggered=true>',
+        files: {
+          'test.txt': {
+            filename: 'test.txt',
+            language: '<script>window.xssTriggered=true</script>',
+            content: 'console.log("hello"); <svg/onload=window.xssTriggered=true>',
+            rawUrl: 'https://example.com/test.txt',
+            size: 100
+          }
+        },
+        public: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        starred: false
+      };
+
+      // Bypass the normal load process to forcefully inject it
+      gistStore.gists = [maliciousGist];
+      window.dispatchEvent(new Event('gists-loaded'));
+    });
+
+    // Wait for the UI to update with the injected gist
+    await page.waitForSelector('.gist-card');
+
+    // Check if XSS was triggered
+    const xssTriggered = await page.evaluate(() => (window as any).xssTriggered);
+    expect(xssTriggered).toBeFalsy();
+
+    // Verify the content is escaped and rendered as text, not HTML elements
+    const cardTitle = await page.locator('.gist-card-title').textContent();
+    expect(cardTitle).toContain('<img src=x onerror=window.xssTriggered=true>');
+
+    // Evaluate innerHTML directly to make sure the brackets are escaped
+    const titleHtml = await page.locator('.gist-card-title').innerHTML();
+    expect(titleHtml).toContain('&lt;img src=x onerror=window.xssTriggered=true&gt;');
+  });
+});
