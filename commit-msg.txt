@@ -1,7 +1,0 @@
-🔒 [Security] Fix XSS Vulnerability in Gist Preview
-
-🎯 **What:** The vulnerability fixed was an unescaped DOM insertion that allowed cross-site scripting (XSS) via directly editing innerHTML when loading gists. The original `esc` function did not provide robust enough sanitization, leading to the XSS vulnerability if an attacker crafted a payload with malicious descriptions or language strings.
-
-⚠️ **Risk:** The potential impact if left unfixed would allow anyone creating malicious GitHub gists to execute arbitrary JavaScript within the application session of an unwary user, posing severe security consequences.
-
-🛡️ **Solution:** The fix replaces the manual `esc` implementation in `src/components/gist-card.ts` with the robust `html` tagged template function found in `src/services/security/dom.ts`, which recursively relies on `sanitizeHtml`. This correctly handles sanitization prior to the HTML injection inside `src/components/app.ts`. Also added test case `XSS Mitigation` inside `tests/browser/security-stubs.spec.ts`.

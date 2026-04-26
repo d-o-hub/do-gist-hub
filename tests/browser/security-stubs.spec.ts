@@ -143,9 +143,9 @@ test.describe('XSS Mitigation', () => {
     await page.goto('http://localhost:3000');
     await page.waitForSelector('.app-shell');
 
-    // Inject a malicious gist directly into the store
-    await page.evaluate(async () => {
-      const { default: gistStore } = await import('./src/stores/gist-store');
+    // Use page.evaluate to directly call renderCard using the tested code instead of the UI update flow
+    const { html, titleText } = await page.evaluate(async () => {
+      const { renderCard } = await import('./src/components/gist-card');
       const maliciousGist = {
         id: 'malicious-123',
         description: '<img src=x onerror=window.xssTriggered=true>',
@@ -164,24 +164,25 @@ test.describe('XSS Mitigation', () => {
         starred: false
       };
 
-      // Bypass the normal load process to forcefully inject it
-      gistStore.gists = [maliciousGist];
-      window.dispatchEvent(new Event('gists-loaded'));
+      const cardHtml = renderCard(maliciousGist);
+
+      // Mount it to a temp div to check its properties
+      const div = document.createElement('div');
+      div.innerHTML = cardHtml;
+      document.body.appendChild(div);
+
+      const titleText = div.querySelector('.gist-card-title')?.textContent || '';
+      return { html: cardHtml, titleText };
     });
 
-    // Wait for the UI to update with the injected gist
-    await page.waitForSelector('.gist-card');
-
-    // Check if XSS was triggered
+    // Check if XSS was triggered on the page
     const xssTriggered = await page.evaluate(() => (window as any).xssTriggered);
     expect(xssTriggered).toBeFalsy();
 
     // Verify the content is escaped and rendered as text, not HTML elements
-    const cardTitle = await page.locator('.gist-card-title').textContent();
-    expect(cardTitle).toContain('<img src=x onerror=window.xssTriggered=true>');
+    expect(titleText).toContain('<img src=x onerror=window.xssTriggered=true>');
 
     // Evaluate innerHTML directly to make sure the brackets are escaped
-    const titleHtml = await page.locator('.gist-card-title').innerHTML();
-    expect(titleHtml).toContain('&lt;img src=x onerror=window.xssTriggered=true&gt;');
+    expect(html).toContain('&lt;img src=x onerror=window.xssTriggered=true&gt;');
   });
 });

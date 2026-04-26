@@ -56,6 +56,9 @@ export class App {
     // Theme initialization
     const savedTheme = localStorage.getItem('theme-preference') || 'auto';
     document.documentElement.setAttribute('data-theme', savedTheme);
+    gistStore.subscribe(() => {
+      if (this.currentRoute === 'home' || this.currentRoute === 'starred') this.updateGistList();
+    });
 
     this.initializeCommandPalette();
     void this.navigate('home');
