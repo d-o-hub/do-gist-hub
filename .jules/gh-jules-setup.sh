@@ -17,20 +17,20 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "Required command not found: $1"
 }
 
-run_apt() {
-  if [[ -n "$SUDO" ]]; then
-    $SUDO env DEBIAN_FRONTEND=noninteractive apt-get "$@"
-  else
-    DEBIAN_FRONTEND=noninteractive apt-get "$@"
-  fi
-}
-
 if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
   SUDO=""
 else
   require_cmd sudo
   SUDO="sudo"
 fi
+
+apt_run() {
+  if [[ -n "$SUDO" ]]; then
+    $SUDO env DEBIAN_FRONTEND=noninteractive apt-get "$@"
+  else
+    DEBIAN_FRONTEND=noninteractive apt-get "$@"
+  fi
+}
 
 log "Checking base tools"
 require_cmd apt-get
@@ -40,58 +40,47 @@ GH_KEYRING="/etc/apt/keyrings/githubcli-archive-keyring.gpg"
 GH_LIST="/etc/apt/sources.list.d/github-cli.list"
 GH_REPO_LINE="deb [arch=$(dpkg --print-architecture) signed-by=${GH_KEYRING}] https://cli.github.com/packages stable main"
 
-install_gh_repo() {
-  log "Ensuring GitHub CLI apt repository is configured"
-  $SUDO mkdir -p -m 755 /etc/apt/keyrings
-  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-    | $SUDO tee "$GH_KEYRING" >/dev/null
-  $SUDO chmod go+r "$GH_KEYRING"
-  if [[ ! -f "$GH_LIST" ]] || ! grep -Fqx "$GH_REPO_LINE" "$GH_LIST"; then
-    printf '%s\n' "$GH_REPO_LINE" | $SUDO tee "$GH_LIST" >/dev/null
-  fi
-}
-
 log "Installing prerequisites"
-run_apt update -yq
-run_apt install -yq ca-certificates curl gpg
+apt_run update -yq
+apt_run install -yq ca-certificates curl gpg
 
-install_gh_repo
+log "Ensuring GitHub CLI apt repository is configured"
+$SUDO mkdir -p -m 755 /etc/apt/keyrings
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+  | $SUDO tee "$GH_KEYRING" >/dev/null
+$SUDO chmod go+r "$GH_KEYRING"
+if [[ ! -f "$GH_LIST" ]] || ! grep -Fqx "$GH_REPO_LINE" "$GH_LIST"; then
+  printf '%s\n' "$GH_REPO_LINE" | $SUDO tee "$GH_LIST" >/dev/null
+fi
 
 if command -v gh >/dev/null 2>&1; then
   log "gh already present: $(gh --version | head -n1)"
 else
   log "Installing GitHub CLI"
-  run_apt update -yq
-  run_apt install -yq gh
+  apt_run update -yq
+  apt_run install -yq gh
 fi
 
-require_cmd curl
 require_cmd gh
-
 log "Installed version: $(gh --version | head -n1)"
+
 log "Running gh health checks"
 gh --version >/dev/null
 gh help >/dev/null 2>&1 || die "gh is installed but not responding correctly"
 
+TOKEN_PRESENT=0
 if [[ -n "${GH_TOKEN:-}" || -n "${GITHUB_TOKEN:-}" ]]; then
-  log "Token environment variable detected; validating gh authentication"
-  if gh auth status >/dev/null 2>&1; then
-    log "gh authentication is working"
-  else
-    warn "Token variable is present but gh auth status failed"
-    warn "Check whether the token is valid and has the repo scopes you need"
-  fi
-
-  if gh repo view >/dev/null 2>&1; then
-    log "Repository access check passed"
-  else
-    warn "gh is authenticated, but 'gh repo view' failed in the current directory"
-    warn "This can happen outside a GitHub repo or if the token lacks repository access"
-  fi
-else
-  warn "No GH_TOKEN or GITHUB_TOKEN found during setup"
-  warn "Install succeeded. In Jules, add a repo environment variable and enable it for each task session"
-  warn "Then verify with: gh auth status && gh repo view"
+  TOKEN_PRESENT=1
 fi
 
+if [[ "$TOKEN_PRESENT" -eq 1 ]]; then
+  log "Token environment variable detected"
+  log "In Jules, env-token auth is the expected headless pattern"
+  log "Skipping strict 'gh auth status' enforcement because env-token auth can differ from stored-login state"
+else
+  warn "No GH_TOKEN or GITHUB_TOKEN found during setup"
+  warn "Install succeeded, but gh API commands may fail unless the variable is enabled for the Jules task"
+fi
+
+log "Recommended verification inside a Jules task session: gh repo view <owner/repo>"
 log "Setup complete"
