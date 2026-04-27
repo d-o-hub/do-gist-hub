@@ -399,9 +399,7 @@ export async function importData(json: string): Promise<void> {
   for (const [storeName, items] of Object.entries(storeDataMap)) {
     const store = tx.objectStore(storeName as never);
     await store.clear();
-    for (const item of items) {
-      await store.put(item);
-    }
+    await Promise.all(items.map((item) => store.put(item)));
   }
 
   await tx.done;
