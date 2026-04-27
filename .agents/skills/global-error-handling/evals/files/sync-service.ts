@@ -1,4 +1,3 @@
-// BUG: No offline detection - sync fails silently when offline
 export class SyncService {
   private token: string;
   
@@ -7,25 +6,47 @@ export class SyncService {
   }
   
   async syncToGitHub(localData: any) {
-    const response = await fetch('https://api.github.com/gists', {
-      method: 'POST',
-      headers: {
-        'Authorization': `token ${this.token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(localData)
-    });
-    
-    return await response.json();
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      throw new Error('Offline');
+    }
+
+    try {
+      const response = await fetch('https://api.github.com/gists', {
+        method: 'POST',
+        headers: {
+          'Authorization': `token ${this.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(localData)
+      });
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new Error('Offline');
+      }
+      throw error;
+    }
   }
   
   async pullFromGitHub(gistId: string) {
-    const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-      headers: {
-        'Authorization': `token ${this.token}`
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      throw new Error('Offline');
+    }
+
+    try {
+      const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+        headers: {
+          'Authorization': `token ${this.token}`
+        }
+      });
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new Error('Offline');
       }
-    });
-    
-    return await response.json();
+      throw error;
+    }
   }
 }
