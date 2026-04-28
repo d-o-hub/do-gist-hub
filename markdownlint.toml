@@ -1,0 +1,11 @@
+[default]
+extends = "default"
+
+[MD041]
+enabled = false
+
+[MD032]
+enabled = false
+
+[MD033]
+enabled = false
