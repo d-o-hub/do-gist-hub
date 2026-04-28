@@ -1,6 +1,8 @@
 ---
 name: capacitor-android
 description: Package the web app as an Android app using Capacitor, configure WebView, and handle Android-specific concerns.
+version: "0.1.0"
+template_version: "0.1.0"
 ---
 
 # Capacitor-android Skill

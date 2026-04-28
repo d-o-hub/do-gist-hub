@@ -1,6 +1,8 @@
 ---
 name: offline-indexeddb
 description: Implement offline-first storage using IndexedDB with optimistic writes, sync queue, conflict detection, and schema migrations.
+version: "0.1.0"
+template_version: "0.1.0"
 ---
 
 # Offline-indexeddb Skill

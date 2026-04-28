@@ -1,6 +1,8 @@
 ---
 name: playwright-quality
 description: Cross-browser testing with Playwright including mobile emulation, offline behavior, and Android WebView smoke tests.
+version: "0.1.0"
+template_version: "0.1.0"
 ---
 
 # Playwright-quality Skill

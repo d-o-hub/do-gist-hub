@@ -1,6 +1,8 @@
 ---
 name: repo-bootstrap
 description: Initialize repository structure from github-template-ai-agents. Creates baseline docs, config, and normalizes repo conventions for AI agent workflow.
+version: "0.1.0"
+template_version: "0.1.0"
 ---
 
 # Repo Bootstrap Skill

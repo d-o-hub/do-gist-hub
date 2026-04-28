@@ -1,6 +1,8 @@
 ---
 name: security-hardening
 description: Implement security hardening with CSP, token redaction, input validation, and OWASP best practices.
+version: "0.1.0"
+template_version: "0.1.0"
 ---
 
 # Security-hardening Skill

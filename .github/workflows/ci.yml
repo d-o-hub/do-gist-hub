@@ -18,10 +18,10 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: pnpm/action-setup@fe02b34f77f8bc70378873c9b5efc7cffc8f6fc4 # v4.1.1
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
         with:
           version: 9
-      - uses: actions/setup-node@1d0e46989172994d5ca6814a451cafddfedb6d8b # v4.2.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: 22
           cache: 'pnpm'
@@ -40,10 +40,10 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: pnpm/action-setup@fe02b34f77f8bc70378873c9b5efc7cffc8f6fc4 # v4.1.1
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
         with:
           version: 9
-      - uses: actions/setup-node@1d0e46989172994d5ca6814a451cafddfedb6d8b # v4.2.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: 22
           cache: 'pnpm'
@@ -72,15 +72,15 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: pnpm/action-setup@fe02b34f77f8bc70378873c9b5efc7cffc8f6fc4 # v4.1.1
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
         with:
           version: 9
-      - uses: actions/setup-node@1d0e46989172994d5ca6814a451cafddfedb6d8b # v4.2.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: 22
           cache: 'pnpm'
       - name: Set up JDK 17
-        uses: actions/setup-java@7a6d6caa0dcf36bd6e83831f8772a8ee9f30aef5 # v4.7.0
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
         with:
           java-version: '17'
           distribution: 'zulu'
@@ -108,10 +108,10 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: pnpm/action-setup@fe02b34f77f8bc70378873c9b5efc7cffc8f6fc4 # v4.1.1
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
         with:
           version: 9
-      - uses: actions/setup-node@1d0e46989172994d5ca6814a451cafddfedb6d8b # v4.2.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: 22
           cache: 'pnpm'
