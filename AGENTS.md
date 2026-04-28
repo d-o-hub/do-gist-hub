@@ -209,6 +209,14 @@ npm run cap:sync     # sync Capacitor after build
 | `shell-script-quality`   | ShellCheck/BATS for scripts           |
 | `agent-browser`          | Browser automation CLI                |
 
+## Agent-Specific Files
+
+| File | Purpose |
+|------|---------|
+| `CLAUDE.md` | Claude Code overrides (`@AGENTS.md`) |
+| `GEMINI.md` | Gemini CLI overrides (`@AGENTS.md`) |
+| `QWEN.md` | Qwen Code overrides (`@AGENTS.md`) |
+
 ## Reference Docs
 
 - Template: https://github.com/d-o-hub/github-template-ai-agents
