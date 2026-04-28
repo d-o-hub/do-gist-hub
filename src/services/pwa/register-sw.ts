@@ -82,3 +82,23 @@ function notifyUpdateAvailable(): void {
 export function isInstalled(): boolean {
   return 'serviceWorker' in navigator && !!navigator.serviceWorker.controller;
 }
+
+/**
+ * Request background sync for pending writes
+ */
+export async function requestBackgroundSync(): Promise<boolean> {
+  if (!('serviceWorker' in navigator) || !('SyncManager' in window)) {
+    return false;
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (registration as any).sync?.register('sync-gists');
+    safeLog('[PWA] Background sync registered');
+    return true;
+  } catch (error) {
+    safeError('[PWA] Background sync registration failed:', error);
+    return false;
+  }
+}

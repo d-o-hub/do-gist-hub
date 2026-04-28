@@ -12,11 +12,13 @@ import {
   updatePendingWriteError,
   saveGist,
   deleteGist as dbDeleteGist,
+  getGist,
   GistRecord,
 } from '../db';
 import * as GitHub from '../github';
 import networkMonitor from '../network/offline-monitor';
 import { safeLog, safeError } from '../security/logger';
+import { detectConflict, storeConflict } from './conflict-detector';
 
 export type SyncAction = 'create' | 'update' | 'delete' | 'star' | 'unstar' | 'fork';
 
@@ -47,13 +49,19 @@ export class SyncQueue {
     safeLog('[SyncQueue] Initialized');
   }
 
-  async queueOperation(gistId: string, action: SyncAction, payload: unknown): Promise<number> {
+  async queueOperation(
+    gistId: string,
+    action: SyncAction,
+    payload: unknown,
+    expectedRemoteVersion?: string
+  ): Promise<number> {
     const write: Omit<PendingWrite, 'id' | 'createdAt' | 'retryCount'> = {
       gistId,
       action,
       payload,
       lastAttemptAt: undefined,
       error: undefined,
+      expectedRemoteVersion,
     };
     const id = await dbQueueWrite(write);
     safeLog(`[SyncQueue] Queued ${action} for gist ${gistId}, queue ID: ${id}`);
@@ -97,6 +105,34 @@ export class SyncQueue {
 
   private async executeWrite(write: PendingWrite): Promise<SyncResult> {
     try {
+      // Pre-write conflict check: verify remote gist hasn't changed since queue time
+      if (write.expectedRemoteVersion && write.action !== 'create') {
+        try {
+          const remote = await GitHub.getGist(write.gistId);
+          if (remote.updated_at !== write.expectedRemoteVersion) {
+            const local = await getGist(write.gistId);
+            if (local) {
+              const conflict = detectConflict(local, remote) || {
+                gistId: local.id,
+                localVersion: local,
+                remoteVersion: remote,
+                detectedAt: new Date().toISOString(),
+                conflictingFields: ['updated_at'],
+              };
+              await storeConflict(conflict);
+            }
+            return {
+              success: false,
+              error: `Conflict: gist ${write.gistId} was modified remotely since operation was queued`,
+              shouldRetry: false,
+            };
+          }
+        } catch (error) {
+          safeError(`[SyncQueue] Pre-write conflict check failed for ${write.gistId}:`, error);
+          // Proceed with operation — best-effort conflict detection
+        }
+      }
+
       const handlers: Record<string, () => Promise<SyncResult>> = {
         create: () => SyncQueue.syncCreate(write.gistId, write.payload),
         update: () => SyncQueue.syncUpdate(write.gistId, write.payload),

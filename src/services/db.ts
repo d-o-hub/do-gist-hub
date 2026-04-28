@@ -107,6 +107,8 @@ export interface PendingWrite {
   retryCount: number;
   lastAttemptAt?: number;
   error?: string;
+  /** Remote `updated_at` timestamp at queue time; used for pre-write conflict detection */
+  expectedRemoteVersion?: string;
 }
 
 /**
