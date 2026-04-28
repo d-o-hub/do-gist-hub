@@ -102,7 +102,7 @@ export function renderGistDetail(gist: GistRecord): string {
           firstFile
             ? `
           <span class="micro-label">Language: ${esc(firstFile.language || 'Unknown')}</span>
-          <span class="micro-label">Raw URL: <a href="${esc(firstFile.rawUrl || '')}" target="_blank">Link</a></span>
+          <span class="micro-label">Raw URL: <a href="${esc(firstFile.rawUrl || '')}" target="_blank" rel="noopener noreferrer">Link</a></span>
         `
             : ''
         }

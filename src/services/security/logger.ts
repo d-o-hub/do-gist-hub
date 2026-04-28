@@ -7,14 +7,12 @@
 import { getDB, LogEntry } from '../db';
 
 /**
- * Redact a token, showing only first 6 and last 4 characters.
- * Returns '[REDACTED]' if token is too short.
+ * Redact a token, unconditionally returning '[REDACTED]'.
+ * Never reveals partial token content.
  */
-export function redactToken(token: string): string {
-  if (!token || token.length <= 10) {
-    return '[REDACTED]';
-  }
-  return `${token.slice(0, 6)}...${token.slice(-4)}`;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function redactToken(_token: string): string {
+  return '[REDACTED]';
 }
 
 /**
