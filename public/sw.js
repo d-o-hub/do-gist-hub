@@ -8,8 +8,7 @@
  */
 
 const CACHE_NAME = 'd-o-gist-hub-v1';
-const STATIC_CACHE = 'd-o-gist-hub-static-v1';
-const API_CACHE = 'd-o-gist-hub-api-v1';
+const STATIC_CACHE = 'd-o-gist-hub-static-v1-__BUILD_TIMESTAMP__';
 
 // Assets to precache (app shell)
 const PRECACHE_ASSETS = [
@@ -46,7 +45,7 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames
-            .filter((name) => name !== STATIC_CACHE && name !== API_CACHE)
+            .filter((name) => name !== STATIC_CACHE)
             .map((name) => caches.delete(name))
         );
       })
@@ -85,27 +84,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // GitHub API requests - Network first with cache fallback
+  // GitHub API requests — never cache; always go to network
   if (url.origin === 'https://api.github.com') {
-    // Only cache GET requests
-    if (request.method === 'GET') {
-      event.respondWith(
-        fetch(request)
-          .then((response) => {
-            // Don't cache errors
-            if (!response.ok) return response;
-            
-            const responseClone = response.clone();
-            caches.open(API_CACHE).then((cache) => {
-              cache.put(request, responseClone);
-            });
-            return response;
-          })
-          .catch(async () => {
-            return caches.match(request);
-          })
-      );
-    }
+    event.respondWith(fetch(request));
     return;
   }
 
@@ -160,5 +141,20 @@ self.addEventListener('message', (event) => {
 
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+});
+
+/**
+ * Background Sync event - trigger sync when connection restored
+ */
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-gists') {
+    event.waitUntil(
+      self.clients.matchAll({ type: 'window' }).then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: 'SYNC_GISTS' });
+        });
+      })
+    );
   }
 });
