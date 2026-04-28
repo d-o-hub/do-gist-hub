@@ -1,6 +1,8 @@
 ---
 name: agents-md-author
 description: Create, update, and maintain AGENTS.md files following the agents.md specification and template conventions.
+version: "0.1.0"
+template_version: "0.1.0"
 ---
 
 # Agents-md-author Skill
