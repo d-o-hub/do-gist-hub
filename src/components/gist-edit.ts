@@ -7,24 +7,33 @@ import type { GistRecord } from '../services/db';
 import { getGist } from '../services/db';
 import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
-import { sanitizeHtml } from '../services/security/dom';
 // import { customConfirm } from './app';
+
+const esc = (text: string): string => {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
 
 export function renderEditForm(gist: GistRecord): string {
   const filesHtml = Object.entries(gist.files)
     .map(
       ([key, file]) => `
-    <div class="file-editor glass-card" data-file-key="${sanitizeHtml(key)}" style="padding: var(--space-4); margin-bottom: var(--space-4);">
+    <div class="file-editor glass-card" data-file-key="${esc(key)}" style="padding: var(--space-4); margin-bottom: var(--space-4);">
       <div class="form-group">
         <label class="form-label">FILENAME</label>
         <div style="display: flex; gap: var(--space-2);">
-            <input type="text" class="form-input filename-input" value="${sanitizeHtml(file.filename)}" placeholder="example.js" />
+            <input type="text" class="form-input filename-input" value="${esc(file.filename)}" placeholder="example.js" />
             <button type="button" class="btn btn-danger remove-file-btn" ${Object.keys(gist.files).length <= 1 ? 'style="display: none;"' : ''}>×</button>
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">CONTENT</label>
-        <textarea class="form-textarea content-editor" placeholder="Enter content...">${sanitizeHtml(file.content || '')}</textarea>
+        <textarea class="form-textarea content-editor" placeholder="Enter content...">${esc(file.content || '')}</textarea>
       </div>
     </div>
   `
@@ -32,7 +41,7 @@ export function renderEditForm(gist: GistRecord): string {
     .join('');
 
   return `
-    <div class="route-edit" data-gist-id="${sanitizeHtml(gist.id)}">
+    <div class="route-edit" data-gist-id="${esc(gist.id)}">
       <header class="detail-header">
         <button class="btn btn-ghost" id="edit-back-btn">← BACK</button>
         <h1 class="detail-title">EDIT GIST</h1>
@@ -41,7 +50,7 @@ export function renderEditForm(gist: GistRecord): string {
       <form id="edit-gist-form" class="gist-form" style="padding: var(--space-6);">
         <div class="form-group">
           <label class="form-label">DESCRIPTION</label>
-          <input type="text" id="edit-description" name="description" class="form-input" value="${sanitizeHtml(gist.description || '')}" />
+          <input type="text" id="edit-description" name="description" class="form-input" value="${esc(gist.description || '')}" />
         </div>
 
         <div class="files-section" id="edit-files-section">

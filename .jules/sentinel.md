@@ -16,8 +16,3 @@
 **Vulnerability:** The GitHub API client (`client.ts`) was directly reading the `github-pat` key from IndexedDB, bypassing the encryption/decryption logic and migration path in `auth.ts`.
 **Learning:** Decoupling authentication logic from the API client is critical. Direct database access for secrets bypasses security controls like encryption at rest and migration logic for legacy tokens.
 **Prevention:** Always use a centralized authentication service (`auth.ts`) to retrieve secrets. Components and other services must never access raw secret storage directly.
-
-## 2026-04-26 - [Logging: Raw Error Logged to Console]
-**Vulnerability:** The error object in `conflict-resolution.ts` was logged to the console using `console.error(err)` instead of the `safeError` utility, which could potentially leak sensitive data if the error object contained any secrets.
-**Learning:** Always use the `safeError` utility consistently to ensure all errors are scrubbed before logging.
-**Prevention:** Replace instances of `console.error(err)` with `safeError`.

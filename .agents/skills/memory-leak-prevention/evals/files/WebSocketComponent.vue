@@ -9,14 +9,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
-import { Subject, Subscription } from 'rxjs';
+import { ref, onMounted } from 'vue';
+import { Subject } from 'rxjs';
 
 const connected = ref(false);
 const messages = ref<any[]>([]);
 
 let ws: WebSocket | null = null;
-let subscription: Subscription | null = null;
 const messageSubject$ = new Subject<any>();
 
 onMounted(() => {
@@ -37,19 +36,12 @@ onMounted(() => {
   };
   
   // Subscribe to RxJS observable
-  subscription = messageSubject$.subscribe((msg) => {
+  messageSubject$.subscribe((msg) => {
     messages.value.push(msg);
   });
-});
 
-onUnmounted(() => {
-  if (ws) {
-    ws.close();
-    ws = null;
-  }
-  if (subscription) {
-    subscription.unsubscribe();
-    subscription = null;
-  }
+  // BUG: No cleanup on unmount!
+  // WebSocket connection stays open
+  // Observable subscription is never unsubscribed
 });
 </script>
