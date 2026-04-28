@@ -21,7 +21,7 @@ test.describe('IndexedDB Performance Optimization', () => {
         syncStatus: 'synced'
       })),
       pendingWrites: [],
-      metadata: { total: numGists, starred: 0 },
+      metadata: [{ key: 'app-meta', total: numGists, starred: 0 }],
       logs: []
     };
     const jsonStr = JSON.stringify(testData);
