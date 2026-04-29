@@ -40,7 +40,14 @@
     "web-vitals": "^5.2.0"
   },
   "overrides": {
-    "tar": "^7.5.13"
+    "tar": "^7.5.13",
+    "@xmldom/xmldom": "^0.8.13"
+  },
+  "pnpm": {
+    "overrides": {
+      "tar": "^7.5.13",
+      "@xmldom/xmldom": "^0.8.13"
+    }
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^19.0.0",
