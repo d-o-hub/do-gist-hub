@@ -51,7 +51,7 @@ test.describe('Performance Metrics', () => {
 
     await page.reload({ waitUntil: 'networkidle' });
     if (totalJsSize > 0) {
-        expect(totalJsSize).toBeLessThan(500 * 1024);
+        expect(totalJsSize).toBeLessThan(150 * 1024);
     }
   });
 
