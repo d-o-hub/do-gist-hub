@@ -35,11 +35,12 @@ function appConfigHtmlPlugin(): Plugin {
  * CSP restricts resource loading to prevent XSS and data injection attacks.
  */
 function cspPlugin(): Plugin {
-  // Strict CSP policy for production
+  // Strict CSP policy for production (no unsafe-inline)
+  // Dev mode uses index.html CSP which includes unsafe-inline for Vite HMR
   const csp = [
     "default-src 'self'",
     "script-src 'self'",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "style-src 'self' blob: https://fonts.googleapis.com",
     "img-src 'self' data: https: blob:",
     "font-src 'self' https://fonts.gstatic.com",
     "connect-src 'self' https://api.github.com",

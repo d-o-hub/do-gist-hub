@@ -4,10 +4,11 @@ test.describe('Mobile Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('http://localhost:3000');
+    await page.waitForSelector('.app-shell');
   });
 
   test('should show bottom nav on mobile', async ({ page }) => {
-    await expect(page.locator('.bottom-nav')).toBeVisible();
+    await expect(page.locator('.bottom-nav').first()).toBeVisible();
   });
 
   test('should open mobile menu via burger button', async ({ page }) => {
