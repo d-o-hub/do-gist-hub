@@ -22,9 +22,9 @@ jobs:
       - name: Read VERSION
         id: version
         run: |
-          VERSION=$(cat VERSION | tr -d '[:space:]')
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          VERSION=$(tr -d '[:space:]' < VERSION)
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Update README.md badge
         run: |
           sed -i "s/version-[^-]*-blue.svg/version-${{ steps.version.outputs.VERSION }}-blue.svg/" README.md
