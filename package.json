@@ -45,7 +45,7 @@
     "@playwright/test": "^1.45.0",
     "@types/node": "^22.0.0",
     "canvas": "^3.2.3",
-    "commitlint": "^19.0.0",
+    "commitlint": "^20.5.2",
     "esbuild": "^0.28.0",
     "eslint": "^10.2.1",
     "globals": "^16.0.0",
