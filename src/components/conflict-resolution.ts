@@ -33,10 +33,10 @@ export function renderConflictList(conflicts: GistConflict[]): string {
       ${conflicts
         .map(
           (c) => `
-        <div class="glass-card conflict-item" data-id="${c.gistId}">
+        <div class="glass-card conflict-item" data-id="${sanitizeHtml(c.gistId)}">
           <div class="conflict-item-header">
             <h3 class="conflict-item-title">${sanitizeHtml(c.localVersion.description || 'UNTITLED GIST')}</h3>
-            <span class="micro-label">ID: ${c.gistId.substring(0, 8)}</span>
+            <span class="micro-label">ID: ${sanitizeHtml(c.gistId.substring(0, 8))}</span>
           </div>
           <div class="conflict-item-meta">
             <span class="detail-chip">CONFLICTING: ${c.conflictingFields.map(sanitizeHtml).join(', ')}</span>
@@ -62,7 +62,7 @@ export function renderConflictDetail(conflict: GistConflict): string {
       <header class="detail-header">
         <button class="btn btn-ghost back-to-list">← BACK TO LIST</button>
         <h1 class="detail-title">RESOLVE CONFLICT</h1>
-        <p class="micro-label">GIST ID: ${conflict.gistId}</p>
+        <p class="micro-label">GIST ID: ${sanitizeHtml(conflict.gistId)}</p>
       </header>
 
       <div class="comparison-grid">
