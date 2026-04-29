@@ -10,6 +10,7 @@ import { bottomSheet } from './ui/bottom-sheet';
 import { withViewTransition } from '../utils/view-transitions';
 import { announcer } from '../utils/announcer';
 import * as offlineRoute from '../routes/offline';
+import * as createRoute from '../routes/create';
 
 type Route = 'home' | 'starred' | 'create' | 'settings' | 'offline' | 'detail' | 'conflicts';
 
@@ -122,8 +123,7 @@ export class App {
           break;
         }
         case 'create': {
-          const { render } = await import('../routes/create');
-          render(main as HTMLElement);
+          createRoute.render(main as HTMLElement);
           break;
         }
         case 'settings': {
