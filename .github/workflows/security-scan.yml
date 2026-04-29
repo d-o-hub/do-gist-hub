@@ -20,7 +20,6 @@ jobs:
         uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
         with:
           format: json
-          output: shellcheck-report.json
       - name: Upload ShellCheck SARIF
         uses: github/codeql-action/upload-sarif@b0565cb28b456da32509aef995361ffcc63f40b0 # v3.28.15
         if: always()

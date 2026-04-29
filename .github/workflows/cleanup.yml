@@ -17,20 +17,20 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Find broken symlinks
         run: |
-          echo "## Broken Symlinks" >> $GITHUB_STEP_SUMMARY
-          find . -xtype l | tee -a $GITHUB_STEP_SUMMARY | wc -l | xargs -I{} echo "Found {} broken symlinks"
+          echo "## Broken Symlinks" >> "$GITHUB_STEP_SUMMARY"
+          find . -xtype l | tee -a "$GITHUB_STEP_SUMMARY" | wc -l | xargs -I{} echo "Found {} broken symlinks"
       - name: Find temp files
         run: |
-          echo "## Temp Files" >> $GITHUB_STEP_SUMMARY
-          find . -type f \( -name '*.tmp' -o -name '*~' -o -name '.DS_Store' -o -name '*.swp' -o -name '*.swo' \) | tee -a $GITHUB_STEP_SUMMARY | wc -l | xargs -I{} echo "Found {} temp files"
+          echo "## Temp Files" >> "$GITHUB_STEP_SUMMARY"
+          find . -type f \( -name '*.tmp' -o -name '*~' -o -name '.DS_Store' -o -name '*.swp' -o -name '*.swo' \) | tee -a "$GITHUB_STEP_SUMMARY" | wc -l | xargs -I{} echo "Found {} temp files"
       - name: Find potentially unused scripts
         run: |
-          echo "## Potentially Unused Scripts" >> $GITHUB_STEP_SUMMARY
+          echo "## Potentially Unused Scripts" >> "$GITHUB_STEP_SUMMARY"
           for script in scripts/*; do
             name=$(basename "$script")
             # Skip if referenced in package.json, AGENTS.md, or other workflows
             if ! grep -r -l "$name" package.json AGENTS.md .github/workflows/ scripts/ > /dev/null 2>&1; then
-              echo "$script" >> $GITHUB_STEP_SUMMARY
+              echo "$script" >> "$GITHUB_STEP_SUMMARY"
             fi
           done
-          echo "Review the list above; some scripts may be used indirectly." >> $GITHUB_STEP_SUMMARY
+          echo "Review the list above; some scripts may be used indirectly." >> "$GITHUB_STEP_SUMMARY"
