@@ -1,21 +1,35 @@
 # d.o. Gist Hub
 
-A state-of-the-art, offline-first GitHub Gist management PWA with token-driven responsive UI, PAT authentication, and Capacitor Android packaging.
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](./VERSION)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
-## Key Features
+> A state-of-the-art, offline-first GitHub Gist management PWA with token-driven responsive UI, PAT authentication, and Capacitor Android packaging.
 
-- **Token-Driven Design**: DTCG-aligned design tokens with 7 breakpoints (320px–1536px+).
-- **Mobile-First**: Bottom sheet navigation, `100dvh` dynamic viewport, safe area support.
-- **Command Palette**: Press `Ctrl+K` (or `Cmd+K`) for rapid navigation and actions.
-- **Actionable Empty States**: Guided CTAs instead of dead ends — every empty state offers a next step.
-- **Hardened Security**:
+**Quick Links**: [Quick Start](#quick-start) · [Documentation](#documentation) · [Contributing](./CONTRIBUTING.md) · [Security](./SECURITY.md)
+
+---
+
+## What Is This?
+
+**d.o. Gist Hub** is a production-ready Progressive Web App for managing GitHub Gists — built for developers who need their snippets available offline, on mobile, and across devices. It combines a strict token-driven design system with resilient offline-first architecture.
+
+**Key Features**:
+
+- ✓ **Token-Driven Design**: DTCG-aligned design tokens with 7 breakpoints (320px–1536px+).
+- ✓ **Mobile-First**: Bottom sheet navigation, `100dvh` dynamic viewport, safe area support.
+- ✓ **Command Palette**: Press `Ctrl+K` (or `Cmd+K`) for rapid navigation and actions.
+- ✓ **Actionable Empty States**: Guided CTAs instead of dead ends — every empty state offers a next step.
+- ✓ **Hardened Security**:
   - **AES-GCM Encryption**: Personal Access Tokens encrypted at rest (Web Cryptography API).
   - **Strict CSP**: No `unsafe-inline`, restricted origins.
   - **Auto-Redaction**: Sensitive data automatically redacted from logs and UI.
-- **Resilient Architecture**:
+- ✓ **Resilient Architecture**:
   - **AbortController Lifecycle**: Auto-cleanup of subscriptions and cancellation of in-flight requests.
   - **Layered Error Boundaries**: No silent failures; graceful recovery.
   - **Offline-First**: IndexedDB source of truth, optimistic writes, sync queue with exponential backoff.
+
+---
 
 ## Tech Stack
 
@@ -30,34 +44,134 @@ A state-of-the-art, offline-first GitHub Gist management PWA with token-driven r
 | Android | Capacitor 6 |
 | Testing | Playwright (cross-browser, mobile emulation, offline) |
 
+---
+
 ## Quick Start
 
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) 20+ (with npm)
+- [Git](https://git-scm.com/) 2.30+
+- (Optional) [pnpm](https://pnpm.io/) for faster installs
+
+### Installation
+
 ```bash
+# Clone the repository
+git clone https://github.com/d-o-hub/do-gist-hub.git
+cd do-gist-hub
+
 # Install dependencies
-pnpm install
+npm install        # or: pnpm install
 
-# Start dev server
-pnpm dev
+# Set up AI agent skills
+./scripts/setup-skills.sh
 
-# Run quality checks (Lint, Type, Format)
-pnpm check
-
-# Build and package
-pnpm build
+# Start development server
+npm run dev        # or: pnpm dev
 ```
 
-## Advanced Usage
+### Verify
 
-- **Command Palette**: Press `Ctrl+K` (or `Cmd+K`) to search and execute commands.
-- **Diagnostics**: Export app state for debugging from Settings.
-- **Backups**: Full IndexedDB export/import support.
+```bash
+# Run all quality checks (typecheck + lint + format)
+npm run check      # or: pnpm check
+
+# Run the full quality gate
+./scripts/quality_gate.sh
+```
+
+### Build & Package
+
+```bash
+# Production build
+npm run build
+
+# Package for Android
+npm run build:android
+```
+
+---
+
+## Usage Examples
+
+### Basic: Create a Gist
+
+1. Open the app and enter your GitHub PAT in Settings.
+2. Tap **New Gist** (or press `Ctrl+K` → "Create Gist").
+3. Add files, set description, choose public/secret.
+4. Save — works offline, syncs when online.
+
+### Advanced: Command Palette
+
+Press `Ctrl+K` (or `Cmd+K`) to open the command palette. Type to filter:
+
+- `create` — New gist
+- `starred` — View starred gists
+- `settings` — Open settings
+- `export` — Backup all gists to JSON
+- `import` — Restore from JSON backup
+
+### Quality Gate (Automatic)
+
+```bash
+# Pre-commit hook runs automatically if installed
+git commit -m "feat: add gist filtering"
+
+# Or run manually
+./scripts/quality_gate.sh
+```
+
+### Optional: Rehearse GitHub Actions Locally
+
+Catch CI errors before pushing by running workflows locally with [`nektos/act`](https://github.com/nektos/act) and **Docker**:
+
+```bash
+# Run the default CI workflow locally
+./scripts/run_act_local.sh
+
+# Run only one job (for faster feedback)
+ACT_JOB=quality-gate ./scripts/run_act_local.sh
+```
+
+---
 
 ## Documentation
 
-- [AGENTS.md](AGENTS.md) - Engineering principles and Agent workflows
-- [Plans](plans/) - Architecture decisions (ADRs) and roadmaps
-- [Modern Patterns](agents-docs/2026-patterns.md) - Deep dive into 2026 implementations
+| Document | Description |
+|----------|-------------|
+| [AGENTS.md](./AGENTS.md) | Engineering principles, coding standards, and agent workflows |
+| [QUICKSTART.md](./QUICKSTART.md) | 5-minute setup guide |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Development setup, code style, PR process |
+| [SECURITY.md](./SECURITY.md) | Security policy and vulnerability reporting |
+| [CHANGELOG.md](./CHANGELOG.md) | Version history and release notes |
+| [Plans](./plans/) | Architecture decisions (ADRs) and roadmaps |
+| [agents-docs/2026-patterns.md](./agents-docs/2026-patterns.md) | Deep dive into 2026 UI/UX implementations |
+
+---
+
+## Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for:
+
+- Development environment setup
+- Good first issues
+- Code style and testing requirements
+- Pull request process
+
+---
+
+## Community
+
+- [Issue Tracker](https://github.com/d-o-hub/do-gist-hub/issues) — Report bugs
+- [Discussions](https://github.com/d-o-hub/do-gist-hub/discussions) — Ask questions
+
+---
 
 ## License
 
-MIT
+This project is licensed under the [MIT License](./LICENSE).
+
+---
+
+**Built with AI agents. Maintained by humans.**

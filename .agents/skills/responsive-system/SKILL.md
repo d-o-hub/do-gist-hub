@@ -1,6 +1,8 @@
 ---
 name: responsive-system
 description: Define responsive behavior with 7 breakpoints, mobile-first design, fluid typography, and safe area support.
+version: "0.1.0"
+template_version: "0.1.0"
 ---
 
 # Responsive-system Skill

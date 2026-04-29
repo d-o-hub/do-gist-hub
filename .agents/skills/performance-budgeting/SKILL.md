@@ -1,6 +1,8 @@
 ---
 name: performance-budgeting
 description: Measure and enforce performance budgets for JS bundle size, load times, Web Vitals, and interaction latency.
+version: "0.1.0"
+template_version: "0.1.0"
 ---
 
 # Performance-budgeting Skill

@@ -1,6 +1,8 @@
 ---
 name: task-decomposition
 description: Break down complex tasks into atomic, actionable goals with clear dependencies and success criteria. Use when planning multi-step projects, coordinating agents, or decomposing complex requests.
+version: "0.1.0"
+template_version: "0.1.0"
 ---
 
 # Task Decomposition

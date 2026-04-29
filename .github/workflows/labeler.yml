@@ -1,0 +1,19 @@
+name: Labeler
+
+on:
+  - pull_request_target
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  labeler:
+    name: Apply Labels
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/labeler@c5dadc2a45784a4b6adfcd20fea3465da3a5f904 # v5.0.0
+        with:
+          configuration-path: .github/labeler.yml
+          sync-labels: true

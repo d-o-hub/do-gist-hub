@@ -10,6 +10,40 @@ import { setMetadata, getMetadata } from '../db';
 import { safeLog, safeError, redactToken } from '../security/logger';
 import { encrypt, decrypt } from '../security/crypto';
 
+// Session-level token cache to avoid decrypting on every API request
+let sessionTokenCache: { token: string; cachedAt: number } | null = null;
+const TOKEN_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function getCachedToken(): string | null {
+  if (sessionTokenCache && Date.now() - sessionTokenCache.cachedAt < TOKEN_CACHE_TTL_MS) {
+    return sessionTokenCache.token;
+  }
+  sessionTokenCache = null;
+  return null;
+}
+
+function setCachedToken(token: string | null): void {
+  if (token) {
+    sessionTokenCache = { token, cachedAt: Date.now() };
+  } else {
+    sessionTokenCache = null;
+  }
+}
+
+function clearTokenCache(): void {
+  sessionTokenCache = null;
+}
+
+// Clear cache on page unload and visibility change
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', clearTokenCache);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      clearTokenCache();
+    }
+  });
+}
+
 /**
  * Save GitHub PAT to secure storage
  */
@@ -33,6 +67,7 @@ export async function saveToken(token: string): Promise<{ success: boolean; erro
     await setMetadata('token-saved-at', Date.now());
 
     safeLog(`[Auth] Token saved and encrypted: ${redactToken(token)}`);
+    setCachedToken(token);
     return { success: true };
   } catch (error) {
     safeError('[Auth] Failed to save token:', error);
@@ -45,23 +80,35 @@ export async function saveToken(token: string): Promise<{ success: boolean; erro
 
 /**
  * Get stored token (returns null if not found)
+ * Uses a session-level memory cache to avoid repeated decryption.
  */
 export async function getToken(): Promise<string | null> {
+  const cached = getCachedToken();
+  if (cached) {
+    return cached;
+  }
+
   const enc = await getMetadata<{ data: string; iv: string }>('github-pat-enc');
   if (!enc) {
     // Fallback for legacy tokens (migration)
     const legacy = await getMetadata<string>('github-pat');
     if (legacy) {
       safeLog('[Auth] Migrating legacy token to encrypted storage');
-      await saveToken(legacy);
-      await setMetadata('github-pat', null); // Clear legacy
-      return legacy;
+      const result = await saveToken(legacy);
+      if (result.success) {
+        await setMetadata('github-pat', null); // Clear legacy
+        setCachedToken(legacy);
+        return legacy;
+      }
+      return null;
     }
     return null;
   }
 
   try {
-    return decrypt(enc.data, enc.iv);
+    const token = await decrypt(enc.data, enc.iv);
+    setCachedToken(token);
+    return token;
   } catch (err) {
     safeError('[Auth] Failed to decrypt token:', err);
     return null;
@@ -91,6 +138,7 @@ export async function removeToken(): Promise<void> {
   await setMetadata('github-pat-enc', null);
   await setMetadata('github-username', null);
   await setMetadata('token-saved-at', null);
+  clearTokenCache();
   clearUsernameCache();
   resetRateLimit();
   safeLog('[Auth] Token removed');

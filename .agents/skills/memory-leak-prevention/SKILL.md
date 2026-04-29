@@ -1,6 +1,8 @@
 ---
 name: memory-leak-prevention
 description: Prevent memory leaks via AbortController, lifecycle cleanup, bounded listeners, and proper resource disposal.
+version: "0.1.0"
+template_version: "0.1.0"
 ---
 
 # Memory-leak-prevention Skill

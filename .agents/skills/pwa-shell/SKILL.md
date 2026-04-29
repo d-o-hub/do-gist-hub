@@ -1,6 +1,8 @@
 ---
 name: pwa-shell
 description: Configure PWA with service worker for offline caching, installability, and reliable offline-first behavior.
+version: "0.1.0"
+template_version: "0.1.0"
 ---
 
 # Pwa-shell Skill

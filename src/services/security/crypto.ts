@@ -52,7 +52,7 @@ export async function getOrCreateKey(): Promise<CryptoKey> {
 
   const stored = await getMetadata<JsonWebKey>(KEY_STORAGE_NAME);
   if (stored) {
-    return window.crypto.subtle.importKey('jwk', stored, { name: ALGORITHM }, true, [
+    return window.crypto.subtle.importKey('jwk', stored, { name: ALGORITHM }, false, [
       'encrypt',
       'decrypt',
     ]);
@@ -66,7 +66,11 @@ export async function getOrCreateKey(): Promise<CryptoKey> {
   const jwk = await window.crypto.subtle.exportKey('jwk', key);
   await setMetadata(KEY_STORAGE_NAME, jwk);
 
-  return key;
+  // Re-import as non-extractable for runtime use to prevent XSS exfiltration
+  return window.crypto.subtle.importKey('jwk', jwk, { name: ALGORITHM }, false, [
+    'encrypt',
+    'decrypt',
+  ]);
 }
 
 function b64encode(buf: ArrayBuffer): string {

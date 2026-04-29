@@ -123,7 +123,7 @@ function manifestPlugin(): Plugin {
 function performanceBudgetPlugin(): Plugin {
   const BUDGETS = {
     initialJS: 150 * 1024,    // 150KB gzipped (we check raw size as proxy)
-    routeChunk: 150 * 1024,    // 50KB per chunk
+    routeChunk: 50 * 1024,    // 50KB per chunk
   };
 
   return {

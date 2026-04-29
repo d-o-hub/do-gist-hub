@@ -1,0 +1,35 @@
+scripts:
+  - changed-files:
+      - any-glob-to-any-file:
+          - scripts/**
+
+workflows:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/workflows/**
+
+skills:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .agents/skills/**
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - docs/**
+          - agents-docs/**
+
+frontend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/**
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - tests/**
+
+capacitor:
+  - changed-files:
+      - any-glob-to-any-file:
+          - android/**
