@@ -94,4 +94,9 @@ const cache1 = new CacheService();
 const cache2 = new CacheService();
 const cache3 = new CacheService();
 
+// BUG FIX: Clean up instances to prevent event listener accumulation
+cache1.destroy();
+cache2.destroy();
+cache3.destroy();
+
 module.exports = { CacheService, appEvents, globalCache };
