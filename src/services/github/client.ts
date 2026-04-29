@@ -12,6 +12,8 @@ import type {
   GistRevision,
   TokenInfo,
   GitHubError,
+  PaginatedResult,
+  PaginationInfo,
 } from '../../types/api';
 import { trackRateLimit } from './rate-limiter';
 import { safeError } from '../security/logger';
@@ -93,6 +95,39 @@ async function buildOptions(method: string = 'GET', body?: string): Promise<Requ
 }
 
 /**
+ * Parse GitHub Link header for pagination metadata.
+ * Link: <https://api.github.com/...?page=2>; rel="next", <...?page=5>; rel="last"
+ */
+function parseLinkHeader(linkHeader: string | null): PaginationInfo {
+  const result: PaginationInfo = {
+    nextPage: null,
+    prevPage: null,
+    firstPage: null,
+    lastPage: null,
+    totalPages: null,
+  };
+
+  if (!linkHeader) return result;
+
+  for (const part of linkHeader.split(',')) {
+    const match = part.match(/<[^>]+[?&]page=(\d+)[^>]*>;\s*rel="(\w+)"/);
+    if (match) {
+      const page = parseInt(match[1]!, 10);
+      const rel = match[2]!;
+      if (rel === 'next') result.nextPage = page;
+      else if (rel === 'prev') result.prevPage = page;
+      else if (rel === 'first') result.firstPage = page;
+      else if (rel === 'last') {
+        result.lastPage = page;
+        result.totalPages = page;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Handle API errors with proper typing
  */
 export function handleApiError(error: unknown, context: string): never {
@@ -141,11 +176,11 @@ export async function validateToken(token: string): Promise<TokenInfo> {
 }
 
 /**
- * List user's gists with pagination
+ * List user's gists with pagination via Link headers
  */
 export async function listGists(
   options: { page?: number; perPage?: number; since?: string } = {}
-): Promise<GitHubGist[]> {
+): Promise<PaginatedResult<GitHubGist>> {
   const { page = 1, perPage = 30, since } = options;
 
   const params = new URLSearchParams({
@@ -166,7 +201,9 @@ export async function listGists(
       }
 
       trackRateLimit(response);
-      return response.json() as Promise<GitHubGist[]>;
+      const data = (await response.json()) as GitHubGist[];
+      const pagination = parseLinkHeader(response.headers.get('Link'));
+      return { data, pagination };
     } catch (error) {
       return handleApiError(error, 'listGists');
     }
@@ -174,11 +211,11 @@ export async function listGists(
 }
 
 /**
- * List starred gists
+ * List starred gists with pagination via Link headers
  */
 export async function listStarredGists(
   options: { page?: number; perPage?: number } = {}
-): Promise<GitHubGist[]> {
+): Promise<PaginatedResult<GitHubGist>> {
   const { page = 1, perPage = 30 } = options;
 
   const params = new URLSearchParams({
@@ -198,7 +235,9 @@ export async function listStarredGists(
       }
 
       trackRateLimit(response);
-      return response.json() as Promise<GitHubGist[]>;
+      const data = (await response.json()) as GitHubGist[];
+      const pagination = parseLinkHeader(response.headers.get('Link'));
+      return { data, pagination };
     } catch (error) {
       return handleApiError(error, 'listStarredGists');
     }
