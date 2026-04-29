@@ -17,12 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@00b27aa7cb85167568cb48a3838b75f4265037d1 # 2.0.0
+        uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
         with:
           format: json
           output: shellcheck-report.json
       - name: Upload ShellCheck SARIF
-        uses: github/codeql-action/upload-sarif@d68b2d4edb4189fd2a536fcac4487923fb6144dd # v3.28.15
+        uses: github/codeql-action/upload-sarif@b0565cb28b456da32509aef995361ffcc63f40b0 # v3.28.15
         if: always()
         with:
           sarif_file: shellcheck-report.json
@@ -35,7 +35,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Run GitLeaks
-        uses: gitleaks/gitleaks-action@ff98106e4430ea178eab4e63caf9cb4d50e83f0e # v2.3.9
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
