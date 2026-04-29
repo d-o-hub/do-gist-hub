@@ -9,6 +9,7 @@ import { commandPalette } from './ui/command-palette';
 import { bottomSheet } from './ui/bottom-sheet';
 import { withViewTransition } from '../utils/view-transitions';
 import { announcer } from '../utils/announcer';
+import * as offlineRoute from '../routes/offline';
 
 type Route = 'home' | 'starred' | 'create' | 'settings' | 'offline' | 'detail' | 'conflicts';
 
@@ -133,8 +134,7 @@ export class App {
           break;
         }
         case 'offline': {
-          const { render } = await import('../routes/offline');
-          await render(main as HTMLElement);
+          await offlineRoute.render(main as HTMLElement);
           break;
         }
         case 'detail': {
