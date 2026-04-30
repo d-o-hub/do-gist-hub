@@ -1,7 +1,7 @@
 {
   "name": "d-o-gist-hub",
   "version": "0.1.0",
-  "description": "d.o. Gist Hub — offline-first GitHub Gist management app with token-driven design and Android support",
+  "description": "d.o. Gist Hub \u2014 offline-first GitHub Gist management app with token-driven design and Android support",
   "private": true,
   "type": "module",
   "scripts": {
@@ -50,17 +50,17 @@
       "@xmldom/xmldom": "^0.8.13"
     }
   },
-  "devDependencies": {
-    "@commitlint/config-conventional": "^19.0.0",
+"devDependencies": {
+    "@commitlint/config-conventional": "^20.5.0",
     "@eslint/js": "^9.0.0",
     "@playwright/test": "^1.45.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^25.6.0",
     "@vitest/coverage-v8": "^4.1.5",
     "canvas": "^3.2.3",
     "commitlint": "^20.5.2",
     "esbuild": "^0.28.0",
     "eslint": "^10.2.1",
-    "globals": "^16.0.0",
+    "globals": "^17.5.0",
     "jsdom": "^29.1.1",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.3",
