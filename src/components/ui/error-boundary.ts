@@ -5,6 +5,7 @@
 
 import { AppError, ErrorCategory } from '../../services/github/error-handler';
 import { safeError } from '../../services/security/logger';
+import { sanitizeHtml } from '../../services/security';
 import { announcer } from '../../utils/announcer';
 
 export class ErrorBoundary {
@@ -19,7 +20,7 @@ export class ErrorBoundary {
     const titleText = error.message || 'An error occurred';
 
     const detailsHtml = error.technicalDetails
-      ? `<p class="error-details">${this.escapeHtml(error.technicalDetails)}</p>`
+      ? `<p class="error-details">${sanitizeHtml(error.technicalDetails)}</p>`
       : '';
 
     const actionMap: Record<string, string> = {
@@ -80,12 +81,6 @@ export class ErrorBoundary {
       default:
         return '❌';
     }
-  }
-
-  private static escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
   }
 }
 

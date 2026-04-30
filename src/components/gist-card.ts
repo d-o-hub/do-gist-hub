@@ -7,6 +7,7 @@ import type { GistRecord } from '../services/db';
 import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
 import { showConfirmDialog } from '../utils/dialog';
+import { sanitizeHtml } from '../services/security';
 
 function formatRelativeTime(dateStr: string): string {
   const now = new Date();
@@ -20,16 +21,6 @@ function formatRelativeTime(dateStr: string): string {
   if (diffHr < 24) return `${diffHr}H AGO`;
   const diffDay = Math.floor(diffHr / 24);
   return `${diffDay}D AGO`;
-}
-
-function esc(text: string): string {
-  if (!text) return '';
-  return String(text)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 }
 
 const cardCache = new Map<string, { html: string; updatedAt: string }>();
@@ -48,12 +39,12 @@ export function renderCard(gist: GistRecord): string {
   const snippet = content.slice(0, 120);
 
   const html = `
-    <article class="glass-card gist-card" data-gist-id="${esc(gist.id)}" data-testid="gist-item" tabindex="0" role="button"
-             aria-label="Open gist: ${esc(description)}">
+    <article class="glass-card gist-card" data-gist-id="${sanitizeHtml(gist.id)}" data-testid="gist-item" tabindex="0" role="button"
+             aria-label="Open gist: ${sanitizeHtml(description)}">
       <div class="gist-card-header">
         <div class="gist-card-meta">
-          <span class="micro-label">${esc(language.toUpperCase())}</span>
-          <h2 class="gist-card-title">${esc(description)}</h2>
+          <span class="micro-label">${sanitizeHtml(language.toUpperCase())}</span>
+          <h2 class="gist-card-title">${sanitizeHtml(description)}</h2>
         </div>
         <div class="gist-card-stat">
           <span class="stat-number">${fileCount}</span>
@@ -61,17 +52,17 @@ export function renderCard(gist: GistRecord): string {
         </div>
       </div>
       <div class="gist-card-preview">
-        <pre class="gist-preview-code"><code>${esc(snippet)}</code></pre>
+        <pre class="gist-preview-code"><code>${sanitizeHtml(snippet)}</code></pre>
       </div>
       <footer class="gist-card-actions">
         <div class="action-group">
-          <button class="gist-action-btn star-btn" data-id="${esc(gist.id)}"
+          <button class="gist-action-btn star-btn" data-id="${sanitizeHtml(gist.id)}"
                   aria-label="${gist.starred ? 'Unstar' : 'Star'} gist"
                   aria-pressed="${gist.starred}">
             ${gist.starred ? '★' : '☆'}
             <span class="micro-label">${gist.starred ? 'STARRED' : 'STAR'}</span>
           </button>
-          <button class="gist-action-btn delete-btn" data-id="${esc(gist.id)}" aria-label="Delete gist">
+          <button class="gist-action-btn delete-btn" data-id="${sanitizeHtml(gist.id)}" aria-label="Delete gist">
             <span class="micro-label">DELETE</span>
           </button>
         </div>

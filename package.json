@@ -1,7 +1,7 @@
 {
   "name": "d-o-gist-hub",
   "version": "0.1.0",
-  "description": "d.o. Gist Hub \u2014 offline-first GitHub Gist management app with token-driven design and Android support",
+  "description": "d.o. Gist Hub — offline-first GitHub Gist management app with token-driven design and Android support",
   "private": true,
   "type": "module",
   "scripts": {
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@capacitor/android": "^6.0.0",
-    "@capacitor/cli": "^6.0.0",
+    "@capacitor/cli": "^8.3.1",
     "@capacitor/core": "^6.0.0",
     "idb": "^8.0.3",
     "web-vitals": "^5.2.0"

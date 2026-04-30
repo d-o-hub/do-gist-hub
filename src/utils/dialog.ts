@@ -1,3 +1,5 @@
+import { sanitizeHtml } from '../services/security';
+
 /**
  * Shared dialog utilities — avoids circular imports between components.
  */
@@ -12,8 +14,8 @@ export function showConfirmDialog(message: string, title = 'CONFIRM'): Promise<b
     overlay.className = 'confirm-overlay';
     overlay.innerHTML = `
       <div class="confirm-dialog glass-card" role="dialog" aria-modal="true">
-        <h2 class="confirm-title">${title}</h2>
-        <p class="confirm-message">${message}</p>
+        <h2 class="confirm-title">${sanitizeHtml(title)}</h2>
+        <p class="confirm-message">${sanitizeHtml(message)}</p>
         <div class="confirm-actions">
           <button class="btn btn-ghost" data-action="cancel">CANCEL</button>
           <button class="btn btn-danger" data-action="confirm">CONFIRM</button>
