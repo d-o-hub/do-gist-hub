@@ -22,10 +22,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
 
   // Retry failed tests in CI for flakiness detection
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 1 : 0,
 
-  // Single worker in CI for stability, parallel locally
-  workers: process.env.CI ? 1 : undefined,
+  // Use 2 workers in CI for speed without resource exhaustion;
+  // undefined (auto-detect) locally
+  workers: process.env.CI ? 2 : undefined,
 
   // Global timeout per test
   timeout: 30 * 1000,
