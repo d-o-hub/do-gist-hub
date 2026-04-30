@@ -6,6 +6,7 @@
 import { focusTrap } from '../../utils/focus-trap';
 import { announcer } from '../../utils/announcer';
 import { withViewTransition } from '../../utils/view-transitions';
+import { sanitizeHtml } from '../../services/security/dom';
 
 export class BottomSheet {
   private container: HTMLElement | null = null;
@@ -44,7 +45,7 @@ export class BottomSheet {
     this.isOpen = true;
 
     // Set content
-    const header = title ? `<h2 class="bottom-sheet-title">${title}</h2>` : '';
+    const header = title ? `<h2 class="bottom-sheet-title">${sanitizeHtml(title)}</h2>` : '';
     this.container.innerHTML = `
       <div class="bottom-sheet-handle"></div>
       ${header}

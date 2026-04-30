@@ -6,24 +6,27 @@ import { safeLog } from '../services/security/logger';
 
 import { generateCSSVariables } from './css-variables';
 
-let styleElement: HTMLStyleElement | null = null;
+let tokensLink: HTMLLinkElement | null = null;
 
 /**
- * Initialize design tokens by injecting CSS variables
+ * Initialize design tokens by linking a blob URL stylesheet.
+ * Avoids inline styles to comply with strict CSP (no unsafe-inline).
  */
 export function initDesignTokens(): void {
-  // Check if already initialized
-  if (styleElement) {
+  if (tokensLink) {
     return;
   }
 
-  // Create style element
-  styleElement = document.createElement('style');
-  styleElement.id = 'design-tokens';
-  styleElement.textContent = generateCSSVariables();
+  const css = generateCSSVariables();
+  const blob = new Blob([css], { type: 'text/css' });
+  const url = URL.createObjectURL(blob);
 
-  // Inject into document head
-  document.head.appendChild(styleElement);
+  tokensLink = document.createElement('link');
+  tokensLink.rel = 'stylesheet';
+  tokensLink.href = url;
+  tokensLink.id = 'design-tokens';
+
+  document.head.appendChild(tokensLink);
 
   safeLog('[Design Tokens] Initialized');
 }

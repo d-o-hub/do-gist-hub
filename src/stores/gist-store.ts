@@ -83,10 +83,12 @@ class GistStore {
     this.notifyListeners();
     try {
       if (!networkMonitor.isOnline()) return;
-      const [ownGists, starredGists] = await Promise.all([
+      const [ownResult, starredResult] = await Promise.all([
         GitHub.listGists(),
         GitHub.listStarredGists(),
       ]);
+      const ownGists = ownResult.data;
+      const starredGists = starredResult.data;
 
       const starredIds = new Set(starredGists.map((g) => g.id));
       const ownIds = new Set(ownGists.map((g) => g.id));
@@ -177,24 +179,59 @@ class GistStore {
     public_: boolean,
     files: Record<string, string>
   ): Promise<GistRecord | null> {
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const now = new Date().toISOString();
+    const tempRecord: GistRecord = {
+      id: tempId,
+      description,
+      files: Object.fromEntries(
+        Object.entries(files).map(([n, c]) => [n, { filename: n, content: c }])
+      ),
+      htmlUrl: '',
+      gitPullUrl: '',
+      gitPushUrl: '',
+      createdAt: now,
+      updatedAt: now,
+      starred: false,
+      public: public_,
+      syncStatus: 'pending',
+    };
+
     const payload = {
       description,
       public: public_,
       files: Object.fromEntries(Object.entries(files).map(([n, c]) => [n, { content: c }])),
     };
+
     try {
       if (networkMonitor.isOnline()) {
+        // Optimistic: add temp record immediately
+        this.gists.unshift(tempRecord);
+        this.notifyListeners();
+
         const gist = await GitHub.createGist(payload);
         const record = this.githubGistToRecord(gist);
         await dbSaveGist(record);
-        this.gists.unshift(record);
+
+        // Replace temp with real record
+        const idx = this.gists.findIndex((g) => g.id === tempId);
+        if (idx !== -1) {
+          this.gists[idx] = record;
+        } else {
+          this.gists.unshift(record);
+        }
+        this.sortGists();
         this.notifyListeners();
         return record;
       } else {
         await syncQueue.queueOperation('pending', 'create', payload);
         return null;
       }
-    } catch {
+    } catch (err) {
+      // Rollback: remove temp record
+      this.gists = this.gists.filter((g) => g.id !== tempId);
+      this.notifyListeners();
+      safeError('[GistStore] Create failed', err);
       return null;
     }
   }
@@ -203,6 +240,9 @@ class GistStore {
     id: string,
     updates: { description?: string; public?: boolean; files?: Record<string, string> }
   ): Promise<boolean> {
+    const originalGist = this.gists.find((g) => g.id === id);
+    const originalRecord = originalGist ? structuredClone(originalGist) : null;
+
     try {
       const payload: UpdateGistRequest = {
         description: updates.description,
@@ -211,7 +251,27 @@ class GistStore {
           ? Object.fromEntries(Object.entries(updates.files).map(([n, c]) => [n, { content: c }]))
           : undefined,
       };
+
       if (networkMonitor.isOnline()) {
+        // Optimistic: update local state immediately
+        if (originalGist) {
+          if (updates.description !== undefined) originalGist.description = updates.description;
+          if (updates.public !== undefined) originalGist.public = updates.public;
+          if (updates.files) {
+            for (const [name, content] of Object.entries(updates.files)) {
+              if (originalGist.files[name]) {
+                originalGist.files[name].content = content;
+              } else {
+                originalGist.files[name] = { filename: name, content };
+              }
+            }
+          }
+          originalGist.updatedAt = new Date().toISOString();
+          originalGist.syncStatus = 'pending';
+          this.sortGists();
+          this.notifyListeners();
+        }
+
         const gist = await GitHub.updateGist(id, payload);
         const record = this.githubGistToRecord(gist);
         await dbSaveGist(record);
@@ -223,18 +283,34 @@ class GistStore {
         await syncQueue.queueOperation(id, 'update', payload);
         return true;
       }
-    } catch {
+    } catch (err) {
+      // Rollback: restore original state
+      if (originalRecord) {
+        const idx = this.gists.findIndex((g) => g.id === id);
+        if (idx !== -1) {
+          this.gists[idx] = originalRecord;
+        } else {
+          this.gists.push(originalRecord);
+        }
+        this.sortGists();
+        this.notifyListeners();
+      }
+      safeError('[GistStore] Update failed', err);
       return false;
     }
   }
 
   async deleteGist(id: string): Promise<boolean> {
+    const originalGist = this.gists.find((g) => g.id === id);
+
     try {
       if (networkMonitor.isOnline()) {
-        await GitHub.deleteGist(id);
-        await dbDeleteGist(id);
+        // Optimistic: remove from local state immediately
         this.gists = this.gists.filter((g) => g.id !== id);
         this.notifyListeners();
+
+        await GitHub.deleteGist(id);
+        await dbDeleteGist(id);
         return true;
       } else {
         await syncQueue.queueOperation(id, 'delete', {});
@@ -242,7 +318,14 @@ class GistStore {
         this.notifyListeners();
         return true;
       }
-    } catch {
+    } catch (err) {
+      // Rollback: restore original gist
+      if (originalGist) {
+        this.gists.push(originalGist);
+        this.sortGists();
+        this.notifyListeners();
+      }
+      safeError('[GistStore] Delete failed', err);
       return false;
     }
   }
@@ -250,21 +333,31 @@ class GistStore {
   async toggleStar(id: string): Promise<boolean> {
     const gist = this.gists.find((g) => g.id === id);
     if (!gist) return false;
+
+    const originalStarred = gist.starred;
+    const shouldStar = !originalStarred;
+
     try {
-      const shouldStar = !gist.starred;
+      // Optimistic: update local state immediately
+      gist.starred = shouldStar;
+      gist.syncStatus = networkMonitor.isOnline() ? 'synced' : 'pending';
+      this.notifyListeners();
+
       if (networkMonitor.isOnline()) {
         if (shouldStar) await GitHub.starGist(id);
         else await GitHub.unstarGist(id);
-        gist.starred = shouldStar;
         await dbSaveGist(gist);
       } else {
         await syncQueue.queueOperation(id, shouldStar ? 'star' : 'unstar', {});
-        gist.starred = shouldStar;
-        gist.syncStatus = 'pending';
       }
-      this.notifyListeners();
+
       return true;
-    } catch {
+    } catch (err) {
+      // Rollback: restore original star state
+      gist.starred = originalStarred;
+      gist.syncStatus = 'synced';
+      this.notifyListeners();
+      safeError('[GistStore] Toggle star failed', err);
       return false;
     }
   }
