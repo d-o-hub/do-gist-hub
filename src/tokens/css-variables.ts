@@ -99,6 +99,7 @@ export function generateCSSVariables(): string {
   --spacing-11: ${spacing[11]};
   --spacing-12: ${spacing[12]};
   --spacing-14: ${spacing[14]};
+  --spacing-15: ${spacing[15]};
   --spacing-16: ${spacing[16]};
   --spacing-20: ${spacing[20]};
   --spacing-24: ${spacing[24]};
@@ -108,6 +109,7 @@ export function generateCSSVariables(): string {
   --spacing-40: ${spacing[40]};
   --spacing-44: ${spacing[44]};
   --spacing-48: ${spacing[48]};
+  --spacing-50: ${spacing[50]};
   --spacing-52: ${spacing[52]};
   --spacing-56: ${spacing[56]};
   --spacing-60: ${spacing[60]};
@@ -115,6 +117,7 @@ export function generateCSSVariables(): string {
   --spacing-72: ${spacing[72]};
   --spacing-80: ${spacing[80]};
   --spacing-96: ${spacing[96]};
+  --spacing-100: ${spacing[100]};
   
   /* ===== Typography Tokens ===== */
   --font-family-sans: ${fontFamily.sans};
@@ -176,6 +179,7 @@ export function generateCSSVariables(): string {
   --motion-duration-normal: ${motionTokens.duration.normal};
   --motion-duration-slow: ${motionTokens.duration.slow};
   --motion-duration-deliberate: ${motionTokens.duration.deliberate};
+  --motion-duration-pulse: 1.2s;
 
   --motion-easing-linear: ${motionTokens.easing.linear};
   --motion-easing-smooth: ${motionTokens.easing.smooth};
@@ -219,6 +223,47 @@ export function generateCSSVariables(): string {
   --ui-backdrop-blur: ${uiTokens.backdrop.blur};
   --gist-card-bg: ${gistCard.background};
   --gist-card-shadow: ${gistCard.shadow};
+
+  /* ===== Legacy Aliases (backward compatibility) ===== */
+  --color-bg: var(--color-background-primary);
+  --color-text: var(--color-foreground-primary);
+  --color-text-muted: var(--color-foreground-muted);
+  --color-text-faint: var(--color-foreground-secondary);
+  --color-accent: var(--color-accent-primary);
+  --color-accent-text: var(--color-accent-primary);
+  --color-surface: var(--color-background-secondary);
+  --color-surface-2: var(--color-background-tertiary);
+  --color-surface-elevated: var(--color-background-elevated);
+  --color-border: var(--color-border-default);
+  --color-divider: var(--color-border-default);
+  --color-error: var(--color-status-error-fg);
+  --color-warning: var(--color-status-warning-fg);
+  --color-success: var(--color-status-success-fg);
+  --glass-border: 1px solid var(--color-border-default);
+  --glass-shadow: var(--shadow-md);
+  --radius-card: var(--radius-xl);
+
+  /* ===== Surface & Overlay Tokens ===== */
+  --color-surface-overlay: rgba(0, 0, 0, 0.4);
+  --color-surface-overlay-medium: rgba(0, 0, 0, 0.3);
+  --color-surface-overlay-heavy: rgba(0, 0, 0, 0.6);
+  --color-surface-overlay-light: rgba(0, 0, 0, 0.2);
+  --color-backdrop-medium: rgba(0, 0, 0, 0.7);
+  --color-backdrop-heavy: rgba(0, 0, 0, 0.75);
+  --color-nav-bg: rgba(5, 5, 5, 0.95);
+  --color-header-bg: rgba(5, 5, 5, 0.85);
+  --color-modal-bg: rgba(15, 15, 15, 0.95);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+  --color-status-error-subtle: rgba(248, 113, 113, 0.15);
+  --color-status-success-subtle: rgba(74, 222, 128, 0.12);
+
+  /* ===== Skeleton Tokens ===== */
+  --skeleton-shimmer-start: rgba(255, 255, 255, 0.04);
+  --skeleton-shimmer-mid: rgba(255, 255, 255, 0.08);
+
+  /* ===== Component Shadow Tokens ===== */
+  --shadow-command-palette: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-glass-hover: 0 0 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 /* ===== Dark Theme Override ===== */

@@ -9,7 +9,6 @@ import { commandPalette } from './ui/command-palette';
 import { bottomSheet } from './ui/bottom-sheet';
 import { withViewTransition } from '../utils/view-transitions';
 import { announcer } from '../utils/announcer';
-import { sanitizeHtml } from '../services/security/dom';
 import * as offlineRoute from '../routes/offline';
 import * as createRoute from '../routes/create';
 
@@ -91,17 +90,19 @@ export class App {
   }
 
   private async navigate(route: Route): Promise<void> {
-    if (this.currentRoute === route && this.container?.querySelector('.app-shell')) {
-      return;
-    }
+    const isSameRoute = this.currentRoute === route;
     this.currentRoute = route;
-    announcer.announce(`Navigating to ${sanitizeHtml(route)} page`);
+    announcer.announce(`Navigating to ${route} page`);
 
     const savedSort = localStorage.getItem('sort-preference') || 'updated-desc';
 
     await withViewTransition(async () => {
-      this.render();
-      this.setupNavigation();
+      // Only re-render the shell if the route changed or the shell isn't present yet.
+      // This avoids destroying and recreating the entire app shell on initial mount.
+      if (!isSameRoute || !this.container?.querySelector('.app-shell')) {
+        this.render();
+        this.setupNavigation();
+      }
 
       const main = this.container?.querySelector('#main-content');
       if (!main) return;
@@ -266,7 +267,7 @@ export class App {
     const status = online ? (len > 0 ? 'syncing' : 'online') : 'offline';
     if (el) {
       el.setAttribute('data-status', status);
-      el.innerHTML = `<span class="sync-dot" aria-hidden="true"></span><span class="sr-only">${sanitizeHtml(status)}</span>`;
+      el.innerHTML = `<span class="sync-dot" aria-hidden="true"></span><span class="sr-only">${status}</span>`;
     }
   }
 

@@ -21,6 +21,7 @@ export const spacing = {
   11: '2.75rem', // 44px
   12: '3rem', // 48px
   14: '3.5rem', // 56px
+  15: '3.75rem', // 60px
   16: '4rem', // 64px
   20: '5rem', // 80px
   24: '6rem', // 96px
@@ -30,6 +31,7 @@ export const spacing = {
   40: '10rem', // 160px
   44: '11rem', // 176px
   48: '12rem', // 192px
+  50: '12.5rem', // 200px
   52: '13rem', // 208px
   56: '14rem', // 224px
   60: '15rem', // 240px
@@ -37,4 +39,5 @@ export const spacing = {
   72: '18rem', // 288px
   80: '20rem', // 320px
   96: '24rem', // 384px
+  100: '25rem', // 400px
 } as const;

@@ -4,26 +4,30 @@
  */
 
 /**
- * Detect headless/automated browser environments where
- * startViewTransition may hang (compositor doesn't tick).
+ * Detect if running in an automated test environment (Playwright, Puppeteer, etc.)
+ * View transitions can hang in headless/composited environments where the animation
+ * frame loop does not tick normally.
  */
 function isAutomatedEnvironment(): boolean {
-  return (
-    // Playwright, Puppeteer, Selenium
-    !!(window as { navigator?: { webdriver?: boolean } }).navigator?.webdriver ||
-    // Headless Chrome/Firefox user agents
-    /Headless/.test(navigator.userAgent) ||
-    // Generic automation signal
-    /(Chrome-Lighthouse|PTST)/.test(navigator.userAgent)
+  return Boolean(
+    (navigator as Navigator & { webdriver?: boolean }).webdriver ||
+    /HeadlessChrome/.test(navigator.userAgent) ||
+    /PhantomJS/.test(navigator.userAgent)
   );
 }
 
 /**
- * Execute a DOM update with View Transition if supported.
- * Skips transitions in headless/automated environments to prevent hangs.
+ * Execute a DOM update with View Transition if supported
  */
 export async function withViewTransition(updateFn: () => void | Promise<void>): Promise<void> {
-  if (!('startViewTransition' in document) || isAutomatedEnvironment()) {
+  if (!('startViewTransition' in document)) {
+    await updateFn();
+    return;
+  }
+
+  // Skip view transitions in automated testing to prevent hangs
+  // where transition.finished never resolves in headless mode
+  if (isAutomatedEnvironment()) {
     await updateFn();
     return;
   }
