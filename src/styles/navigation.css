@@ -76,7 +76,7 @@
   color: var(--color-text-muted);
   cursor: pointer;
   transition: all var(--motion-duration-fast) var(--motion-easing);
-  min-height: 36px;
+  min-height: 44px;
 }
 
 .chip.active,
@@ -315,6 +315,7 @@
   background: transparent;
   text-align: left;
   min-height: 44px;
+  position: relative;
 }
 
 .sidebar-item:hover {

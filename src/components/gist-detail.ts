@@ -8,6 +8,7 @@ import { GistRevision } from '../types/api';
 import * as GitHub from '../services/github/client';
 import { toast } from './ui/toast';
 import { safeError } from '../services/security/logger';
+import { sanitizeHtml } from '../services/security/dom';
 
 function formatRelativeTime(dateStr: string): string {
   const now = new Date();
@@ -23,18 +24,8 @@ function formatRelativeTime(dateStr: string): string {
   return `${diffDay}d ago`;
 }
 
-const esc = (text: string): string => {
-  if (!text) return '';
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-};
-
 export function renderFileContent(content: string, language?: string): string {
-  return `<pre class="code-block language-${esc(language || 'text')}"><code>${esc(content)}</code></pre>`;
+  return `<pre class="code-block language-${sanitizeHtml(language || 'text')}"><code>${sanitizeHtml(content)}</code></pre>`;
 }
 
 export function renderGistDetail(gist: GistRecord): string {
@@ -51,8 +42,8 @@ export function renderGistDetail(gist: GistRecord): string {
       ${Object.entries(gist.files)
         .map(
           ([key, file], index) => `
-        <button class="chip file-tab ${index === 0 ? 'active' : ''}" data-file-key="${esc(key)}" id="tab-${index}" role="tab" aria-selected="${index === 0}" aria-controls="file-content-area">
-          ${esc(file.filename.toUpperCase())}
+        <button class="chip file-tab ${index === 0 ? 'active' : ''}" data-file-key="${sanitizeHtml(key)}" id="tab-${index}" role="tab" aria-selected="${index === 0}" aria-controls="file-content-area">
+          ${sanitizeHtml(file.filename.toUpperCase())}
         </button>
       `
         )
@@ -67,13 +58,13 @@ export function renderGistDetail(gist: GistRecord): string {
     : '<p class="empty-content">No content available</p>';
 
   return `
-    <div class="gist-detail" data-gist-id="${esc(gist.id)}">
+    <div class="gist-detail" data-gist-id="${sanitizeHtml(gist.id)}">
       <header class="detail-header">
         <div class="header-top">
           <button class="btn btn-ghost" id="gist-back-btn" aria-label="Go back">← Back</button>
           <span class="micro-label">Gist Detail</span>
         </div>
-        <h1 class="detail-title">${esc(title)}</h1>
+        <h1 class="detail-title">${sanitizeHtml(title)}</h1>
         <div class="detail-meta-row">
           <span class="detail-chip">${fileCount} Files</span>
           <span class="detail-chip">${visibility}</span>
@@ -101,8 +92,8 @@ export function renderGistDetail(gist: GistRecord): string {
         ${
           firstFile
             ? `
-          <span class="micro-label">Language: ${esc(firstFile.language || 'Unknown')}</span>
-          <span class="micro-label">Raw URL: <a href="${esc(firstFile.rawUrl || '')}" target="_blank" rel="noopener noreferrer">Link</a></span>
+          <span class="micro-label">Language: ${sanitizeHtml(firstFile.language || 'Unknown')}</span>
+          <span class="micro-label">Raw URL: <a href="${sanitizeHtml(firstFile.rawUrl || '')}" target="_blank" rel="noopener noreferrer">Link</a></span>
         `
             : ''
         }
@@ -133,19 +124,19 @@ export function renderRevisions(gistId: string, revisions: GistRevision[]): stri
     .map((rev) => {
       const date = new Date(rev.committed_at).toLocaleString();
       return `
-      <div class="revision-item glass-card" data-version="${esc(rev.version)}">
+      <div class="revision-item glass-card" data-version="${sanitizeHtml(rev.version)}">
         <div class="revision-meta">
           <span class="stat-number">${date}</span>
-          <span class="micro-label">By ${esc(rev.user?.login || 'Unknown')}</span>
+          <span class="micro-label">By ${sanitizeHtml(rev.user?.login || 'Unknown')}</span>
         </div>
-        <button class="btn btn-ghost btn-sm" data-action="view-revision" data-version="${esc(rev.version)}">View</button>
+        <button class="btn btn-ghost btn-sm" data-action="view-revision" data-version="${sanitizeHtml(rev.version)}">View</button>
       </div>
     `;
     })
     .join('');
 
   return `
-    <div class="revisions-list" data-gist-id="${esc(gistId)}">
+    <div class="revisions-list" data-gist-id="${sanitizeHtml(gistId)}">
       <header class="detail-header">
         <button class="btn btn-ghost" id="gist-back-btn">← Back</button>
         <h1 class="detail-title">Revisions (${revisions.length})</h1>
