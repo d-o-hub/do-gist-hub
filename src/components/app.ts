@@ -58,7 +58,6 @@ export class App {
     document.documentElement.setAttribute('data-theme', savedTheme);
 
     this.initializeCommandPalette();
-    void this.navigate('home');
   }
 
   private setupNavigation(): void {
@@ -91,14 +90,19 @@ export class App {
   }
 
   private async navigate(route: Route): Promise<void> {
+    const isSameRoute = this.currentRoute === route;
     this.currentRoute = route;
     announcer.announce(`Navigating to ${route} page`);
 
     const savedSort = localStorage.getItem('sort-preference') || 'updated-desc';
 
     await withViewTransition(async () => {
-      this.render();
-      this.setupNavigation();
+      // Only re-render the shell if the route changed or the shell isn't present yet.
+      // This avoids destroying and recreating the entire app shell on initial mount.
+      if (!isSameRoute || !this.container?.querySelector('.app-shell')) {
+        this.render();
+        this.setupNavigation();
+      }
 
       const main = this.container?.querySelector('#main-content');
       if (!main) return;
@@ -354,5 +358,6 @@ export class App {
     this.container = element;
     this.render();
     this.setupNavigation();
+    void this.navigate('home');
   }
 }
