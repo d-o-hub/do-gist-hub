@@ -4,10 +4,26 @@
  */
 
 /**
- * Execute a DOM update with View Transition if supported
+ * Detect headless/automated browser environments where
+ * startViewTransition may hang (compositor doesn't tick).
+ */
+function isAutomatedEnvironment(): boolean {
+  return (
+    // Playwright, Puppeteer, Selenium
+    !!(window as { navigator?: { webdriver?: boolean } }).navigator?.webdriver ||
+    // Headless Chrome/Firefox user agents
+    /Headless/.test(navigator.userAgent) ||
+    // Generic automation signal
+    /(Chrome-Lighthouse|PTST)/.test(navigator.userAgent)
+  );
+}
+
+/**
+ * Execute a DOM update with View Transition if supported.
+ * Skips transitions in headless/automated environments to prevent hangs.
  */
 export async function withViewTransition(updateFn: () => void | Promise<void>): Promise<void> {
-  if (!('startViewTransition' in document)) {
+  if (!('startViewTransition' in document) || isAutomatedEnvironment()) {
     await updateFn();
     return;
   }

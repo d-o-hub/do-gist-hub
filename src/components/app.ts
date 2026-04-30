@@ -59,7 +59,6 @@ export class App {
     document.documentElement.setAttribute('data-theme', savedTheme);
 
     this.initializeCommandPalette();
-    void this.navigate('home');
   }
 
   private setupNavigation(): void {
@@ -92,6 +91,9 @@ export class App {
   }
 
   private async navigate(route: Route): Promise<void> {
+    if (this.currentRoute === route && this.container?.querySelector('.app-shell')) {
+      return;
+    }
     this.currentRoute = route;
     announcer.announce(`Navigating to ${sanitizeHtml(route)} page`);
 
@@ -355,5 +357,6 @@ export class App {
     this.container = element;
     this.render();
     this.setupNavigation();
+    void this.navigate('home');
   }
 }
