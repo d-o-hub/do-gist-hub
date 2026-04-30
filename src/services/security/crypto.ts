@@ -73,11 +73,11 @@ export async function getOrCreateKey(): Promise<CryptoKey> {
   ]);
 }
 
-function b64encode(buf: ArrayBuffer): string {
+export function b64encode(buf: ArrayBuffer): string {
   return btoa(String.fromCharCode(...new Uint8Array(buf)));
 }
 
-function b64decode(str: string): Uint8Array {
+export function b64decode(str: string): Uint8Array {
   const binary = atob(str);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
