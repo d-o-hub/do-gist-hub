@@ -1,7 +1,10 @@
 import { defineConfig, Plugin } from 'vite';
 import path from 'path';
 import fs from 'fs';
+import zlib from 'zlib';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { APP } from './src/config/app.config';
+import { PERFORMANCE_BUDGETS } from './src/services/perf/budgets';
 
 /**
  * Reads app.config.ts and injects values into index.html
@@ -118,15 +121,10 @@ function manifestPlugin(): Plugin {
 }
 
 /**
- * Enforces performance budgets during build.
+ * Enforces performance budgets during build using actual gzip sizes.
  * Fails the build if bundle sizes exceed defined limits.
  */
 function performanceBudgetPlugin(): Plugin {
-  const BUDGETS = {
-    initialJS: 150 * 1024,    // 150KB gzipped (we check raw size as proxy)
-    routeChunk: 50 * 1024,    // 50KB per chunk
-  };
-
   return {
     name: 'performance-budget',
     closeBundle() {
@@ -134,8 +132,8 @@ function performanceBudgetPlugin(): Plugin {
       if (!fs.existsSync(distDir)) return;
 
       const warnings: string[] = [];
+      const exceeded: string[] = [];
 
-      // Walk through all JS files in dist
       const walkDir = (dir: string): string[] => {
         const files: string[] = [];
         const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -151,31 +149,31 @@ function performanceBudgetPlugin(): Plugin {
       };
 
       const jsFiles = walkDir(distDir);
-      let totalJSSize = 0;
+      let totalGzipSize = 0;
 
       for (const file of jsFiles) {
-        const stats = fs.statSync(file);
-        totalJSSize += stats.size;
+        const raw = fs.readFileSync(file);
+        const gzipped = zlib.gzipSync(raw);
+        const gzipSize = gzipped.length;
+        totalGzipSize += gzipSize;
 
-        // Check individual chunk size
-        if (stats.size > BUDGETS.routeChunk) {
-          const relativePath = path.relative(distDir, file);
-          const sizeKB = (stats.size / 1024).toFixed(1);
-          warnings.push(
-            `Route chunk exceeds budget: ${relativePath} (${sizeKB}KB > ${(BUDGETS.routeChunk / 1024).toFixed(0)}KB)`
-          );
+        const relativePath = path.relative(distDir, file);
+        const sizeKB = (gzipSize / 1024).toFixed(1);
+
+        if (gzipSize > PERFORMANCE_BUDGETS.routeChunk) {
+          const msg = `Route chunk exceeds budget: ${relativePath} (${sizeKB}KB > ${(PERFORMANCE_BUDGETS.routeChunk / 1024).toFixed(0)}KB)`;
+          warnings.push(msg);
+          exceeded.push(msg);
         }
       }
 
-      // Check total JS size (rough proxy for gzipped size)
-      if (totalJSSize > BUDGETS.initialJS * 2.5) { // Raw size ~2.5x gzipped
-        const totalKB = (totalJSSize / 1024).toFixed(1);
-        warnings.push(
-          `Total JS exceeds budget: ${totalKB}KB raw (~${(totalKB / 2.5).toFixed(1)}KB gzipped > ${(BUDGETS.initialJS / 1024).toFixed(0)}KB)`
-        );
+      if (totalGzipSize > PERFORMANCE_BUDGETS.initialJS) {
+        const totalKB = (totalGzipSize / 1024).toFixed(1);
+        const msg = `Total JS exceeds budget: ${totalKB}KB gzipped > ${(PERFORMANCE_BUDGETS.initialJS / 1024).toFixed(0)}KB`;
+        warnings.push(msg);
+        exceeded.push(msg);
       }
 
-      // Log warnings
       if (warnings.length > 0) {
         console.warn('\n⚠️  Performance Budget Warnings:');
         for (const warning of warnings) {
@@ -183,9 +181,10 @@ function performanceBudgetPlugin(): Plugin {
         }
         console.warn('');
 
-        // In CI, fail the build
         if (process.env.CI) {
-          throw new Error('Performance budgets exceeded (see warnings above)');
+          throw new Error(
+            `Performance budgets exceeded:\n${exceeded.map((e) => `  - ${e}`).join('\n')}`
+          );
         }
       } else {
         console.log('\n✓ Performance budgets passed');
@@ -194,12 +193,24 @@ function performanceBudgetPlugin(): Plugin {
   };
 }
 
+const shouldAnalyze = process.env.ANALYZE === 'true';
+
 export default defineConfig({
   plugins: [
     appConfigHtmlPlugin(),
     cspPlugin(),
     manifestPlugin(),
     performanceBudgetPlugin(),
+    ...(shouldAnalyze
+      ? [
+          visualizer({
+            filename: 'analysis/bundle-stats.html',
+            gzipSize: true,
+            brotliSize: true,
+            open: false,
+          }),
+        ]
+      : []),
   ],
   resolve: {
     alias: {
