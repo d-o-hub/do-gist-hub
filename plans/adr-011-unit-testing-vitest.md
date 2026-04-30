@@ -1,8 +1,8 @@
-<!-- Last Audit: 2026-04-25 -->
+<!-- Last Audit: 2026-04-30 -->
 # ADR-011: Unit Testing Infrastructure with Vitest
 
-**Status**: Deferred
-**Date**: 2026-04-25
+**Status**: Implemented
+**Date**: 2026-04-30
 **Deciders**: Architect, Testing Agent
 
 ## Context
@@ -108,6 +108,15 @@ tests/
 3. Add `setupFiles: ['./tests/unit/setup.ts']` for global mocks
 4. Mock `idb` with in-memory store for unit tests
 5. Mock Web Crypto API for crypto tests
+
+## Completed Work (2026-04-30)
+
+- `vitest.config.ts` created with jsdom environment and path aliases.
+- `tests/unit/crypto.test.ts` — 11 tests for encrypt/decrypt, key derivation, base64.
+- `tests/unit/sync-queue.test.ts` — 16 tests for queue operations, retries, conflict detection; uncovered real `return await handler()` bug in `src/services/sync/queue.ts`.
+- `tests/unit/security-dom.test.ts` — 3 tests for `sanitizeHtml`; migrated from `node:test` to vitest syntax for runner compatibility.
+- All 36 unit tests pass. Unit tests integrated into quality gate validation.
+- `analyze-codebase.sh` updated to detect `.sidebar-nav { display: none; }` in group selectors across any CSS file, fixing false positive on `src/styles/navigation.css`.
 
 ## References
 

@@ -123,24 +123,27 @@ analyze_css() {
     log "Analyzing CSS for common issues..."
     
     local issues_found=0
-    local css_file="$ROOT_DIR/src/styles/base.css"
+    local sidebar_ok=false
     
-    if [[ ! -f "$css_file" ]]; then
-        log_warning "base.css not found, skipping CSS analysis"
-        return 0
-    fi
+    # Check 1: Sidebar has base display:none before media queries in any CSS file
+    for css_file in "$ROOT_DIR"/src/styles/*.css; do
+        if [[ -f "$css_file" ]] && \
+           grep -q "\.sidebar-nav" "$css_file" 2>/dev/null && \
+           grep -A5 "\.sidebar-nav" "$css_file" | grep -q "display:\s*none"; then
+            sidebar_ok=true
+            break
+        fi
+    done
     
-    # Check 1: Sidebar has base display:none before media queries
-    if ! grep -q "\.sidebar-nav\s*{" "$css_file" 2>/dev/null || \
-       ! grep -A2 "\.sidebar-nav\s*{" "$css_file" | grep -q "display:\s*none"; then
+    if [[ "$sidebar_ok" != true ]]; then
         log_error "CSS Issue: .sidebar-nav missing base 'display: none'"
         issues_found=$((issues_found + 1))
         
         document_issue "css-sidebar-visibility" \
             "Sidebar missing base display:none" \
             "Mobile shows unstyled sidebar buttons" \
-            "$css_file" \
-            "Add '.sidebar-nav { display: none; }' before any media queries"
+            "$ROOT_DIR/src/styles/" \
+            "Add '.sidebar-nav { display: none; }' before any media queries in a CSS file"
     else
         log_success "Sidebar base styles correct"
     fi

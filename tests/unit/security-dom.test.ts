@@ -1,18 +1,19 @@
-import { sanitizeHtml } from '../../src/services/security/dom.ts';
-import assert from 'node:assert';
-import test from 'node:test';
+import { describe, it, expect } from 'vitest';
+import { sanitizeHtml } from '../../src/services/security/dom';
 
-test('sanitizeHtml escapes special characters', () => {
-  const input = '<script>alert("xss")</script> & " \'';
-  const expected = '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt; &amp; &quot; &#039;';
-  assert.strictEqual(sanitizeHtml(input), expected);
-});
+describe('sanitizeHtml', () => {
+  it('escapes special characters', () => {
+    const input = '<script>alert("xss")</script> & " \'';
+    const expected = '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt; &amp; &quot; &#039;';
+    expect(sanitizeHtml(input)).toBe(expected);
+  });
 
-test('sanitizeHtml handles null/undefined', () => {
-  assert.strictEqual(sanitizeHtml(null as any), '');
-  assert.strictEqual(sanitizeHtml(undefined as any), '');
-});
+  it('handles null/undefined', () => {
+    expect(sanitizeHtml(null as unknown as string)).toBe('');
+    expect(sanitizeHtml(undefined as unknown as string)).toBe('');
+  });
 
-test('sanitizeHtml handles numbers', () => {
-  assert.strictEqual(sanitizeHtml(123 as any), '123');
+  it('handles numbers', () => {
+    expect(sanitizeHtml(123 as unknown as string)).toBe('123');
+  });
 });
