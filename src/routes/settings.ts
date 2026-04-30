@@ -97,7 +97,7 @@ async function loadTokenInfo(container: HTMLElement): Promise<void> {
   const token = await getToken();
   if (el) {
     if (token) {
-      el.innerHTML = `<p class="micro-label token-saved">Token active: ${redactToken(token)}</p>`;
+      el.innerHTML = `<p class="micro-label token-saved">Token active: ${sanitizeHtml(redactToken(token))}</p>`;
     } else {
       el.innerHTML = '<p class="micro-label token-missing">No token saved. Add one above.</p>';
     }
