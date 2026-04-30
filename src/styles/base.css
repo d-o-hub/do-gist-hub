@@ -39,11 +39,11 @@ html {
 
 body {
   min-height: 100dvh;
-  background-color: var(--color-bg, #050505);
-  color: var(--color-text, #fafafa);
+  background-color: var(--color-bg);
+  color: var(--color-text);
   font-family: var(--font-body, 'Inter', 'Helvetica Neue', sans-serif);
   font-size: var(--text-base);
-  line-height: 1.5;
+  line-height: var(--line-height-normal);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -71,6 +71,50 @@ body {
   width: 100%;
 }
 
+/* Grid layout for gist cards */
+.gist-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+}
+
+/* Phone (390px): slightly larger typography, relaxed spacing, 2-column cards */
+@media (min-width: 390px) {
+  .app-main {
+    padding: var(--space-5);
+    padding-bottom: calc(
+      var(--space-5) + var(--nav-bottom-height, 64px) + env(safe-area-inset-bottom, 0px)
+    );
+  }
+
+  .gist-card {
+    padding: var(--space-8);
+  }
+
+  .gist-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .detail-title {
+    font-size: clamp(2.2rem, 1.2rem + 3.5vw, 4.2rem);
+  }
+}
+
+/* Phone large (480px): comfortable padding, wider cards, larger buttons */
+@media (min-width: 480px) {
+  .btn {
+    padding: var(--space-3) var(--space-6);
+  }
+
+  .gist-action-btn {
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .offline-stats {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
 /* Tablet and up: remove bottom nav padding, add side padding */
 @media (min-width: 768px) {
   .app-main {
@@ -85,6 +129,22 @@ body {
   .app-main {
     padding: var(--space-8);
     max-width: 1200px;
+  }
+}
+
+/* Desktop (1280px): larger headings, more grid columns */
+@media (min-width: 1280px) {
+  .detail-title {
+    font-size: clamp(2.8rem, 1.8rem + 3vw, 4.8rem);
+  }
+
+  .gist-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+  }
+
+  .offline-stats {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   }
 }
 
@@ -105,14 +165,14 @@ body {
   border-radius: var(--radius-chip);
   font-size: var(--text-xs);
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--letter-spacing-widest);
   text-transform: uppercase;
   border: 1px solid var(--color-border);
   cursor: pointer;
   transition: all var(--motion-duration-fast) var(--motion-easing);
   gap: var(--space-2);
-  min-height: 44px;
-  min-width: 44px;
+  min-height: var(--spacing-11);
+  min-width: var(--spacing-11);
 }
 
 .btn-ghost {
@@ -123,24 +183,24 @@ body {
 .btn-ghost:hover {
   background: var(--color-surface-2);
   color: var(--color-text);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--color-border-hover);
 }
 
 .btn-danger {
-  background: rgba(248, 113, 113, 0.15);
+  background: var(--color-status-error-subtle);
   border-color: var(--color-error);
   color: var(--color-error);
 }
 
 .btn-danger:hover {
   background: var(--color-error);
-  color: #050505;
+  color: var(--color-background-primary);
 }
 
 .btn-primary {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: #fff;
+  color: var(--color-foreground-inverse);
 }
 
 .btn-primary:hover {
@@ -168,13 +228,13 @@ body {
 .form-textarea {
   width: 100%;
   padding: var(--space-3) var(--space-4);
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--color-surface-overlay);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text);
   font-family: var(--font-body);
   font-size: var(--text-sm);
-  line-height: 1.5;
+  line-height: var(--line-height-normal);
   transition: all var(--motion-duration-fast) var(--motion-easing);
 }
 
@@ -187,14 +247,14 @@ body {
 .form-textarea:focus {
   outline: none;
   border-color: var(--color-accent);
-  background: rgba(0, 0, 0, 0.6);
-  box-shadow: 0 0 0 4px var(--color-accent-subtle);
+  background: var(--color-surface-overlay-heavy);
+  box-shadow: 0 0 0 var(--spacing-1) var(--color-accent-subtle);
 }
 
 .form-textarea {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  min-height: 240px;
+  min-height: var(--spacing-60);
   resize: vertical;
 }
 
@@ -258,7 +318,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
+  gap: var(--spacing-0-5);
   flex-shrink: 0;
 }
 
@@ -266,15 +326,15 @@ body {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--color-text-muted);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--color-surface-overlay-medium);
   border-radius: var(--radius-md);
   padding: var(--space-3);
   overflow: hidden;
   white-space: pre-wrap;
   line-height: 1.4;
-  max-height: 80px;
-  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  max-height: var(--spacing-20);
+  -webkit-mask-image: linear-gradient(to bottom, var(--color-black) 60%, transparent 100%);
+  mask-image: linear-gradient(to bottom, var(--color-black) 60%, transparent 100%);
 }
 
 .gist-card-actions {
@@ -297,8 +357,8 @@ body {
   cursor: pointer;
   font-size: var(--text-xs);
   transition: all var(--motion-duration-fast) var(--motion-easing);
-  min-height: 44px;
-  min-width: 44px;
+  min-height: var(--spacing-11);
+  min-width: var(--spacing-11);
 }
 
 .gist-action-btn:hover {
@@ -364,7 +424,7 @@ body {
 
 .file-content-area {
   padding: var(--space-6);
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--color-surface-overlay);
   border-radius: var(--radius-card);
   margin: var(--space-4) var(--space-6);
 }
@@ -400,12 +460,12 @@ body {
 
 .sync-indicator[data-status='online'] .sync-dot {
   background: var(--color-success);
-  box-shadow: 0 0 6px var(--color-success);
+  box-shadow: 0 0 var(--spacing-1-5) var(--color-success);
 }
 
 .sync-indicator[data-status='syncing'] .sync-dot {
   background: var(--color-accent-text);
-  animation: pulse-dot 1.2s ease-in-out infinite;
+  animation: pulse-dot var(--motion-duration-pulse) var(--motion-easing-smooth) infinite;
 }
 
 .sync-indicator[data-status='offline'] .sync-dot {
@@ -437,9 +497,9 @@ body {
 .loading-skeleton {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.04) 25%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.04) 75%
+    var(--skeleton-shimmer-start) 25%,
+    var(--skeleton-shimmer-mid) 50%,
+    var(--skeleton-shimmer-start) 75%
   );
   background-size: 200% 100%;
   animation: shimmer-dark 1.6s ease-in-out infinite;
@@ -447,7 +507,7 @@ body {
 }
 
 .skeleton-card {
-  height: 200px;
+  height: var(--spacing-50);
   border-radius: var(--radius-card);
 }
 
@@ -455,7 +515,7 @@ body {
 .search-container {
   margin-bottom: var(--space-6);
   position: sticky;
-  top: 60px;
+  top: var(--spacing-15);
   z-index: 100;
   background: var(--color-bg);
   padding: var(--space-2) 0;
@@ -475,7 +535,7 @@ body {
 .search-input:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 4px var(--color-accent-subtle);
+  box-shadow: 0 0 0 var(--spacing-1) var(--color-accent-subtle);
 }
 
 /* ===== Icon Button (Header Actions) ===== */
@@ -490,8 +550,8 @@ body {
   color: var(--color-text-muted);
   cursor: pointer;
   transition: all var(--motion-duration-fast) var(--motion-easing);
-  min-height: 44px;
-  min-width: 44px;
+  min-height: var(--spacing-11);
+  min-width: var(--spacing-11);
 }
 
 .icon-button:hover {

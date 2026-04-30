@@ -13,7 +13,7 @@
   padding-top: calc(var(--space-3) + env(safe-area-inset-top, 0px));
   padding-left: calc(var(--space-4) + env(safe-area-inset-left, 0px));
   padding-right: calc(var(--space-4) + env(safe-area-inset-right, 0px));
-  background: rgba(5, 5, 5, 0.85);
+  background: var(--color-header-bg);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--color-border);
 }
@@ -29,6 +29,36 @@
 @media (min-width: 1024px) {
   .header-right .icon-button[data-route='settings'] {
     display: none;
+  }
+}
+
+/* Phone (390px): larger nav icons, relaxed spacing */
+@media (min-width: 390px) {
+  .bottom-nav {
+    padding: var(--space-3) var(--space-5);
+  }
+
+  .nav-item {
+    gap: var(--space-2);
+  }
+
+  .nav-item .nav-icon {
+    font-size: var(--font-size-xl);
+  }
+}
+
+/* Phone large (480px): larger touch targets, taller bottom nav */
+@media (min-width: 480px) {
+  :root {
+    --nav-bottom-height: 72px;
+  }
+
+  .bottom-nav {
+    padding: var(--space-3) var(--space-6);
+  }
+
+  .nav-item {
+    padding: var(--space-2) var(--space-3);
   }
 }
 
@@ -83,13 +113,13 @@
 .chip[aria-pressed='true'] {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: #fff;
+  color: var(--color-foreground-inverse);
 }
 
 .chip:hover:not(.active) {
   background: var(--color-surface-2);
   color: var(--color-text);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--color-border-hover);
 }
 
 /* ===== Navigation Base (Mobile-First: all hidden by default) ===== */
@@ -108,7 +138,7 @@
     left: 0;
     right: 0;
     z-index: 100;
-    background: rgba(5, 5, 5, 0.95);
+    background: var(--color-nav-bg);
     backdrop-filter: blur(20px);
     border-top: 1px solid var(--color-border);
     padding: var(--space-2) var(--space-4);
@@ -158,11 +188,11 @@
 .nav-item.active::after {
   content: '';
   position: absolute;
-  bottom: -4px;
+  bottom: calc(var(--spacing-1) * -1);
   left: 50%;
   transform: translateX(-50%);
   width: var(--spacing-4);
-  height: 3px;
+  height: calc(var(--spacing-1) * 0.75);
   background: var(--color-accent);
   border-radius: var(--radius-full);
 }
@@ -179,7 +209,7 @@
     display: flex;
     flex-direction: column;
     width: var(--nav-rail-width, 72px);
-    background: rgba(5, 5, 5, 0.95);
+    background: var(--color-nav-bg);
     border-right: 1px solid var(--color-border);
     padding: var(--space-4) var(--space-2);
     align-items: center;
@@ -224,10 +254,10 @@
 .rail-item.active::before {
   content: '';
   position: absolute;
-  left: -10px;
+  left: calc(var(--spacing-2-5) * -1);
   top: 50%;
   transform: translateY(-50%);
-  width: 3px;
+  width: calc(var(--spacing-1) * 0.75);
   height: var(--spacing-6);
   background: var(--color-accent);
   border-radius: var(--radius-full);
@@ -251,7 +281,7 @@
     display: flex;
     flex-direction: column;
     width: var(--nav-sidebar-width, 240px);
-    background: rgba(5, 5, 5, 0.95);
+    background: var(--color-nav-bg);
     border-right: 1px solid var(--color-border);
     padding: var(--space-6);
     position: sticky;
@@ -266,6 +296,19 @@
     list-style: none;
     padding: 0;
     margin: 0;
+  }
+}
+
+/* Desktop (1280px): wider sidebar, more spacious nav items */
+@media (min-width: 1280px) {
+  .sidebar-nav {
+    width: 260px;
+    padding: var(--space-6) var(--space-8);
+  }
+
+  .sidebar-item {
+    padding: var(--space-4);
+    gap: var(--space-4);
   }
 }
 
@@ -331,8 +374,8 @@
 .sidebar-item.active::before {
   content: '';
   position: absolute;
-  left: -6px;
-  width: 3px;
+  left: calc(var(--spacing-1-5) * -1);
+  width: calc(var(--spacing-1) * 0.75);
   height: var(--spacing-6);
   background: var(--color-accent);
   border-radius: var(--radius-full);
@@ -379,7 +422,7 @@
 .command-palette-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--color-surface-overlay);
   backdrop-filter: blur(8px);
   opacity: 0;
   visibility: hidden;
@@ -398,13 +441,11 @@
   left: 50%;
   transform: translate(-50%, -20px);
   width: min(600px, 90vw);
-  background: rgba(15, 15, 15, 0.95);
+  background: var(--color-modal-bg);
   backdrop-filter: blur(24px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow:
-    0 24px 48px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: var(--shadow-command-palette);
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
@@ -437,7 +478,7 @@
 }
 
 .command-palette-results {
-  max-height: 400px;
+  max-height: var(--spacing-100);
   overflow-y: auto;
   padding: var(--space-2);
 }
@@ -478,13 +519,13 @@
 .command-palette-footer {
   padding: var(--space-3) var(--space-4);
   border-top: 1px solid var(--color-border);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--color-surface-overlay-light);
   display: flex;
   gap: var(--space-4);
   font-size: var(--font-size-xs);
   color: var(--color-text-faint);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--letter-spacing-widest);
 }
 
 .command-palette-footer kbd {
@@ -498,11 +539,11 @@
 .bottom-sheet-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--ui-backdrop-bg);
   backdrop-filter: blur(4px);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 250ms ease;
+  transition: opacity var(--motion-duration-slow) var(--motion-easing-smooth);
   z-index: 899;
 }
 
@@ -517,7 +558,7 @@
   left: 0;
   right: 0;
   transform: translateY(100%);
-  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform var(--motion-duration-slow) var(--motion-easing-out-expo);
   max-height: 70vh;
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   background: var(--color-surface);
@@ -532,11 +573,11 @@
 }
 
 .bottom-sheet-handle {
-  width: 36px;
-  height: 4px;
+  width: var(--spacing-9);
+  height: var(--spacing-1);
   background: var(--color-border);
   border-radius: var(--radius-full);
-  margin: 12px auto;
+  margin: var(--spacing-3) auto;
   flex-shrink: 0;
 }
 
@@ -594,8 +635,8 @@
   font-size: var(--font-size-base);
   font-weight: 500;
   cursor: pointer;
-  transition: background 150ms ease;
-  min-height: 44px;
+  transition: background var(--motion-duration-fast) var(--motion-easing-smooth);
+  min-height: var(--spacing-11);
   text-align: left;
   width: 100%;
 }

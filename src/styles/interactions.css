@@ -95,6 +95,13 @@ html {
   padding-right: calc(var(--space-4) + env(safe-area-inset-right, 0px));
 }
 
+@media (min-width: 390px) {
+  .app-main {
+    padding-left: calc(var(--space-5) + env(safe-area-inset-left, 0px));
+    padding-right: calc(var(--space-5) + env(safe-area-inset-right, 0px));
+  }
+}
+
 @media (min-width: 768px) {
   .app-main {
     padding-left: calc(var(--space-6) + env(safe-area-inset-left, 0px));
