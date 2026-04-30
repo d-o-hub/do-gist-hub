@@ -5,6 +5,7 @@
 import syncQueue from '../services/sync/queue';
 import { EmptyState } from '../components/ui/empty-state';
 import { getConflicts } from '../services/sync/conflict-detector';
+import { sanitizeHtml } from '../services/security/dom';
 
 let syncChangeHandler: (() => void) | undefined;
 
@@ -62,7 +63,7 @@ async function updateOfflineStatus(container: HTMLElement): Promise<void> {
     const content =
       count > 0
         ? `<div class="glass-card" style="padding: var(--space-6); text-align: center;">
-             <p class="micro-label">${count} operation${count !== 1 ? 's' : ''} waiting for connection</p>
+             <p class="micro-label">${sanitizeHtml(String(count))} operation${count !== 1 ? 's' : ''} waiting for connection</p>
            </div>`
         : EmptyState.render({
             title: 'All Synced',
