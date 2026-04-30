@@ -16,11 +16,12 @@ export function createButton(options: {
   const button = document.createElement('button');
   button.textContent = options.label;
   button.type = 'button';
-  button.className = 'btn';
-  if (options.variant) {
-    button.classList.add(`btn-${options.variant}`);
-  }
   button.addEventListener('click', options.onClick);
+
+  // Variant styling via data attribute
+  if (options.variant) {
+    button.dataset.variant = options.variant;
+  }
 
   // Disabled state
   if (options.disabled) {

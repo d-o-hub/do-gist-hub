@@ -91,25 +91,6 @@ export interface GitHubError {
 }
 
 /**
- * Pagination metadata parsed from GitHub Link headers
- */
-export interface PaginationInfo {
-  nextPage: number | null;
-  prevPage: number | null;
-  firstPage: number | null;
-  lastPage: number | null;
-  totalPages: number | null;
-}
-
-/**
- * Paginated API result wrapper
- */
-export interface PaginatedResult<T> {
-  data: T[];
-  pagination: PaginationInfo;
-}
-
-/**
  * Authentication token info
  */
 export interface TokenInfo {
