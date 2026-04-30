@@ -135,9 +135,12 @@ class GistStore {
       await saveGists(processedRecords);
 
       // BOLT: Only update in-memory state after successful DB write
+      // Use Map for O(1) lookups during merge to achieve O(N + M) complexity
+      const currentGistMap = new Map(this.gists.map((g) => [g.id, g]));
       for (const record of processedRecords) {
-        this.mergeGistRecord(record, record.starred, true);
+        currentGistMap.set(record.id, record);
       }
+      this.gists = Array.from(currentGistMap.values());
 
       this.sortGists();
     } catch (err) {
@@ -320,14 +323,26 @@ class GistStore {
   private notifyListeners(): void {
     this.listeners.forEach((l) => l(this.gists));
   }
+  /**
+   * Sort gists by updatedAt descending.
+   * BOLT: Optimize by pre-parsing timestamps to avoid O(N log N) Date.parse calls.
+   */
   private sortGists(): void {
-    this.gists.sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
-  }
-  private mergeGistRecord(record: GistRecord, starred: boolean, skipSort = false): void {
-    const idx = this.gists.findIndex((g) => g.id === record.id);
-    if (idx >= 0) this.gists[idx] = { ...record, starred: record.starred || starred };
-    else this.gists.push({ ...record, starred });
-    if (!skipSort) this.sortGists();
+    const timestampMap = new Map<string, number>();
+    const getTimestamp = (id: string, dateStr: string): number => {
+      let ts = timestampMap.get(id);
+      if (ts === undefined) {
+        ts = Date.parse(dateStr);
+        timestampMap.set(id, ts);
+      }
+      return ts;
+    };
+
+    this.gists.sort((a, b) => {
+      const tsB = getTimestamp(b.id, b.updatedAt);
+      const tsA = getTimestamp(a.id, a.updatedAt);
+      return tsB - tsA;
+    });
   }
 }
 

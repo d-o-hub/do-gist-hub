@@ -86,10 +86,27 @@ export function render(container: HTMLElement, params?: Record<string, string>):
       );
     }
 
+    // BOLT: Optimize sorting by pre-parsing timestamps
+    const timestampMap = new Map<string, number>();
+    const getTs = (id: string, date: string): number => {
+      let ts = timestampMap.get(id);
+      if (ts === undefined) {
+        ts = Date.parse(date);
+        timestampMap.set(id, ts);
+      }
+      return ts;
+    };
+
     gists = [...gists].sort((a, b) => {
-      if (currentSort === 'created-desc') return Date.parse(b.createdAt) - Date.parse(a.createdAt);
-      if (currentSort === 'updated-desc') return Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
-      if (currentSort === 'updated-asc') return Date.parse(a.updatedAt) - Date.parse(b.updatedAt);
+      if (currentSort === 'created-desc') {
+        return getTs(b.id, b.createdAt) - getTs(a.id, a.createdAt);
+      }
+      if (currentSort === 'updated-desc') {
+        return getTs(b.id, b.updatedAt) - getTs(a.id, a.updatedAt);
+      }
+      if (currentSort === 'updated-asc') {
+        return getTs(a.id, a.updatedAt) - getTs(b.id, b.updatedAt);
+      }
       return 0;
     });
 
