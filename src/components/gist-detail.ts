@@ -97,16 +97,17 @@ export function renderGistDetail(gist: GistRecord): string {
         ${content}
       </div>
 
-      <div class="file-info" id="file-info">
-        ${
-          firstFile
-            ? `
+      ${
+        firstFile
+          ? `
+        <div class="file-info" id="file-info">
           <span class="micro-label">Language: ${esc(firstFile.language || 'Unknown')}</span>
           <span class="micro-label">Raw URL: <a href="${esc(firstFile.rawUrl || '')}" target="_blank" rel="noopener noreferrer">Link</a></span>
-        `
-            : ''
-        }
-      </div>
+          <button class="btn btn-ghost btn-copy-sm" data-action="copy-content" data-testid="copy-code-btn">📋 Copy</button>
+        </div>
+      `
+          : ''
+      }
     </div>
   `;
 }
@@ -196,6 +197,37 @@ export function bindDetailEvents(
       const ok = await (await import('../stores/gist-store')).default.toggleStar(gistId);
       if (ok) void loadGistDetail(gistId, container, onBack, onEdit, onViewRevision);
     })();
+  });
+
+  // Copy button
+  container.querySelector('[data-action="copy-content"]')?.addEventListener('click', (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    const code = container.querySelector('#file-content-area code')?.textContent;
+
+    if (code && navigator.clipboard) {
+      void navigator.clipboard
+        .writeText(code)
+        .then(() => {
+          const originalText = btn.innerHTML;
+          btn.innerHTML = '✅ Copied!';
+          btn.classList.add('btn-primary');
+          btn.classList.remove('btn-ghost');
+
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-ghost');
+          }, 2000);
+
+          toast.success('Copied to clipboard');
+        })
+        .catch((err) => {
+          safeError('[GistDetail] Clipboard copy failed', err);
+          toast.error('Failed to copy to clipboard');
+        });
+    } else if (code) {
+      toast.error('Clipboard API not available');
+    }
   });
 }
 
