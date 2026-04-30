@@ -40,11 +40,16 @@
     "web-vitals": "^5.2.0"
   },
   "overrides": {
-    "@xmldom/xmldom": "^0.8.13"
+    "tar": "^7.5.13",
+    "@xmldom/xmldom": "^0.8.13",
+    "tar": "^7.5.13"
   },
   "pnpm": {
     "overrides": {
-      "@xmldom/xmldom": "^0.8.13"
+      "tar": "^7.5.13",
+    "tar": "^7.5.13",
+      "@xmldom/xmldom": "^0.8.13",
+      "tar": "^7.5.13"
     }
   },
   "devDependencies": {
