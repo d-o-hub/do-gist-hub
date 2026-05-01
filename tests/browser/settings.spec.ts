@@ -1,21 +1,25 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Settings', () => {
-  test.beforeEach(async ({ page, browserName }) => {
-    if (browserName === 'webkit') {
-       test.skip(true, 'WebKit layout is flaky for Settings nav button');
-    }
+  test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
-    await page.waitForSelector('.app-shell');
     await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.app-shell', { state: 'visible' });
+
     const isMobile = await page.evaluate(() => window.innerWidth < 768);
     if (isMobile) {
       await page.locator('[data-testid="mobile-menu-btn"]').click();
+      await page.locator('.mobile-menu [data-route="settings"]').waitFor({ state: 'visible' });
       await page.locator('.mobile-menu [data-route="settings"]').click();
     } else {
-      await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
+      const settingsBtn = page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first();
+      await settingsBtn.waitFor({ state: 'visible' });
+      await settingsBtn.click();
     }
-    await expect(page.locator('h2')).toContainText('Settings');
+
+    // Ensure navigation settled
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('h2')).toContainText('Settings', { timeout: 10000 });
   });
 
   test('should display settings page with all sections', async ({ page }) => {
