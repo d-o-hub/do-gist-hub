@@ -1,3 +1,7 @@
+> **Consolidated**: This issue has been merged into `../issues/css-hardcoded-colors.md` (canonical). Archived for reference.
+
+---
+
 # Auto-Detected Issue: css_hardcoded_colors
 
 **Date:** 2026-04-14  
@@ -20,5 +24,4 @@ Hardcoded colors should use CSS custom properties
 - [ ] Tests pass
 
 ## Related Patterns
-<!-- Links to similar issues or patterns -->
 - /workspaces/do-gist-hub/src/styles/accessibility.css

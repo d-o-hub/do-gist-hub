@@ -1,3 +1,7 @@
+> **Consolidated**: This issue has been merged into `../issues/css-sidebar-visibility.md` (canonical). Archived for reference.
+
+---
+
 # Auto-Detected Issue: css_missing_base_display
 
 **Date:** 2026-04-19
@@ -20,6 +24,5 @@ Element may be visible when it should be hidden
 - [ ] Tests pass
 
 ## Related Patterns
-<!-- Links to similar issues or patterns -->
 - /app/src/styles/modern-glass.css
 - /app/src/styles/navigation.css

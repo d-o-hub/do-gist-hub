@@ -1,3 +1,7 @@
+> **Consolidated**: This issue has been merged into `../issues/css-sidebar-visibility.md` (canonical). Archived for reference.
+
+---
+
 # Auto-Detected Issue: css_missing_base_display
 
 **Date:** 2026-04-19
