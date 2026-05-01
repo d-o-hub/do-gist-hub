@@ -206,6 +206,7 @@ npm run cap:sync     # sync Capacitor after build
 | `reviewer-evaluator`     | Code review quality gates             |
 | `skill-creator`          | Create/improve skills                 |
 | `skill-evaluator`        | Evaluate skill performance            |
+| `codebase-optimizer`     | Autonomous analysis, detection, fixing | Periodic audits, pre-commit |
 | `shell-script-quality`   | ShellCheck/BATS for scripts           |
 | `agent-browser`          | Browser automation CLI                |
 
@@ -391,6 +392,23 @@ This section is automatically updated by `./scripts/analyze-codebase.sh`.
 3. **Safe Areas**: Include `env(safe-area-inset-*)` for notch/home indicator support
 4. **Flex Scrolling**: Add `min-height: 0` to flex children with `overflow`
 5. **Header Button Redundancy**: Hide mobile-only header buttons (hamburger, settings) when sidebar/rail is visible to prevent duplicate menus
+6. **View Transitions**: Use `document.startViewTransition` for route navigation; wrap in `withViewTransition()` utility
+7. **Container Queries**: Use `container-type: inline-size` for component-level responsive behavior (not just viewport media queries)
+
+### Security Rules (Critical)
+
+1. **PAT Encryption at Rest**: Encrypt Personal Access Tokens using Web Crypto API (AES-GCM) before storing in IndexedDB
+2. **CSP Hardening**: Remove `unsafe-inline` in production; strictly limit `script-src`, `style-src`, and `font-src`
+3. **Secure DOM Manipulation**: Use `sanitizeHtml` utility and secure `html` template tag to prevent XSS
+4. **Token Redaction**: Return `'[REDACTED]'` unconditionally for all token logging; never log PAT fragments
+5. **Non-Extractable Crypto Keys**: Set `extractable: false` on Web Crypto keys used for token encryption
+
+### Lifecycle & Resilience Rules
+
+1. **AbortController for Navigation**: Cancel in-flight fetch requests via AbortController during route changes
+2. **LifecycleManager**: Use centralized lifecycle manager for automatic subscription cleanup on navigation
+3. **Layered Error Boundaries**: Implement global, route, and async error boundaries — no silent failures
+4. **Bounded Retries**: Max 3 attempts with exponential backoff for network operations
 
 ### Testing Patterns (CI Stability)
 
@@ -402,11 +420,28 @@ This section is automatically updated by `./scripts/analyze-codebase.sh`.
 6. **Offline Dynamic Imports**: Preload modules via `page.evaluate()` before going offline; dynamic `import()` fails when browser is offline
 7. **Empty Element Visibility**: Playwright treats empty elements as hidden; always render inner content (e.g., sync indicator dot + sr-only text)
 
+### Security Rules (Critical)
+
+1. **PAT Encryption at Rest**: Encrypt Personal Access Tokens using Web Crypto API (AES-GCM) before storing in IndexedDB
+2. **CSP Hardening**: Remove `unsafe-inline` in production; strictly limit `script-src`, `style-src`, and `font-src`
+3. **Secure DOM Manipulation**: Use `sanitizeHtml` utility and secure `html` template tag to prevent XSS
+4. **Token Redaction**: Return `'[REDACTED]'` unconditionally for all token logging; never log PAT fragments
+5. **Non-Extractable Crypto Keys**: Set `extractable: false` on Web Crypto keys used for token encryption
+
+### Lifecycle & Resilience Rules
+
+1. **AbortController for Navigation**: Cancel in-flight fetch requests via AbortController during route changes
+2. **LifecycleManager**: Use centralized lifecycle manager for automatic subscription cleanup on navigation
+3. **Layered Error Boundaries**: Implement global, route, and async error boundaries — no silent failures
+4. **Bounded Retries**: Max 3 attempts with exponential backoff for network operations
+
 ### Code Quality (DeepSource/CI)
 
 1. **Inline skipcq**: Use `// skipcq: JS-XXXX` directly above lines (not `.deepsource.yml`)
 2. **No `any` Types**: Use proper generics or `unknown` with type guards
 3. **Package Versions**: Match `package.json` exactly to `package-lock.json`
+4. **DeepSource TOML Syntax**: TOML requires double quotes for string values in `[analyzers.meta]` overrides
+5. **DeepSource Rule Conflicts**: Disable `no-var`, `eqeqeq`, `prefer-arrow-callback`, `no-empty` in `.deepsource.toml` to avoid conflict with TypeScript-eslint strict mode
 
 ### Verification Checklist
 
@@ -418,9 +453,11 @@ Before committing, run:
 This checks:
 - [ ] No unstyled elements at any breakpoint
 - [ ] Layout gaps eliminated
-- [ ] Responsive behavior correct
+- [ ] Responsive behavior correct (320px, 768px, 1536px)
+- [ ] No horizontal overflow at any breakpoint
 - [ ] No console errors
+- [ ] Node.js 24 compatibility (`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true`)
 
 ### Issue History
 
-See `agents-docs/issues/` for documented issues and fixes.
+See `agents-docs/issues/` for documented issues, `agents-docs/fixes/` for verified resolutions, and `agents-docs/SUMMARY.md` for comprehensive audit learnings.
