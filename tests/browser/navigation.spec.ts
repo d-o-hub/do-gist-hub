@@ -4,28 +4,28 @@ test.describe('Responsive Navigation', () => {
   test('should show bottom nav on mobile', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
-    await page.waitForSelector('.app-shell');
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.app-shell', { state: 'visible' });
     await expect(page.locator('.bottom-nav').first()).toBeVisible();
-    await expect(page.locator('.rail-nav').first()).not.toBeVisible();
-    await expect(page.locator('.sidebar-nav').first()).not.toBeVisible();
+    await expect(page.locator('.sidebar-nav, .rail-nav').first()).toBeHidden();
   });
 
   test('should show rail nav on tablet', async ({ page }) => {
     await page.setViewportSize({ width: 800, height: 1024 });
     await page.goto('/');
-    await page.waitForSelector('.app-shell');
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.app-shell', { state: 'visible' });
     await expect(page.locator('.rail-nav').first()).toBeVisible();
-    await expect(page.locator('.bottom-nav').first()).not.toBeVisible();
-    await expect(page.locator('.sidebar-nav').first()).not.toBeVisible();
+    await expect(page.locator('.sidebar-nav, .bottom-nav').first()).toBeHidden();
   });
 
   test('should show sidebar on desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/');
-    await page.waitForSelector('.app-shell');
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.app-shell', { state: 'visible' });
     await expect(page.locator('.sidebar-nav').first()).toBeVisible();
-    await expect(page.locator('.bottom-nav').first()).not.toBeVisible();
-    await expect(page.locator('.rail-nav').first()).not.toBeVisible();
+    await expect(page.locator('.rail-nav, .bottom-nav').first()).toBeHidden();
   });
 });
 
