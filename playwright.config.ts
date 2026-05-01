@@ -117,6 +117,13 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
       testDir: './tests/accessibility',
     },
+
+    // Visual regression
+    {
+      name: 'visual',
+      use: { ...devices['Desktop Chrome'] },
+      testDir: './tests/visual',
+    },
   ],
 
   // Web server for dev mode

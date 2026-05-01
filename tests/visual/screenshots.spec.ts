@@ -28,7 +28,7 @@ test.describe('UI Visual Verification', () => {
 
       // Screenshot full page
       await page.screenshot({
-        path: `/workspaces/do-gist-hub/temp/screenshot-${bp.name}.png`,
+        path: `analysis/screenshots/screenshot-${bp.name}.png`,
         fullPage: true,
       });
 
