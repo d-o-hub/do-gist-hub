@@ -22,7 +22,7 @@
     "test:mobile": "playwright test tests/mobile/",
     "test:offline": "playwright test tests/offline/",
     "test:android": "playwright test tests/android/",
-    "test:visual": "playwright test tests/visual/ --project=chromium",
+    "test:visual": "playwright test --project=visual",
     "test:a11y": "playwright test tests/accessibility/",
     "test:report": "playwright show-report",
     "test:unit": "vitest run",
