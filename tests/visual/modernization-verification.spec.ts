@@ -41,8 +41,8 @@ test.describe('UI Modernization Verification', () => {
       return triggered;
     });
 
-    // Perform navigation
-    await page.locator('[data-testid="nav-starred"]').click();
+    // Perform navigation (use .first() because nav-starred exists in sidebar/rail/bottom-nav)
+    await page.locator('[data-testid="nav-starred"]').first().click();
 
     // Check if it was supported and triggered (or skip if not supported in browser)
     const isSupported = await page.evaluate(() => 'startViewTransition' in document);
