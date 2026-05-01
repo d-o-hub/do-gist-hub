@@ -28,7 +28,42 @@ Since the swarm analysis on 2026-04-28 (Plan 019) and Phase A completion (ADR-02
 
 ---
 
-## 2. Completed Items (with Commit References)
+## 2. PR Management & Merge Conflict Resolution (2026-05-01)
+
+### Open PR Audit
+
+| PR | Title | Status | Action | Reason |
+|----|-------|--------|--------|--------|
+| #104 | fix(tests): resolve settings test failure | **Closed** | Superseded | Changes independently implemented in main |
+| #105 | fix(memory): resolve cache memory leak | **Closed** | Superseded | LRU eviction implemented in Phase A; app.ts refactor conflicts with current architecture |
+| #106 | test(coverage): increase test coverage | **Merged** | Rescued as #108 | Unique browser integration tests extracted and adapted for current main |
+| #107 | docs(readme): add comprehensive README | **Closed** | Superseded | README and agents-docs updates independently implemented in main |
+
+### Rescued Content (PR #108)
+
+Three browser integration tests from PR #106 were extracted, adapted for current main, and merged via PR #108:
+
+- `tests/browser/db-service.spec.ts` — IndexedDB CRUD, queue, metadata, export/import
+- `tests/browser/gist-edit-ui.spec.ts` — Create form rendering, validation, creation flow
+- `tests/browser/gist-store.spec.ts` — Store init, filter, search, CRUD, star toggle
+
+Adaptations made:
+- Fixed `data-testid="create-btn"` → `data-testid="nav-create"` with `.first()` for strict mode
+- Replaced all `as any` casts with properly typed mock objects
+- Ensured `GistRecord` completeness for all mock data
+
+### AGENTS.md Updates (PR #108)
+
+- Added `codebase-optimizer` to Available Skills table
+- Expanded CSS Layout Rules: View Transitions, Container Queries
+- Added **Security Rules** section (PAT encryption, CSP, DOM sanitization, token redaction, non-extractable keys)
+- Added **Lifecycle & Resilience Rules** section (AbortController, LifecycleManager, error boundaries, bounded retries)
+- Expanded Code Quality with DeepSource TOML syntax and rule conflict guidance
+- Expanded Verification Checklist with breakpoint specs and Node.js 24 compatibility
+
+---
+
+## 3. Completed Items (with Commit References)
 
 ### 2.1 Sprint 1: Security & Tooling → 95% Complete
 
@@ -138,7 +173,7 @@ Since the swarm analysis on 2026-04-28 (Plan 019) and Phase A completion (ADR-02
 
 ---
 
-## 3. Remaining Items from Roadmap
+## 4. Remaining Items from Roadmap
 
 ### 3.1 P1 — Before v1 Tag
 
@@ -171,7 +206,7 @@ The following warnings persist from ADR-020 but have no functional impact:
 
 ---
 
-## 4. v1 Completion Assessment
+## 5. v1 Completion Assessment
 
 | Category | Previous (019) | Current (021) | Delta |
 |----------|---------------|---------------|-------|
@@ -191,7 +226,7 @@ The following warnings persist from ADR-020 but have no functional impact:
 
 ---
 
-## 5. Next Priorities
+## 6. Next Priorities
 
 ### Immediate (This Week)
 
@@ -218,7 +253,7 @@ The following warnings persist from ADR-020 but have no functional impact:
 
 ---
 
-## 6. Scope Changes & Decisions
+## 7. Scope Changes & Decisions
 
 ### 6.1 Accepted Changes
 
@@ -241,7 +276,7 @@ View Transitions API, skeleton loading, and conflict resolution UI remain in acc
 
 ---
 
-## 7. Commit Timeline (Since 019)
+## 8. Commit Timeline (Since 019)
 
 ```
 2026-04-28  Plan 019 published
