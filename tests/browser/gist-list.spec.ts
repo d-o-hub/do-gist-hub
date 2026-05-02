@@ -23,12 +23,14 @@ test.describe('Gist List', () => {
 
   test('should show empty state when no gists exist', async ({ page }) => {
     const emptyState = page.locator('.empty-state-container');
-    // May show loading initially, then empty state
-    await page.waitForTimeout(1000);
-    const emptyVisible = await emptyState.isVisible().catch(() => false);
-    const listVisible = await page.locator('.gist-list').isVisible();
+    const gistList = page.locator('.gist-list');
 
-    // Either empty state or loading is acceptable
+    // Wait for either the empty state or the gist list to become visible
+    await expect(emptyState.or(gistList).first()).toBeVisible({ timeout: 10000 });
+
+    const emptyVisible = await emptyState.isVisible();
+    const listVisible = await gistList.isVisible();
+
     expect(emptyVisible || listVisible).toBe(true);
   });
 
@@ -66,7 +68,8 @@ test.describe('Gist List', () => {
     await expect(searchInput).toBeVisible();
 
     await searchInput.fill('test search');
-    await page.waitForTimeout(350); // Wait for debounce
+    // Debounce wait - alternatively wait for some UI change if possible
+    await page.waitForTimeout(500);
 
     // Search should be applied (UI should update)
     const searchValue = await searchInput.inputValue();
@@ -74,8 +77,11 @@ test.describe('Gist List', () => {
   });
 
   test('should display gist cards with proper structure', async ({ page }) => {
-    // Wait for cards to potentially render
-    await page.waitForTimeout(1000);
+    const emptyState = page.locator('.empty-state-container');
+    const gistList = page.locator('.gist-list');
+
+    // Wait for initial load
+    await expect(emptyState.or(gistList).first()).toBeVisible({ timeout: 10000 });
 
     const cards = page.locator('.gist-card');
     const cardCount = await cards.count();
@@ -93,7 +99,8 @@ test.describe('Gist List', () => {
   });
 
   test('should show gist metadata on cards', async ({ page }) => {
-    await page.waitForTimeout(1000);
+    const gistList = page.locator('.gist-list');
+    await expect(gistList.or(page.locator('.empty-state-container')).first()).toBeVisible();
 
     const cards = page.locator('.gist-card');
     const cardCount = await cards.count();
@@ -110,7 +117,8 @@ test.describe('Gist List', () => {
   });
 
   test('should toggle star button on card', async ({ page }) => {
-    await page.waitForTimeout(1000);
+    const gistList = page.locator('.gist-list');
+    await expect(gistList.or(page.locator('.empty-state-container')).first()).toBeVisible();
 
     const starBtn = page.locator('.gist-card .star-btn').first();
     const starBtnVisible = await starBtn.isVisible().catch(() => false);

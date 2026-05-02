@@ -1,3 +1,7 @@
+> **Consolidated**: This issue has been merged into `../issues/css-sidebar-visibility.md` (canonical). Archived for reference.
+
+---
+
 # Issue: Sidebar missing base display:none
 
 **Detected:** 2026-04-29

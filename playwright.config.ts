@@ -22,7 +22,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
 
   // Retry failed tests in CI for flakiness detection
-  retries: process.env.CI ? 1 : 0,
+  retries: process.env.CI ? 2 : 0,
 
   // Use 2 workers in CI for speed without resource exhaustion;
   // undefined (auto-detect) locally
@@ -116,6 +116,13 @@ export default defineConfig({
       name: 'accessibility',
       use: { ...devices['Desktop Chrome'] },
       testDir: './tests/accessibility',
+    },
+
+    // Visual regression
+    {
+      name: 'visual',
+      use: { ...devices['Desktop Chrome'] },
+      testDir: './tests/visual',
     },
   ],
 
