@@ -4,6 +4,33 @@
 > Stack: Vite, TypeScript (strict), PWA, IndexedDB, GitHub REST API, Capacitor 6
 > Design: DTCG-aligned tokens, mobile-first, 7 breakpoints (320px–1536px+)
 
+## Agent Type Reference
+
+| Agent Type | grep | glob | read | bash | Use When... |
+|-----------|------|------|------|------|-------------|
+| `explore` | ✅ | ✅ | ❌ | "Find files", "Search for X", "Read files in..." |
+| `general` | ✅ | ✅ | ✅ | "Research X", "Run X and analyze", "Execute and report" |
+
+**⚠️ CRITICAL**: `explore` agents CANNOT execute bash commands (`npm`, `gh`, `git`, etc.). If your task needs bash execution, use `general` agent type.
+
+### Failed Task Pattern
+
+**❌ WRONG** - Explore agent with bash:
+```xml
+<invoke name="task">
+  <parameter name="subagent_type">explore</parameter>
+  <parameter name="prompt">Run npm test and analyze</parameter>
+```
+
+**✅ CORRECT** - General agent with bash:
+```xml
+<invoke name="task">
+  <parameter name="subagent_type">general</parameter>
+  <parameter name="prompt">Run npm test and analyze</parameter>
+```
+
+---
+
 ## Quick Reference
 
 ```bash
