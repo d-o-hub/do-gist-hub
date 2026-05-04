@@ -20,3 +20,10 @@
 ## 2026-06-25 - [Infrastructure: CI Node.js 24 Migration]
 **Learning:** GitHub Actions runners are migrating to Node.js 24. Older major versions of actions (v3 and below) and standard workflows may emit deprecation warnings or break.
 **Prevention:** Pin all GitHub Actions to Node.js 24-compatible major versions (typically v4+). Set `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` in all workflow environment configurations to suppress warnings and ensure future compatibility.
+
+## 2026-06-26 - [Infrastructure: Fix CI Node.js 24 and Test Flakiness]
+**Issue:** Playwright tests failed due to case-sensitive text assertions after removing `text-transform: uppercase`. GistStore tests failed because `networkMonitor` state was inconsistent between tests.
+**Learning:**
+1. Always align Playwright assertions with the actual DOM text when CSS-based transformations are involved.
+2. In browser-side unit tests, ensure services like `networkMonitor` are in the expected state (e.g., dispatching 'online' event) before performing operations that depend on it.
+**Action:** Updated tests to use mixed-case strings matching the source code. Added logic to `gist-store.spec.ts` to ensure online status during evaluations.
