@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../base';
 
 test.describe('Gist Edit UI', () => {
   test.beforeEach(async ({ page }) => {
@@ -44,7 +44,9 @@ test.describe('Gist Edit UI', () => {
           files: { 'index.js': { filename: 'index.js', content: 'Hello World' } },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          html_url: 'https://gist.github.com/new-id'
+          html_url: 'https://gist.github.com/new-id',
+          public: true,
+          owner: { login: 'testuser', id: 1, avatar_url: '', html_url: '' }
         }),
       });
     });

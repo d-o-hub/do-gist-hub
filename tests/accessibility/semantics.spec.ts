@@ -2,7 +2,7 @@
  * Accessibility Semantic HTML Tests
  * Test ARIA labels, roles, headings structure, and semantic markup
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../base';
 
 test.describe('Accessibility - Semantics', () => {
   test.beforeEach(async ({ page }) => {

@@ -2,7 +2,7 @@
  * Browser Gist List Tests
  * Test gist list rendering, search, filters, and sorting
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../base';
 
 test.describe('Gist List', () => {
   test.beforeEach(async ({ page }) => {

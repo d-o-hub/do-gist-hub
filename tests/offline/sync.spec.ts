@@ -2,7 +2,7 @@
  * Offline Sync Tests
  * Test sync behavior, online/offline transitions, and optimistic writes
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../base';
 
 test.describe('Offline Sync', () => {
   test.beforeEach(async ({ page }) => {
@@ -132,7 +132,7 @@ test.describe('Offline Sync', () => {
 
     // Fill out form
     await page.locator('#gist-description').fill('Test Offline Gist');
-    await page.locator('#gist-content').fill('Offline test content');
+    await page.locator('.gist-content').fill('Offline test content');
 
     // Submit form
     await page.locator('#create-gist-form').evaluate((form: HTMLFormElement) => form.requestSubmit());

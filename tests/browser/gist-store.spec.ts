@@ -1,11 +1,10 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../base';
 
 test.describe('GistStore Integration', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    // Ensure we are authenticated for GistStore to work
     await page.evaluate(async () => {
       const { setMetadata, flushGistWrites } = await import('/src/services/db.ts');
       await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
@@ -29,8 +28,8 @@ test.describe('GistStore Integration', () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
-        { id: '1', starred: true, description: 'Starred Gist', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', public: false, syncStatus: 'synced' },
-        { id: '2', starred: false, description: 'My Gist', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', public: false, syncStatus: 'synced' }
+        { id: '1', starred: true, description: 'S', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', public: false, syncStatus: 'synced' },
+        { id: '2', starred: false, description: 'M', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', public: false, syncStatus: 'synced' }
       ];
       return {
         all: gistStore.filterGists('all'),
@@ -38,7 +37,6 @@ test.describe('GistStore Integration', () => {
         starred: gistStore.filterGists('starred')
       };
     });
-
     expect(results.all.length).toBe(2);
     expect(results.mine.length).toBe(1);
     expect(results.starred.length).toBe(1);
