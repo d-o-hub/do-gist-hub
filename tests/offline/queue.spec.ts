@@ -186,7 +186,7 @@ test.describe('Sync Queue and Offline Operations', () => {
       for (const action of actionsToQueue) {
         await queueWrite({
           gistId: `gist-${action}`,
-          action: action as any,
+          action: action as unknown as any,
           payload: {},
         });
       }
