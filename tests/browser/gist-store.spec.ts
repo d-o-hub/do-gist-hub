@@ -15,7 +15,7 @@ test.describe('GistStore Integration', () => {
       const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
       networkMonitor.isOnline = () => true;
       // Also set internal status to be safe
-      (networkMonitor as any).status = 'online';
+      (networkMonitor as unknown as Record<string, unknown>).status = 'online';
     });
     await page.reload();
 
@@ -23,7 +23,7 @@ test.describe('GistStore Integration', () => {
     await page.evaluate(async () => {
       const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
       networkMonitor.isOnline = () => true;
-      (networkMonitor as any).status = 'online';
+      (networkMonitor as unknown as Record<string, unknown>).status = 'online';
     });
   });
 

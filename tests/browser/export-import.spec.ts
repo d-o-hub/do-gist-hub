@@ -11,11 +11,11 @@ test.describe('Export/Import Functionality', () => {
 
   test('should export gists to JSON', async ({ page }) => {
     // Add a dummy gist first
-    await page.evaluate(async () => {
+    await page.evaluate(() => {
       const dbRequest = indexedDB.open('d-o-gist-hub-db');
       await new Promise((resolve) => {
-        dbRequest.onsuccess = (e: any) => {
-          const db = e.target.result;
+        dbRequest.onsuccess = (e: Event) => {
+          const db = dbRequest.result;
           const tx = db.transaction('gists', 'readwrite');
           tx.objectStore('gists').put({
             id: 'test-gist-id',
@@ -85,11 +85,11 @@ test.describe('Export/Import Functionality', () => {
     );
 
     // Verify gist is in DB
-    const gistExists = await page.evaluate(async () => {
+    const gistExists = await page.evaluate(() => {
       const dbRequest = indexedDB.open('d-o-gist-hub-db');
       return new Promise((resolve) => {
-        dbRequest.onsuccess = (e: any) => {
-          const db = e.target.result;
+        dbRequest.onsuccess = (e: Event) => {
+          const db = dbRequest.result;
           const tx = db.transaction('gists', 'readonly');
           const request = tx.objectStore('gists').get('imported-gist-id');
           request.onsuccess = () => resolve(!!request.result);
@@ -105,11 +105,11 @@ test.describe('Export/Import Functionality', () => {
 
   test('should detect conflicts during import', async ({ page }) => {
     // Add a gist with pending changes
-    await page.evaluate(async () => {
+    await page.evaluate(() => {
       const dbRequest = indexedDB.open('d-o-gist-hub-db');
       await new Promise((resolve) => {
-        dbRequest.onsuccess = (e: any) => {
-          const db = e.target.result;
+        dbRequest.onsuccess = (e: Event) => {
+          const db = dbRequest.result;
           const tx = db.transaction('gists', 'readwrite');
           tx.objectStore('gists').put({
             id: 'conflict-gist-id',
@@ -152,12 +152,12 @@ test.describe('Export/Import Functionality', () => {
     // Verify gist in DB has conflict status
     await expect
       .poll(
-        async () => {
-          return await page.evaluate(async () => {
+        () => {
+          return page.evaluate(() => {
             const dbRequest = indexedDB.open('d-o-gist-hub-db');
             return new Promise((resolve) => {
-              dbRequest.onsuccess = (e: any) => {
-                const db = e.target.result;
+              dbRequest.onsuccess = (e: Event) => {
+                const db = dbRequest.result;
                 const tx = db.transaction('gists', 'readonly');
                 const request = tx.objectStore('gists').get('conflict-gist-id');
                 request.onsuccess = () => resolve(request.result?.syncStatus);
