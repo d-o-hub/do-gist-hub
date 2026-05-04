@@ -4,11 +4,15 @@ export { expect };
 
 export const test = base.extend({
   page: async ({ page }, use) => {
-    // Clear state before the test starts
-    // Use the baseURL from config if available, otherwise localhost:3000
+    // Force online status for all tests to ensure consistent behavior
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'onLine', { get: () => true });
+      window.dispatchEvent(new Event('online'));
+    });
+
+    // Clear state BEFORE the test starts
     const baseURL = base.info().project.use.baseURL || 'http://localhost:3000';
 
-    // We navigate to the base URL to clear state for that origin
     await page.goto(baseURL);
 
     await page.evaluate(async () => {
@@ -26,13 +30,10 @@ export const test = base.extend({
           });
         }
       } catch (e) {
+        // skipcq: JS-0002
         console.error('Failed to clear state:', e);
       }
     });
-
-    // NOTE: We do NOT stay on the page. The test will call page.goto() itself.
-    // However, some tests assume they start on the page if they don't call goto().
-    // Most tests in this repo DO call page.goto() in beforeEach.
 
     await use(page);
   },

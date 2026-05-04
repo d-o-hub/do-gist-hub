@@ -10,6 +10,10 @@ test.describe('GistStore Integration', () => {
       const { setMetadata } = await import('/src/services/db.ts');
       await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
       await setMetadata('github-username', 'testuser');
+
+      const { default: nm } = await import('/src/services/network/offline-monitor.ts');
+      // Force online for the store
+      nm.isOnline = () => true;
     });
     await page.reload();
   });
@@ -82,13 +86,16 @@ test.describe('GistStore Integration', () => {
       });
     });
 
-    const success = await page.evaluate(async () => {
+    const result = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
-      const result = await gistStore.createGist('New Gist', true, { 'test.txt': 'hello' });
-      return !!result;
+      const { default: nm } = await import('/src/services/network/offline-monitor.ts');
+      nm.isOnline = () => true;
+      return await gistStore.createGist('New Gist', true, { 'test.txt': 'hello' });
     });
 
-    expect(success).toBe(true);
+    expect(result).toBeTruthy();
+    // @ts-ignore
+    expect(result.id).toBe('new-gist-id');
   });
 
   test('should handle gist updates', async ({ page }) => {
@@ -109,6 +116,8 @@ test.describe('GistStore Integration', () => {
 
     const success = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: nm } = await import('/src/services/network/offline-monitor.ts');
+      nm.isOnline = () => true;
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [{ id: '1', description: 'Old', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', starred: false, public: false, syncStatus: 'synced' }];
       return await gistStore.updateGist('1', { description: 'Updated Gist' });
@@ -126,6 +135,8 @@ test.describe('GistStore Integration', () => {
 
     const success = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: nm } = await import('/src/services/network/offline-monitor.ts');
+      nm.isOnline = () => true;
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [{ id: '1', description: 'To Delete', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', starred: false, public: false, syncStatus: 'synced' }];
       return await gistStore.deleteGist('1');
@@ -141,6 +152,8 @@ test.describe('GistStore Integration', () => {
 
     const starred = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: nm } = await import('/src/services/network/offline-monitor.ts');
+      nm.isOnline = () => true;
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [{ id: '1', starred: false, description: 'Gist', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', public: false, syncStatus: 'synced' }];
       await gistStore.toggleStar('1');

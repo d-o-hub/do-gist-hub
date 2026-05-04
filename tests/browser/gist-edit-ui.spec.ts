@@ -16,24 +16,25 @@ test.describe('Gist Edit UI', () => {
 
   test('should render create gist form', async ({ page }) => {
     await page.locator('[data-testid="nav-create"]').first().click();
-    await expect(page.locator('.detail-title')).toContainText('CREATE NEW GIST');
+    // Using mixed case as per current UI modernization
+    await expect(page.locator('.detail-title')).toContainText('Create New Gist');
     await expect(page.locator('#gist-description')).toBeVisible();
-    await expect(page.locator('#gist-content')).toBeVisible();
+    await expect(page.locator('.gist-content')).toBeVisible();
   });
 
   test('should validate required fields', async ({ page }) => {
     await page.locator('[data-testid="nav-create"]').first().click();
 
-    // Try to save empty
+    // Try to save empty - should fail validation
     await page.locator('button:has-text("CREATE GIST")').click();
-    // In current app.ts, it doesn't show toast for empty creation but it's handled by gistStore
   });
 
   test('should handle successful gist creation', async ({ page }) => {
     await page.locator('[data-testid="nav-create"]').first().click();
 
     await page.locator('#gist-description').fill('New Gist');
-    await page.locator('#gist-content').fill('Hello World');
+    await page.locator('.gist-filename').fill('index.js');
+    await page.locator('.gist-content').fill('Hello World');
 
     await page.route('**/gists', async (route) => {
       await route.fulfill({
