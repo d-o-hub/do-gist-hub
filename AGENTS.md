@@ -484,6 +484,14 @@ This checks:
 - [ ] No horizontal overflow at any breakpoint
 - [ ] No console errors
 - [ ] Node.js 24 compatibility (`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true`)
+- [ ] Bundle budgets passed (`pnpm run bundle-check`)
+
+### Performance Rules (Critical)
+
+1. **Initial JS Budget**: Keep the initial JS bundle under 150KB gzipped.
+2. **Route Splitting**: All major views must be lazily loaded using dynamic `import()`.
+3. **CSS Purging**: Always run PurgeCSS in production to remove unused design tokens.
+4. **Budget Enforcement**: CI must fail if any chunk exceeds its gzip budget (50KB for routes).
 
 ### Issue History
 

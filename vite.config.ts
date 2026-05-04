@@ -219,7 +219,7 @@ export default defineConfig({
           }),
           visualizer({
             filename: 'analysis/bundle-stats.json',
-            json: true,
+            template: 'raw-data',
             gzipSize: true,
             brotliSize: true,
           }),

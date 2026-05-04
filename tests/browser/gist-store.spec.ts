@@ -7,22 +7,26 @@ test.describe('GistStore Integration', () => {
 
     // Ensure we are authenticated for GistStore to work
     await page.evaluate(async () => {
-      const { setMetadata } = await import('/src/services/db.ts');
+      const { setMetadata } = await import('./src/services/db.ts');
       await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
       await setMetadata('github-username', 'testuser');
-
-      const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
-      networkMonitor.init();
-      // Force status to online for tests
-      Object.defineProperty(networkMonitor, 'status', { value: 'online', writable: true });
-      networkMonitor.isOnline = () => true;
     });
     await page.reload();
+    await page.waitForLoadState('networkidle');
+
+    // Force network status to online after reload
+    await page.evaluate(async () => {
+      const { default: networkMonitor } = await import('./src/services/network/offline-monitor.ts');
+      networkMonitor.init();
+      // @ts-expect-error - accessing private for testing
+      networkMonitor.status = 'online';
+      networkMonitor.isOnline = () => true;
+    });
   });
 
   test('should initialize and load gists from IndexedDB', async ({ page }) => {
     const gists = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       await gistStore.init();
       return gistStore.getGists();
     });
@@ -31,7 +35,7 @@ test.describe('GistStore Integration', () => {
 
   test('should filter gists correctly', async ({ page }) => {
     const results = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       // Mock some gists in the store via internal access
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
@@ -54,7 +58,7 @@ test.describe('GistStore Integration', () => {
 
   test('should search gists correctly', async ({ page }) => {
     const searchResults = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
         { id: '1', description: 'React Hooks', files: { 'hooks.js': { filename: 'hooks.js' } }, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', starred: false, public: false, syncStatus: 'synced' },
@@ -89,7 +93,7 @@ test.describe('GistStore Integration', () => {
     });
 
     const success = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const result = await gistStore.createGist('New Gist', true, { 'test.txt': 'hello' });
       return !!result;
     });
@@ -114,7 +118,7 @@ test.describe('GistStore Integration', () => {
     });
 
     const success = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [{ id: '1', description: 'Old', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', starred: false, public: false, syncStatus: 'synced' }];
       return await gistStore.updateGist('1', { description: 'Updated Gist' });
@@ -131,7 +135,7 @@ test.describe('GistStore Integration', () => {
     });
 
     const success = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [{ id: '1', description: 'To Delete', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', starred: false, public: false, syncStatus: 'synced' }];
       return await gistStore.deleteGist('1');
@@ -146,7 +150,7 @@ test.describe('GistStore Integration', () => {
     });
 
     const starred = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [{ id: '1', starred: false, description: 'Gist', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', public: false, syncStatus: 'synced' }];
       await gistStore.toggleStar('1');
