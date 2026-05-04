@@ -16,11 +16,9 @@ test.describe('Gist Edit UI', () => {
 
   test('should render create gist form', async ({ page }) => {
     await page.locator('[data-testid="nav-create"]').first().click();
-    await expect(page.locator('.detail-title')).toContainText('Create New Gist', {
-      ignoreCase: true,
-    });
+    await expect(page.locator('.detail-title')).toContainText('CREATE NEW GIST');
     await expect(page.locator('#gist-description')).toBeVisible();
-    await expect(page.locator('.gist-content').first()).toBeVisible();
+    await expect(page.locator('#gist-content')).toBeVisible();
   });
 
   test('should validate required fields', async ({ page }) => {
@@ -35,8 +33,7 @@ test.describe('Gist Edit UI', () => {
     await page.locator('[data-testid="nav-create"]').first().click();
 
     await page.locator('#gist-description').fill('New Gist');
-    await page.locator('.gist-filename').first().fill('index.js');
-    await page.locator('.gist-content').first().fill('Hello World');
+    await page.locator('#gist-content').fill('Hello World');
 
     await page.route('**/gists', async (route) => {
       await route.fulfill({

@@ -1,11 +1,9 @@
-perf: bundle optimization, code splitting, and budget enforcement
+fix: implement cleanup in evaluation files to prevent memory leaks
 
-- Implemented route-level code splitting using dynamic imports in App.ts for all major routes.
-- Optimized design tokens by creating a build-time script (optimize-tokens.mjs) that extracts
-  only used tokens into a static tokens-generated.css file, improving CSP compliance.
-- Integrated vite-plugin-purgecss into the Vite build pipeline to remove unused CSS.
-- Established a bundle budget enforcement system with a custom script (bundle-check.mjs).
-- This validates gzipped chunk sizes against defined limits (150KB initial JS, 50KB per chunk).
-- Integrated budget checks into package.json and the GitHub Actions CI workflow.
-- Verified that the initial JS bundle is now ~6KB gzipped.
-- Fixed brittle assertions in gist-edit-ui.spec.ts related to case-sensitivity.
+- DataFetcher.tsx (React): Added AbortController, clearInterval, and
+  removeEventListener.
+- WebSocketComponent.vue (Vue): Added onUnmounted to close WS and
+  unsubscribe from RxJS.
+- cache-service.js (JS): Added destroy() calls for CacheService instances.
+- Handled AbortError in fetch calls to prevent state updates on unmount.
+- Updated commitlint.yml with Node 24 env var to address action deprecation.

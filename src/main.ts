@@ -1,6 +1,6 @@
 import { safeLog, safeError } from './services/security/logger';
 import { App } from './components/app';
-import { initTheme } from './tokens/design-tokens';
+import { initDesignTokens, initTheme } from './tokens/design-tokens';
 import { initIndexedDB } from './services/db';
 import { isAuthenticated } from './services/github/auth';
 import networkMonitor from './services/network/offline-monitor';
@@ -18,7 +18,9 @@ import './styles/navigation.css';
 import './styles/modern-glass.css';
 import './styles/conflicts.css';
 import './styles/command-palette.css';
-import './styles/tokens-generated.css';
+
+// Initialize design tokens
+initDesignTokens();
 
 // Initialize theme from stored preference or system setting
 initTheme();

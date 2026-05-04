@@ -3,7 +3,6 @@ import path from 'path';
 import fs from 'fs';
 import zlib from 'zlib';
 import { visualizer } from 'rollup-plugin-visualizer';
-import purgecss from 'vite-plugin-purgecss';
 import { APP } from './src/config/app.config';
 import { PERFORMANCE_BUDGETS } from './src/services/perf/budgets';
 
@@ -202,13 +201,6 @@ export default defineConfig({
     cspPlugin(),
     manifestPlugin(),
     performanceBudgetPlugin(),
-    purgecss({
-      content: ['./src/**/*.ts', './index.html'],
-      safelist: {
-        standard: [/^is-/, /^has-/, /^app-/, /^nav-/, /^gist-/, 'active', 'open'],
-        deep: [/^mobile-menu/],
-      },
-    }),
     ...(shouldAnalyze
       ? [
           visualizer({
@@ -216,12 +208,6 @@ export default defineConfig({
             gzipSize: true,
             brotliSize: true,
             open: false,
-          }),
-          visualizer({
-            filename: 'analysis/bundle-stats.json',
-            template: 'raw-data',
-            gzipSize: true,
-            brotliSize: true,
           }),
         ]
       : []),
@@ -235,8 +221,6 @@ export default defineConfig({
     },
   },
   build: {
-    // Enable CSS code splitting
-    cssCodeSplit: true,
     // Target modern browsers for smaller bundles
     target: 'esnext',
     // Use esbuild for fast minification

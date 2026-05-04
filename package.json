@@ -33,7 +33,6 @@
     "cap:android:open": "npx cap open android",
     "build:android": "npm run build && npm run cap:sync",
     "analyze": "ANALYZE=true npm run build",
-    "bundle-check": "node scripts/bundle-check.mjs",
     "quality": "./scripts/quality_gate.sh"
   },
   "dependencies": {
@@ -54,7 +53,6 @@
   "devDependencies": {
     "@commitlint/config-conventional": "^20.5.0",
     "@eslint/js": "^9.0.0",
-    "@fullhuman/postcss-purgecss": "^8.0.0",
     "@playwright/test": "^1.45.0",
     "@types/node": "^25.6.0",
     "@vitest/coverage-v8": "^4.1.5",
@@ -63,7 +61,6 @@
     "esbuild": "^0.28.0",
     "eslint": "^10.2.1",
     "fake-indexeddb": "^6.2.5",
-    "glob": "^13.0.6",
     "globals": "^17.5.0",
     "jsdom": "^29.1.1",
     "lint-staged": "^16.4.0",
@@ -72,7 +69,6 @@
     "typescript": "^5.5.0",
     "typescript-eslint": "^8.59.1",
     "vite": "^8.0.9",
-    "vite-plugin-purgecss": "^0.2.13",
     "vitest": "^4.1.5"
   }
 }

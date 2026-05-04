@@ -13,7 +13,7 @@ vi.mock('../../src/services/github/client', () => ({
 
 // ── Imports (after mocks) ───────────────────────────
 
-import { lifecycle } from '../../src/services/lifecycle';
+import lifecycle from '../../src/services/lifecycle';
 
 import { safeLog, safeError } from '../../src/services/security/logger';
 
