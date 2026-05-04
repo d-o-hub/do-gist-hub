@@ -16,7 +16,7 @@ test.describe('Gist Edit UI', () => {
 
   test('should render create gist form', async ({ page }) => {
     await page.locator('[data-testid="nav-create"]').first().click();
-    await expect(page.locator('.detail-title')).toContainText('CREATE NEW GIST');
+    await expect(page.locator('.detail-title')).toContainText('Create New Gist');
     await expect(page.locator('#gist-description')).toBeVisible();
     await expect(page.locator('#gist-content')).toBeVisible();
   });

@@ -349,7 +349,7 @@ describe('db', () => {
       await queueWrite({ gistId: 'gist-1', action: 'create', payload: {} });
       await setMetadata('key', 'value');
 
-      await clearAllData();
+      await flushGistWrites(); await clearAllData();
 
       expect(await getAllGists()).toHaveLength(0);
       expect(await getPendingWrites()).toHaveLength(0);

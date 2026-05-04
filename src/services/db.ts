@@ -229,7 +229,7 @@ export async function flushGistWrites(): Promise<void> {
 
   const gists = Array.from(pendingGistWrites.values());
   pendingGistWrites.clear();
-  await saveGists(gists);
+  await saveGistsRaw(gists);
 }
 
 const debouncedFlush = debounce(flushGistWrites, 300);
@@ -249,26 +249,38 @@ export async function saveGist(gist: GistRecord): Promise<void> {
 
 /**
  * Store multiple gists in local database using a single transaction
+ * Optimized for bulk updates and deduplication.
  */
 export async function saveGists(gists: GistRecord[]): Promise<void> {
   if (gists.length === 0) return;
 
+  // Sync in-memory buffer: if we are bulk saving, these gists are no longer "pending"
+  for (const gist of gists) {
+    pendingGistWrites.delete(gist.id);
+  }
+
+  await saveGistsRaw(gists);
+}
+
+/**
+ * Internal helper to save gists directly to IDB without affecting pending writes map
+ */
+async function saveGistsRaw(gists: GistRecord[]): Promise<void> {
   const db = getDB();
   const tx = db.transaction('gists', 'readwrite');
   const now = new Date().toISOString();
 
-  // Initiate all puts and await their creation
   await Promise.all(
     gists.map((gist) =>
       tx.store.put({
         ...gist,
         syncStatus: gist.syncStatus || 'synced',
-        lastSyncedAt: now,
+        lastSyncedAt: gist.lastSyncedAt || now,
+        lastAccessed: gist.lastAccessed || Date.now(),
       })
     )
   );
 
-  // Await transaction completion
   await tx.done;
 }
 
@@ -276,10 +288,14 @@ export async function saveGists(gists: GistRecord[]): Promise<void> {
  * Get gist from local database
  */
 export async function getGist(id: string): Promise<GistRecord | undefined> {
+  // Check pending writes first for consistency (Read Your Own Writes)
+  const pending = pendingGistWrites.get(id);
+  if (pending) return pending;
+
   const db = getDB();
   const gist = await db.get('gists', id);
   if (gist) {
-    // Update last accessed time (LRU)
+    // Update last accessed time (LRU) - note this triggers a debounced write
     void saveGist({
       ...gist,
       lastAccessed: Date.now(),
@@ -293,13 +309,23 @@ export async function getGist(id: string): Promise<GistRecord | undefined> {
  */
 export async function getAllGists(): Promise<GistRecord[]> {
   const db = getDB();
-  return await db.getAll('gists');
+  const gists = await db.getAll('gists');
+
+  if (pendingGistWrites.size === 0) return gists;
+
+  // Merge with pending writes for consistency
+  const gistMap = new Map(gists.map((g) => [g.id, g]));
+  for (const [id, gist] of pendingGistWrites) {
+    gistMap.set(id, gist);
+  }
+  return Array.from(gistMap.values());
 }
 
 /**
  * Delete gist from local database
  */
 export async function deleteGist(id: string): Promise<void> {
+  pendingGistWrites.delete(id);
   const db = getDB();
   await db.delete('gists', id);
 }
@@ -464,11 +490,6 @@ export async function importData(json: string): Promise<void> {
 
   const tx = db.transaction(['gists', 'pendingWrites', 'metadata', 'logs'], 'readwrite');
 
-  // Clear existing data
-  // Import gists
-  // Import pending writes
-  // Import metadata
-  // Import logs
   const storeDataMap: Record<string, unknown[]> = {
     gists: data.gists,
     pendingWrites: data.pendingWrites,
