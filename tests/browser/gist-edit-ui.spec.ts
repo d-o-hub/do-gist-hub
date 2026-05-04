@@ -8,7 +8,9 @@ test.describe('Gist Edit UI', () => {
     // Auth for edit access
     await page.evaluate(async () => {
       const { setMetadata, flushGistWrites } = await import('/src/services/db.ts');
-      await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
+      const { encrypt } = await import('/src/services/security/crypto.ts');
+      const encrypted = await encrypt('dummy-token');
+      await setMetadata('github-pat-enc', encrypted);
       await setMetadata('github-username', 'testuser');
       await flushGistWrites();
     });
