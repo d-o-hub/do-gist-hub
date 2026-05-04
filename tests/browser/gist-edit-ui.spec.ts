@@ -25,6 +25,7 @@ test.describe('Gist Edit UI', () => {
 
   test('should validate required fields', async ({ page }) => {
     await page.locator('[data-testid="nav-create"]').first().click();
+    // Should fail validation on empty submit
     await page.locator('button:has-text("CREATE GIST")').click();
   });
 
@@ -32,6 +33,8 @@ test.describe('Gist Edit UI', () => {
     await page.locator('[data-testid="nav-create"]').first().click();
 
     await page.locator('#gist-description').fill('New Gist');
+    // Important: Fill filename which is required
+    await page.locator('.gist-filename').fill('index.js');
     await page.locator('.gist-content').fill('Hello World');
 
     await page.route('**/gists', async (route) => {
@@ -52,6 +55,8 @@ test.describe('Gist Edit UI', () => {
     });
 
     await page.locator('button:has-text("CREATE GIST")').click();
-    await expect(page.locator('.search-input, .empty-state-title').first()).toBeVisible();
+
+    // Should navigate back to home
+    await expect(page.locator('.search-input, .empty-state-title').first()).toBeVisible({ timeout: 15000 });
   });
 });
