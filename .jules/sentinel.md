@@ -16,3 +16,8 @@
 **Vulnerability:** The GitHub API client (`client.ts`) was directly reading the `github-pat` key from IndexedDB, bypassing the encryption/decryption logic and migration path in `auth.ts`.
 **Learning:** Decoupling authentication logic from the API client is critical. Direct database access for secrets bypasses security controls like encryption at rest and migration logic for legacy tokens.
 **Prevention:** Always use a centralized authentication service (`auth.ts`) to retrieve secrets. Components and other services must never access raw secret storage directly.
+
+## 2026-05-22 - [Quality: Automated Commit Validation Failures]
+**Issue:** Automated "Update SKILL.md" commits failed Commitlint CI.
+**Learning:** Strict conventional commit enforcement can block automated documentation/state updates. Dual-layered ignores (linter config + CI job condition) provide a secure yet flexible way to handle both human and bot contributions.
+**Action:** Implement `ignores` in `commitlint.config.mjs` and actor-based conditions in `.github/workflows/commitlint.yml`.
