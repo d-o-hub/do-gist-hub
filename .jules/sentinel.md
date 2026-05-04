@@ -16,3 +16,7 @@
 **Vulnerability:** The GitHub API client (`client.ts`) was directly reading the `github-pat` key from IndexedDB, bypassing the encryption/decryption logic and migration path in `auth.ts`.
 **Learning:** Decoupling authentication logic from the API client is critical. Direct database access for secrets bypasses security controls like encryption at rest and migration logic for legacy tokens.
 **Prevention:** Always use a centralized authentication service (`auth.ts`) to retrieve secrets. Components and other services must never access raw secret storage directly.
+
+## 2026-06-25 - [Infrastructure: CI Node.js 24 Migration]
+**Learning:** GitHub Actions runners are migrating to Node.js 24. Older major versions of actions (v3 and below) and standard workflows may emit deprecation warnings or break.
+**Prevention:** Pin all GitHub Actions to Node.js 24-compatible major versions (typically v4+). Set `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` in all workflow environment configurations to suppress warnings and ensure future compatibility.
