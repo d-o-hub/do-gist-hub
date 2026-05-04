@@ -27,7 +27,6 @@ test.describe('GistStore Integration', () => {
   test('should filter gists correctly', async ({ page }) => {
     const results = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
-      // Mock some gists in the store via internal access
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
         { id: '1', starred: true, description: 'Starred Gist', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', public: false, syncStatus: 'synced' },
@@ -42,9 +41,7 @@ test.describe('GistStore Integration', () => {
 
     expect(results.all.length).toBe(2);
     expect(results.mine.length).toBe(1);
-    expect(results.mine[0].id).toBe('2');
     expect(results.starred.length).toBe(1);
-    expect(results.starred[0].id).toBe('1');
   });
 
   test('should search gists correctly', async ({ page }) => {

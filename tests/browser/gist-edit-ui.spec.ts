@@ -7,9 +7,10 @@ test.describe('Gist Edit UI', () => {
 
     // Auth for edit access
     await page.evaluate(async () => {
-      const { setMetadata } = await import('/src/services/db.ts');
+      const { setMetadata, flushGistWrites } = await import('/src/services/db.ts');
       await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
       await setMetadata('github-username', 'testuser');
+      await flushGistWrites();
     });
     await page.reload();
     await page.waitForSelector('.app-shell', { state: 'visible' });
@@ -24,10 +25,7 @@ test.describe('Gist Edit UI', () => {
 
   test('should validate required fields', async ({ page }) => {
     await page.locator('[data-testid="nav-create"]').first().click();
-
-    // Try to save empty
     await page.locator('button:has-text("CREATE GIST")').click();
-    // In current app.ts, it doesn't show toast for empty creation but it's handled by gistStore
   });
 
   test('should handle successful gist creation', async ({ page }) => {
@@ -52,8 +50,6 @@ test.describe('Gist Edit UI', () => {
     });
 
     await page.locator('button:has-text("CREATE GIST")').click();
-
-    // Should navigate back to home
     await expect(page.locator('.search-input, .empty-state-title').first()).toBeVisible();
   });
 });
