@@ -417,6 +417,7 @@ export async function getMetadata<T>(key: string): Promise<T | undefined> {
  * Clear all data (for logout/reset)
  */
 export async function clearAllData(): Promise<void> {
+  pendingGistWrites.clear();
   const db = getDB();
   const tx = db.transaction(['gists', 'pendingWrites', 'metadata', 'logs'], 'readwrite');
   await tx.objectStore('gists').clear();
@@ -430,6 +431,7 @@ export async function clearAllData(): Promise<void> {
  * Export data for backup
  */
 export async function exportData(): Promise<string> {
+  await flushGistWrites();
   const db = getDB();
   const gists = await db.getAll('gists');
   const pendingWrites = await db.getAll('pendingWrites');
@@ -446,6 +448,32 @@ export async function exportData(): Promise<string> {
   };
 
   return JSON.stringify(data);
+}
+
+/**
+ * Import data from backup
+ */
+export async function importData(json: string): Promise<void> {
+  await flushGistWrites();
+  const db = getDB();
+  const data = JSON.parse(json);
+
+  const tx = db.transaction(['gists', 'pendingWrites', 'metadata', 'logs'], 'readwrite');
+
+  const storeDataMap: Record<string, unknown[]> = {
+    gists: data.gists,
+    pendingWrites: data.pendingWrites,
+    metadata: data.metadata,
+    logs: data.logs || [],
+  };
+
+  for (const [storeName, items] of Object.entries(storeDataMap)) {
+    const store = tx.objectStore(storeName as never);
+    await store.clear();
+    await Promise.all(items.map((item) => store.put(item)));
+  }
+
+  await tx.done;
 }
 
 /**
@@ -479,29 +507,4 @@ export async function evictStaleGists(): Promise<void> {
     await Promise.all(staleIds.map((id) => tx.store.delete(id)));
     await tx.done;
   }
-}
-
-/**
- * Import data from backup
- */
-export async function importData(json: string): Promise<void> {
-  const db = getDB();
-  const data = JSON.parse(json);
-
-  const tx = db.transaction(['gists', 'pendingWrites', 'metadata', 'logs'], 'readwrite');
-
-  const storeDataMap: Record<string, unknown[]> = {
-    gists: data.gists,
-    pendingWrites: data.pendingWrites,
-    metadata: data.metadata,
-    logs: data.logs || [],
-  };
-
-  for (const [storeName, items] of Object.entries(storeDataMap)) {
-    const store = tx.objectStore(storeName as never);
-    await store.clear();
-    await Promise.all(items.map((item) => store.put(item)));
-  }
-
-  await tx.done;
 }

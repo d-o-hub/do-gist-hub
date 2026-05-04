@@ -37,9 +37,11 @@ import { getMetadata, setMetadata } from '../../src/services/db';
 // ── Tests ─────────────────────────────────────
 
 describe('Auth Service', () => {
-  beforeEach(() => {
-    removeToken();
+  beforeEach(async () => {
+    // Force reset module state if possible, or just clear mocks
     vi.clearAllMocks();
+    await removeToken();
+    vi.clearAllMocks(); // Clear mocks again after removeToken calls them
   });
 
   describe('getToken', () => {
