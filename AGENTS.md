@@ -446,7 +446,7 @@ This section is automatically updated by `./scripts/analyze-codebase.sh`.
 5. **Offline Project Config**: Never set `offline: true` in `playwright.config.ts` — use `context.setOffline(true)` after `page.goto()`
 6. **Offline Dynamic Imports**: Preload modules via `page.evaluate()` before going offline; dynamic `import()` fails when browser is offline
 7. **Empty Element Visibility**: Playwright treats empty elements as hidden; always render inner content (e.g., sync indicator dot + sr-only text)
-8. **State Isolation**: Use `tests/base.ts` fixture to ensure clean `localStorage` and `IndexedDB` between tests.
+8. **State Isolation**: EVERY E2E test (`.spec.ts`) must import `test` from `tests/base.ts`. This fixture ensures absolute state isolation (clearing `localStorage`, `IndexedDB`, and `Service Workers`) before runs.
 
 ### Security Rules (Critical)
 

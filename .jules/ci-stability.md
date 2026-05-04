@@ -1,9 +1,13 @@
-# CI Stability Learning Journal
+# Playwright CI Stabilization Journal
 
-## 2026-06-25 - [Playwright CI Stability & State Isolation]
-**Learning:** CI shards frequently fail due to shared state (IndexedDB/localStorage) bleed between tests. Standard browser context isolation doesn't always guarantee clean local storage/DB if tests are not explicitly designed for it. A custom `test` fixture using `page.addInitScript` to clear `localStorage` and delete `IndexedDB` databases ensures deterministic results across shards.
-**Action:** Implement `tests/base.ts` with state isolation and update all `.spec.ts` files to use it.
+## 2026-06-25 - [Absolute State Isolation]
+**Learning**: Browser contexts alone don't clear persistent storage like IndexedDB or Cache API. This causes shard flakiness.
+**Action**: Implement `tests/base.ts` with a fixture that manually clears all storage origins (DB, Cache, SW, localStorage) once before every test.
 
-## 2026-06-25 - [Web Server Startup Reliability]
-**Learning:** Exit code 1 without clear errors in CI often indicates the dev server didn't start in time for Playwright to connect. Default timeouts (60s) are insufficient for complex Vite apps in resource-constrained CI runners.
-**Action:** Increase `webServer.timeout` to 120s and add `--retries=2` to handle transient startup failures.
+## 2026-06-25 - [CI Resilience Configuration]
+**Learning**: Resource constraints in CI often delay dev server startup.
+**Action**: Locked `webServer.timeout: 120000` in config and added `--retries=2 --reporter=github` to CI workflow.
+
+## 2026-06-25 - [Locator Robustness]
+**Learning**: UI changes break brittle ID-based or case-sensitive selectors.
+**Action**: Standardized on class-based selectors (`.gist-content`) and verified UI casing in test assertions.
