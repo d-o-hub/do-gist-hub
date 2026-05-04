@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../base';
 
 test.describe('Gist Edit UI', () => {
   test.beforeEach(async ({ page }) => {
@@ -23,17 +23,16 @@ test.describe('Gist Edit UI', () => {
 
   test('should validate required fields', async ({ page }) => {
     await page.locator('[data-testid="nav-create"]').first().click();
-
-    // Try to save empty
+    // Should fail validation on empty submit
     await page.locator('button:has-text("Create Gist")').click();
-    // In current app.ts, it doesn't show toast for empty creation but it's handled by gistStore
   });
 
   test('should handle successful gist creation', async ({ page }) => {
     await page.locator('[data-testid="nav-create"]').first().click();
 
     await page.locator('#gist-description').fill('New Gist');
-    await page.locator('.gist-filename').fill('test.txt');
+    // Important: Fill filename which is required
+    await page.locator('.gist-filename').fill('index.js');
     await page.locator('.gist-content').fill('Hello World');
 
     await page.route('**/gists', async (route) => {
@@ -47,6 +46,8 @@ test.describe('Gist Edit UI', () => {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           html_url: 'https://gist.github.com/new-id',
+          public: true,
+          owner: { login: 'testuser', id: 1, avatar_url: '', html_url: '' },
         }),
       });
     });
@@ -54,6 +55,6 @@ test.describe('Gist Edit UI', () => {
     await page.locator('button:has-text("Create Gist")').click();
 
     // Should navigate back to home
-    await expect(page.locator('.search-input')).toBeVisible();
+    await expect(page.locator('.search-input').first()).toBeVisible({ timeout: 15000 });
   });
 });

@@ -2,7 +2,7 @@
  * Accessibility Keyboard Navigation Tests
  * Test keyboard navigation, focus management, tab order, and focus traps
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../base';
 
 test.describe('Accessibility - Keyboard', () => {
   test.beforeEach(async ({ page }) => {
