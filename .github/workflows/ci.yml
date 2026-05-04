@@ -17,11 +17,11 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
-      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'pnpm'
@@ -43,18 +43,18 @@ jobs:
       matrix:
         shard: [1, 2, 3]
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
-      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
       - name: Cache Playwright browsers
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+        uses: actions/cache@v4
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -63,8 +63,8 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
       - name: Run Playwright tests (shard ${{ matrix.shard }} of 3)
-        run: pnpm exec playwright test --project=chromium --shard=${{ matrix.shard }}/3
-      - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        run: pnpm exec playwright test --project=chromium --shard=${{ matrix.shard }}/3 --retries=2 --reporter=github
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report-shard-${{ matrix.shard }}-of-3
@@ -78,16 +78,16 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
-      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'pnpm'
       - name: Set up JDK 17
-        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'zulu'
@@ -101,7 +101,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
       - name: Upload Debug APK
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
@@ -113,11 +113,11 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
-      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'pnpm'
@@ -127,7 +127,7 @@ jobs:
         run: mkdir -p analysis
       - name: Build with bundle analyzer and performance budgets
         run: ANALYZE=true pnpm run build
-      - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      - uses: actions/upload-artifact@v4
         with:
           name: bundle-analysis
           path: analysis/bundle-stats.html
@@ -141,11 +141,11 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 9
-      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'pnpm'
@@ -155,7 +155,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run Visual Tests
         run: pnpm run test:visual
-      - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-visual-report
