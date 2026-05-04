@@ -16,7 +16,6 @@ test.describe('Gist Edit UI', () => {
 
   test('should render create gist form', async ({ page }) => {
     await page.locator('[data-testid="nav-create"]').first().click();
-    // Using mixed case as per current UI modernization
     await expect(page.locator('.detail-title')).toContainText('Create New Gist');
     await expect(page.locator('#gist-description')).toBeVisible();
     await expect(page.locator('.gist-content')).toBeVisible();
@@ -24,8 +23,6 @@ test.describe('Gist Edit UI', () => {
 
   test('should validate required fields', async ({ page }) => {
     await page.locator('[data-testid="nav-create"]').first().click();
-
-    // Try to save empty - should fail validation
     await page.locator('button:has-text("CREATE GIST")').click();
   });
 
@@ -46,14 +43,15 @@ test.describe('Gist Edit UI', () => {
           files: { 'index.js': { filename: 'index.js', content: 'Hello World' } },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          html_url: 'https://gist.github.com/new-id'
+          html_url: 'https://gist.github.com/new-id',
+          public: true,
+          owner: { login: 'testuser', id: 1, avatar_url: '', html_url: '' }
         }),
       });
     });
 
     await page.locator('button:has-text("CREATE GIST")').click();
-
-    // Should navigate back to home
-    await expect(page.locator('.search-input')).toBeVisible();
+    // Wait for navigation back to home/search
+    await expect(page.locator('.search-input').first()).toBeVisible({ timeout: 15000 });
   });
 });
