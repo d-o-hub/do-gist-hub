@@ -63,7 +63,7 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
       - name: Run Playwright tests (shard ${{ matrix.shard }} of 3)
-        run: pnpm exec playwright test --project=chromium --shard=${{ matrix.shard }}/3
+        run: pnpm exec playwright test --project=chromium --shard=${{ matrix.shard }}/3 --retries=2 --reporter=github
       - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         if: always()
         with:

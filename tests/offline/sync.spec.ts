@@ -2,7 +2,7 @@
  * Offline Sync Tests
  * Test sync behavior, online/offline transitions, and optimistic writes
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../base';
 
 test.describe('Offline Sync', () => {
   test.beforeEach(async ({ page }) => {

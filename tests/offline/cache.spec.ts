@@ -2,7 +2,7 @@
  * Offline Cache Tests
  * Test IndexedDB caching, offline reads, and cached gist loading
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../base';
 
 test.describe('Offline Cache', () => {
   test.beforeEach(async ({ page }) => {

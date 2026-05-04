@@ -2,7 +2,7 @@
  * Accessibility Screen Reader Tests
  * Test screen reader announcements, live regions, and assistive technology support
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../base';
 
 test.describe('Accessibility - Screen Reader', () => {
   test.beforeEach(async ({ page }) => {

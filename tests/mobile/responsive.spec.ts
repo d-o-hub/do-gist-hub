@@ -2,7 +2,7 @@
  * Mobile Responsive Tests
  * Test responsive behavior, breakpoints, touch targets, and overflow
  */
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../base';
 
 const MOBILE_BREAKPOINTS = [
   { name: 'small-phone', width: 320, height: 568 },
