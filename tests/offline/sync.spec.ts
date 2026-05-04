@@ -132,7 +132,7 @@ test.describe('Offline Sync', () => {
 
     // Fill out form
     await page.locator('#gist-description').fill('Test Offline Gist');
-    await page.locator('#gist-content').fill('Offline test content');
+    await page.locator('.gist-content').fill('Offline test content');
 
     // Submit form
     await page.locator('#create-gist-form').evaluate((form: HTMLFormElement) => form.requestSubmit());
