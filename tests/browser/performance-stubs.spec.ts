@@ -7,7 +7,7 @@ test.describe('Performance Metrics', () => {
   });
 
   test('should verify LCP is within budget', async ({ page }) => {
-    const lcp = await page.evaluate(() => {
+    const lcp = await page.evaluate(async () => {
       return new Promise((resolve) => {
         new PerformanceObserver((entryList) => {
           const entries = entryList.getEntries();
@@ -29,7 +29,7 @@ test.describe('Performance Metrics', () => {
     }
     await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
 
-    const interactionMetrics = await page.evaluate(() => {
+    const interactionMetrics = await page.evaluate(async () => {
       const entries = performance.getEntriesByType('event');
       return entries.map((e) => e.duration);
     });

@@ -14,7 +14,7 @@ test.describe('Export/Import Functionality', () => {
     await page.evaluate(() => {
       const dbRequest = indexedDB.open('d-o-gist-hub-db');
       await new Promise((resolve) => {
-        dbRequest.onsuccess = (e: Event) => {
+        dbRequest.onsuccess = () => {
           const db = dbRequest.result;
           const tx = db.transaction('gists', 'readwrite');
           tx.objectStore('gists').put({
@@ -88,7 +88,7 @@ test.describe('Export/Import Functionality', () => {
     const gistExists = await page.evaluate(() => {
       const dbRequest = indexedDB.open('d-o-gist-hub-db');
       return new Promise((resolve) => {
-        dbRequest.onsuccess = (e: Event) => {
+        dbRequest.onsuccess = () => {
           const db = dbRequest.result;
           const tx = db.transaction('gists', 'readonly');
           const request = tx.objectStore('gists').get('imported-gist-id');
@@ -108,7 +108,7 @@ test.describe('Export/Import Functionality', () => {
     await page.evaluate(() => {
       const dbRequest = indexedDB.open('d-o-gist-hub-db');
       await new Promise((resolve) => {
-        dbRequest.onsuccess = (e: Event) => {
+        dbRequest.onsuccess = () => {
           const db = dbRequest.result;
           const tx = db.transaction('gists', 'readwrite');
           tx.objectStore('gists').put({
@@ -156,7 +156,7 @@ test.describe('Export/Import Functionality', () => {
           return page.evaluate(() => {
             const dbRequest = indexedDB.open('d-o-gist-hub-db');
             return new Promise((resolve) => {
-              dbRequest.onsuccess = (e: Event) => {
+              dbRequest.onsuccess = () => {
                 const db = dbRequest.result;
                 const tx = db.transaction('gists', 'readonly');
                 const request = tx.objectStore('gists').get('conflict-gist-id');

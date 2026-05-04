@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 test.describe('Memory Safety & Lifecycle', () => {
   test.beforeEach(async ({ page }) => {
@@ -6,7 +6,7 @@ test.describe('Memory Safety & Lifecycle', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  const clickNav = async (page: any, route: string) => {
+  const clickNav = async (page: Page, route: string) => {
     const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
     await page.keyboard.press(`${modifier}+k`);
     const routeTitle = route.charAt(0).toUpperCase() + route.slice(1);
@@ -58,7 +58,7 @@ test.describe('Memory Safety & Lifecycle', () => {
 
   test('should verify no memory growth after multiple navigation cycles', async ({ page }) => {
     const getHeapSize = async () => {
-      return await page.evaluate(() => {
+      return await page.evaluate(async () => {
         // @ts-ignore
         return window.performance.memory ? window.performance.memory.usedJSHeapSize : 0;
       });

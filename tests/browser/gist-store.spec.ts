@@ -7,12 +7,12 @@ test.describe('GistStore Integration', () => {
 
     // Ensure we are authenticated for GistStore to work
     await page.evaluate(async () => {
-      const { setMetadata } = await import('/src/services/db.ts');
+      const { setMetadata } = await import('./src/services/db.ts');
       await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
       await setMetadata('github-username', 'testuser');
 
       // Mock network monitor to be always online
-      const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
+      const { default: networkMonitor } = await import('./src/services/network/offline-monitor.ts');
       networkMonitor.isOnline = () => true;
       // Also set internal status to be safe
       (networkMonitor as unknown as Record<string, unknown>).status = 'online';
@@ -21,7 +21,7 @@ test.describe('GistStore Integration', () => {
 
     // Re-apply mock after reload
     await page.evaluate(async () => {
-      const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
+      const { default: networkMonitor } = await import('./src/services/network/offline-monitor.ts');
       networkMonitor.isOnline = () => true;
       (networkMonitor as unknown as Record<string, unknown>).status = 'online';
     });
@@ -29,7 +29,7 @@ test.describe('GistStore Integration', () => {
 
   test('should initialize and load gists from IndexedDB', async ({ page }) => {
     const gists = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       await gistStore.init();
       return gistStore.getGists();
     });
@@ -38,7 +38,7 @@ test.describe('GistStore Integration', () => {
 
   test('should filter gists correctly', async ({ page }) => {
     const results = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       // Mock some gists in the store via internal access
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
@@ -85,7 +85,7 @@ test.describe('GistStore Integration', () => {
 
   test('should search gists correctly', async ({ page }) => {
     const searchResults = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
         {
@@ -144,7 +144,7 @@ test.describe('GistStore Integration', () => {
     });
 
     const success = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const result = await gistStore.createGist('New Gist', true, { 'test.txt': 'hello' });
       return !!result;
     });
@@ -169,7 +169,7 @@ test.describe('GistStore Integration', () => {
     });
 
     const success = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
         {
@@ -200,7 +200,7 @@ test.describe('GistStore Integration', () => {
     });
 
     const success = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
         {
@@ -229,7 +229,7 @@ test.describe('GistStore Integration', () => {
     });
 
     const starred = await page.evaluate(async () => {
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
         {

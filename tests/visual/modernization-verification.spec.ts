@@ -33,7 +33,7 @@ test.describe('UI Modernization Verification', () => {
       let triggered = false;
       if ('startViewTransition' in document) {
         const original = (document as any).startViewTransition;
-        (document as any).startViewTransition = (cb: any) => {
+        (document as any).startViewTransition = (cb: () => void) => {
           triggered = true;
           return original.call(document, cb);
         };

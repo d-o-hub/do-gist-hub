@@ -15,7 +15,6 @@ jobs:
   commitlint:
     name: Validate Commits
     runs-on: ubuntu-latest
-    if: "!startsWith(github.event.head_commit.message, 'Update') && github.actor != 'github-actions[bot]'"
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -32,3 +31,5 @@ jobs:
         run: pnpm install --no-frozen-lockfile
       - name: Validate commits
         uses: wagoid/commitlint-github-action@b948419dd99f3fd78a6548d48f94e3df7f6bf3ed # v6.2.1
+        with:
+          configFile: .commitlintrc.json
