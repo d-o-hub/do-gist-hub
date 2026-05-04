@@ -4,12 +4,6 @@ export { expect };
 
 export const test = base.extend({
   page: async ({ page }, use) => {
-    // Force online status for all tests to ensure consistent behavior
-    await page.addInitScript(() => {
-      Object.defineProperty(navigator, 'onLine', { get: () => true });
-      window.dispatchEvent(new Event('online'));
-    });
-
     // Clear state BEFORE the test starts
     const baseURL = base.info().project.use.baseURL || 'http://localhost:3000';
 

@@ -43,15 +43,12 @@ test.describe('Gist Edit UI', () => {
           files: { 'index.js': { filename: 'index.js', content: 'Hello World' } },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          html_url: 'https://gist.github.com/new-id',
-          public: true,
-          owner: { login: 'testuser', id: 1, avatar_url: '', html_url: '' }
+          html_url: 'https://gist.github.com/new-id'
         }),
       });
     });
 
     await page.locator('button:has-text("CREATE GIST")').click();
-    // Wait for navigation back to home/search
     await expect(page.locator('.search-input').first()).toBeVisible({ timeout: 15000 });
   });
 });
