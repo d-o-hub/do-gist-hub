@@ -7,9 +7,10 @@ test.describe('GistStore Integration', () => {
 
     // Ensure we are authenticated for GistStore to work
     await page.evaluate(async () => {
-      const { setMetadata } = await import('/src/services/db.ts');
+      const { setMetadata, flushGistWrites } = await import('/src/services/db.ts');
       await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
       await setMetadata('github-username', 'testuser');
+      await flushGistWrites();
     });
     await page.reload();
   });
@@ -84,7 +85,9 @@ test.describe('GistStore Integration', () => {
 
     const success = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { flushGistWrites } = await import('/src/services/db.ts');
       const result = await gistStore.createGist('New Gist', true, { 'test.txt': 'hello' });
+      await flushGistWrites();
       return !!result;
     });
 
@@ -109,9 +112,12 @@ test.describe('GistStore Integration', () => {
 
     const success = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { flushGistWrites } = await import('/src/services/db.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [{ id: '1', description: 'Old', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', starred: false, public: false, syncStatus: 'synced' }];
-      return await gistStore.updateGist('1', { description: 'Updated Gist' });
+      const res = await gistStore.updateGist('1', { description: 'Updated Gist' });
+      await flushGistWrites();
+      return res;
     });
 
     expect(success).toBe(true);
@@ -126,9 +132,12 @@ test.describe('GistStore Integration', () => {
 
     const success = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { flushGistWrites } = await import('/src/services/db.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [{ id: '1', description: 'To Delete', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', starred: false, public: false, syncStatus: 'synced' }];
-      return await gistStore.deleteGist('1');
+      const res = await gistStore.deleteGist('1');
+      await flushGistWrites();
+      return res;
     });
 
     expect(success).toBe(true);
@@ -141,9 +150,11 @@ test.describe('GistStore Integration', () => {
 
     const starred = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { flushGistWrites } = await import('/src/services/db.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [{ id: '1', starred: false, description: 'Gist', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', public: false, syncStatus: 'synced' }];
       await gistStore.toggleStar('1');
+      await flushGistWrites();
       return gistStore.getGist('1')?.starred;
     });
 

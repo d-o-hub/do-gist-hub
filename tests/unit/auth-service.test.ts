@@ -39,7 +39,6 @@ import { getMetadata, setMetadata } from '../../src/services/db';
 describe('Auth Service', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
-    // Use clearTokenCache if it was exported, but removeToken does it
     await removeToken();
     vi.clearAllMocks();
   });
@@ -71,8 +70,8 @@ describe('Auth Service', () => {
 
   describe('isAuthenticated', () => {
     it('returns true when token exists', async () => {
-      vi.mocked(getMetadata).mockResolvedValueOnce({ data: 'enc-data', iv: 'iv' });
-      vi.mocked(decrypt).mockResolvedValue('token');
+      vi.mocked(getMetadata).mockResolvedValue({ data: 'enc-data', iv: 'iv' });
+      vi.mocked(decrypt).mockResolvedValue('test-token');
       const result = await isAuthenticated();
       expect(result).toBe(true);
     });

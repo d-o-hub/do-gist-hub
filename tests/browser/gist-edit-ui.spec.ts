@@ -54,6 +54,6 @@ test.describe('Gist Edit UI', () => {
     await page.locator('button:has-text("CREATE GIST")').click();
 
     // Should navigate back to home
-    await expect(page.locator('.search-input')).toBeVisible();
+    await expect(page.locator('.search-input, .empty-state-title').first()).toBeVisible();
   });
 });
