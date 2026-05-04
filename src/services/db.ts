@@ -6,6 +6,7 @@ import { safeWarn } from './security/logger';
 
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import { APP } from '@/config/app.config';
+import { debounce } from '../utils/debounce';
 
 // Schema version
 const DB_VERSION = 2;
@@ -70,6 +71,7 @@ export interface GistRecord {
   lastSyncedAt?: string;
   localVersion?: number;
   remoteVersion?: number;
+  lastAccessed?: number;
 }
 
 /**
@@ -190,6 +192,9 @@ export async function initIndexedDB(): Promise<IDBPDatabase<GistDBSchema>> {
     },
   });
 
+  // Run eviction on startup
+  void evictStaleGists();
+
   return dbInstance;
 }
 
@@ -208,21 +213,38 @@ export function getDB(): IDBPDatabase<GistDBSchema> {
  */
 export async function closeDB(): Promise<void> {
   if (dbInstance) {
+    await flushGistWrites();
     await dbInstance.close();
     dbInstance = null;
   }
 }
 
+const pendingGistWrites = new Map<string, GistRecord>();
+
 /**
- * Store gist in local database
+ * Flush pending gist writes to IndexedDB
+ */
+export async function flushGistWrites(): Promise<void> {
+  if (pendingGistWrites.size === 0) return;
+
+  const gists = Array.from(pendingGistWrites.values());
+  pendingGistWrites.clear();
+  await saveGists(gists);
+}
+
+const debouncedFlush = debounce(flushGistWrites, 300);
+
+/**
+ * Store gist in local database (batched)
  */
 export async function saveGist(gist: GistRecord): Promise<void> {
-  const db = getDB();
-  await db.put('gists', {
+  pendingGistWrites.set(gist.id, {
     ...gist,
     syncStatus: gist.syncStatus || 'synced',
-    lastSyncedAt: new Date().toISOString(),
+    lastSyncedAt: gist.lastSyncedAt || new Date().toISOString(),
+    lastAccessed: gist.lastAccessed || Date.now(),
   });
+  debouncedFlush();
 }
 
 /**
@@ -255,7 +277,15 @@ export async function saveGists(gists: GistRecord[]): Promise<void> {
  */
 export async function getGist(id: string): Promise<GistRecord | undefined> {
   const db = getDB();
-  return await db.get('gists', id);
+  const gist = await db.get('gists', id);
+  if (gist) {
+    // Update last accessed time (LRU)
+    void saveGist({
+      ...gist,
+      lastAccessed: Date.now(),
+    });
+  }
+  return gist;
 }
 
 /**
@@ -281,6 +311,21 @@ export async function queueWrite(
   write: Omit<PendingWrite, 'id' | 'createdAt' | 'retryCount'>
 ): Promise<number> {
   const db = getDB();
+
+  // Deduplication: check if an entry for the same gistId already exists
+  const existing = await db.getAllFromIndex('pendingWrites', 'by-gist-id', write.gistId);
+  const duplicate = existing.find((e) => e.action === write.action);
+
+  if (duplicate && duplicate.id) {
+    await db.put('pendingWrites', {
+      ...duplicate,
+      ...write,
+      createdAt: Date.now(), // Refresh timestamp
+      retryCount: 0, // Reset retry count for new payload
+    });
+    return duplicate.id;
+  }
+
   const id = await db.add('pendingWrites', {
     ...write,
     createdAt: Date.now(),
@@ -375,6 +420,39 @@ export async function exportData(): Promise<string> {
   };
 
   return JSON.stringify(data);
+}
+
+/**
+ * Evict stale gists (LRU/TTL)
+ */
+export async function evictStaleGists(): Promise<void> {
+  const db = getDB();
+  const allGists = await db.getAll('gists');
+  if (allGists.length === 0) return;
+
+  const TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+  const MAX_GISTS = 100;
+  const now = Date.now();
+
+  // 1. Evict by TTL
+  const staleIds = allGists
+    .filter((g) => g.lastAccessed && now - g.lastAccessed > TTL_MS)
+    .map((g) => g.id);
+
+  // 2. Evict by LRU limit (if still over limit)
+  const remainingGists = allGists.filter((g) => !staleIds.includes(g.id));
+  if (remainingGists.length > MAX_GISTS) {
+    const sorted = remainingGists.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
+    const toEvict = sorted.slice(MAX_GISTS).map((g) => g.id);
+    staleIds.push(...toEvict);
+  }
+
+  if (staleIds.length > 0) {
+    safeWarn(`[IndexedDB] Evicting ${staleIds.length} stale gists`);
+    const tx = db.transaction('gists', 'readwrite');
+    await Promise.all(staleIds.map((id) => tx.store.delete(id)));
+    await tx.done;
+  }
 }
 
 /**

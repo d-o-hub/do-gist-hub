@@ -9,6 +9,7 @@ import {
   saveGist,
   saveGists,
   getGist,
+  flushGistWrites,
   getAllGists,
   deleteGist,
   queueWrite,
@@ -119,6 +120,7 @@ describe('db', () => {
     it('saves a gist and retrieves it by id', async () => {
       const record = makeGistRecord('gist-1');
       await saveGist(record);
+      await flushGistWrites();
 
       const result = await getGist('gist-1');
       expect(result).toBeDefined();
@@ -138,6 +140,7 @@ describe('db', () => {
 
       await saveGist(record1);
       await saveGist(record2);
+      await flushGistWrites();
 
       const result = await getGist('gist-1');
       expect(result?.description).toBe('Second');
@@ -146,6 +149,7 @@ describe('db', () => {
     it('sets default syncStatus to synced if not provided', async () => {
       const record = makeGistRecord('gist-1', { syncStatus: undefined as never });
       await saveGist(record);
+      await flushGistWrites();
 
       const result = await getGist('gist-1');
       expect(result?.syncStatus).toBe('synced');
@@ -187,6 +191,7 @@ describe('db', () => {
     it('returns all saved gists', async () => {
       await saveGist(makeGistRecord('a'));
       await saveGist(makeGistRecord('b'));
+      await flushGistWrites();
 
       const all = await getAllGists();
       expect(all).toHaveLength(2);
@@ -207,6 +212,7 @@ describe('db', () => {
 
     it('removes a gist by id', async () => {
       await saveGist(makeGistRecord('to-delete'));
+      await flushGistWrites();
       expect(await getGist('to-delete')).toBeDefined();
 
       await deleteGist('to-delete');
