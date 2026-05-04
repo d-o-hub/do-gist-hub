@@ -10,6 +10,12 @@ test.describe('GistStore Integration', () => {
       const { setMetadata } = await import('/src/services/db.ts');
       await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
       await setMetadata('github-username', 'testuser');
+
+      const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
+      networkMonitor.init();
+      // Force status to online for tests
+      Object.defineProperty(networkMonitor, 'status', { value: 'online', writable: true });
+      networkMonitor.isOnline = () => true;
     });
     await page.reload();
   });
