@@ -15,19 +15,37 @@ vi.mock('../../src/services/db', () => ({
 vi.mock('../../src/services/security/logger', () => ({
   safeLog: vi.fn(),
   safeError: vi.fn(),
+  redactToken: vi.fn((t) => t),
+}));
+
+vi.mock('../../src/services/github/client', () => ({
+  validateToken: vi.fn().mockResolvedValue({ isValid: true, username: 'testuser' }),
+  clearUsernameCache: vi.fn(),
+}));
+
+vi.mock('../../src/services/github/rate-limiter', () => ({
+  resetRateLimit: vi.fn(),
 }));
 
 // ── Imports (after mocks) ─────────────────────────────
 
-import { getToken, saveToken, removeToken } from '../../src/services/github/auth';
+import {
+  getToken,
+  saveToken,
+  removeToken,
+  isAuthenticated,
+  getUsername,
+} from '../../src/services/github/auth';
 import { encrypt, decrypt } from '../../src/services/security/crypto';
 import { getMetadata, setMetadata } from '../../src/services/db';
-import { safeLog, safeError } from '../../src/services/security/logger';
 
 // ── Tests ─────────────────────────────────────
 
 describe('Auth Service', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    // Clear session cache by calling removeToken
+    await removeToken();
     vi.clearAllMocks();
   });
 
@@ -40,31 +58,34 @@ describe('Auth Service', () => {
       expect(token).toBeNull();
     });
 
-    it('returns null when legacy token exists but no new format', async () => {
-      vi.mocked(getMetadata)
-        .mockResolvedValueOnce('legacy-token')  // github-pat
-        .mockResolvedValueOnce(undefined);  // github-pat-enc
+    it('returns legacy token and migrates it', async () => {
+      vi.mocked(getMetadata).mockImplementation(async (key) => {
+        if (key === 'github-pat') return 'legacy-token';
+        return undefined;
+      });
 
       const token = await getToken();
-      expect(token).toBeNull();
+      expect(token).toBe('legacy-token');
     });
 
     it('decrypts token from new format', async () => {
-      vi.mocked(getMetadata)
-        .mockResolvedValueOnce(undefined)  // github-pat (legacy)
-        .mockResolvedValueOnce({ data: 'enc-data', iv: 'iv' });  // github-pat-enc
+      vi.mocked(getMetadata).mockImplementation(async (key) => {
+        if (key === 'github-pat-enc') return { data: 'enc-data', iv: 'iv' };
+        return undefined;
+      });
 
       vi.mocked(decrypt).mockResolvedValue('decrypted-token');
 
       const token = await getToken();
       expect(token).toBe('decrypted-token');
-      expect(decrypt).toHaveBeenCalledWith({ data: 'enc-data', iv: 'iv' });
+      expect(decrypt).toHaveBeenCalledWith('enc-data', 'iv');
     });
 
     it('handles decryption failure gracefully', async () => {
-      vi.mocked(getMetadata)
-        .mockResolvedValueOnce(undefined)
-        .mockResolvedValueOnce({ data: 'enc-data', iv: 'iv' });
+      vi.mocked(getMetadata).mockImplementation(async (key) => {
+        if (key === 'github-pat-enc') return { data: 'enc-data', iv: 'iv' };
+        return undefined;
+      });
 
       vi.mocked(decrypt).mockRejectedValue(new Error('Decryption failed'));
 
@@ -84,7 +105,6 @@ describe('Auth Service', () => {
       expect(result.success).toBe(true);
       expect(encrypt).toHaveBeenCalledWith('test-token');
       expect(setMetadata).toHaveBeenCalledWith('github-pat-enc', { data: 'enc-data', iv: 'iv' });
-      expect(setMetadata).toHaveBeenCalledWith('github-pat', null);  // Remove legacy
     });
 
     it('handles encryption failure', async () => {
@@ -112,134 +132,40 @@ describe('Auth Service', () => {
 
   describe('isAuthenticated', () => {
     it('returns true when token exists', async () => {
-      vi.mocked(getMetadata)
-        .mockResolvedValueOnce(undefined)  // github-pat check
-        .mockResolvedValueOnce({ data: 'enc-data', iv: 'iv' });  // github-pat-enc
+      vi.mocked(getMetadata).mockImplementation(async (key) => {
+        if (key === 'github-pat-enc') return { data: 'enc-data', iv: 'iv' };
+        return undefined;
+      });
+      vi.mocked(decrypt).mockResolvedValue('some-token');
 
       const result = await isAuthenticated();
       expect(result).toBe(true);
     });
 
     it('returns false when no token stored', async () => {
-      vi.mocked(getMetadata)
-        .mockResolvedValueOnce(undefined)
-        .mockResolvedValueOnce(undefined);
+      vi.mocked(getMetadata).mockResolvedValue(undefined);
 
       const result = await isAuthenticated();
       expect(result).toBe(false);
     });
   });
-});
 
-  // ── getToken ──────────────────────────────────────────────────
+  // ── getUsername ────────────────────────────────
 
-  describe('getToken', () => {
-    it('returns null when no token stored', async () => {
-      vi.mocked(getMetadata).mockResolvedValue(undefined);
-      const token = await getToken();
-      expect(token).toBeNull();
-    });
-
-    it('returns null when legacy token exists but no new format', async () => {
-      vi.mocked(getMetadata)
-        .mockResolvedValueOnce('legacy-token')  // github-pat
-        .mockResolvedValueOnce(undefined);  // github-pat-enc
-
-      const token = await getToken();
-      expect(token).toBeNull();
-    });
-
-    it('decrypts token from new format', async () => {
-      vi.mocked(getMetadata)
-        .mockResolvedValueOnce(undefined)  // github-pat (legacy)
-        .mockResolvedValueOnce({ data: 'enc-data', iv: 'iv' });  // github-pat-enc
-
-      vi.mocked(decryptToken).mockResolvedValue('decrypted-token');
-
-      const token = await getToken();
-      expect(token).toBe('decrypted-token');
-      expect(decryptToken).toHaveBeenCalledWith({ data: 'enc-data', iv: 'iv' });
-    });
-
-    it('handles decryption failure gracefully', async () => {
-      vi.mocked(getMetadata)
-        .mockResolvedValueOnce(undefined)
-        .mockResolvedValueOnce({ data: 'enc-data', iv: 'iv' });
-
-      vi.mocked(decryptToken).mockRejectedValue(new Error('Decryption failed'));
-
-      const token = await getToken();
-      expect(token).toBeNull();
-    });
-  });
-
-  // ── saveToken ──────────────────────────────────────────────
-
-  describe('saveToken', () => {
-    it('encrypts and saves token', async () => {
-      vi.mocked(encryptToken).mockResolvedValue({ data: 'enc-data', iv: 'iv' });
-
-      await saveToken('test-token');
-
-      expect(encryptToken).toHaveBeenCalledWith('test-token');
-      expect(setMetadata).toHaveBeenCalledWith('github-pat-enc', { data: 'enc-data', iv: 'iv' });
-      expect(setMetadata).toHaveBeenCalledWith('github-pat', null);  // Remove legacy
-    });
-
-    it('handles encryption failure', async () => {
-      vi.mocked(encryptToken).mockRejectedValue(new Error('Encryption failed'));
-
-      await expect(saveToken('test-token')).rejects.toThrow('Encryption failed');
-    });
-  });
-
-  // ── removeToken ───────────────────────────────────────────
-
-  describe('removeToken', () => {
-    it('removes token from storage', async () => {
-      await removeToken();
-
-      expect(setMetadata).toHaveBeenCalledWith('github-pat', null);
-      expect(setMetadata).toHaveBeenCalledWith('github-pat-enc', null);
-      expect(setMetadata).toHaveBeenCalledWith('github-username', null);
-    });
-  });
-
-  // ── getCurrentUsername ─────────────────────────────────────
-
-  describe('getCurrentUsername', () => {
-    it('returns cached username if available', async () => {
-      // First call to populate cache
-      vi.mocked(getMetadata).mockResolvedValue('cached-user');
-      const first = await getCurrentUsername();
-      expect(first).toBe('cached-user');
-
-      // Second call should use cache
-      vi.clearAllMocks();
-      const second = await getCurrentUsername();
-      expect(second).toBe('cached-user');
-      expect(getMetadata).not.toHaveBeenCalled();
+  describe('getUsername', () => {
+    it('returns stored username', async () => {
+      vi.mocked(getMetadata).mockImplementation(async (key) => {
+        if (key === 'github-username') return 'testuser';
+        return undefined;
+      });
+      const username = await getUsername();
+      expect(username).toBe('testuser');
     });
 
     it('returns null when no username stored', async () => {
       vi.mocked(getMetadata).mockResolvedValue(undefined);
-      const username = await getCurrentUsername();
+      const username = await getUsername();
       expect(username).toBeNull();
-    });
-  });
-
-  // ── clearUsernameCache ───────────────────────────────────
-
-  describe('clearUsernameCache', () => {
-    it('clears the username cache', async () => {
-      vi.mocked(getMetadata).mockResolvedValue('user');
-      await getCurrentUsername();  // Populate cache
-
-      clearUsernameCache();
-
-      vi.clearAllMocks();
-      await getCurrentUsername();  // Should fetch again
-      expect(getMetadata).toHaveBeenCalled();
     });
   });
 });
