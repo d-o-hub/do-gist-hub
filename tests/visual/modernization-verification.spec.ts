@@ -11,7 +11,7 @@ test.describe('UI Modernization Verification', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     const sidebar = await page.$('.sidebar-nav');
     if (sidebar) {
-      const display = await sidebar.evaluate(el => window.getComputedStyle(el).display);
+      const display = await sidebar.evaluate((el) => window.getComputedStyle(el).display);
       expect(display).toBe('none');
     }
     // If sidebar not in DOM, mobile-first is implicitly satisfied
@@ -21,7 +21,7 @@ test.describe('UI Modernization Verification', () => {
     const card = page.locator('.gist-card').first();
     const cardVisible = await card.isVisible().catch(() => false);
     if (cardVisible) {
-      const containerType = await card.evaluate(el => window.getComputedStyle(el).containerType);
+      const containerType = await card.evaluate((el) => window.getComputedStyle(el).containerType);
       expect(containerType).toBe('inline-size');
     }
   });

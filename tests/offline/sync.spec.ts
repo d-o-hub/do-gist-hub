@@ -17,7 +17,7 @@ test.describe('Offline Sync', () => {
     // App should reflect online status
     const onlineIndicator = page.locator('.status-indicator.online');
     const onlineVisible = await onlineIndicator.isVisible().catch(() => false);
-    
+
     // Should show online somewhere in the UI
     expect(onlineVisible || isOnline).toBe(true);
   });
@@ -135,7 +135,9 @@ test.describe('Offline Sync', () => {
     await page.locator('#gist-content').fill('Offline test content');
 
     // Submit form
-    await page.locator('#create-gist-form').evaluate((form: HTMLFormElement) => form.requestSubmit());
+    await page
+      .locator('#create-gist-form')
+      .evaluate((form: HTMLFormElement) => form.requestSubmit());
 
     // Should show toast or update UI
     await page.waitForTimeout(1000);

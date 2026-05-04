@@ -7,24 +7,20 @@ test.describe('GistStore Integration', () => {
 
     // Ensure we are authenticated for GistStore to work
     await page.evaluate(async () => {
-      const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
-      if (networkMonitor.getStatus() !== 'online') {
-        window.dispatchEvent(new Event('online'));
-      }
-      const { setMetadata } = await import('/src/services/db.ts');
+      const { setMetadata } = await import('./src/services/db.ts');
       await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
       await setMetadata('github-username', 'testuser');
     });
     await page.reload();
+    await page.evaluate(async () => {
+      const { default: networkMonitor } = await import('./src/services/network/offline-monitor.ts');
+      networkMonitor.isOnline = () => true;
+    });
   });
 
   test('should initialize and load gists from IndexedDB', async ({ page }) => {
     const gists = await page.evaluate(async () => {
-      const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
-      if (networkMonitor.getStatus() !== 'online') {
-        window.dispatchEvent(new Event('online'));
-      }
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       await gistStore.init();
       return gistStore.getGists();
     });
@@ -33,21 +29,41 @@ test.describe('GistStore Integration', () => {
 
   test('should filter gists correctly', async ({ page }) => {
     const results = await page.evaluate(async () => {
-      const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
-      if (networkMonitor.getStatus() !== 'online') {
-        window.dispatchEvent(new Event('online'));
-      }
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       // Mock some gists in the store via internal access
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
-        { id: '1', starred: true, description: 'Starred Gist', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', public: false, syncStatus: 'synced' },
-        { id: '2', starred: false, description: 'My Gist', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', public: false, syncStatus: 'synced' }
+        {
+          id: '1',
+          starred: true,
+          description: 'Starred Gist',
+          files: {},
+          htmlUrl: '',
+          gitPullUrl: '',
+          gitPushUrl: '',
+          createdAt: '',
+          updatedAt: '',
+          public: false,
+          syncStatus: 'synced',
+        },
+        {
+          id: '2',
+          starred: false,
+          description: 'My Gist',
+          files: {},
+          htmlUrl: '',
+          gitPullUrl: '',
+          gitPushUrl: '',
+          createdAt: '',
+          updatedAt: '',
+          public: false,
+          syncStatus: 'synced',
+        },
       ];
       return {
         all: gistStore.filterGists('all'),
         mine: gistStore.filterGists('mine'),
-        starred: gistStore.filterGists('starred')
+        starred: gistStore.filterGists('starred'),
       };
     });
 
@@ -60,20 +76,40 @@ test.describe('GistStore Integration', () => {
 
   test('should search gists correctly', async ({ page }) => {
     const searchResults = await page.evaluate(async () => {
-      const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
-      if (networkMonitor.getStatus() !== 'online') {
-        window.dispatchEvent(new Event('online'));
-      }
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
-        { id: '1', description: 'React Hooks', files: { 'hooks.js': { filename: 'hooks.js' } }, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', starred: false, public: false, syncStatus: 'synced' },
-        { id: '2', description: 'TypeScript Tips', files: { 'tips.ts': { filename: 'tips.ts' } }, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', starred: false, public: false, syncStatus: 'synced' }
+        {
+          id: '1',
+          description: 'React Hooks',
+          files: { 'hooks.js': { filename: 'hooks.js' } },
+          htmlUrl: '',
+          gitPullUrl: '',
+          gitPushUrl: '',
+          createdAt: '',
+          updatedAt: '',
+          starred: false,
+          public: false,
+          syncStatus: 'synced',
+        },
+        {
+          id: '2',
+          description: 'TypeScript Tips',
+          files: { 'tips.ts': { filename: 'tips.ts' } },
+          htmlUrl: '',
+          gitPullUrl: '',
+          gitPushUrl: '',
+          createdAt: '',
+          updatedAt: '',
+          starred: false,
+          public: false,
+          syncStatus: 'synced',
+        },
       ];
       return {
         react: gistStore.searchGists('react'),
         tips: gistStore.searchGists('tips'),
-        none: gistStore.searchGists('vue')
+        none: gistStore.searchGists('vue'),
       };
     });
 
@@ -93,17 +129,13 @@ test.describe('GistStore Integration', () => {
           files: { 'test.txt': { filename: 'test.txt', content: 'hello' } },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          html_url: 'https://gist.github.com/new-gist-id'
+          html_url: 'https://gist.github.com/new-gist-id',
         }),
       });
     });
 
     const success = await page.evaluate(async () => {
-      const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
-      if (networkMonitor.getStatus() !== 'online') {
-        window.dispatchEvent(new Event('online'));
-      }
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const result = await gistStore.createGist('New Gist', true, { 'test.txt': 'hello' });
       return !!result;
     });
@@ -121,20 +153,30 @@ test.describe('GistStore Integration', () => {
             id: '1',
             description: 'Updated Gist',
             files: { 'test.txt': { filename: 'test.txt', content: 'updated' } },
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           }),
         });
       }
     });
 
     const success = await page.evaluate(async () => {
-      const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
-      if (networkMonitor.getStatus() !== 'online') {
-        window.dispatchEvent(new Event('online'));
-      }
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
-      gs.gists = [{ id: '1', description: 'Old', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', starred: false, public: false, syncStatus: 'synced' }];
+      gs.gists = [
+        {
+          id: '1',
+          description: 'Old',
+          files: {},
+          htmlUrl: '',
+          gitPullUrl: '',
+          gitPushUrl: '',
+          createdAt: '',
+          updatedAt: '',
+          starred: false,
+          public: false,
+          syncStatus: 'synced',
+        },
+      ];
       return await gistStore.updateGist('1', { description: 'Updated Gist' });
     });
 
@@ -149,13 +191,23 @@ test.describe('GistStore Integration', () => {
     });
 
     const success = await page.evaluate(async () => {
-      const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
-      if (networkMonitor.getStatus() !== 'online') {
-        window.dispatchEvent(new Event('online'));
-      }
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
-      gs.gists = [{ id: '1', description: 'To Delete', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', starred: false, public: false, syncStatus: 'synced' }];
+      gs.gists = [
+        {
+          id: '1',
+          description: 'To Delete',
+          files: {},
+          htmlUrl: '',
+          gitPullUrl: '',
+          gitPushUrl: '',
+          createdAt: '',
+          updatedAt: '',
+          starred: false,
+          public: false,
+          syncStatus: 'synced',
+        },
+      ];
       return await gistStore.deleteGist('1');
     });
 
@@ -168,13 +220,23 @@ test.describe('GistStore Integration', () => {
     });
 
     const starred = await page.evaluate(async () => {
-      const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
-      if (networkMonitor.getStatus() !== 'online') {
-        window.dispatchEvent(new Event('online'));
-      }
-      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { default: gistStore } = await import('./src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
-      gs.gists = [{ id: '1', starred: false, description: 'Gist', files: {}, htmlUrl: '', gitPullUrl: '', gitPushUrl: '', createdAt: '', updatedAt: '', public: false, syncStatus: 'synced' }];
+      gs.gists = [
+        {
+          id: '1',
+          starred: false,
+          description: 'Gist',
+          files: {},
+          htmlUrl: '',
+          gitPullUrl: '',
+          gitPushUrl: '',
+          createdAt: '',
+          updatedAt: '',
+          public: false,
+          syncStatus: 'synced',
+        },
+      ];
       await gistStore.toggleStar('1');
       return gistStore.getGist('1')?.starred;
     });

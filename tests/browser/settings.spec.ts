@@ -12,7 +12,10 @@ test.describe('Settings', () => {
       await page.locator('.mobile-menu [data-route="settings"]').waitFor({ state: 'visible' });
       await page.locator('.mobile-menu [data-route="settings"]').click();
     } else {
-      const settingsBtn = page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first();
+      const settingsBtn = page
+        .locator('[data-testid="settings-btn"]')
+        .filter({ visible: true })
+        .first();
       await settingsBtn.waitFor({ state: 'visible' });
       await settingsBtn.click();
     }
@@ -57,7 +60,9 @@ test.describe('Settings', () => {
 
     // Change to dark theme
     await themeSelect.selectOption('dark');
-    const themeAttr = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
+    const themeAttr = await page.evaluate(() =>
+      document.documentElement.getAttribute('data-theme')
+    );
     expect(themeAttr).toBe('dark');
   });
 

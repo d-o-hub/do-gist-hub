@@ -7,7 +7,7 @@ test.describe('Gist Edit UI', () => {
 
     // Auth for edit access
     await page.evaluate(async () => {
-      const { setMetadata } = await import('/src/services/db.ts');
+      const { setMetadata } = await import('./src/services/db.ts');
       await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
       await setMetadata('github-username', 'testuser');
     });
@@ -46,7 +46,7 @@ test.describe('Gist Edit UI', () => {
           files: { 'index.js': { filename: 'index.js', content: 'Hello World' } },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          html_url: 'https://gist.github.com/new-id'
+          html_url: 'https://gist.github.com/new-id',
         }),
       });
     });

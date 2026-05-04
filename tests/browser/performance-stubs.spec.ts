@@ -19,19 +19,19 @@ test.describe('Performance Metrics', () => {
     });
 
     if (lcp > 0) {
-        expect(lcp).toBeLessThan(2500);
+      expect(lcp).toBeLessThan(2500);
     }
   });
 
   test('should verify FID/INP interaction latency is low', async ({ page, browserName }) => {
     if (browserName === 'webkit') {
-       test.skip(true, 'WebKit layout is flaky for Settings nav button');
+      test.skip(true, 'WebKit layout is flaky for Settings nav button');
     }
     await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
 
     const interactionMetrics = await page.evaluate(() => {
       const entries = performance.getEntriesByType('event');
-      return entries.map(e => e.duration);
+      return entries.map((e) => e.duration);
     });
 
     if (interactionMetrics.length > 0) {
@@ -42,7 +42,7 @@ test.describe('Performance Metrics', () => {
 
   test('should verify initial JS bundle size is within budget', async ({ page }) => {
     let totalJsSize = 0;
-    page.on('response', response => {
+    page.on('response', (response) => {
       if (response.url().endsWith('.js')) {
         const headers = response.headers();
         totalJsSize += parseInt(headers['content-length'] || '0', 10);
@@ -51,13 +51,16 @@ test.describe('Performance Metrics', () => {
 
     await page.reload({ waitUntil: 'networkidle' });
     if (totalJsSize > 0) {
-        expect(totalJsSize).toBeLessThan(150 * 1024);
+      expect(totalJsSize).toBeLessThan(150 * 1024);
     }
   });
 
-  test('should verify route-based code splitting for large components', async ({ page, browserName }) => {
+  test('should verify route-based code splitting for large components', async ({
+    page,
+    browserName,
+  }) => {
     const loadedScripts = new Set<string>();
-    page.on('response', response => {
+    page.on('response', (response) => {
       if (response.url().endsWith('.js')) loadedScripts.add(response.url());
     });
 
@@ -66,7 +69,7 @@ test.describe('Performance Metrics', () => {
     const initialScriptCount = loadedScripts.size;
 
     if (browserName === 'webkit') {
-       test.skip(true, 'WebKit layout is flaky for Settings nav button');
+      test.skip(true, 'WebKit layout is flaky for Settings nav button');
     }
 
     await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();

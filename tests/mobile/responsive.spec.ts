@@ -17,7 +17,9 @@ test.describe('Mobile Responsive', () => {
   });
 
   for (const bp of MOBILE_BREAKPOINTS) {
-    test(`should have no horizontal overflow at ${bp.name} (${bp.width}x${bp.height})`, async ({ page }) => {
+    test(`should have no horizontal overflow at ${bp.name} (${bp.width}x${bp.height})`, async ({
+      page,
+    }) => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
 
       const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
@@ -45,7 +47,7 @@ test.describe('Mobile Responsive', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     const sidebarMobile = page.locator('[data-testid="sidebar-nav"]');
     const sidebarVisibleMobile = await sidebarMobile.isVisible().catch(() => false);
-    
+
     // Desktop - sidebar should be visible
     await page.setViewportSize({ width: 1280, height: 800 });
     const sidebarDesktop = page.locator('[data-testid="sidebar-nav"]');
@@ -53,7 +55,7 @@ test.describe('Mobile Responsive', () => {
 
     // On mobile, if sidebar is visible it should be styled correctly
     if (sidebarVisibleMobile) {
-      const sidebarDisplay = await sidebarMobile.evaluate(el => getComputedStyle(el).display);
+      const sidebarDisplay = await sidebarMobile.evaluate((el) => getComputedStyle(el).display);
       expect(sidebarDisplay).toMatch(/none|hidden/i);
     }
   });
@@ -68,8 +70,8 @@ test.describe('Mobile Responsive', () => {
           'button, .nav-item, .icon-button, .filter-btn, .gist-action-btn'
         );
         const small: Array<{ tag: string; width: number; height: number; text?: string }> = [];
-        
-        elements.forEach(el => {
+
+        elements.forEach((el) => {
           const rect = el.getBoundingClientRect();
           if (rect.width > 0 && rect.height > 0) {
             if (rect.width < 44 || rect.height < 44) {
@@ -82,7 +84,7 @@ test.describe('Mobile Responsive', () => {
             }
           }
         });
-        
+
         return small;
       });
 
@@ -122,7 +124,9 @@ test.describe('Mobile Responsive', () => {
       const main = document.querySelector('.app-main');
       if (!main) return 0;
       const style = getComputedStyle(main);
-      return parseFloat(style.width) - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      return (
+        parseFloat(style.width) - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+      );
     });
 
     // Content area should be at least 280px wide (allowing for padding)
@@ -137,11 +141,11 @@ test.describe('Mobile Responsive', () => {
     // Form inputs should be full width on mobile
     const formInput = page.locator('.form-input').first();
     const inputVisible = await formInput.isVisible().catch(() => false);
-    
+
     if (inputVisible) {
-      const inputWidth = await formInput.evaluate(el => el.getBoundingClientRect().width);
+      const inputWidth = await formInput.evaluate((el) => el.getBoundingClientRect().width);
       const viewportWidth = await page.evaluate(() => window.innerWidth);
-      
+
       // Input should take most of the viewport width (allow for padding/margins)
       expect(inputWidth).toBeGreaterThan(viewportWidth * 0.75);
     }
