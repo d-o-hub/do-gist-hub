@@ -7,15 +7,11 @@ test.describe('Gist Edit UI', () => {
 
     // Auth for edit access
     await page.evaluate(async () => {
-      const { setMetadata, flushGistWrites } = await import('/src/services/db.ts');
-      const { encrypt } = await import('/src/services/security/crypto.ts');
-      const encrypted = await encrypt('dummy-token');
-      await setMetadata('github-pat-enc', encrypted);
+      const { setMetadata } = await import('./src/services/db.ts');
+      await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
       await setMetadata('github-username', 'testuser');
-      await flushGistWrites();
     });
     await page.reload();
-    await page.waitForSelector('.app-shell', { state: 'visible' });
   });
 
   test('should render create gist form', async ({ page }) => {
@@ -51,7 +47,7 @@ test.describe('Gist Edit UI', () => {
           updated_at: new Date().toISOString(),
           html_url: 'https://gist.github.com/new-id',
           public: true,
-          owner: { login: 'testuser', id: 1, avatar_url: '', html_url: '' }
+          owner: { login: 'testuser', id: 1, avatar_url: '', html_url: '' },
         }),
       });
     });
@@ -59,6 +55,6 @@ test.describe('Gist Edit UI', () => {
     await page.locator('button:has-text("CREATE GIST")').click();
 
     // Should navigate back to home
-    await expect(page.locator('.search-input, .empty-state-title').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.search-input').first()).toBeVisible({ timeout: 15000 });
   });
 });

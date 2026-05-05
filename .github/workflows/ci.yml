@@ -1,10 +1,11 @@
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 permissions:
   contents: read
@@ -36,8 +37,6 @@ jobs:
     name: Quality Gate
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -53,13 +52,10 @@ jobs:
         run: pnpm audit --audit-level critical
       - name: Run Quality Gate
         run: pnpm run quality
-
   tests:
     name: Playwright Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     strategy:
       fail-fast: false
       matrix:
@@ -92,13 +88,10 @@ jobs:
           name: playwright-report-shard-${{ matrix.shard }}-of-3
           path: playwright-report/
           retention-days: 7
-
   android-debug-build:
     name: Android Debug Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -127,13 +120,10 @@ jobs:
         with:
           name: app-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
-
   bundle-analysis:
     name: Bundle Analysis
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -154,14 +144,11 @@ jobs:
           name: bundle-analysis
           path: analysis/bundle-stats.html
           retention-days: 7
-
   visual-tests:
     name: Visual Regression Tests
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
