@@ -21,6 +21,9 @@ module.exports = {
     ],
     'header-max-length': [2, 'always', 100],
   },
-  ignores: (commit) =>
-    commit.startsWith('Update SKILL.md') || commit.startsWith('Merge') || commit.includes('[bot]'),
+  ignores: [
+    (commit) => /^Update SKILL\.md/.test(commit),
+    (commit) => /^Merge/.test(commit),
+    (commit) => /\[bot\]/.test(commit),
+  ],
 };
