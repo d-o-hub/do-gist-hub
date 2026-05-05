@@ -118,6 +118,12 @@ test.describe('GistStore Integration', () => {
   });
 
   test('should handle gist creation (online)', async ({ page }) => {
+    // Initialize the store first
+    await page.evaluate(async () => {
+      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      await gistStore.init();
+    });
+
     await page.route('**/gists', async (route) => {
       await route.fulfill({
         status: 201,
@@ -143,6 +149,12 @@ test.describe('GistStore Integration', () => {
   });
 
   test('should handle gist updates', async ({ page }) => {
+    // Initialize the store first
+    await page.evaluate(async () => {
+      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      await gistStore.init();
+    });
+
     await page.route('**/gists/*', async (route) => {
       if (route.request().method() === 'PATCH') {
         await route.fulfill({
@@ -183,6 +195,12 @@ test.describe('GistStore Integration', () => {
   });
 
   test('should handle gist deletion', async ({ page }) => {
+    // Initialize the store first
+    await page.evaluate(async () => {
+      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      await gistStore.init();
+    });
+
     await page.route('**/gists/*', async (route) => {
       if (route.request().method() === 'DELETE') {
         await route.fulfill({ status: 204 });
@@ -214,6 +232,12 @@ test.describe('GistStore Integration', () => {
   });
 
   test('should toggle star status', async ({ page }) => {
+    // Initialize the store first
+    await page.evaluate(async () => {
+      const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      await gistStore.init();
+    });
+
     await page.route('**/gists/*/star', async (route) => {
       await route.fulfill({ status: 204 });
     });
