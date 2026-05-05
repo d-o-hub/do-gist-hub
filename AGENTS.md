@@ -256,6 +256,26 @@ npm run cap:sync     # sync Capacitor after build
 
 ---
 
+## Code Quality — Required Before Every Commit
+
+Before committing any TypeScript change, the agent MUST run:
+
+1. `pnpm run lint` — must produce zero errors AND zero warnings (fix violations before committing)
+2. `pnpm run typecheck` — must produce no type errors
+3. `pnpm run test:unit` — all unit tests must pass
+
+Specific rules to follow in generated TypeScript:
+- NEVER declare functions at the top-level module scope; use `const` arrow functions or class methods
+- NEVER use `async` on a function that contains no `await`
+- NEVER explicitly annotate variables initialized to a string/number/boolean literal (TypeScript infers these)
+- NEVER use the `void` operator for return types; use `undefined` or omit the return value (statement-level `void` for floating promises is permitted via `allowAsStatement: true`)
+- NEVER use wildcard imports (`import * as X`); use named imports only
+- ALWAYS use `Boolean(x)` instead of `!!x` for boolean coercion
+- Keep cyclomatic complexity of any function below 7; extract helpers if needed
+- Class methods that don't reference `this` must be declared `static`
+
+---
+
 ## UI/UX Production Standards
 
 ### Critical Rules
