@@ -124,12 +124,15 @@ test.describe('Offline Cache', () => {
 
     // App should still render without crashing
     await expect(page.locator('.app-shell')).toBeVisible();
-    
+
     // Should show empty state or loading
     const emptyState = page.locator('.empty-state');
     const emptyVisible = await emptyState.isVisible().catch(() => false);
-    const listExists = await page.locator('.gist-list').count().then(c => c > 0);
-    
+    const listExists = await page
+      .locator('.gist-list')
+      .count()
+      .then((c) => c > 0);
+
     expect(emptyVisible || listExists).toBe(true);
   });
 
@@ -144,7 +147,7 @@ test.describe('Offline Cache', () => {
           const getAll = store.getAll();
           getAll.onsuccess = () => {
             const gists = getAll.result;
-            resolve(gists.map((g: any) => g.syncStatus || 'unknown'));
+            resolve(gists.map((g: { syncStatus?: string }) => g.syncStatus || 'unknown'));
           };
           getAll.onerror = () => resolve([]);
         };

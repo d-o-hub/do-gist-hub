@@ -48,7 +48,7 @@
   font-size: var(--text-micro);
   font-weight: 700;
   letter-spacing: 0.3em;
-  text-transform: uppercase;
+
   color: var(--color-text-muted);
 }
 
@@ -100,7 +100,7 @@
 .confirm-title {
   font-family: var(--font-display);
   font-size: var(--text-lg);
-  text-transform: uppercase;
+
   letter-spacing: 0.05em;
   color: var(--color-text);
 }

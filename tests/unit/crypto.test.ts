@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { webcrypto } from 'node:crypto';
-import { encrypt, decrypt, getOrCreateKey, b64encode, b64decode } from '../../src/services/security/crypto';
+import {
+  encrypt,
+  decrypt,
+  getOrCreateKey,
+  b64encode,
+  b64decode,
+} from '../../src/services/security/crypto';
 
 // In-memory metadata store for mocking IndexedDB
 const metadataStore = new Map<string, unknown>();

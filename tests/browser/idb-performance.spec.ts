@@ -14,15 +14,15 @@ test.describe('IndexedDB Performance Optimization', () => {
         id: `gist-${i}`,
         description: `Performance Test Gist ${i}`,
         files: {
-          'test.txt': { filename: 'test.txt', content: 'Benchmark content' }
+          'test.txt': { filename: 'test.txt', content: 'Benchmark content' },
         },
         updatedAt: new Date().toISOString(),
         starred: false,
-        syncStatus: 'synced'
+        syncStatus: 'synced',
       })),
       pendingWrites: [],
       metadata: [{ key: 'app-meta', total: numGists, starred: 0 }],
-      logs: []
+      logs: [],
     };
     const jsonStr = JSON.stringify(testData);
 
