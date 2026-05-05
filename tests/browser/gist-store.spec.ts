@@ -8,9 +8,15 @@ test.describe('GistStore Integration', () => {
     await page.evaluate(async () => {
       const { setMetadata, flushGistWrites } = await import('/src/services/db.ts');
       const { encrypt } = await import('/src/services/security/crypto.ts');
+      const { default: networkMonitor } = await import('/src/services/network/offline-monitor.ts');
+
       const encrypted = await encrypt('dummy-token');
       await setMetadata('github-pat-enc', encrypted);
       await setMetadata('github-username', 'testuser');
+
+      // Force online status in prototype
+      (networkMonitor as unknown as { status: string }).status = 'online';
+
       await flushGistWrites();
     });
     await page.reload();
@@ -29,7 +35,7 @@ test.describe('GistStore Integration', () => {
   test('should filter gists correctly', async ({ page }) => {
     const results = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
-      const gs = gistStore as any;
+      const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
         { id: '1', starred: true, updatedAt: new Date().toISOString(), files: {}, syncStatus: 'synced' },
         { id: '2', starred: false, updatedAt: new Date().toISOString(), files: {}, syncStatus: 'synced' }
@@ -46,7 +52,7 @@ test.describe('GistStore Integration', () => {
   test('should search gists correctly', async ({ page }) => {
     const searchResults = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
-      const gs = gistStore as any;
+      const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
         { id: '1', description: 'React Hooks', files: { 'hooks.js': { filename: 'hooks.js' } }, updatedAt: new Date().toISOString(), starred: false, syncStatus: 'synced' },
         { id: '2', description: 'TypeScript Tips', files: { 'tips.ts': { filename: 'tips.ts' } }, updatedAt: new Date().toISOString(), starred: false, syncStatus: 'synced' }
