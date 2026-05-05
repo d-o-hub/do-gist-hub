@@ -6,6 +6,7 @@ import { safeWarn } from './security/logger';
 
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import { APP } from '@/config/app.config';
+import { debounce } from '../utils/debounce';
 
 // Schema version
 const DB_VERSION = 2;
@@ -70,6 +71,7 @@ export interface GistRecord {
   lastSyncedAt?: string;
   localVersion?: number;
   remoteVersion?: number;
+  lastAccessed?: number;
 }
 
 /**
@@ -190,6 +192,9 @@ export async function initIndexedDB(): Promise<IDBPDatabase<GistDBSchema>> {
     },
   });
 
+  // Run eviction on startup
+  void evictStaleGists();
+
   return dbInstance;
 }
 
@@ -208,45 +213,74 @@ export function getDB(): IDBPDatabase<GistDBSchema> {
  */
 export async function closeDB(): Promise<void> {
   if (dbInstance) {
+    await flushGistWrites();
     await dbInstance.close();
     dbInstance = null;
   }
 }
 
+const pendingGistWrites = new Map<string, GistRecord>();
+
 /**
- * Store gist in local database
+ * Flush pending gist writes to IndexedDB
+ */
+export async function flushGistWrites(): Promise<void> {
+  if (pendingGistWrites.size === 0) return;
+
+  const gists = Array.from(pendingGistWrites.values());
+  pendingGistWrites.clear();
+  await saveGistsRaw(gists);
+}
+
+const debouncedFlush = debounce(flushGistWrites, 300);
+
+/**
+ * Store gist in local database (batched)
  */
 export async function saveGist(gist: GistRecord): Promise<void> {
-  const db = getDB();
-  await db.put('gists', {
+  pendingGistWrites.set(gist.id, {
     ...gist,
     syncStatus: gist.syncStatus || 'synced',
-    lastSyncedAt: new Date().toISOString(),
+    lastSyncedAt: gist.lastSyncedAt || new Date().toISOString(),
+    lastAccessed: gist.lastAccessed || Date.now(),
   });
+  debouncedFlush();
 }
 
 /**
  * Store multiple gists in local database using a single transaction
+ * Optimized for bulk updates and deduplication.
  */
 export async function saveGists(gists: GistRecord[]): Promise<void> {
   if (gists.length === 0) return;
 
+  // Sync in-memory buffer: if we are bulk saving, these gists are no longer "pending"
+  for (const gist of gists) {
+    pendingGistWrites.delete(gist.id);
+  }
+
+  await saveGistsRaw(gists);
+}
+
+/**
+ * Internal helper to save gists directly to IDB without affecting pending writes map
+ */
+async function saveGistsRaw(gists: GistRecord[]): Promise<void> {
   const db = getDB();
   const tx = db.transaction('gists', 'readwrite');
   const now = new Date().toISOString();
 
-  // Initiate all puts and await their creation
   await Promise.all(
     gists.map((gist) =>
       tx.store.put({
         ...gist,
         syncStatus: gist.syncStatus || 'synced',
-        lastSyncedAt: now,
+        lastSyncedAt: gist.lastSyncedAt || now,
+        lastAccessed: gist.lastAccessed || Date.now(),
       })
     )
   );
 
-  // Await transaction completion
   await tx.done;
 }
 
@@ -254,8 +288,20 @@ export async function saveGists(gists: GistRecord[]): Promise<void> {
  * Get gist from local database
  */
 export async function getGist(id: string): Promise<GistRecord | undefined> {
+  // Check pending writes first for consistency (Read Your Own Writes)
+  const pending = pendingGistWrites.get(id);
+  if (pending) return pending;
+
   const db = getDB();
-  return await db.get('gists', id);
+  const gist = await db.get('gists', id);
+  if (gist) {
+    // Update last accessed time (LRU) - note this triggers a debounced write
+    void saveGist({
+      ...gist,
+      lastAccessed: Date.now(),
+    });
+  }
+  return gist;
 }
 
 /**
@@ -263,13 +309,23 @@ export async function getGist(id: string): Promise<GistRecord | undefined> {
  */
 export async function getAllGists(): Promise<GistRecord[]> {
   const db = getDB();
-  return await db.getAll('gists');
+  const gists = await db.getAll('gists');
+
+  if (pendingGistWrites.size === 0) return gists;
+
+  // Merge with pending writes for consistency
+  const gistMap = new Map(gists.map((g) => [g.id, g]));
+  for (const [id, gist] of pendingGistWrites) {
+    gistMap.set(id, gist);
+  }
+  return Array.from(gistMap.values());
 }
 
 /**
  * Delete gist from local database
  */
 export async function deleteGist(id: string): Promise<void> {
+  pendingGistWrites.delete(id);
   const db = getDB();
   await db.delete('gists', id);
 }
@@ -281,6 +337,21 @@ export async function queueWrite(
   write: Omit<PendingWrite, 'id' | 'createdAt' | 'retryCount'>
 ): Promise<number> {
   const db = getDB();
+
+  // Deduplication: check if an entry for the same gistId already exists
+  const existing = await db.getAllFromIndex('pendingWrites', 'by-gist-id', write.gistId);
+  const duplicate = existing.find((e) => e.action === write.action);
+
+  if (duplicate && duplicate.id) {
+    await db.put('pendingWrites', {
+      ...duplicate,
+      ...write,
+      createdAt: Date.now(), // Refresh timestamp
+      retryCount: 0, // Reset retry count for new payload
+    });
+    return duplicate.id;
+  }
+
   const id = await db.add('pendingWrites', {
     ...write,
     createdAt: Date.now(),
@@ -346,6 +417,7 @@ export async function getMetadata<T>(key: string): Promise<T | undefined> {
  * Clear all data (for logout/reset)
  */
 export async function clearAllData(): Promise<void> {
+  pendingGistWrites.clear();
   const db = getDB();
   const tx = db.transaction(['gists', 'pendingWrites', 'metadata', 'logs'], 'readwrite');
   await tx.objectStore('gists').clear();
@@ -359,6 +431,7 @@ export async function clearAllData(): Promise<void> {
  * Export data for backup
  */
 export async function exportData(): Promise<string> {
+  await flushGistWrites();
   const db = getDB();
   const gists = await db.getAll('gists');
   const pendingWrites = await db.getAll('pendingWrites');
@@ -381,16 +454,12 @@ export async function exportData(): Promise<string> {
  * Import data from backup
  */
 export async function importData(json: string): Promise<void> {
+  await flushGistWrites();
   const db = getDB();
   const data = JSON.parse(json);
 
   const tx = db.transaction(['gists', 'pendingWrites', 'metadata', 'logs'], 'readwrite');
 
-  // Clear existing data
-  // Import gists
-  // Import pending writes
-  // Import metadata
-  // Import logs
   const storeDataMap: Record<string, unknown[]> = {
     gists: data.gists,
     pendingWrites: data.pendingWrites,
@@ -405,4 +474,37 @@ export async function importData(json: string): Promise<void> {
   }
 
   await tx.done;
+}
+
+/**
+ * Evict stale gists (LRU/TTL)
+ */
+export async function evictStaleGists(): Promise<void> {
+  const db = getDB();
+  const allGists = await db.getAll('gists');
+  if (allGists.length === 0) return;
+
+  const TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+  const MAX_GISTS = 100;
+  const now = Date.now();
+
+  // 1. Evict by TTL
+  const staleIds = allGists
+    .filter((g) => g.lastAccessed && now - g.lastAccessed > TTL_MS)
+    .map((g) => g.id);
+
+  // 2. Evict by LRU limit (if still over limit)
+  const remainingGists = allGists.filter((g) => !staleIds.includes(g.id));
+  if (remainingGists.length > MAX_GISTS) {
+    const sorted = remainingGists.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
+    const toEvict = sorted.slice(MAX_GISTS).map((g) => g.id);
+    staleIds.push(...toEvict);
+  }
+
+  if (staleIds.length > 0) {
+    safeWarn(`[IndexedDB] Evicting ${staleIds.length} stale gists`);
+    const tx = db.transaction('gists', 'readwrite');
+    await Promise.all(staleIds.map((id) => tx.store.delete(id)));
+    await tx.done;
+  }
 }
