@@ -16,6 +16,7 @@ import {
   GistRecord,
 } from '../db';
 import * as GitHub from '../github';
+import { isSafeToRequest } from '../github/rate-limiter';
 import networkMonitor from '../network/offline-monitor';
 import { safeLog, safeError } from '../security/logger';
 import { detectConflict, storeConflict } from './conflict-detector';
@@ -81,6 +82,12 @@ export class SyncQueue {
       const sortedWrites = pendingWrites.sort((a, b) => a.createdAt - b.createdAt);
       for (const write of sortedWrites) {
         if (!write.id) continue;
+
+        if (!isSafeToRequest()) {
+          safeLog('[SyncQueue] Rate limit low, pausing queue processing');
+          break;
+        }
+
         const result = await this.executeWrite(write);
         if (result.success) {
           await removePendingWrite(write.id);

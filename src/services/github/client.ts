@@ -18,6 +18,7 @@ import type {
 import { trackRateLimit } from './rate-limiter';
 import { safeError } from '../security/logger';
 import { handleGitHubError } from './error-handler';
+import { getEtag, setEtag } from '../db';
 
 const BASE_URL = 'https://api.github.com';
 
@@ -85,10 +86,19 @@ async function buildHeaders(): Promise<HeadersInit> {
 /**
  * Build request options with signal and headers
  */
-async function buildOptions(method: string = 'GET', body?: string): Promise<RequestInit> {
+async function buildOptions(
+  method: string = 'GET',
+  body?: string,
+  extraHeaders: Record<string, string> = {}
+): Promise<RequestInit> {
+  const headers = (await buildHeaders()) as Record<string, string>;
+
   return {
     method,
-    headers: await buildHeaders(),
+    headers: {
+      ...headers,
+      ...extraHeaders,
+    },
     signal: globalAbortController.signal,
     ...(body ? { body } : {}),
   };
@@ -176,6 +186,52 @@ export async function validateToken(token: string): Promise<TokenInfo> {
 }
 
 /**
+ * Generic fetch with ETag support and deduplication
+ */
+async function fetchWithEtag<T>(url: string, context: string): Promise<T> {
+  const key = `GET:${context}:${url}`;
+
+  return deduplicatedFetch(key, async () => {
+    try {
+      const cached = await getEtag(url);
+      const headers: Record<string, string> = {};
+      if (cached?.etag) {
+        headers['If-None-Match'] = cached.etag;
+      }
+
+      const response = await fetch(url, await buildOptions('GET', undefined, headers));
+
+      if (response.status === 304 && cached) {
+        trackRateLimit(response);
+        return cached.data as T;
+      }
+
+      if (!response.ok) {
+        return handleApiError(response, context);
+      }
+
+      trackRateLimit(response);
+      const data = await response.json();
+
+      let result = data;
+      if (context === 'listGists' || context === 'listStarredGists') {
+        const pagination = parseLinkHeader(response.headers.get('Link'));
+        result = { data, pagination };
+      }
+
+      const etag = response.headers.get('ETag');
+      if (etag) {
+        void setEtag(url, etag, result);
+      }
+
+      return result;
+    } catch (error) {
+      return handleApiError(error, context);
+    }
+  });
+}
+
+/**
  * List user's gists with pagination via Link headers
  */
 export async function listGists(
@@ -190,24 +246,7 @@ export async function listGists(
   });
 
   const url = `${BASE_URL}/users/${await getCurrentUsername()}/gists?${params}`;
-  const key = `GET:listGists:${url}`;
-
-  return deduplicatedFetch(key, async () => {
-    try {
-      const response = await fetch(url, await buildOptions());
-
-      if (!response.ok) {
-        return handleApiError(response, 'listGists');
-      }
-
-      trackRateLimit(response);
-      const data = (await response.json()) as GitHubGist[];
-      const pagination = parseLinkHeader(response.headers.get('Link'));
-      return { data, pagination };
-    } catch (error) {
-      return handleApiError(error, 'listGists');
-    }
-  });
+  return fetchWithEtag<PaginatedResult<GitHubGist>>(url, 'listGists');
 }
 
 /**
@@ -224,46 +263,15 @@ export async function listStarredGists(
   });
 
   const url = `${BASE_URL}/gists/starred?${params}`;
-  const key = `GET:listStarredGists:${url}`;
-
-  return deduplicatedFetch(key, async () => {
-    try {
-      const response = await fetch(url, await buildOptions());
-
-      if (!response.ok) {
-        return handleApiError(response, 'listStarredGists');
-      }
-
-      trackRateLimit(response);
-      const data = (await response.json()) as GitHubGist[];
-      const pagination = parseLinkHeader(response.headers.get('Link'));
-      return { data, pagination };
-    } catch (error) {
-      return handleApiError(error, 'listStarredGists');
-    }
-  });
+  return fetchWithEtag<PaginatedResult<GitHubGist>>(url, 'listStarredGists');
 }
 
 /**
  * Get a specific gist by ID
  */
 export async function getGist(id: string): Promise<GitHubGist> {
-  const key = `GET:getGist:${id}`;
-
-  return deduplicatedFetch(key, async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/gists/${id}`, await buildOptions());
-
-      if (!response.ok) {
-        return handleApiError(response, 'getGist');
-      }
-
-      trackRateLimit(response);
-      return response.json() as Promise<GitHubGist>;
-    } catch (error) {
-      return handleApiError(error, 'getGist');
-    }
-  });
+  const url = `${BASE_URL}/gists/${id}`;
+  return fetchWithEtag<GitHubGist>(url, 'getGist');
 }
 
 /**

@@ -9,7 +9,7 @@ import { APP } from '@/config/app.config';
 import { debounce } from '../utils/debounce';
 
 // Schema version
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const DB_NAME = APP.dbName;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -39,6 +39,10 @@ export interface GistDBSchema extends DBSchema {
   metadata: {
     key: string;
     value: MetadataRecord;
+  };
+  etags: {
+    key: string;
+    value: ETagRecord;
   };
   logs: {
     key: number;
@@ -123,6 +127,16 @@ export interface MetadataRecord {
 }
 
 /**
+ * ETag record for API caching
+ */
+export interface ETagRecord {
+  url: string;
+  etag: string;
+  data: unknown;
+  updatedAt: number;
+}
+
+/**
  * Log entry stored in IndexedDB
  */
 export interface LogEntry {
@@ -174,6 +188,11 @@ export async function initIndexedDB(): Promise<IDBPDatabase<GistDBSchema>> {
         });
         logStore.createIndex('by-timestamp', 'timestamp');
         logStore.createIndex('by-level', 'level');
+      }
+
+      if (oldVersion < 3) {
+        // Create etags store
+        db.createObjectStore('etags', { keyPath: 'url' });
       }
     },
 
@@ -414,16 +433,38 @@ export async function getMetadata<T>(key: string): Promise<T | undefined> {
 }
 
 /**
+ * Store ETag information
+ */
+export async function setEtag(url: string, etag: string, data: unknown): Promise<void> {
+  const db = getDB();
+  await db.put('etags', {
+    url,
+    etag,
+    data,
+    updatedAt: Date.now(),
+  });
+}
+
+/**
+ * Get ETag information
+ */
+export async function getEtag(url: string): Promise<ETagRecord | undefined> {
+  const db = getDB();
+  return await db.get('etags', url);
+}
+
+/**
  * Clear all data (for logout/reset)
  */
 export async function clearAllData(): Promise<void> {
   pendingGistWrites.clear();
   const db = getDB();
-  const tx = db.transaction(['gists', 'pendingWrites', 'metadata', 'logs'], 'readwrite');
+  const tx = db.transaction(['gists', 'pendingWrites', 'metadata', 'logs', 'etags'], 'readwrite');
   await tx.objectStore('gists').clear();
   await tx.objectStore('pendingWrites').clear();
   await tx.objectStore('metadata').clear();
   await tx.objectStore('logs').clear();
+  await tx.objectStore('etags').clear();
   await tx.done;
 }
 
@@ -439,7 +480,7 @@ export async function exportData(): Promise<string> {
   const logs = await db.getAll('logs');
 
   const data = {
-    version: '1.0.0',
+    version: DB_VERSION.toString(),
     exportedAt: new Date().toISOString(),
     gists,
     pendingWrites,

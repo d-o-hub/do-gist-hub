@@ -6,6 +6,7 @@
 import { GistRecord } from '../types';
 import { GistRevision } from '../types/api';
 import * as GitHub from '../services/github/client';
+import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
 import { safeError } from '../services/security/logger';
 import { sanitizeHtml } from '../services/security/dom';
@@ -110,8 +111,11 @@ export async function loadGistDetail(
   onViewRevision: (id: string, version: string) => void
 ): Promise<void> {
   try {
-    const gist = await GitHub.getGist(id);
-    container.innerHTML = renderGistDetail(gist as unknown as GistRecord);
+    const gist = await gistStore.hydrateGist(id);
+    if (!gist) {
+      throw new Error('Gist not found');
+    }
+    container.innerHTML = renderGistDetail(gist);
     bindDetailEvents(container, { onBack, onEdit, onViewRevision });
   } catch (err) {
     safeError('[GistDetail] Failed to load gist', err);
