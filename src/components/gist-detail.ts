@@ -33,8 +33,6 @@ export function renderGistDetail(gist: GistRecord): string {
   const title = gist.description || 'Untitled Gist';
   const fileCount = Object.keys(gist.files).length;
   const visibility = gist.public ? 'Public' : 'Secret';
-  const starLabel = gist.starred ? 'Unstar' : 'Star';
-  const starIcon = gist.starred ? '★' : '☆';
 
   const fileTabs =
     fileCount > 1
@@ -75,11 +73,11 @@ export function renderGistDetail(gist: GistRecord): string {
         </div>
         <div class="gist-detail-actions">
           <button class="btn ${gist.starred ? 'btn-danger' : 'btn-primary'}" data-action="star">
-            ${starIcon} ${starLabel}
+            ${gist.starred ? 'Unstar' : 'Star'}
           </button>
-          <button class="btn btn-ghost" data-action="fork">🍴 Fork</button>
-          <button class="btn btn-ghost" data-action="edit">✏️ Edit</button>
-          <button class="btn btn-ghost" data-action="revisions">📜 Revisions</button>
+          <button class="btn btn-ghost" data-action="fork">Fork</button>
+          <button class="btn btn-ghost" data-action="edit">Edit</button>
+          <button class="btn btn-ghost" data-action="revisions">Revisions</button>
         </div>
       </header>
 

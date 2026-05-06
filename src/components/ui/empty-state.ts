@@ -8,7 +8,6 @@ import { sanitizeHtml } from '../../services/security/dom';
 export interface EmptyStateOptions {
   title: string;
   description: string;
-  icon?: string;
   actionLabel?: string;
   actionRoute?: string;
   actionType?: string;
@@ -16,7 +15,7 @@ export interface EmptyStateOptions {
 
 export class EmptyState {
   static render(options: EmptyStateOptions): string {
-    const { title, description, icon = '📭', actionLabel, actionRoute, actionType } = options;
+    const { title, description, actionLabel, actionRoute, actionType } = options;
 
     const actionAttr = actionRoute
       ? `data-route="${actionRoute}"`
@@ -26,7 +25,6 @@ export class EmptyState {
 
     return `
       <div class="empty-state-container" role="status">
-        <div class="empty-state-icon">${sanitizeHtml(icon)}</div>
         <h3 class="empty-state-title">${sanitizeHtml(title)}</h3>
         <p class="empty-state-description">${sanitizeHtml(description)}</p>
         ${

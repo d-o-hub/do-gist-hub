@@ -19,22 +19,16 @@ export async function render(container: HTMLElement): Promise<void> {
       <header class="detail-header">
           <h2 class="detail-title">Offline Status</h2>
       </header>
-      <div class="offline-stats">
-          <div class="stat-card">
-              <div class="stat-icon">📴</div>
-              <div class="stat-info">
-                  <div class="stat-label">PENDING WRITES</div>
-                  <div class="stat-value" id="pending-count">0</div>
-              </div>
-          </div>
-          <div class="stat-card clickable" id="conflicts-stat-card">
-              <div class="stat-icon">⚠️</div>
-              <div class="stat-info">
-                  <div class="stat-label">SYNC CONFLICTS</div>
-                  <div class="stat-value" id="conflict-count">0</div>
-              </div>
-          </div>
-      </div>
+        <div class="offline-stats">
+            <div class="stat-card">
+                <div class="stat-label">PENDING WRITES</div>
+                <div class="stat-value" id="pending-count">0</div>
+            </div>
+            <div class="stat-card clickable" id="conflicts-stat-card">
+                <div class="stat-label">SYNC CONFLICTS</div>
+                <div class="stat-value" id="conflict-count">0</div>
+            </div>
+        </div>
       <div class="pending-operations" id="pending-ops" style="margin-top: var(--space-6);"></div>
     </div>
   `;
@@ -62,13 +56,12 @@ async function updateOfflineStatus(container: HTMLElement): Promise<void> {
   if (opsEl) {
     const content =
       count > 0
-        ? `<div class="glass-card" style="padding: var(--space-6); text-align: center;">
+        ? `<div class="glass-card" style="padding: var(--spacing-6); text-align: center;">
              <p class="micro-label">${sanitizeHtml(String(count))} operation${count !== 1 ? 's' : ''} waiting for connection</p>
            </div>`
         : EmptyState.render({
             title: 'All Synced',
             description: 'Your local changes are fully synced with GitHub',
-            icon: '✅',
             actionLabel: 'Go Home',
             actionRoute: 'home',
           });

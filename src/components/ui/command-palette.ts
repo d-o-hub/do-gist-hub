@@ -12,7 +12,6 @@ export interface Command {
   id: string;
   title: string;
   description?: string;
-  icon?: string;
   action: () => void;
   category?: string;
 }
@@ -113,7 +112,6 @@ export class CommandPalette {
 
     this.container.innerHTML = `
       <div class="command-palette-search">
-        <span class="search-icon">🔍</span>
         <input type="text" placeholder="Search commands..." spellcheck="false" autofocus />
       </div>
       <div class="command-palette-results" role="listbox">
@@ -153,7 +151,6 @@ export class CommandPalette {
              role="option"
              aria-selected="${index === this.selectedIndex}"
              data-index="${index}">
-          <span class="command-icon">${cmd.icon || '⚡'}</span>
           <div class="command-info">
             <div class="command-title">${sanitizeHtml(cmd.title)}</div>
             ${cmd.description ? `<div class="command-desc">${sanitizeHtml(cmd.description)}</div>` : ''}
