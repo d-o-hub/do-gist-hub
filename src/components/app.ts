@@ -272,35 +272,49 @@ export class App {
   }
 
   private async showMobileMenu(): Promise<void> {
-    const content = `
-      <nav class="mobile-menu" role="navigation" aria-label="Mobile menu">
-        <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">Navigation</div>
-          <button class="mobile-menu-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" role="menuitem" ${this.currentRoute === 'home' ? 'aria-current="page"' : ''}>
-            <span aria-hidden="true">🏠</span> Home
-          </button>
-          <button class="mobile-menu-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" role="menuitem" ${this.currentRoute === 'starred' ? 'aria-current="page"' : ''}>
-            <span aria-hidden="true">⭐</span> Starred Gists
-          </button>
-          <button class="mobile-menu-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" role="menuitem" ${this.currentRoute === 'create' ? 'aria-current="page"' : ''}>
-            <span aria-hidden="true">➕</span> Create New Gist
-          </button>
-        </div>
-        <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">Offline</div>
-          <button class="mobile-menu-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" role="menuitem" ${this.currentRoute === 'offline' ? 'aria-current="page"' : ''}>
-            <span aria-hidden="true">📶</span> Sync Status
-          </button>
-        </div>
-        <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">System</div>
-          <button class="mobile-menu-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" role="menuitem" ${this.currentRoute === 'settings' ? 'aria-current="page"' : ''}>
-            <span aria-hidden="true">⚙️</span> Settings
-          </button>
-        </div>
-      </nav>
+    const nav = document.createElement('nav');
+    nav.className = 'mobile-menu';
+    nav.setAttribute('role', 'navigation');
+    nav.setAttribute('aria-label', 'Mobile menu');
+
+    nav.innerHTML = `
+      <div class="mobile-menu-section">
+        <div class="mobile-menu-section-title">Navigation</div>
+        <button class="mobile-menu-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" role="menuitem" ${
+          this.currentRoute === 'home' ? 'aria-current="page"' : ''
+        }>
+          <span aria-hidden="true">🏠</span> Home
+        </button>
+        <button class="mobile-menu-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" role="menuitem" ${
+          this.currentRoute === 'starred' ? 'aria-current="page"' : ''
+        }>
+          <span aria-hidden="true">⭐</span> Starred Gists
+        </button>
+        <button class="mobile-menu-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" role="menuitem" ${
+          this.currentRoute === 'create' ? 'aria-current="page"' : ''
+        }>
+          <span aria-hidden="true">➕</span> Create New Gist
+        </button>
+      </div>
+      <div class="mobile-menu-section">
+        <div class="mobile-menu-section-title">Offline</div>
+        <button class="mobile-menu-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" role="menuitem" ${
+          this.currentRoute === 'offline' ? 'aria-current="page"' : ''
+        }>
+          <span aria-hidden="true">📶</span> Sync Status
+        </button>
+      </div>
+      <div class="mobile-menu-section">
+        <div class="mobile-menu-section-title">System</div>
+        <button class="mobile-menu-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" role="menuitem" ${
+          this.currentRoute === 'settings' ? 'aria-current="page"' : ''
+        }>
+          <span aria-hidden="true">⚙️</span> Settings
+        </button>
+      </div>
     `;
-    await bottomSheet.open(content, 'MENU');
+
+    await bottomSheet.open(nav, 'MENU');
 
     const menu = document.querySelector('.mobile-menu');
     menu?.addEventListener('click', (e) => {

@@ -16,3 +16,8 @@
 **Vulnerability:** The GitHub API client (`client.ts`) was directly reading the `github-pat` key from IndexedDB, bypassing the encryption/decryption logic and migration path in `auth.ts`.
 **Learning:** Decoupling authentication logic from the API client is critical. Direct database access for secrets bypasses security controls like encryption at rest and migration logic for legacy tokens.
 **Prevention:** Always use a centralized authentication service (`auth.ts`) to retrieve secrets. Components and other services must never access raw secret storage directly.
+
+## 2026-06-25 - [XSS: Bottom Sheet innerHTML Injection]
+**Vulnerability:** The `BottomSheet.open` method was directly interpolating the `content` string into `this.container.innerHTML`. As a generic UI component, this created a high-risk XSS vector if any future feature passed untrusted data to a bottom sheet.
+**Learning:** Generic UI components that accept "content" as a string are common sources of XSS. Providing an API that accepts `HTMLElement` encourages safer DOM manipulation and makes security boundaries clearer.
+**Prevention:** Avoid `innerHTML` in generic UI components. Prefer `HTMLElement` or `DocumentFragment` for complex content, and use `textContent` for simple strings. If HTML strings must be supported, they should be sanitized at the point of entry or within the component using a trusted sanitizer.

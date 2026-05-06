@@ -39,18 +39,38 @@ export class BottomSheet {
     document.body.appendChild(this.container);
   }
 
-  async open(content: string, title?: string): Promise<void> {
+  async open(content: string | HTMLElement, title?: string): Promise<void> {
     if (!this.container || !this.backdrop || this.isOpen) return;
 
     this.isOpen = true;
 
+    // Clear previous content
+    this.container.innerHTML = '';
+
+    // Handle for dragging
+    const handle = document.createElement('div');
+    handle.className = 'bottom-sheet-handle';
+    this.container.appendChild(handle);
+
+    // Set title
+    if (title) {
+      const header = document.createElement('h2');
+      header.className = 'bottom-sheet-title';
+      header.textContent = title;
+      this.container.appendChild(header);
+    }
+
     // Set content
-    const header = title ? `<h2 class="bottom-sheet-title">${sanitizeHtml(title)}</h2>` : '';
-    this.container.innerHTML = `
-      <div class="bottom-sheet-handle"></div>
-      ${header}
-      <div class="bottom-sheet-content">${content}</div>
-    `;
+    const contentWrapper = document.createElement('div');
+    contentWrapper.className = 'bottom-sheet-content';
+
+    if (typeof content === 'string') {
+      contentWrapper.textContent = content;
+    } else {
+      contentWrapper.appendChild(content);
+    }
+
+    this.container.appendChild(contentWrapper);
 
     // Escape key to close
     const handleKeydown = (e: KeyboardEvent): void => {
