@@ -139,13 +139,13 @@ test.describe('GistStore Integration', () => {
       });
     });
 
-    const success = await page.evaluate(async () => {
+    const result = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
-      const result = await gistStore.createGist('New Gist', true, { 'test.txt': 'hello' });
-      return !!result;
+      return await gistStore.createGist('New Gist', true, { 'test.txt': 'hello' });
     });
 
-    expect(success).toBe(true);
+    expect(result).toBeTruthy();
+    expect((result as Record<string, unknown>)?.description).toBe('New Gist');
   });
 
   test('should handle gist updates', async ({ page }) => {
@@ -170,7 +170,7 @@ test.describe('GistStore Integration', () => {
       }
     });
 
-    const success = await page.evaluate(async () => {
+    const result = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
@@ -191,7 +191,7 @@ test.describe('GistStore Integration', () => {
       return await gistStore.updateGist('1', { description: 'Updated Gist' });
     });
 
-    expect(success).toBe(true);
+    expect(result).toBeTruthy();
   });
 
   test('should handle gist deletion', async ({ page }) => {

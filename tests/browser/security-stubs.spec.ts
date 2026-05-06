@@ -27,23 +27,8 @@ test.describe('Security & Coverage', () => {
 
     await page.evaluate(async () => {
       const dbName = 'd-o-gist-hub-db';
-      const dbVersion = 2;
+      const dbVersion = 3;
       return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error('Timeout'));
-        }, 5000);
-
-        try {
-          // WebKit bug workaround: close other connections first
-          indexedDB
-            .databases()
-            .then((dbs) => {
-              // Let it fall through, but trigger a tiny wait
-            })
-            .catch(() => {});
-        } catch {}
-
-        const request = indexedDB.open(dbName, dbVersion);
         request.onsuccess = () => {
           const db = request.result;
           const tx = db.transaction('metadata', 'readwrite');
@@ -80,7 +65,7 @@ test.describe('Security & Coverage', () => {
 
     const encryptionStatus = (await page.evaluate(async () => {
       const dbName = 'd-o-gist-hub-db';
-      const dbVersion = 2;
+      const dbVersion = 3;
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('Timeout'));
