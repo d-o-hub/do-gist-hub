@@ -7,7 +7,8 @@ test.describe('Gist Edit UI', () => {
 
     // Auth for edit access
     await page.evaluate(async () => {
-      const { setMetadata } = await import('/src/services/db.ts');
+      const { setMetadata, initIndexedDB } = await import('/src/services/db.ts');
+      await initIndexedDB();
       await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
       await setMetadata('github-username', 'testuser');
     });
@@ -16,7 +17,9 @@ test.describe('Gist Edit UI', () => {
 
   test('should render create gist form', async ({ page }) => {
     await page.locator('[data-testid="nav-create"]').first().click();
-    await expect(page.locator('.detail-title')).toContainText('Create New Gist', { ignoreCase: true });
+    await expect(page.locator('.detail-title')).toContainText('Create New Gist', {
+      ignoreCase: true,
+    });
     await expect(page.locator('#gist-description')).toBeVisible();
     await expect(page.locator('.gist-content').first()).toBeVisible();
   });
@@ -29,13 +32,19 @@ test.describe('Gist Edit UI', () => {
     // In current app.ts, it doesn't show toast for empty creation but it's handled by gistStore
   });
 
-  test('should handle successful gist creation', async ({ page }) => {
+  test('should handle successful gist creation', async ({ page, context }) => {
+    // Log requests to debug routing
+    page.on('request', (req) => console.log('[REQUEST]', req.method(), req.url()));
+    page.on('response', (res) => console.log('[RESPONSE]', res.status(), res.url()));
+
     await page.locator('[data-testid="nav-create"]').first().click();
 
     await page.locator('#gist-description').fill('New Gist');
+    await page.locator('.gist-filename').first().fill('index.js');
     await page.locator('.gist-content').first().fill('Hello World');
 
-    await page.route('**/gists', async (route) => {
+    await context.route('**/gists', async (route) => {
+      console.log('[MOCK] Intercepted request to:', route.request().url());
       await route.fulfill({
         status: 201,
         contentType: 'application/json',
@@ -45,14 +54,23 @@ test.describe('Gist Edit UI', () => {
           files: { 'index.js': { filename: 'index.js', content: 'Hello World' } },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          html_url: 'https://gist.github.com/new-id'
+          html_url: 'https://gist.github.com/new-id',
         }),
       });
     });
 
     await page.locator('button:has-text("CREATE GIST")').click();
 
-    // Should navigate back to home
+    // Wait for API request to be made
+    try {
+      await page.waitForRequest('**/gists', { timeout: 5000 });
+    } catch (e) {
+      console.log('[TEST] No request made to /gists after button click');
+      await page.screenshot({ path: 'test-results/debug-click.png' });
+    }
+
+    // Wait for navigation back to home
+    await page.waitForURL('**/');
     await expect(page.locator('.search-input')).toBeVisible();
   });
 });

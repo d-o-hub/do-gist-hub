@@ -5,9 +5,10 @@ test.describe('GistStore Integration', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    // Ensure we are authenticated for GistStore to work
+    // Ensure we are authenticated and DB is initialized for GistStore to work
     await page.evaluate(async () => {
-      const { setMetadata } = await import('/src/services/db.ts');
+      const { setMetadata, initIndexedDB } = await import('/src/services/db.ts');
+      await initIndexedDB();
       await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
       await setMetadata('github-username', 'testuser');
     });
@@ -114,8 +115,14 @@ test.describe('GistStore Integration', () => {
     expect(searchResults.none.length).toBe(0);
   });
 
-  test('should handle gist creation (online)', async ({ page }) => {
-    await page.route('**/gists', async (route) => {
+  test('should handle gist creation (online)', async ({ page, context }) => {
+    // Log all requests to debug routing
+    page.on('request', (req) => console.log('[REQUEST]', req.method(), req.url()));
+    page.on('response', (res) => console.log('[RESPONSE]', res.status(), res.url()));
+
+    // Use context.route() to intercept all requests in the context
+    await context.route('**/gists', async (route) => {
+      console.log('[MOCK] Intercepted request to:', route.request().url());
       await route.fulfill({
         status: 201,
         contentType: 'application/json',
@@ -130,17 +137,20 @@ test.describe('GistStore Integration', () => {
       });
     });
 
-    const success = await page.evaluate(async () => {
+    const result = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
-      const result = await gistStore.createGist('New Gist', true, { 'test.txt': 'hello' });
-      return Boolean(result);
+      const { initIndexedDB } = await import('/src/services/db.ts');
+      await initIndexedDB();
+      const record = await gistStore.createGist('New Gist', true, { 'test.txt': 'hello' });
+      return { success: Boolean(record), record };
     });
 
-    expect(success).toBe(true);
+    console.log('[TEST] Result:', result);
+    expect(result.success).toBe(true);
   });
 
-  test('should handle gist updates', async ({ page }) => {
-    await page.route('**/gists/*', async (route) => {
+  test('should handle gist updates', async ({ page, context }) => {
+    await context.route('**/gists/*', async (route) => {
       if (route.request().method() === 'PATCH') {
         await route.fulfill({
           status: 200,
@@ -157,6 +167,8 @@ test.describe('GistStore Integration', () => {
 
     const success = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { initIndexedDB } = await import('/src/services/db.ts');
+      await initIndexedDB();
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
         {
@@ -179,8 +191,8 @@ test.describe('GistStore Integration', () => {
     expect(success).toBe(true);
   });
 
-  test('should handle gist deletion', async ({ page }) => {
-    await page.route('**/gists/*', async (route) => {
+  test('should handle gist deletion', async ({ page, context }) => {
+    await context.route('**/gists/*', async (route) => {
       if (route.request().method() === 'DELETE') {
         await route.fulfill({ status: 204 });
       }
@@ -188,6 +200,8 @@ test.describe('GistStore Integration', () => {
 
     const success = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { initIndexedDB } = await import('/src/services/db.ts');
+      await initIndexedDB();
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
         {
@@ -210,13 +224,15 @@ test.describe('GistStore Integration', () => {
     expect(success).toBe(true);
   });
 
-  test('should toggle star status', async ({ page }) => {
-    await page.route('**/gists/*/star', async (route) => {
+  test('should toggle star status', async ({ page, context }) => {
+    await context.route('**/gists/*/star', async (route) => {
       await route.fulfill({ status: 204 });
     });
 
     const starred = await page.evaluate(async () => {
       const { default: gistStore } = await import('/src/stores/gist-store.ts');
+      const { initIndexedDB } = await import('/src/services/db.ts');
+      await initIndexedDB();
       const gs = gistStore as unknown as { gists: Array<Record<string, unknown>> };
       gs.gists = [
         {
