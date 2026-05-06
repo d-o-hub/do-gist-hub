@@ -1,4 +1,4 @@
-import { test, expect } from '../base';
+import { test, expect } from '@playwright/test';
 
 /**
  * Capacitor Android Smoke Test
@@ -30,9 +30,6 @@ test.describe('Capacitor Android Smoke', () => {
     await expect(page).toHaveTitle(/d\.o\. Gist Hub/);
 
     // Verify no JavaScript errors occurred on load
-    expect(
-      jsErrors,
-      `JS errors on load: ${jsErrors.map((e) => e.message).join('; ')}`
-    ).toHaveLength(0);
+    expect(jsErrors, `JS errors on load: ${jsErrors.map((e) => e.message).join('; ')}`).toHaveLength(0);
   });
 });

@@ -15,7 +15,16 @@ import {
   getGist,
   GistRecord,
 } from '../db';
-import * as GitHub from '../github';
+import {
+  getGist as githubGetGist,
+  createGist,
+  updateGist,
+  deleteGist,
+  starGist,
+  unstarGist,
+  forkGist,
+} from '../github';
+import { isSafeToRequest } from '../github/rate-limiter';
 import networkMonitor from '../network/offline-monitor';
 import { safeLog, safeError } from '../security/logger';
 import { detectConflict, storeConflict } from './conflict-detector';
@@ -81,6 +90,12 @@ export class SyncQueue {
       const sortedWrites = pendingWrites.sort((a, b) => a.createdAt - b.createdAt);
       for (const write of sortedWrites) {
         if (!write.id) continue;
+
+        if (!isSafeToRequest()) {
+          safeLog('[SyncQueue] Rate limit low, pausing queue processing');
+          break;
+        }
+
         const result = await this.executeWrite(write);
         if (result.success) {
           await removePendingWrite(write.id);
@@ -108,11 +123,11 @@ export class SyncQueue {
       // Pre-write conflict check: verify remote gist hasn't changed since queue time
       if (write.expectedRemoteVersion && write.action !== 'create') {
         try {
-          const remote = await GitHub.getGist(write.gistId);
-          if (remote.updated_at !== write.expectedRemoteVersion) {
+          const remote = await githubGetGist(write.gistId);
+          if (remote?.updated_at !== write.expectedRemoteVersion) {
             const local = await getGist(write.gistId);
-            if (local) {
-              const conflict = detectConflict(local, remote) || {
+            if (local && remote) {
+              const conflict = detectConflict(local, remote as unknown as GitHubGist) || {
                 gistId: local.id,
                 localVersion: local,
                 remoteVersion: remote,
@@ -154,35 +169,35 @@ export class SyncQueue {
   }
 
   private static async syncCreate(_gistId: string, payload: unknown): Promise<SyncResult> {
-    const gist = await GitHub.createGist(payload as CreateGistRequest);
+    const gist = await createGist(payload as CreateGistRequest);
     await saveGist(SyncQueue.githubGistToRecord(gist));
     return { success: true, shouldRetry: false };
   }
 
   private static async syncUpdate(gistId: string, payload: unknown): Promise<SyncResult> {
-    const gist = await GitHub.updateGist(gistId, payload as UpdateGistRequest);
+    const gist = await updateGist(gistId, payload as UpdateGistRequest);
     await saveGist(SyncQueue.githubGistToRecord(gist));
     return { success: true, shouldRetry: false };
   }
 
   private static async syncDelete(gistId: string): Promise<SyncResult> {
-    await GitHub.deleteGist(gistId);
+    await deleteGist(gistId);
     await dbDeleteGist(gistId);
     return { success: true, shouldRetry: false };
   }
 
   private static async syncStar(gistId: string): Promise<SyncResult> {
-    await GitHub.starGist(gistId);
+    await starGist(gistId);
     return { success: true, shouldRetry: false };
   }
 
   private static async syncUnstar(gistId: string): Promise<SyncResult> {
-    await GitHub.unstarGist(gistId);
+    await unstarGist(gistId);
     return { success: true, shouldRetry: false };
   }
 
   private static async syncFork(gistId: string): Promise<SyncResult> {
-    const gist = await GitHub.forkGist(gistId);
+    const gist = await forkGist(gistId);
     await saveGist(SyncQueue.githubGistToRecord(gist));
     return { success: true, shouldRetry: false };
   }

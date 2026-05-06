@@ -2,7 +2,7 @@
  * Accessibility Keyboard Navigation Tests
  * Test keyboard navigation, focus management, tab order, and focus traps
  */
-import { test, expect } from '../base';
+import { test, expect } from '@playwright/test';
 
 test.describe('Accessibility - Keyboard', () => {
   test.beforeEach(async ({ page }) => {
@@ -13,7 +13,7 @@ test.describe('Accessibility - Keyboard', () => {
   test('should be reachable via keyboard from initial load', async ({ page }) => {
     // First focusable element should be reachable with Tab
     await page.keyboard.press('Tab');
-    const focusedTag = await page.evaluate(async () => document.activeElement?.tagName);
+    const focusedTag = await page.evaluate(() => document.activeElement?.tagName);
     expect(focusedTag).toBeTruthy();
   });
 
@@ -25,7 +25,7 @@ test.describe('Accessibility - Keyboard', () => {
     }
 
     // Something should be focused
-    const focusedTag = await page.evaluate(async () => document.activeElement?.tagName);
+    const focusedTag = await page.evaluate(() => document.activeElement?.tagName);
     expect(['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA']).toContain(focusedTag);
   });
 
@@ -36,13 +36,13 @@ test.describe('Accessibility - Keyboard', () => {
       await page.waitForTimeout(50);
     }
 
-    const forwardElement = await page.evaluate(async () => document.activeElement?.tagName);
+    const forwardElement = await page.evaluate(() => document.activeElement?.tagName);
 
     // Shift+Tab should go back
     await page.keyboard.press('Shift+Tab');
     await page.waitForTimeout(50);
 
-    const backwardElement = await page.evaluate(async () => document.activeElement?.tagName);
+    const backwardElement = await page.evaluate(() => document.activeElement?.tagName);
 
     // Should have moved focus (may be same if at start)
     test.info().annotations.push({
@@ -53,10 +53,7 @@ test.describe('Accessibility - Keyboard', () => {
 
   test('should activate buttons with Enter key', async ({ page }) => {
     // Navigate to settings button
-    const settingsBtn = page
-      .locator('[data-testid="settings-btn"]')
-      .filter({ visible: true })
-      .first();
+    const settingsBtn = page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first();
     await settingsBtn.focus();
     await expect(settingsBtn).toBeFocused();
 
@@ -88,14 +85,14 @@ test.describe('Accessibility - Keyboard', () => {
     await page.waitForTimeout(300);
 
     // Focus should be somewhere in the new view
-    const activeElement = await page.evaluate(async () => document.activeElement?.tagName);
+    const activeElement = await page.evaluate(() => document.activeElement?.tagName);
     expect(activeElement).toBeTruthy();
 
     // Should be able to tab within the new view
     await page.keyboard.press('Tab');
     await page.waitForTimeout(50);
 
-    const newActiveElement = await page.evaluate(async () => document.activeElement?.tagName);
+    const newActiveElement = await page.evaluate(() => document.activeElement?.tagName);
     test.info().annotations.push({
       type: 'focus-after-nav',
       description: `After nav: ${activeElement}, After tab: ${newActiveElement}`,
@@ -108,7 +105,7 @@ test.describe('Accessibility - Keyboard', () => {
     await page.waitForTimeout(100);
 
     // Check if focused element has visible focus style
-    const hasFocusStyle = await page.evaluate(async () => {
+    const hasFocusStyle = await page.evaluate(() => {
       const el = document.activeElement;
       if (!el) return false;
 
@@ -118,7 +115,9 @@ test.describe('Accessibility - Keyboard', () => {
       const boxShadow = style.boxShadow;
 
       // Check for any visible focus indicator
-      return outline !== 'none' || outlineWidth !== '0px' || boxShadow !== 'none';
+      return outline !== 'none' ||
+             outlineWidth !== '0px' ||
+             boxShadow !== 'none';
     });
 
     test.info().annotations.push({
@@ -135,7 +134,7 @@ test.describe('Accessibility - Keyboard', () => {
       await page.keyboard.press('Tab');
       await page.waitForTimeout(50);
 
-      const activeId = await page.evaluate(async () => {
+      const activeId = await page.evaluate(() => {
         const el = document.activeElement;
         if (!el) return 'none';
         return el.id || el.className?.toString().slice(0, 30) || el.tagName;
@@ -173,7 +172,7 @@ test.describe('Accessibility - Keyboard', () => {
 
     // Focus should have moved to another filter or stayed (both acceptable)
     const focusedFilter = page.locator('.filter-btn:focus');
-    const isFocused = await focusedFilter.count().then((c) => c > 0);
+    const isFocused = await focusedFilter.count().then(c => c > 0);
 
     test.info().annotations.push({
       type: 'arrow-nav',
@@ -190,7 +189,7 @@ test.describe('Accessibility - Keyboard', () => {
       await page.keyboard.press('Tab');
       await page.waitForTimeout(50);
 
-      const activeElement = await page.evaluate(async () => document.activeElement?.className);
+      const activeElement = await page.evaluate(() => document.activeElement?.className);
       if (activeElement?.includes('gist-card')) {
         foundCard = true;
         break;
@@ -218,7 +217,7 @@ test.describe('Accessibility - Keyboard', () => {
     }
 
     // Check if we're on submit button
-    const activeElement = await page.evaluate(async () => document.activeElement?.id);
+    const activeElement = await page.evaluate(() => document.activeElement?.id);
 
     if (activeElement === 'create-submit-btn') {
       await page.keyboard.press('Enter');
@@ -238,7 +237,7 @@ test.describe('Accessibility - Keyboard', () => {
   test('should skip repetitive navigation elements with skip link', async ({ page }) => {
     // Check if skip link exists (recommended but not required)
     const skipLink = page.locator('a[href="#main-content"], a:has-text("Skip to content")');
-    const skipExists = await skipLink.count().then((c) => c > 0);
+    const skipExists = await skipLink.count().then(c => c > 0);
 
     test.info().annotations.push({
       type: 'skip-link',

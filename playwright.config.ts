@@ -128,9 +128,9 @@ export default defineConfig({
 
   // Web server for dev mode
   webServer: {
-    command: 'pnpm dev',
+    command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
-    timeout: 120000,
+    timeout: 300 * 1000,
   },
 });

@@ -1,6 +1,4 @@
 name: Commitlint
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
   push:
@@ -34,4 +32,4 @@ jobs:
       - name: Validate commits
         uses: wagoid/commitlint-github-action@b948419dd99f3fd78a6548d48f94e3df7f6bf3ed # v6.2.1
         with:
-          configFile: commitlint.config.mjs
+          configFile: .commitlintrc.json

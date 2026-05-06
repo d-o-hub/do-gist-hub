@@ -13,14 +13,14 @@ describe('Conflict Detection Logic', () => {
       public: true,
       updatedAt: '2026-01-01T10:00:00Z',
       files: { 'file1.txt': { filename: 'file1.txt', size: 100 } },
-      syncStatus: 'synced',
+      syncStatus: 'synced'
     };
     const remote: Partial<GitHubGist> = {
       id: 'gist123',
       description: 'Original description',
       public: true,
       updated_at: '2026-01-01T10:00:00Z',
-      files: { 'file1.txt': { filename: 'file1.txt', size: 100 } },
+      files: { 'file1.txt': { filename: 'file1.txt', size: 100 } }
     };
 
     assert.equal(detectConflict(local as GistRecord, remote as GitHubGist), null);
@@ -33,14 +33,14 @@ describe('Conflict Detection Logic', () => {
       public: true,
       updatedAt: '2026-01-01T10:00:00Z',
       files: { 'file1.txt': { filename: 'file1.txt', size: 100 } },
-      syncStatus: 'synced',
+      syncStatus: 'synced'
     };
     const remote: Partial<GitHubGist> = {
       id: 'gist123',
       description: 'Remote description',
       public: true,
       updated_at: '2026-01-01T10:00:00Z',
-      files: { 'file1.txt': { filename: 'file1.txt', size: 100 } },
+      files: { 'file1.txt': { filename: 'file1.txt', size: 100 } }
     };
 
     const result = detectConflict(local as GistRecord, remote as GitHubGist);
@@ -55,14 +55,14 @@ describe('Conflict Detection Logic', () => {
       public: true,
       updatedAt: '2026-01-01T10:00:00Z',
       files: { 'file1.txt': { filename: 'file1.txt', size: 100 } },
-      syncStatus: 'synced',
+      syncStatus: 'synced'
     };
     const remote: Partial<GitHubGist> = {
       id: 'gist123',
       description: 'Desc',
       public: false,
       updated_at: '2026-01-01T10:00:00Z',
-      files: { 'file1.txt': { filename: 'file1.txt', size: 100 } },
+      files: { 'file1.txt': { filename: 'file1.txt', size: 100 } }
     };
 
     const result = detectConflict(local as GistRecord, remote as GitHubGist);
@@ -77,14 +77,14 @@ describe('Conflict Detection Logic', () => {
       public: true,
       updatedAt: '2026-01-01T10:00:00Z',
       files: { 'file1.txt': { filename: 'file1.txt', size: 100 } },
-      syncStatus: 'synced',
+      syncStatus: 'synced'
     };
     const remote: Partial<GitHubGist> = {
       id: 'gist123',
       description: 'Desc',
       public: true,
       updated_at: '2026-01-01T11:00:00Z',
-      files: { 'file1.txt': { filename: 'file1.txt', size: 200 } },
+      files: { 'file1.txt': { filename: 'file1.txt', size: 200 } }
     };
 
     const result = detectConflict(local as GistRecord, remote as GitHubGist);
@@ -99,26 +99,21 @@ describe('Conflict Detection Logic', () => {
       public: true,
       updatedAt: '2026-01-01T10:00:00Z',
       files: { 'file1.txt': { filename: 'file1.txt', size: 100 } },
-      syncStatus: 'synced',
+      syncStatus: 'synced'
     };
     const remote: Partial<GitHubGist> = {
       id: 'gist123',
       description: 'Desc',
       public: true,
       updated_at: '2026-01-01T11:00:00Z',
-      files: { 'file1.txt': { filename: 'file1.txt', size: 100 } },
+      files: { 'file1.txt': { filename: 'file1.txt', size: 100 } }
     };
 
     assert.equal(detectConflict(local as GistRecord, remote as GitHubGist), null);
   });
 
   describe('resolveConflict', () => {
-    const local: Partial<GistRecord> = {
-      id: '123',
-      description: 'Local',
-      starred: true,
-      syncStatus: 'synced',
-    };
+    const local: Partial<GistRecord> = { id: '123', description: 'Local', starred: true, syncStatus: 'synced' };
     const remote: Partial<GitHubGist> = {
       id: '123',
       description: 'Remote',
@@ -126,12 +121,9 @@ describe('Conflict Detection Logic', () => {
       html_url: 'url',
       created_at: '2026-01-01T00:00:00Z',
       updated_at: '2026-01-01T12:00:00Z',
-      public: true,
+      public: true
     };
-    const conflict: Partial<GistConflict> = {
-      localVersion: local as GistRecord,
-      remoteVersion: remote as GitHubGist,
-    };
+    const conflict: Partial<GistConflict> = { localVersion: local as GistRecord, remoteVersion: remote as GitHubGist };
 
     test('local-wins: should keep local description and set pending', () => {
       const result = resolveConflict(conflict as GistConflict, 'local-wins');

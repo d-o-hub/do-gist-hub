@@ -106,9 +106,7 @@ npm run init:design && npm run dev
 - **TypeScript**: strict mode, no `any`, explicit return types on public APIs
 - **Naming**: camelCase (functions), PascalCase (types), UPPER_SNAKE_CASE (constants), kebab-case (files)
 - **Imports**: absolute from `src/`, grouped (stdlib → external → internal)
-- **Commits**: conventional (`feat:`, `fix:`, `docs:`, `ci:`, `test:`, `refactor:`, `chore:`, `plans:`)
-  - **Header length**: Max 100 characters.
-  - **Ignores**: Bot commits ('Update', 'Auto-update', 'Automatic') and '[skip ci]' are ignored.
+- **Commits**: conventional (`feat:`, `fix:`, `docs:`, `ci:`, `test:`, `refactor:`, `chore:`)
 - **Shell**: `shellcheck` compliant, `set -euo pipefail`
 - **Max lines**: source=500, SKILL.md=250, AGENTS.md=150 (may exceed for completeness)
 
@@ -448,7 +446,6 @@ This section is automatically updated by `./scripts/analyze-codebase.sh`.
 5. **Offline Project Config**: Never set `offline: true` in `playwright.config.ts` — use `context.setOffline(true)` after `page.goto()`
 6. **Offline Dynamic Imports**: Preload modules via `page.evaluate()` before going offline; dynamic `import()` fails when browser is offline
 7. **Empty Element Visibility**: Playwright treats empty elements as hidden; always render inner content (e.g., sync indicator dot + sr-only text)
-8. **State Isolation**: EVERY E2E test (`.spec.ts`) must import `test` from `tests/base.ts`. This fixture ensures absolute state isolation (clearing `localStorage`, `IndexedDB`, and `Service Workers`) before runs.
 
 ### Security Rules (Critical)
 
@@ -467,13 +464,11 @@ This section is automatically updated by `./scripts/analyze-codebase.sh`.
 
 ### Code Quality (DeepSource/CI)
 
-1. **Inline skipcq**: Use `// skipcq: JS-XXXX` directly above lines (not `.deepsource.yml`).
-   - Common patterns: `JS-0002` (unused variable), `JS-0308` (any type).
-2. **No `any` Types**: Use proper generics or `unknown` with type guards.
-3. **Package Versions**: Match `package.json` exactly to `package-lock.json`.
-4. **DeepSource TOML Syntax**: TOML requires double quotes for string values in `[analyzers.meta]` overrides.
-5. **DeepSource Rule Conflicts**: Disable `no-var`, `eqeqeq`, `prefer-arrow-callback`, `no-empty` in `.deepsource.toml` to avoid conflict with TypeScript-eslint strict mode.
-6. **Workflow env: Blocks**: Always define environment variables in the step-level `env:` block, not the job or workflow level, to ensure compatibility with external tools.
+1. **Inline skipcq**: Use `// skipcq: JS-XXXX` directly above lines (not `.deepsource.yml`)
+2. **No `any` Types**: Use proper generics or `unknown` with type guards
+3. **Package Versions**: Match `package.json` exactly to `package-lock.json`
+4. **DeepSource TOML Syntax**: TOML requires double quotes for string values in `[analyzers.meta]` overrides
+5. **DeepSource Rule Conflicts**: Disable `no-var`, `eqeqeq`, `prefer-arrow-callback`, `no-empty` in `.deepsource.toml` to avoid conflict with TypeScript-eslint strict mode
 
 ### Verification Checklist
 

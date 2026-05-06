@@ -91,7 +91,7 @@ export function render(container: HTMLElement): void {
         </div>
 
         <div class="form-actions" style="display: flex; gap: var(--space-3);">
-          <button type="submit" class="btn btn-primary" style="flex: 1;">Create Gist</button>
+          <button type="submit" class="btn btn-primary" style="flex: 1;">CREATE GIST</button>
         </div>
       </form>
     </div>

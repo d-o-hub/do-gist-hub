@@ -160,7 +160,9 @@ describe('SyncQueue', () => {
     it('triggers processQueue when online', async () => {
       vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
       vi.mocked(db.queueWrite).mockResolvedValue(4);
-      const processQueueSpy = vi.spyOn(queue, 'processQueue').mockResolvedValue(undefined);
+      const processQueueSpy = vi
+        .spyOn(queue, 'processQueue')
+        .mockResolvedValue(undefined);
 
       await queue.queueOperation('gist-4', 'create', {});
 
@@ -171,7 +173,9 @@ describe('SyncQueue', () => {
     it('does not trigger processQueue when offline', async () => {
       vi.mocked(networkMonitor.isOnline).mockReturnValue(false);
       vi.mocked(db.queueWrite).mockResolvedValue(5);
-      const processQueueSpy = vi.spyOn(queue, 'processQueue').mockResolvedValue(undefined);
+      const processQueueSpy = vi
+        .spyOn(queue, 'processQueue')
+        .mockResolvedValue(undefined);
 
       await queue.queueOperation('gist-5', 'create', {});
 

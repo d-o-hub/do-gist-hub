@@ -67,7 +67,7 @@ describe('db', () => {
     it('creates database with correct name and version', async () => {
       const db = await initIndexedDB();
       expect(db.name).toBe('d-o-gist-hub-db');
-      expect(db.version).toBe(2);
+      expect(db.version).toBe(3);
     });
 
     it('creates object stores: gists, pendingWrites, metadata, logs', async () => {
