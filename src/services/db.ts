@@ -364,7 +364,7 @@ export async function getMetadata<T>(key: string): Promise<T | undefined> {
 /**
  * Store ETag information
  */
-export async function setEtag(url: string, etag: string, data: unknown): Promise<void> {
+export const setEtag = async (url: string, etag: string, data: unknown): Promise<void> => {
   const db = getDB();
   await db.put('etags', {
     url,
@@ -372,20 +372,20 @@ export async function setEtag(url: string, etag: string, data: unknown): Promise
     data,
     updatedAt: Date.now(),
   });
-}
+};
 
 /**
  * Get ETag information
  */
-export async function getEtag(url: string): Promise<ETagRecord | undefined> {
+export const getEtag = async (url: string): Promise<ETagRecord | undefined> => {
   const db = getDB();
   return await db.get('etags', url);
-}
+};
 
 /**
  * Clear all data (for logout/reset)
  */
-export async function clearAllData(): Promise<void> {
+export const clearAllData = async (): Promise<void> => {
   const db = getDB();
   const tx = db.transaction(['gists', 'pendingWrites', 'metadata', 'logs', 'etags'], 'readwrite');
   await tx.objectStore('gists').clear();
@@ -394,7 +394,7 @@ export async function clearAllData(): Promise<void> {
   await tx.objectStore('logs').clear();
   await tx.objectStore('etags').clear();
   await tx.done;
-}
+};
 
 /**
  * Export data for backup

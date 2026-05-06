@@ -87,7 +87,7 @@ async function buildHeaders(): Promise<HeadersInit> {
  * Build request options with signal and headers
  */
 async function buildOptions(
-  method: string = 'GET',
+  method = 'GET',
   body?: string,
   extraHeaders: Record<string, string> = {}
 ): Promise<RequestInit> {
@@ -221,7 +221,7 @@ async function fetchWithEtag<T>(url: string, context: string): Promise<T> {
 
       const etag = response.headers.get('ETag');
       if (etag) {
-        void setEtag(url, etag, result);
+        await setEtag(url, etag, result);
       }
 
       return result;
@@ -252,7 +252,7 @@ export async function listGists(
 /**
  * List starred gists with pagination via Link headers
  */
-export async function listStarredGists(
+export function listStarredGists(
   options: { page?: number; perPage?: number } = {}
 ): Promise<PaginatedResult<GitHubGist>> {
   const { page = 1, perPage = 30 } = options;
@@ -269,7 +269,7 @@ export async function listStarredGists(
 /**
  * Get a specific gist by ID
  */
-export async function getGist(id: string): Promise<GitHubGist> {
+export function getGist(id: string): Promise<GitHubGist> {
   const url = `${BASE_URL}/gists/${id}`;
   return fetchWithEtag<GitHubGist>(url, 'getGist');
 }
@@ -370,7 +370,7 @@ export async function unstarGist(id: string): Promise<void> {
 /**
  * Check if a gist is starred
  */
-export async function checkIfStarred(id: string): Promise<boolean> {
+export function checkIfStarred(id: string): Promise<boolean> {
   const key = `GET:checkIfStarred:${id}`;
 
   return deduplicatedFetch(key, async () => {
