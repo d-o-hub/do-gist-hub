@@ -203,11 +203,7 @@ describe('GistStore', () => {
 
       await gistStore.toggleStar('gist-1');
 
-      expect(syncQueue.queueOperation).toHaveBeenCalledWith(
-        'gist-1',
-        'star',
-        expect.any(Object)
-      );
+      expect(syncQueue.queueOperation).toHaveBeenCalledWith('gist-1', 'star', expect.any(Object));
     });
   });
 

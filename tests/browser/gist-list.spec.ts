@@ -39,7 +39,7 @@ test.describe('Gist List', () => {
     await page.locator('[data-filter="mine"]').click();
     await expect(page.locator('[data-filter="mine"]')).toHaveClass(/active/);
 
-    // Click "Starred" filter  
+    // Click "Starred" filter
     await page.locator('[data-filter="starred"]').click();
     await expect(page.locator('[data-filter="starred"]')).toHaveClass(/active/);
 
@@ -91,7 +91,7 @@ test.describe('Gist List', () => {
       const firstCard = cards.first();
       await expect(firstCard.locator('.gist-card-header')).toBeVisible();
       await expect(firstCard.locator('.gist-card-meta')).toBeVisible();
-      
+
       // Card should have action buttons
       await expect(firstCard.locator('.star-btn')).toBeVisible();
       await expect(firstCard.locator('.delete-btn')).toBeVisible();
@@ -126,10 +126,10 @@ test.describe('Gist List', () => {
     if (starBtnVisible) {
       const initialLabel = await starBtn.getAttribute('aria-label');
       await starBtn.click();
-      
+
       // Button should be disabled briefly during request
       await page.waitForTimeout(100);
-      
+
       // Label should change after toggle
       const newLabel = await starBtn.getAttribute('aria-label');
       expect(newLabel).not.toBe(initialLabel);

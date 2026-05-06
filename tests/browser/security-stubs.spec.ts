@@ -41,7 +41,7 @@ test.describe('Security & Coverage', () => {
               // Let it fall through, but trigger a tiny wait
             })
             .catch(() => {});
-        } catch {}
+        } catch (e) {}
 
         const request = indexedDB.open(dbName, dbVersion);
         request.onsuccess = () => {

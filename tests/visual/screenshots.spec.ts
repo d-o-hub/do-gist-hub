@@ -19,8 +19,8 @@ test.describe('UI Visual Verification', () => {
       await page.waitForTimeout(500);
 
       // Check no horizontal scroll
-      const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-      const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
+      const scrollWidth = await page.evaluate(async () => document.documentElement.scrollWidth);
+      const clientWidth = await page.evaluate(async () => document.documentElement.clientWidth);
       test.info().annotations.push({
         type: 'horizontal-overflow',
         description: `${bp.name}: scrollWidth=${scrollWidth}, clientWidth=${clientWidth}, overflow=${scrollWidth > clientWidth}`,
@@ -36,25 +36,31 @@ test.describe('UI Visual Verification', () => {
       const bottomNav = page.locator('.bottom-nav');
       const sidebarNav = page.locator('.sidebar-nav');
       const hasNav = (await bottomNav.count()) > 0 || (await sidebarNav.count()) > 0;
-      test.info().annotations.push({ type: 'navigation', description: `${bp.name}: nav visible = ${hasNav}` });
+      test.info().annotations.push({
+        type: 'navigation',
+        description: `${bp.name}: nav visible = ${hasNav}`,
+      });
 
       // Verify gist cards render
       const cards = page.locator('.gist-card');
       const cardCount = await cards.count();
-      test.info().annotations.push({ type: 'cards', description: `${bp.name}: card count = ${cardCount}` });
+      test
+        .info()
+        .annotations.push({ type: 'cards', description: `${bp.name}: card count = ${cardCount}` });
 
       // Verify no overlapping cards
       if (cardCount > 0) {
-        const overlaps = await page.evaluate(() => {
+        const overlaps = await page.evaluate(async () => {
           const elements = document.querySelectorAll('.gist-card');
           const rects: DOMRect[] = [];
-          elements.forEach(el => {
+          elements.forEach((el) => {
             const r = el.getBoundingClientRect();
             if (r.height > 0) rects.push(r);
           });
           for (let i = 0; i < rects.length; i++) {
             for (let j = i + 1; j < rects.length; j++) {
-              const a = rects[i], b = rects[j];
+              const a = rects[i],
+                b = rects[j];
               const overlapX = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left));
               const overlapY = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
               if (overlapX > 10 && overlapY > 10) return true;
@@ -62,15 +68,20 @@ test.describe('UI Visual Verification', () => {
           }
           return false;
         });
-        test.info().annotations.push({ type: 'overlap', description: `${bp.name}: cards overlap = ${overlaps}` });
+        test.info().annotations.push({
+          type: 'overlap',
+          description: `${bp.name}: cards overlap = ${overlaps}`,
+        });
       }
 
       // Verify touch targets on mobile
       if (bp.width < 768) {
-        const smallTargets = await page.evaluate(() => {
-          const elements = document.querySelectorAll('button, .nav-item, .icon-button, .filter-btn, .gist-action-btn');
+        const smallTargets = await page.evaluate(async () => {
+          const elements = document.querySelectorAll(
+            'button, .nav-item, .icon-button, .filter-btn, .gist-action-btn'
+          );
           const small: { tag: string; w: number; h: number }[] = [];
-          elements.forEach(el => {
+          elements.forEach((el) => {
             const r = el.getBoundingClientRect();
             if (r.width > 0 && r.height > 0 && (r.width < 44 || r.height < 44)) {
               small.push({ tag: el.tagName, w: Math.round(r.width), h: Math.round(r.height) });
@@ -78,17 +89,23 @@ test.describe('UI Visual Verification', () => {
           });
           return small;
         });
-        test.info().annotations.push({ type: 'touch-targets', description: `${bp.name}: small targets (<44px) = ${JSON.stringify(smallTargets.slice(0, 5))}` });
+        test.info().annotations.push({
+          type: 'touch-targets',
+          description: `${bp.name}: small targets (<44px) = ${JSON.stringify(smallTargets.slice(0, 5))}`,
+        });
       }
 
       // Verify active pill style on nav
       const activeNav = page.locator('.nav-item.active, .sidebar-item.active');
       const activeCount = await activeNav.count();
-      test.info().annotations.push({ type: 'active-nav', description: `${bp.name}: active nav items = ${activeCount}` });
+      test.info().annotations.push({
+        type: 'active-nav',
+        description: `${bp.name}: active nav items = ${activeCount}`,
+      });
 
       // Check active has pill styling (border-radius full + background)
       if (activeCount > 0) {
-        const pillStyle = await page.evaluate(() => {
+        const pillStyle = await page.evaluate(async () => {
           const el = document.querySelector('.nav-item.active, .sidebar-item.active');
           if (!el) return null;
           const cs = getComputedStyle(el);
@@ -97,7 +114,10 @@ test.describe('UI Visual Verification', () => {
             backgroundColor: cs.backgroundColor,
           };
         });
-        test.info().annotations.push({ type: 'pill-style', description: `${bp.name}: ${JSON.stringify(pillStyle)}` });
+        test.info().annotations.push({
+          type: 'pill-style',
+          description: `${bp.name}: ${JSON.stringify(pillStyle)}`,
+        });
       }
     });
   }

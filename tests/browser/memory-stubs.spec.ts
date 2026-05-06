@@ -1,4 +1,5 @@
-import { test, expect, Page } from '../base';
+import { test, expect } from '../base';
+import type { Page } from '@playwright/test';
 
 test.describe('Memory Safety & Lifecycle', () => {
   test.beforeEach(async ({ page }) => {
@@ -90,7 +91,7 @@ test.describe('Memory Safety & Lifecycle', () => {
       try {
         const request = indexedDB.open('d-o-gist-hub-db');
         return !!request;
-      } catch {
+      } catch (e) {
         return false;
       }
     });
