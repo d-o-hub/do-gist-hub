@@ -23,9 +23,13 @@ test.describe('GitHub Client Authentication', () => {
         if (init?.headers) {
           capturedHeaders = {};
           if (init.headers instanceof Headers) {
-            init.headers.forEach((v, k) => { capturedHeaders![k] = v; });
+            init.headers.forEach((v, k) => {
+              capturedHeaders![k] = v;
+            });
           } else if (Array.isArray(init.headers)) {
-            init.headers.forEach(([k, v]) => { capturedHeaders![k] = v; });
+            init.headers.forEach(([k, v]) => {
+              capturedHeaders![k] = v;
+            });
           } else {
             Object.assign(capturedHeaders, init.headers);
           }
@@ -41,7 +45,7 @@ test.describe('GitHub Client Authentication', () => {
       }
 
       return {
-        authHeader: capturedHeaders?.['Authorization'] || capturedHeaders?.['authorization']
+        authHeader: capturedHeaders?.['Authorization'] || capturedHeaders?.['authorization'],
       };
     });
 
