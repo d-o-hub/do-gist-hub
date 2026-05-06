@@ -50,15 +50,6 @@ export async function exportAllGists(): Promise<Blob> {
 }
 
 /**
- * Export specific gists by their IDs as a JSON Blob
- */
-export async function exportSelectedGists(ids: string[]): Promise<Blob> {
-  const allGists = await getAllGists();
-  const selectedGists = allGists.filter((g) => ids.includes(g.id));
-  return createExportBlob(selectedGists);
-}
-
-/**
  * Import gists from a JSON file
  */
 export async function importGists(file: File): Promise<ImportResult> {
