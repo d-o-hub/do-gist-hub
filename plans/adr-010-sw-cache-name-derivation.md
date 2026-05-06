@@ -1,8 +1,10 @@
-<!-- Last Audit: 2026-04-25 -->
+<!-- Last Audit: 2026-05-06 -->
+
 # ADR-010: Service Worker Cache Name Derivation from app.config.ts
 
-**Status**: Deferred
+**Status**: Implemented
 **Date**: 2026-04-25
+**Implemented**: 2026-05-06
 **Deciders**: Architect, PWA Agent
 
 ## Context
@@ -35,6 +37,7 @@ const API_CACHE = APP.apiCacheName;
 ### Build Integration
 
 Extend `vite.config.ts` with a service worker build step:
+
 - Use esbuild or rollup to compile `src/sw/sw.ts`
 - Replace `process.env` or inline imports with actual values
 - Write output to `dist/sw.js` (not `public/sw.js`, to avoid dev/build conflicts)
@@ -42,12 +45,14 @@ Extend `vite.config.ts` with a service worker build step:
 ## Tradeoffs
 
 ### Pros
+
 - Single source of truth for cache names
 - Type safety in service worker
 - Automatic cache busting on version change
 - Consistent with existing Vite plugin pattern
 
 ### Cons
+
 - Additional build complexity
 - Service worker becomes a build artifact
 - Requires careful handling of `import` in SW context
@@ -55,11 +60,13 @@ Extend `vite.config.ts` with a service worker build step:
 ## Consequences
 
 ### Development
+
 - `src/sw/sw.ts` is the only file to edit for SW logic
 - Cache names automatically update when `app.config.ts` changes
 - No manual synchronization needed
 
 ### Build
+
 - Vite config grows slightly
 - Need to handle SW compilation separately from main bundle
 - SW should not use module imports in production (or use `importScripts`)
@@ -67,17 +74,21 @@ Extend `vite.config.ts` with a service worker build step:
 ## Rejected Alternatives
 
 ### Option 1: Runtime fetch of config
+
 Fetch `app.config.ts` at runtime from SW — rejected because service workers cannot easily import ES modules.
 
 ### Option 2: String replacement in existing sw.js
+
 Keep `public/sw.js` as plain JS, add a Vite plugin that does string replacement — rejected because it lacks type safety and is fragile.
 
 ### Option 3: Leave as-is (hardcoded)
+
 Current state — rejected because it violates the single-source-of-truth principle documented in AGENTS.md.
 
 ## Rollback Triggers
 
 Roll back to hardcoded names if:
+
 - Build complexity becomes unmaintainable
 - Service worker compilation causes deployment issues
 - Team prefers explicit manual cache name management
@@ -90,4 +101,12 @@ Roll back to hardcoded names if:
 
 ---
 
-*Created: 2026-04-25. Status: Deferred.*
+_Created: 2026-04-25. Status: Implemented (2026-05-06)._
+
+## Implementation Notes (2026-05-06)
+
+- Created `src/sw/sw.ts` as TypeScript service worker template
+- Added `swGeneratorPlugin()` to `vite.config.ts` using esbuild
+- Build-time injection of `APP.staticCacheName` and build timestamp
+- Removed legacy `public/sw.js` (now generated at `dist/sw.js`)
+- All quality gates pass, CI green

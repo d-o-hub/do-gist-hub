@@ -304,3 +304,13 @@ for (const viewport of viewports) {
 ---
 
 *Created: 2026-04-25. Status: In Progress.*
+
+_Created: 2026-04-25. Status: Implemented (2026-05-06)._
+
+## Implementation Notes (2026-05-06)
+
+- Created `src/components/ui/nav-rail.ts` component for tablet breakpoint (768-1023px)
+- Nav rail uses token-driven CSS classes from `src/tokens/component/navigation.ts`
+- Integrated with app.ts to conditionally render at tablet breakpoint
+- Follows same patterns as bottom-sheet.ts (class-based, mount/unmount, keyboard nav)
+- All quality gates pass, CI green
