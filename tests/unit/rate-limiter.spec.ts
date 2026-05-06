@@ -5,7 +5,7 @@ import {
   getRateLimitState,
   isSafeToRequest,
   getTimeUntilReset,
-  resetRateLimit,
+  resetRateLimit
 } from '../../src/services/github/rate-limiter.ts';
 
 describe('Rate Limiter', () => {
@@ -16,8 +16,8 @@ describe('Rate Limiter', () => {
   function createMockResponse(headers: Record<string, string>): Response {
     return {
       headers: {
-        get: (name: string) => headers[name.toLowerCase()] || null,
-      },
+        get: (name: string) => headers[name.toLowerCase()] || null
+      }
     } as unknown as Response;
   }
 
@@ -37,7 +37,7 @@ describe('Rate Limiter', () => {
       'x-ratelimit-limit': '5000',
       'x-ratelimit-remaining': '4999',
       'x-ratelimit-reset': resetSecs.toString(),
-      'x-ratelimit-used': '1',
+      'x-ratelimit-used': '1'
     });
 
     trackRateLimit(res);
@@ -59,7 +59,7 @@ describe('Rate Limiter', () => {
       'x-ratelimit-limit': '5000',
       'x-ratelimit-remaining': '99',
       'x-ratelimit-reset': resetSecs.toString(),
-      'x-ratelimit-used': '4901',
+      'x-ratelimit-used': '4901'
     });
 
     trackRateLimit(res);
@@ -78,7 +78,7 @@ describe('Rate Limiter', () => {
       'x-ratelimit-limit': '5000',
       'x-ratelimit-remaining': '0',
       'x-ratelimit-reset': resetSecs.toString(),
-      'x-ratelimit-used': '5000',
+      'x-ratelimit-used': '5000'
     });
 
     trackRateLimit(res);
@@ -97,7 +97,7 @@ describe('Rate Limiter', () => {
       'x-ratelimit-limit': '5000',
       'x-ratelimit-remaining': '0',
       'x-ratelimit-reset': resetSecs.toString(),
-      'x-ratelimit-used': '5000',
+      'x-ratelimit-used': '5000'
     });
 
     trackRateLimit(res); // updates state

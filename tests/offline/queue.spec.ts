@@ -1,4 +1,4 @@
-import { test, expect } from '../base';
+import { test, expect } from '@playwright/test';
 
 test.describe('Sync Queue and Offline Operations', () => {
   test.beforeEach(async ({ page }) => {
@@ -69,8 +69,8 @@ test.describe('Sync Queue and Offline Operations', () => {
       const pending = await getPendingWrites();
       return {
         count: pending.length,
-        actions: pending.map((w) => w.action),
-        gistIds: pending.map((w) => w.gistId),
+        actions: pending.map(w => w.action),
+        gistIds: pending.map(w => w.gistId),
       };
     });
 
@@ -104,8 +104,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
   test('removePendingWrite deletes operation after successful sync', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, getPendingWrites, removePendingWrite } =
-        await import('./src/services/db');
+      const { initIndexedDB, queueWrite, getPendingWrites, removePendingWrite } = await import('./src/services/db');
       await initIndexedDB();
 
       await queueWrite({ gistId: 'gist-a', action: 'create', payload: {} });
@@ -118,7 +117,7 @@ test.describe('Sync Queue and Offline Operations', () => {
       const remaining = await getPendingWrites();
       return {
         remainingCount: remaining.length,
-        remainingIds: remaining.map((w) => w.id),
+        remainingIds: remaining.map(w => w.id),
         removedId: id2,
       };
     });
@@ -130,8 +129,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
   test('updatePendingWriteError increments retry count and stores error', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, getPendingWrites, updatePendingWriteError } =
-        await import('./src/services/db');
+      const { initIndexedDB, queueWrite, getPendingWrites, updatePendingWriteError } = await import('./src/services/db');
       await initIndexedDB();
 
       const id = await queueWrite({
@@ -144,13 +142,13 @@ test.describe('Sync Queue and Offline Operations', () => {
       await updatePendingWriteError(id, 'Network error: fetch failed');
 
       let pending = await getPendingWrites();
-      const first = pending.find((w) => w.id === id)!;
+      const first = pending.find(w => w.id === id)!;
 
       // Simulate second failure
       await updatePendingWriteError(id, 'Rate limit exceeded');
 
       pending = await getPendingWrites();
-      const second = pending.find((w) => w.id === id)!;
+      const second = pending.find(w => w.id === id)!;
 
       return {
         firstRetryCount: first.retryCount,
@@ -171,12 +169,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
   test('all action types can be queued', async ({ page }) => {
     const actions: Array<'create' | 'update' | 'delete' | 'star' | 'unstar' | 'fork'> = [
-      'create',
-      'update',
-      'delete',
-      'star',
-      'unstar',
-      'fork',
+      'create', 'update', 'delete', 'star', 'unstar', 'fork',
     ];
 
     const result = await page.evaluate(async (actionsToQueue: string[]) => {
@@ -186,7 +179,7 @@ test.describe('Sync Queue and Offline Operations', () => {
       for (const action of actionsToQueue) {
         await queueWrite({
           gistId: `gist-${action}`,
-          action: action as unknown as any,
+          action: action as any,
           payload: {},
         });
       }
@@ -194,7 +187,7 @@ test.describe('Sync Queue and Offline Operations', () => {
       const pending = await getPendingWrites();
       return {
         count: pending.length,
-        actions: pending.map((w) => w.action),
+        actions: pending.map(w => w.action),
       };
     }, actions);
 
@@ -204,8 +197,7 @@ test.describe('Sync Queue and Offline Operations', () => {
 
   test('queue length is tracked correctly', async ({ page }) => {
     await page.evaluate(async () => {
-      const { initIndexedDB, queueWrite, removePendingWrite, getPendingWrites } =
-        await import('./src/services/db');
+      const { initIndexedDB, queueWrite, removePendingWrite, getPendingWrites } = await import('./src/services/db');
       await initIndexedDB();
 
       const id1 = await queueWrite({ gistId: 'len-1', action: 'create', payload: {} });
@@ -225,9 +217,9 @@ test.describe('Sync Queue and Offline Operations', () => {
       (window as any).__queueLen3 = count;
     });
 
-    const len1 = await page.evaluate(async () => (window as any).__queueLen1);
-    const len2 = await page.evaluate(async () => (window as any).__queueLen2);
-    const len3 = await page.evaluate(async () => (window as any).__queueLen3);
+    const len1 = await page.evaluate(() => (window as any).__queueLen1);
+    const len2 = await page.evaluate(() => (window as any).__queueLen2);
+    const len3 = await page.evaluate(() => (window as any).__queueLen3);
 
     expect(len1).toBe(2);
     expect(len2).toBe(1);
@@ -246,13 +238,13 @@ test.describe('Sync Queue and Offline Operations', () => {
       await queueWrite({ gistId: 'gist-alpha', action: 'delete', payload: {} });
 
       const all = await getPendingWrites();
-      const alphaWrites = all.filter((w) => w.gistId === 'gist-alpha');
-      const betaWrites = all.filter((w) => w.gistId === 'gist-beta');
+      const alphaWrites = all.filter(w => w.gistId === 'gist-alpha');
+      const betaWrites = all.filter(w => w.gistId === 'gist-beta');
 
       return {
         totalWrites: all.length,
         alphaWrites: alphaWrites.length,
-        alphaActions: alphaWrites.map((w) => w.action),
+        alphaActions: alphaWrites.map(w => w.action),
         betaWrites: betaWrites.length,
       };
     });
@@ -360,19 +352,17 @@ test.describe('Sync Queue and Offline Operations', () => {
 
       // Queue in specific order with small delays
       await queueWrite({ gistId: 'first', action: 'create', payload: {} });
-      await new Promise((r) => setTimeout(r, 5));
+      await new Promise(r => setTimeout(r, 5));
       await queueWrite({ gistId: 'second', action: 'create', payload: {} });
-      await new Promise((r) => setTimeout(r, 5));
+      await new Promise(r => setTimeout(r, 5));
       await queueWrite({ gistId: 'third', action: 'create', payload: {} });
 
       const pending = await getPendingWrites();
       const sorted = pending.sort((a, b) => a.createdAt - b.createdAt);
 
       return {
-        order: sorted.map((w) => w.gistId),
-        timestampsIncreasing: sorted.every(
-          (w, i) => i === 0 || w.createdAt >= sorted[i - 1].createdAt
-        ),
+        order: sorted.map(w => w.gistId),
+        timestampsIncreasing: sorted.every((w, i) => i === 0 || w.createdAt >= sorted[i - 1].createdAt),
       };
     });
 

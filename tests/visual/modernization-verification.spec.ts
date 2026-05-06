@@ -1,4 +1,4 @@
-import { test, expect } from '../base';
+import { test, expect } from '@playwright/test';
 
 test.describe('UI Modernization Verification', () => {
   test.beforeEach(async ({ page }) => {
@@ -11,7 +11,7 @@ test.describe('UI Modernization Verification', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     const sidebar = await page.$('.sidebar-nav');
     if (sidebar) {
-      const display = await sidebar.evaluate((el) => window.getComputedStyle(el).display);
+      const display = await sidebar.evaluate(el => window.getComputedStyle(el).display);
       expect(display).toBe('none');
     }
     // If sidebar not in DOM, mobile-first is implicitly satisfied
@@ -21,7 +21,7 @@ test.describe('UI Modernization Verification', () => {
     const card = page.locator('.gist-card').first();
     const cardVisible = await card.isVisible().catch(() => false);
     if (cardVisible) {
-      const containerType = await card.evaluate((el) => window.getComputedStyle(el).containerType);
+      const containerType = await card.evaluate(el => window.getComputedStyle(el).containerType);
       expect(containerType).toBe('inline-size');
     }
   });
@@ -29,11 +29,11 @@ test.describe('UI Modernization Verification', () => {
   test('should trigger View Transition on navigation', async ({ page }) => {
     // This is hard to test directly, but we can check if withViewTransition is called
     // by mocking the startViewTransition API
-    const _transitionTriggered = await page.evaluate(async () => {
+    const _transitionTriggered = await page.evaluate(() => {
       let triggered = false;
       if ('startViewTransition' in document) {
         const original = (document as any).startViewTransition;
-        (document as any).startViewTransition = (cb: () => void) => {
+        (document as any).startViewTransition = (cb: any) => {
           triggered = true;
           return original.call(document, cb);
         };
@@ -45,7 +45,7 @@ test.describe('UI Modernization Verification', () => {
     await page.locator('[data-testid="nav-starred"]').first().click();
 
     // Check if it was supported and triggered (or skip if not supported in browser)
-    const isSupported = await page.evaluate(async () => 'startViewTransition' in document);
+    const isSupported = await page.evaluate(() => 'startViewTransition' in document);
     if (isSupported) {
       // In a real test we'd need to re-evaluate after click,
       // but this is just a stub for now.

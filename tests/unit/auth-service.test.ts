@@ -17,21 +17,9 @@ vi.mock('../../src/services/security/logger', () => ({
   safeError: vi.fn(),
 }));
 
-vi.mock('../../src/services/github/client', () => ({
-  validateToken: vi.fn().mockResolvedValue({ isValid: true, username: 'testuser' }),
-  resetRateLimit: vi.fn(),
-}));
-
 // ── Imports (after mocks) ─────────────────────────────
 
-import {
-  getToken,
-  saveToken,
-  removeToken,
-  isAuthenticated,
-  getUsername,
-  clearUsernameCache,
-} from '../../src/services/github/auth';
+import { getToken, saveToken, removeToken } from '../../src/services/github/auth';
 import { encrypt, decrypt } from '../../src/services/security/crypto';
 import { getMetadata, setMetadata } from '../../src/services/db';
 import { safeLog, safeError } from '../../src/services/security/logger';
@@ -41,9 +29,6 @@ import { safeLog, safeError } from '../../src/services/security/logger';
 describe('Auth Service', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Clear module-level cache by resetting the mock implementation
-    vi.mocked(getMetadata).mockReset();
-    vi.mocked(setMetadata).mockReset();
   });
 
   // ── getToken ────────────────────────────────────
@@ -51,22 +36,24 @@ describe('Auth Service', () => {
   describe('getToken', () => {
     it('returns null when no token stored', async () => {
       vi.mocked(getMetadata).mockResolvedValue(undefined);
-
       const token = await getToken();
       expect(token).toBeNull();
     });
 
     it('returns null when legacy token exists but no new format', async () => {
       vi.mocked(getMetadata)
-        .mockResolvedValueOnce({ data: 'enc-data', iv: 'iv' }) // github-pat-enc first call
-        .mockResolvedValueOnce(undefined); // github-pat fallback (shouldn't reach here in this test)
+        .mockResolvedValueOnce('legacy-token')  // github-pat
+        .mockResolvedValueOnce(undefined);  // github-pat-enc
 
       const token = await getToken();
       expect(token).toBeNull();
     });
 
     it('decrypts token from new format', async () => {
-      vi.mocked(getMetadata).mockResolvedValue({ data: 'enc-data', iv: 'iv' });
+      vi.mocked(getMetadata)
+        .mockResolvedValueOnce(undefined)  // github-pat (legacy)
+        .mockResolvedValueOnce({ data: 'enc-data', iv: 'iv' });  // github-pat-enc
+
       vi.mocked(decrypt).mockResolvedValue('decrypted-token');
 
       const token = await getToken();
@@ -75,7 +62,10 @@ describe('Auth Service', () => {
     });
 
     it('handles decryption failure gracefully', async () => {
-      vi.mocked(getMetadata).mockResolvedValue({ data: 'enc-data', iv: 'iv' });
+      vi.mocked(getMetadata)
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce({ data: 'enc-data', iv: 'iv' });
+
       vi.mocked(decrypt).mockRejectedValue(new Error('Decryption failed'));
 
       const token = await getToken();
@@ -94,7 +84,7 @@ describe('Auth Service', () => {
       expect(result.success).toBe(true);
       expect(encrypt).toHaveBeenCalledWith('test-token');
       expect(setMetadata).toHaveBeenCalledWith('github-pat-enc', { data: 'enc-data', iv: 'iv' });
-      expect(setMetadata).toHaveBeenCalledWith('github-pat', null); // Remove legacy
+      expect(setMetadata).toHaveBeenCalledWith('github-pat', null);  // Remove legacy
     });
 
     it('handles encryption failure', async () => {
@@ -122,34 +112,134 @@ describe('Auth Service', () => {
 
   describe('isAuthenticated', () => {
     it('returns true when token exists', async () => {
-      vi.mocked(getMetadata).mockResolvedValue({ data: 'enc-data', iv: 'iv' });
+      vi.mocked(getMetadata)
+        .mockResolvedValueOnce(undefined)  // github-pat check
+        .mockResolvedValueOnce({ data: 'enc-data', iv: 'iv' });  // github-pat-enc
 
       const result = await isAuthenticated();
       expect(result).toBe(true);
     });
 
     it('returns false when no token stored', async () => {
-      vi.mocked(getMetadata).mockResolvedValue(undefined);
+      vi.mocked(getMetadata)
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce(undefined);
 
       const result = await isAuthenticated();
       expect(result).toBe(false);
     });
   });
+});
 
-  // ── getUsername ────────────────────────────────
+  // ── getToken ──────────────────────────────────────────────────
 
-  describe('getUsername', () => {
+  describe('getToken', () => {
+    it('returns null when no token stored', async () => {
+      vi.mocked(getMetadata).mockResolvedValue(undefined);
+      const token = await getToken();
+      expect(token).toBeNull();
+    });
+
+    it('returns null when legacy token exists but no new format', async () => {
+      vi.mocked(getMetadata)
+        .mockResolvedValueOnce('legacy-token')  // github-pat
+        .mockResolvedValueOnce(undefined);  // github-pat-enc
+
+      const token = await getToken();
+      expect(token).toBeNull();
+    });
+
+    it('decrypts token from new format', async () => {
+      vi.mocked(getMetadata)
+        .mockResolvedValueOnce(undefined)  // github-pat (legacy)
+        .mockResolvedValueOnce({ data: 'enc-data', iv: 'iv' });  // github-pat-enc
+
+      vi.mocked(decryptToken).mockResolvedValue('decrypted-token');
+
+      const token = await getToken();
+      expect(token).toBe('decrypted-token');
+      expect(decryptToken).toHaveBeenCalledWith({ data: 'enc-data', iv: 'iv' });
+    });
+
+    it('handles decryption failure gracefully', async () => {
+      vi.mocked(getMetadata)
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce({ data: 'enc-data', iv: 'iv' });
+
+      vi.mocked(decryptToken).mockRejectedValue(new Error('Decryption failed'));
+
+      const token = await getToken();
+      expect(token).toBeNull();
+    });
+  });
+
+  // ── saveToken ──────────────────────────────────────────────
+
+  describe('saveToken', () => {
+    it('encrypts and saves token', async () => {
+      vi.mocked(encryptToken).mockResolvedValue({ data: 'enc-data', iv: 'iv' });
+
+      await saveToken('test-token');
+
+      expect(encryptToken).toHaveBeenCalledWith('test-token');
+      expect(setMetadata).toHaveBeenCalledWith('github-pat-enc', { data: 'enc-data', iv: 'iv' });
+      expect(setMetadata).toHaveBeenCalledWith('github-pat', null);  // Remove legacy
+    });
+
+    it('handles encryption failure', async () => {
+      vi.mocked(encryptToken).mockRejectedValue(new Error('Encryption failed'));
+
+      await expect(saveToken('test-token')).rejects.toThrow('Encryption failed');
+    });
+  });
+
+  // ── removeToken ───────────────────────────────────────────
+
+  describe('removeToken', () => {
+    it('removes token from storage', async () => {
+      await removeToken();
+
+      expect(setMetadata).toHaveBeenCalledWith('github-pat', null);
+      expect(setMetadata).toHaveBeenCalledWith('github-pat-enc', null);
+      expect(setMetadata).toHaveBeenCalledWith('github-username', null);
+    });
+  });
+
+  // ── getCurrentUsername ─────────────────────────────────────
+
+  describe('getCurrentUsername', () => {
     it('returns cached username if available', async () => {
+      // First call to populate cache
       vi.mocked(getMetadata).mockResolvedValue('cached-user');
-
-      const first = await getUsername();
+      const first = await getCurrentUsername();
       expect(first).toBe('cached-user');
+
+      // Second call should use cache
+      vi.clearAllMocks();
+      const second = await getCurrentUsername();
+      expect(second).toBe('cached-user');
+      expect(getMetadata).not.toHaveBeenCalled();
     });
 
     it('returns null when no username stored', async () => {
       vi.mocked(getMetadata).mockResolvedValue(undefined);
-      const username = await getUsername();
+      const username = await getCurrentUsername();
       expect(username).toBeNull();
+    });
+  });
+
+  // ── clearUsernameCache ───────────────────────────────────
+
+  describe('clearUsernameCache', () => {
+    it('clears the username cache', async () => {
+      vi.mocked(getMetadata).mockResolvedValue('user');
+      await getCurrentUsername();  // Populate cache
+
+      clearUsernameCache();
+
+      vi.clearAllMocks();
+      await getCurrentUsername();  // Should fetch again
+      expect(getMetadata).toHaveBeenCalled();
     });
   });
 });

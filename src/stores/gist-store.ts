@@ -6,16 +6,7 @@ import {
   saveGists,
 } from '../services/db';
 import { safeError } from '../services/security/logger';
-import {
-  getGist as GitHubGetGist,
-  createGist as GitHubCreateGist,
-  updateGist as GitHubUpdateGist,
-  deleteGist as GitHubDeleteGist,
-  listGists as GitHubListGists,
-  listStarredGists as GitHubListStarredGists,
-  starGist as GitHubStarGist,
-  unstarGist as GitHubUnstarGist,
-} from '../services/github/client';
+import * as GitHub from '../services/github/client';
 import networkMonitor from '../services/network/offline-monitor';
 import syncQueue from '../services/sync/queue';
 import {
@@ -93,8 +84,8 @@ class GistStore {
     try {
       if (!networkMonitor.isOnline()) return;
       const [ownResult, starredResult] = await Promise.all([
-        GitHubListGists(),
-        GitHubListStarredGists(),
+        GitHub.listGists(),
+        GitHub.listStarredGists(),
       ]);
       const ownGists = ownResult.data;
       const starredGists = starredResult.data;
@@ -218,7 +209,7 @@ class GistStore {
         this.gists.unshift(tempRecord);
         this.notifyListeners();
 
-        const gist = await GitHubCreateGist(payload);
+        const gist = await GitHub.createGist(payload);
         const record = GistStore.githubGistToRecord(gist);
         await dbSaveGist(record);
 
@@ -281,7 +272,7 @@ class GistStore {
           this.notifyListeners();
         }
 
-        const gist = await GitHubUpdateGist(id, payload);
+        const gist = await GitHub.updateGist(id, payload);
         const record = GistStore.githubGistToRecord(gist);
         await dbSaveGist(record);
         const idx = this.gists.findIndex((g) => g.id === id);
@@ -318,7 +309,7 @@ class GistStore {
         this.gists = this.gists.filter((g) => g.id !== id);
         this.notifyListeners();
 
-        await GitHubDeleteGist(id);
+        await GitHub.deleteGist(id);
         await dbDeleteGist(id);
         return true;
       } else {
@@ -343,7 +334,7 @@ class GistStore {
     if (!networkMonitor.isOnline()) return this.getGist(id) || null;
 
     try {
-      const gist = await GitHubGetGist(id);
+      const gist = await GitHub.getGist(id);
       const existing = this.getGist(id);
       const record = GistStore.githubGistToRecord(gist, existing?.starred);
       await dbSaveGist(record);
@@ -378,9 +369,9 @@ class GistStore {
       this.notifyListeners();
 
       if (networkMonitor.isOnline()) {
-        if (shouldStar) await GitHubStarGist(id);
-        else await GitHubUnstarGist(id);
-        await (await import('../services/db')).saveGist(gist);
+        if (shouldStar) await GitHub.starGist(id);
+        else await GitHub.unstarGist(id);
+        await dbSaveGist(gist);
       } else {
         await syncQueue.queueOperation(id, shouldStar ? 'star' : 'unstar', {});
       }
@@ -440,7 +431,7 @@ class GistStore {
     if (!conflict) return;
 
     const resolvedRecord = resolveConflict(conflict, strategy);
-    await (await import('../services/db')).saveGist(resolvedRecord);
+    await dbSaveGist(resolvedRecord);
     await clearConflict(gistId);
 
     const idx = this.gists.findIndex((g) => g.id === gistId);

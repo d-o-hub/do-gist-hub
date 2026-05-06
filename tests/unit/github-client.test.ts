@@ -22,6 +22,11 @@ vi.mock('../../src/services/github/auth', () => ({
   getToken: vi.fn().mockResolvedValue('test-token-123'),
 }));
 
+vi.mock('../../src/services/db', () => ({
+  getEtag: vi.fn().mockResolvedValue(null),
+  setEtag: vi.fn().mockResolvedValue(null),
+}));
+
 // ─── Imports (after mocks) ───────────────────────────────────────────
 
 import {
@@ -126,12 +131,15 @@ describe('GitHub API Client', () => {
         )
         .mockResolvedValueOnce(
           // /users/testuser/gists endpoint
-          new Response(JSON.stringify([makeGitHubGist('gist-1'), makeGitHubGist('gist-2')]), {
-            status: 200,
-            headers: {
-              Link: '<https://api.github.com/user/gists?page=2>; rel="next", <https://api.github.com/user/gists?page=5>; rel="last"',
-            },
-          })
+          new Response(
+            JSON.stringify([makeGitHubGist('gist-1'), makeGitHubGist('gist-2')]),
+            {
+              status: 200,
+              headers: {
+                Link: '<https://api.github.com/user/gists?page=2>; rel="next", <https://api.github.com/user/gists?page=5>; rel="last"',
+              },
+            }
+          )
         );
 
       const result = await listGists();
@@ -144,12 +152,19 @@ describe('GitHub API Client', () => {
 
     it('fetches with custom pagination options', async () => {
       fetchMock
-        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ login: 'testuser' }), { status: 200 })
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify([]), { status: 200 })
+        );
 
       await listGists({ page: 2, perPage: 50 });
 
-      expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('page=2'), expect.any(Object));
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining('page=2'),
+        expect.any(Object)
+      );
     });
   });
 
@@ -172,7 +187,9 @@ describe('GitHub API Client', () => {
   describe('getGist', () => {
     it('fetches a single gist by id', async () => {
       const gist = makeGitHubGist('gist-1');
-      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(gist), { status: 200 }));
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify(gist), { status: 200 })
+      );
 
       const result = await getGist('gist-1');
       expect(result.id).toBe('gist-1');
@@ -184,7 +201,9 @@ describe('GitHub API Client', () => {
   describe('createGist', () => {
     it('creates a new gist', async () => {
       const gist = makeGitHubGist('new-gist');
-      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(gist), { status: 201 }));
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify(gist), { status: 201 })
+      );
 
       const payload: CreateGistRequest = {
         description: 'Test Gist',
@@ -206,7 +225,9 @@ describe('GitHub API Client', () => {
   describe('updateGist', () => {
     it('updates an existing gist', async () => {
       const gist = makeGitHubGist('gist-1', { description: 'Updated' });
-      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(gist), { status: 200 }));
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify(gist), { status: 200 })
+      );
 
       const payload: UpdateGistRequest = { description: 'Updated' };
       const result = await updateGist('gist-1', payload);
@@ -218,7 +239,9 @@ describe('GitHub API Client', () => {
 
   describe('deleteGist', () => {
     it('deletes a gist', async () => {
-      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+      fetchMock.mockResolvedValueOnce(
+        new Response(null, { status: 204 })
+      );
 
       await deleteGist('gist-1');
       expect(fetchMock).toHaveBeenCalledWith(
@@ -232,7 +255,9 @@ describe('GitHub API Client', () => {
 
   describe('starGist / unstarGist', () => {
     it('stars a gist', async () => {
-      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+      fetchMock.mockResolvedValueOnce(
+        new Response(null, { status: 204 })
+      );
 
       await starGist('gist-1');
       expect(fetchMock).toHaveBeenCalledWith(
@@ -242,7 +267,9 @@ describe('GitHub API Client', () => {
     });
 
     it('unstars a gist', async () => {
-      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+      fetchMock.mockResolvedValueOnce(
+        new Response(null, { status: 204 })
+      );
 
       await unstarGist('gist-1');
       expect(fetchMock).toHaveBeenCalledWith(
@@ -256,14 +283,18 @@ describe('GitHub API Client', () => {
 
   describe('checkIfStarred', () => {
     it('returns true when gist is starred (204)', async () => {
-      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+      fetchMock.mockResolvedValueOnce(
+        new Response(null, { status: 204 })
+      );
 
       const result = await checkIfStarred('gist-1');
       expect(result).toBe(true);
     });
 
     it('returns false when gist is not starred (404)', async () => {
-      fetchMock.mockResolvedValueOnce(new Response(null, { status: 404 }));
+      fetchMock.mockResolvedValueOnce(
+        new Response(null, { status: 404 })
+      );
 
       const result = await checkIfStarred('gist-1');
       expect(result).toBe(false);
@@ -275,7 +306,9 @@ describe('GitHub API Client', () => {
   describe('forkGist', () => {
     it('forks a gist', async () => {
       const gist = makeGitHubGist('forked-gist');
-      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(gist), { status: 201 }));
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify(gist), { status: 201 })
+      );
 
       const result = await forkGist('gist-1');
       expect(result.id).toBe('forked-gist');
@@ -287,7 +320,9 @@ describe('GitHub API Client', () => {
   describe('listGistRevisions', () => {
     it('lists gist revisions', async () => {
       const revisions = [{ version: 'abc123', committed_at: '2024-01-01T00:00:00Z' }];
-      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(revisions), { status: 200 }));
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify(revisions), { status: 200 })
+      );
 
       const result = await listGistRevisions('gist-1');
       expect(result).toHaveLength(1);
@@ -300,9 +335,14 @@ describe('GitHub API Client', () => {
     it('deduplicates concurrent identical requests', async () => {
       const gist = makeGitHubGist('gist-1');
 
-      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(gist), { status: 200 }));
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify(gist), { status: 200 })
+      );
 
-      const [result1, result2] = await Promise.all([getGist('gist-1'), getGist('gist-1')]);
+      const [result1, result2] = await Promise.all([
+        getGist('gist-1'),
+        getGist('gist-1'),
+      ]);
 
       expect(result1.id).toBe('gist-1');
       expect(result2.id).toBe('gist-1');
@@ -315,7 +355,9 @@ describe('GitHub API Client', () => {
   describe('pagination parsing', () => {
     it('parses Link header correctly', async () => {
       fetchMock
-        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ login: 'testuser' }), { status: 200 })
+        )
         .mockResolvedValueOnce(
           new Response(JSON.stringify([]), {
             status: 200,

@@ -1,4 +1,4 @@
-import { test, expect } from '../base';
+import { test, expect } from '@playwright/test';
 
 test.describe('IndexedDB Performance Optimization', () => {
   test('importData performance benchmark', async ({ page }) => {
@@ -8,21 +8,21 @@ test.describe('IndexedDB Performance Optimization', () => {
     // Create a large dataset for testing
     const numGists = 1000;
     const testData = {
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
       gists: Array.from({ length: numGists }, (_, i) => ({
         id: `gist-${i}`,
         description: `Performance Test Gist ${i}`,
         files: {
-          'test.txt': { filename: 'test.txt', content: 'Benchmark content' },
+          'test.txt': { filename: 'test.txt', content: 'Benchmark content' }
         },
         updatedAt: new Date().toISOString(),
         starred: false,
-        syncStatus: 'synced',
+        syncStatus: 'synced'
       })),
       pendingWrites: [],
       metadata: [{ key: 'app-meta', total: numGists, starred: 0 }],
-      logs: [],
+      logs: []
     };
     const jsonStr = JSON.stringify(testData);
 

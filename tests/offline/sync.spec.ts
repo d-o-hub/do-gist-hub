@@ -2,7 +2,7 @@
  * Offline Sync Tests
  * Test sync behavior, online/offline transitions, and optimistic writes
  */
-import { test, expect } from '../base';
+import { test, expect } from '@playwright/test';
 
 test.describe('Offline Sync', () => {
   test.beforeEach(async ({ page }) => {
@@ -11,7 +11,7 @@ test.describe('Offline Sync', () => {
   });
 
   test('should detect online status', async ({ page }) => {
-    const isOnline = await page.evaluate(async () => navigator.onLine);
+    const isOnline = await page.evaluate(() => navigator.onLine);
     expect(isOnline).toBe(true);
 
     // App should reflect online status
@@ -132,12 +132,10 @@ test.describe('Offline Sync', () => {
 
     // Fill out form
     await page.locator('#gist-description').fill('Test Offline Gist');
-    await page.locator('.gist-content').fill('Offline test content');
+    await page.locator('#gist-content').fill('Offline test content');
 
     // Submit form
-    await page
-      .locator('#create-gist-form')
-      .evaluate((form: HTMLFormElement) => form.requestSubmit());
+    await page.locator('#create-gist-form').evaluate((form: HTMLFormElement) => form.requestSubmit());
 
     // Should show toast or update UI
     await page.waitForTimeout(1000);
@@ -145,7 +143,7 @@ test.describe('Offline Sync', () => {
     // Check if operation was queued in IndexedDB
     const pendingCount = await page.evaluate(async () => {
       return new Promise<number>((resolve) => {
-        const request = indexedDB.open('d-o-gist-hub-db');
+        const request = indexedDB.open('d-o-gist-hub-db', 3);
         request.onsuccess = () => {
           const db = request.result;
           const tx = db.transaction('pendingWrites', 'readonly');

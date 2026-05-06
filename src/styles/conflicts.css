@@ -24,7 +24,7 @@
 .conflict-item-title {
   font-family: var(--font-display);
   font-size: var(--text-lg);
-
+  text-transform: uppercase;
   color: var(--color-text);
 }
 
@@ -72,6 +72,7 @@
 .comparison-title {
   font-family: var(--font-display);
   font-size: var(--text-lg);
+  text-transform: uppercase;
 }
 
 .comparison-body {

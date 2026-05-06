@@ -28,6 +28,10 @@
   - **AbortController Lifecycle**: Auto-cleanup of subscriptions and cancellation of in-flight requests.
   - **Layered Error Boundaries**: No silent failures; graceful recovery.
   - **Offline-First**: IndexedDB source of truth, optimistic writes, sync queue with exponential backoff.
+- ✓ **GitHub API Efficiency**:
+  - **ETags**: Conditional GETs using IndexedDB-cached ETags to skip 304 payloads.
+  - **Lazy Hydration**: Fetches metadata first, loads full gist content only on demand.
+  - **Rate Limit Awareness**: Pauses background sync when API limits are critically low.
 
 ---
 

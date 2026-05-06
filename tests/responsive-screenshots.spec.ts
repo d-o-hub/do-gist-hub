@@ -7,7 +7,7 @@ test.describe('Responsive Screenshots', () => {
     await page.waitForTimeout(2000);
     await page.screenshot({
       path: 'screenshots/mobile-375.png',
-      fullPage: true,
+      fullPage: true
     });
     console.log('✓ Mobile screenshot (375px) saved');
   });
@@ -18,7 +18,7 @@ test.describe('Responsive Screenshots', () => {
     await page.waitForTimeout(2000);
     await page.screenshot({
       path: 'screenshots/mobile-large-480.png',
-      fullPage: true,
+      fullPage: true
     });
     console.log('✓ Mobile large screenshot (480px) saved');
   });
@@ -29,7 +29,7 @@ test.describe('Responsive Screenshots', () => {
     await page.waitForTimeout(2000);
     await page.screenshot({
       path: 'screenshots/tablet-768.png',
-      fullPage: true,
+      fullPage: true
     });
     console.log('✓ Tablet screenshot (768px) saved');
   });
@@ -40,7 +40,7 @@ test.describe('Responsive Screenshots', () => {
     await page.waitForTimeout(2000);
     await page.screenshot({
       path: 'screenshots/desktop-1280.png',
-      fullPage: true,
+      fullPage: true
     });
     console.log('✓ Desktop screenshot (1280px) saved');
   });
@@ -51,7 +51,7 @@ test.describe('Responsive Screenshots', () => {
     await page.waitForTimeout(2000);
     await page.screenshot({
       path: 'screenshots/desktop-large-1536.png',
-      fullPage: true,
+      fullPage: true
     });
     console.log('✓ Desktop large screenshot (1536px) saved');
   });
@@ -62,7 +62,7 @@ test.describe('Responsive Screenshots', () => {
     await page.waitForTimeout(2000);
     await page.screenshot({
       path: 'screenshots/desktop-xl-1920.png',
-      fullPage: true,
+      fullPage: true
     });
     console.log('✓ Desktop XL screenshot (1920px) saved');
   });

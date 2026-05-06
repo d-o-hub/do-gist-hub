@@ -2,7 +2,7 @@
  * Offline Cache Tests
  * Test IndexedDB caching, offline reads, and cached gist loading
  */
-import { test, expect } from '../base';
+import { test, expect } from '@playwright/test';
 
 test.describe('Offline Cache', () => {
   test.beforeEach(async ({ page }) => {
@@ -13,7 +13,7 @@ test.describe('Offline Cache', () => {
   test('should initialize IndexedDB on app load', async ({ page }) => {
     const dbExists = await page.evaluate(async () => {
       return new Promise<boolean>((resolve) => {
-        const request = indexedDB.open('d-o-gist-hub-db');
+        const request = indexedDB.open('d-o-gist-hub-db', 3);
         request.onsuccess = () => {
           const db = request.result;
           const hasGistStore = db.objectStoreNames.contains('gists');
@@ -32,7 +32,7 @@ test.describe('Offline Cache', () => {
   test('should have proper IndexedDB schema', async ({ page }) => {
     const schemaInfo = await page.evaluate(async () => {
       return new Promise((resolve) => {
-        const request = indexedDB.open('d-o-gist-hub-db');
+        const request = indexedDB.open('d-o-gist-hub-db', 3);
         request.onsuccess = () => {
           const db = request.result;
           resolve({
@@ -69,7 +69,7 @@ test.describe('Offline Cache', () => {
     await expect(page.locator('.app-shell')).toBeVisible();
 
     // Should show offline indicator somewhere
-    const isOnline = await page.evaluate(async () => navigator.onLine);
+    const isOnline = await page.evaluate(() => navigator.onLine);
     expect(isOnline).toBe(false);
   });
 
@@ -90,7 +90,7 @@ test.describe('Offline Cache', () => {
 
     const gistCount = await page.evaluate(async () => {
       return new Promise<number>((resolve) => {
-        const request = indexedDB.open('d-o-gist-hub-db');
+        const request = indexedDB.open('d-o-gist-hub-db', 3);
         request.onsuccess = () => {
           const db = request.result;
           const tx = db.transaction('gists', 'readonly');
@@ -128,10 +128,7 @@ test.describe('Offline Cache', () => {
     // Should show empty state or loading
     const emptyState = page.locator('.empty-state');
     const emptyVisible = await emptyState.isVisible().catch(() => false);
-    const listExists = await page
-      .locator('.gist-list')
-      .count()
-      .then((c) => c > 0);
+    const listExists = await page.locator('.gist-list').count().then(c => c > 0);
 
     expect(emptyVisible || listExists).toBe(true);
   });
@@ -139,7 +136,7 @@ test.describe('Offline Cache', () => {
   test('should track sync status on gists', async ({ page }) => {
     const syncStatuses = await page.evaluate(async () => {
       return new Promise<string[]>((resolve) => {
-        const request = indexedDB.open('d-o-gist-hub-db');
+        const request = indexedDB.open('d-o-gist-hub-db', 3);
         request.onsuccess = () => {
           const db = request.result;
           const tx = db.transaction('gists', 'readonly');
@@ -147,7 +144,7 @@ test.describe('Offline Cache', () => {
           const getAll = store.getAll();
           getAll.onsuccess = () => {
             const gists = getAll.result;
-            resolve(gists.map((g: { syncStatus?: string }) => g.syncStatus || 'unknown'));
+            resolve(gists.map((g: any) => g.syncStatus || 'unknown'));
           };
           getAll.onerror = () => resolve([]);
         };

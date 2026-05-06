@@ -1,4 +1,4 @@
-import { test, expect } from '../base';
+import { test, expect } from '@playwright/test';
 
 test.describe('Mobile Navigation', () => {
   test.beforeEach(async ({ page }) => {

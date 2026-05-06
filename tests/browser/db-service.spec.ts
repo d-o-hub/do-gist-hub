@@ -1,4 +1,4 @@
-import { test, expect } from '../base';
+import { test, expect } from '@playwright/test';
 
 test.describe('IndexedDB Service', () => {
   test.beforeEach(async ({ page }) => {
@@ -18,11 +18,11 @@ test.describe('IndexedDB Service', () => {
       updatedAt: new Date().toISOString(),
       starred: false,
       public: true,
-      syncStatus: 'synced' as const,
+      syncStatus: 'synced' as const
     };
 
     const result = await page.evaluate(async (g) => {
-      const db = await import('./src/services/db.ts');
+      const db = await import('/src/services/db.ts');
       await db.saveGist(g);
       const saved = await db.getGist(g.id);
       const all = await db.getAllGists();
@@ -40,23 +40,18 @@ test.describe('IndexedDB Service', () => {
     const write = {
       gistId: 'gist-1',
       action: 'update' as const,
-      payload: { description: 'New description' },
+      payload: { description: 'New description' }
     };
 
     const result = await page.evaluate(async (w) => {
-      const db = await import('./src/services/db.ts');
+      const db = await import('/src/services/db.ts');
       const id = await db.queueWrite(w);
       const pending = await db.getPendingWrites();
       await db.updatePendingWriteError(id, 'Sync failed');
       const updated = (await db.getPendingWrites())[0];
       await db.removePendingWrite(id);
       const remaining = await db.getPendingWrites();
-      return {
-        id,
-        pendingCount: pending.length,
-        retryCount: updated.retryCount,
-        remainingCount: remaining.length,
-      };
+      return { id, pendingCount: pending.length, retryCount: updated.retryCount, remainingCount: remaining.length };
     }, write);
 
     expect(result.id).toBeGreaterThan(0);
@@ -67,7 +62,7 @@ test.describe('IndexedDB Service', () => {
 
   test('should manage metadata', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const db = await import('./src/services/db.ts');
+      const db = await import('/src/services/db.ts');
       await db.setMetadata('test-key', 'test-value');
       return await db.getMetadata('test-key');
     });
@@ -76,7 +71,7 @@ test.describe('IndexedDB Service', () => {
 
   test('should export and import data', async ({ page }) => {
     const result = await page.evaluate(async () => {
-      const db = await import('./src/services/db.ts');
+      const db = await import('/src/services/db.ts');
       await db.saveGist({
         id: 'export-test',
         description: 'Export',

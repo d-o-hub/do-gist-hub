@@ -1,4 +1,4 @@
-import { test, expect } from '../base';
+import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 
@@ -12,10 +12,10 @@ test.describe('Export/Import Functionality', () => {
   test('should export gists to JSON', async ({ page }) => {
     // Add a dummy gist first
     await page.evaluate(async () => {
-      const dbRequest = indexedDB.open('d-o-gist-hub-db');
+      const dbRequest = indexedDB.open('d-o-gist-hub-db', 3);
       await new Promise((resolve) => {
-        dbRequest.onsuccess = () => {
-          const db = dbRequest.result;
+        dbRequest.onsuccess = (e: any) => {
+          const db = e.target.result;
           const tx = db.transaction('gists', 'readwrite');
           tx.objectStore('gists').put({
             id: 'test-gist-id',
@@ -23,7 +23,7 @@ test.describe('Export/Import Functionality', () => {
             files: { 'test.txt': { filename: 'test.txt', content: 'hello' } },
             updatedAt: new Date().toISOString(),
             starred: true,
-            syncStatus: 'synced',
+            syncStatus: 'synced'
           });
           tx.oncomplete = resolve;
         };
@@ -54,6 +54,77 @@ test.describe('Export/Import Functionality', () => {
 
     const backupData = {
       version: '3.0.0',
+      exportedAt: new Date().toISOString(),
+      gists: [
+        {
+          id: 'imported-gist-id',
+          description: 'Imported Gist',
+          files: { 'import.js': { filename: 'import.js', content: 'console.log("imported")' } },
+          updatedAt: new Date().toISOString(),
+          starred: false,
+          syncStatus: 'synced'
+        }
+      ],
+      metadata: { total: 1, starred: 0 }
+    };
+
+    // Create a temporary file for import
+    const importFilePath = path.join(process.cwd(), 'tests/test-import.json');
+    fs.writeFileSync(importFilePath, JSON.stringify(backupData));
+
+    // Open Data & Diagnostics section
+    await page.locator('summary:has-text("Data & Diagnostics")').click();
+    await page.setInputFiles('#import-file-input', importFilePath);
+
+    // Check for success toast - use first() to avoid strict mode violation if body matches too
+    await expect(page.locator('.toast-success').filter({ visible: true }).first()).toContainText('IMPORT COMPLETE: 1', {
+      timeout: 15000,
+    });
+
+    // Verify gist is in DB
+    const gistExists = await page.evaluate(async () => {
+      const dbRequest = indexedDB.open('d-o-gist-hub-db', 3);
+      return new Promise((resolve) => {
+        dbRequest.onsuccess = (e: any) => {
+          const db = e.target.result;
+          const tx = db.transaction('gists', 'readonly');
+          const request = tx.objectStore('gists').get('imported-gist-id');
+          request.onsuccess = () => resolve(!!request.result);
+        };
+      });
+    });
+
+    expect(gistExists).toBe(true);
+
+    // Cleanup
+    fs.unlinkSync(importFilePath);
+  });
+
+  test('should detect conflicts during import', async ({ page }) => {
+    // Add a gist with pending changes
+    await page.evaluate(async () => {
+        const dbRequest = indexedDB.open('d-o-gist-hub-db', 3);
+        await new Promise((resolve) => {
+          dbRequest.onsuccess = (e: any) => {
+            const db = e.target.result;
+            const tx = db.transaction('gists', 'readwrite');
+            tx.objectStore('gists').put({
+              id: 'conflict-gist-id',
+              description: 'Local Version',
+              files: { 'test.js': { filename: 'test.js', content: 'local' } },
+              updatedAt: new Date().toISOString(),
+              starred: false,
+              syncStatus: 'pending' // Pending change causes conflict on import
+            });
+            tx.oncomplete = resolve;
+          };
+        });
+      });
+
+    await page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first().click();
+
+    const backupData = {
+      version: '3.0.0',
       exportedAt: new Date(Date.now() + 10000).toISOString(), // Newer
       gists: [
         {
@@ -62,10 +133,10 @@ test.describe('Export/Import Functionality', () => {
           files: { 'test.js': { filename: 'test.js', content: 'imported' } },
           updatedAt: new Date(Date.now() + 10000).toISOString(),
           starred: false,
-          syncStatus: 'synced',
-        },
+          syncStatus: 'synced'
+        }
       ],
-      metadata: { total: 1, starred: 0 },
+      metadata: { total: 1, starred: 0 }
     };
 
     const conflictFilePath = path.join(process.cwd(), 'tests/test-conflict.json');
@@ -76,25 +147,20 @@ test.describe('Export/Import Functionality', () => {
     await page.setInputFiles('#import-file-input', conflictFilePath);
 
     // Verify gist in DB has conflict status
-    await expect
-      .poll(
-        () => {
-          return page.evaluate(async () => {
-            const dbRequest = indexedDB.open('d-o-gist-hub-db');
-            return new Promise((resolve) => {
-              dbRequest.onsuccess = () => {
-                const db = dbRequest.result;
-                const tx = db.transaction('gists', 'readonly');
-                const request = tx.objectStore('gists').get('conflict-gist-id');
-                request.onsuccess = () => resolve(request.result?.syncStatus);
-                request.onerror = () => resolve(null);
-              };
-            });
-          });
-        },
-        { timeout: 15000 }
-      )
-      .toBe('conflict');
+    await expect.poll(async () => {
+      return await page.evaluate(async () => {
+        const dbRequest = indexedDB.open('d-o-gist-hub-db', 3);
+        return new Promise((resolve) => {
+          dbRequest.onsuccess = (e: any) => {
+            const db = e.target.result;
+            const tx = db.transaction('gists', 'readonly');
+            const request = tx.objectStore('gists').get('conflict-gist-id');
+            request.onsuccess = () => resolve(request.result?.syncStatus);
+            request.onerror = () => resolve(null);
+          };
+        });
+      });
+    }, { timeout: 15000 }).toBe('conflict');
 
     // Cleanup
     fs.unlinkSync(conflictFilePath);

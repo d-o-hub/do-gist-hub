@@ -1,10 +1,10 @@
-import { test, expect } from '../base';
+import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 
 const breakpoints = [
   { width: 390, height: 844, name: '390px' },
   { width: 768, height: 1024, name: '768px' },
-  { width: 1536, height: 864, name: '1536px' },
+  { width: 1536, height: 864, name: '1536px' }
 ];
 
 test.describe('Real User Validation', () => {
@@ -25,9 +25,7 @@ test.describe('Real User Validation', () => {
       await page.screenshot({ path: `analysis/responsive/${bp.name}-initial.png` });
 
       // 2. Overflow check
-      const isNoOverflow = await page.evaluate(
-        () => document.documentElement.scrollWidth <= window.innerWidth
-      );
+      const isNoOverflow = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
       expect(isNoOverflow).toBe(true);
 
       // 3. Command Palette interaction (Cmd+K)
