@@ -7,6 +7,7 @@ import syncQueue from '../services/sync/queue';
 import { APP } from '../config/app.config';
 import { commandPalette } from './ui/command-palette';
 import { bottomSheet } from './ui/bottom-sheet';
+import { navRail, type NavRailRoute } from './ui/nav-rail';
 import { withViewTransition } from '../utils/view-transitions';
 import { announcer } from '../utils/announcer';
 import * as offlineRoute from '../routes/offline';
@@ -102,7 +103,10 @@ export class App {
       if (!isSameRoute || !this.container?.querySelector('.app-shell')) {
         this.render();
         this.setupNavigation();
+        this.mountNavComponents();
       }
+
+      navRail.updateActive(route as NavRailRoute);
 
       const main = this.container?.querySelector('#main-content');
       if (!main) return;
@@ -212,13 +216,7 @@ export class App {
           </div>
         </aside>
 
-        <aside class="rail-nav" role="navigation" aria-label="Rail navigation">
-          <button class="rail-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home" aria-label="Home" ${this.currentRoute === 'home' ? 'aria-current="page"' : ''}>Home</button>
-          <button class="rail-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" data-testid="nav-starred" aria-label="Starred" ${this.currentRoute === 'starred' ? 'aria-current="page"' : ''}>Starred</button>
-          <button class="rail-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create" aria-label="Create" ${this.currentRoute === 'create' ? 'aria-current="page"' : ''}>Create</button>
-          <button class="rail-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="nav-offline" aria-label="Offline" ${this.currentRoute === 'offline' ? 'aria-current="page"' : ''}>Offline</button>
-          <button class="rail-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="settings-btn" aria-label="Settings" ${this.currentRoute === 'settings' ? 'aria-current="page"' : ''}>Settings</button>
-        </aside>
+        ${navRail.render(this.currentRoute as NavRailRoute)}
 
         <header class="app-header">
           <div class="header-left">
@@ -249,6 +247,13 @@ export class App {
         </nav>
       </div>
     `;
+  }
+
+  private mountNavComponents(): void {
+    const railElement = this.container?.querySelector('.rail-nav') as HTMLElement | null;
+    if (railElement) {
+      navRail.mount(railElement, this.currentRoute as NavRailRoute);
+    }
   }
 
   private async updateSyncIndicator(): Promise<void> {
@@ -349,6 +354,7 @@ export class App {
     this.container = element;
     this.render();
     this.setupNavigation();
+    this.mountNavComponents();
     void this.navigate('home');
   }
 }
