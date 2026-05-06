@@ -1,8 +1,8 @@
 ---
 name: playwright-quality
 description: Cross-browser testing with Playwright including mobile emulation, offline behavior, and Android WebView smoke tests.
-version: "0.1.0"
-template_version: "0.1.0"
+version: '0.1.0'
+template_version: '0.1.0'
 ---
 
 # Playwright-quality Skill
@@ -34,170 +34,22 @@ Implement comprehensive test coverage using Playwright for cross-browser quality
 
 ```
 tests/
-├── browser/
-│   ├── gist-list.spec.ts
-│   ├── gist-editor.spec.ts
-│   ├── auth.spec.ts
-│   └── navigation.spec.ts
-├── mobile/
-│   ├── responsive.spec.ts
-│   └── touch-interactions.spec.ts
-├── offline/
-│   ├── offline-read.spec.ts
-│   └── offline-write-queue.spec.ts
-├── android/
-│   └── webview-smoke.spec.ts
-├── visual/
-│   └── regression.spec.ts
-└── a11y/
-    └── accessibility.spec.ts
+├── browser/          # Browser tests
+├── mobile/           # Mobile emulation tests
+├── offline/          # Offline behavior tests
+├── android/          # Android WebView tests
+├── visual/           # Visual regression tests
+└── a11y/            # Accessibility tests
 ```
 
-## Browser Tests (2026 Style)
+## Code Examples
 
-```typescript
-// tests/browser/gist-list.spec.ts
-import { test, expect } from '@playwright/test';
+See reference files for detailed examples:
 
-test.describe('Gist List', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-  });
-
-  test('displays list of gists', async ({ page }) => {
-    // Use role-based locators for resilience
-    const gistList = page.getByTestId('gist-list');
-    await expect(gistList).toBeVisible();
-  });
-
-  test('loads gists from IndexedDB first', async ({ page }) => {
-    // Web-first assertion auto-retries
-    const gistItems = page.getByTestId('gist-item');
-    await expect(gistItems.first()).toBeVisible();
-  });
-
-  test('paginates gist list', async ({ page }) => {
-    await page.getByTestId('load-more').click();
-    await expect(page.getByTestId('gist-list')).toBeVisible();
-  });
-});
-```
-
-## Mobile Emulation Tests (2026 Style)
-
-```typescript
-// tests/mobile/responsive.spec.ts
-import { test, expect, devices } from '@playwright/test';
-
-// Use Playwright's device descriptors
-const MOBILE_DEVICES = [
-  { name: 'iPhone SE', viewport: { width: 320, height: 568 } },
-  { name: 'iPhone 14', viewport: { width: 390, height: 844 } },
-  { name: 'iPad Mini', viewport: { width: 768, height: 1024 } },
-];
-
-for (const device of MOBILE_DEVICES) {
-  test.describe(`Mobile: ${device.name}`, () => {
-    test.use({ viewport: device.viewport });
-
-    test('gist list is responsive', async ({ page }) => {
-      await page.goto('/');
-      const list = page.getByTestId('gist-list');
-      await expect(list).toBeVisible();
-
-      // Verify width constraint
-      const box = await list.boundingBox();
-      expect(box?.width).toBeLessThanOrEqual(device.viewport.width);
-    });
-
-    test('touch targets are 44x44 minimum', async ({ page }) => {
-      await page.goto('/');
-      const buttons = page.locator('button');
-      const count = await buttons.count();
-
-      for (let i = 0; i < count; i++) {
-        const box = await buttons.nth(i).boundingBox();
-        expect(box?.width).toBeGreaterThanOrEqual(44);
-        expect(box?.height).toBeGreaterThanOrEqual(44);
-      }
-    });
-  });
-}
-```
-
-## Offline Tests (2026 Style)
-
-```typescript
-// tests/offline/offline-read.spec.ts
-import { test, expect } from '@playwright/test';
-
-test.describe('Offline Read', () => {
-  test('loads gists from IndexedDB when offline', async ({ page, context }) => {
-    // Seed data via API (faster than UI)
-    await context.setOffline(false);
-    await page.goto('/');
-    await expect(page.getByTestId('gist-list')).toBeVisible();
-
-    // Go offline
-    await context.setOffline(true);
-
-    // Reload and verify data still available
-    await page.reload();
-    await expect(page.getByTestId('gist-list')).toBeVisible();
-  });
-
-  test('shows offline indicator', async ({ page, context }) => {
-    await context.setOffline(true);
-    await page.goto('/');
-    await expect(page.getByTestId('offline-indicator')).toBeVisible();
-  });
-});
-```
-
-## Configuration (2026 Best Practices)
-
-```typescript
-// playwright.config.ts
-import { defineConfig, devices } from '@playwright/test';
-
-export default defineConfig({
-  testDir: './tests',
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  timeout: 30 * 1000,
-  expect: { timeout: 10 * 1000 },
-  reporter: [
-    ['html', { outputFolder: 'playwright-report', open: 'never' }],
-    ['list', { printSteps: true }],
-  ],
-  use: {
-    baseURL: 'http://localhost:5173',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    video: 'on-first-retry',
-    actionTimeout: 10 * 1000,
-  },
-  projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testDir: './tests/browser' },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testDir: './tests/browser' },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testDir: './tests/browser' },
-    { name: 'mobile-chrome', use: { ...devices['Pixel 7'] }, testDir: './tests/mobile' },
-    { name: 'mobile-safari', use: { ...devices['iPhone 14'] }, testDir: './tests/mobile' },
-    { name: 'tablet', use: { ...devices['iPad Mini'] }, testDir: './tests/mobile' },
-    { name: 'mobile-small', use: { viewport: { width: 320, height: 568 } }, testDir: './tests/mobile' },
-    { name: 'offline', use: { ...devices['Desktop Chrome'], offline: true }, testDir: './tests/offline' },
-    { name: 'accessibility', use: { ...devices['Desktop Chrome'] }, testDir: './tests/accessibility' },
-  ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
-});
-```
+- `references/browser-tests.md` - Browser test patterns
+- `references/mobile-tests.md` - Mobile emulation tests
+- `references/offline-tests.md` - Offline behavior tests
+- `references/configuration.md` - Playwright configuration
 
 ## Gotchas
 
@@ -221,25 +73,14 @@ export default defineConfig({
 ## Verification
 
 ```bash
-# Run all tests
-npm run test
-
-# Run specific test suite
-npm run test:browser
-npm run test:mobile
-npm run test:offline
-
-# Run with UI mode (2026 feature)
-npm run test:ui
-
-# Debug mode
-npm run test:debug
-
-# Generate coverage
-npm run test:coverage
-
-# Open HTML report
-npm run test:report
+npm run test                # Run all tests
+npm run test:browser        # Run browser tests
+npm run test:mobile         # Run mobile tests
+npm run test:offline        # Run offline tests
+npm run test:ui             # UI mode
+npm run test:debug          # Debug mode
+npm run test:coverage       # Generate coverage
+npm run test:report         # Open HTML report
 ```
 
 ## References
@@ -248,4 +89,3 @@ npm run test:report
 - https://playwright.dev/docs/emulation - Mobile emulation
 - https://playwright.dev/docs/api/class-android - Android API
 - https://testdino.com/blog/playwright-best-practices/ - 17 Best Practices for 2026
-- `AGENTS.md` - Testing rules

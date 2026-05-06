@@ -1,8 +1,8 @@
 ---
 name: global-error-handling
 description: Define and implement complete error handling strategy including error taxonomy, boundaries, async failure handling, and user-safe messages with redacted diagnostics.
-version: "0.1.0"
-template_version: "0.1.0"
+version: '0.1.0'
+template_version: '0.1.0'
 ---
 
 # Global Error Handling Skill

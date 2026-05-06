@@ -2,8 +2,8 @@
 name: swarm-coordination
 description: |
   Coordinate multiple agents for complex tasks with handoff patterns. Use when splitting work across agents, chaining agent outputs, tracking progress in plans/, or when agent tasks fail due to wrong agent type selection. Triggers on: "swarm", "coordinate agents", "handoff", "agent failed", "explore agent returned empty", "task returned nothing".
-version: "1.0"
-template_version: "0.1.0"
+version: '0.1.0'
+template_version: '0.1.0'
 license: MIT
 ---
 
