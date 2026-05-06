@@ -68,7 +68,7 @@ describe('db', () => {
     it('creates database with correct name and version', async () => {
       const db = await initIndexedDB();
       expect(db.name).toBe('d-o-gist-hub-db');
-      expect(db.version).toBe(2);
+      expect(db.version).toBe(3);
     });
 
     it('creates object stores: gists, pendingWrites, metadata, logs', async () => {
@@ -349,7 +349,8 @@ describe('db', () => {
       await queueWrite({ gistId: 'gist-1', action: 'create', payload: {} });
       await setMetadata('key', 'value');
 
-      await flushGistWrites(); await clearAllData();
+      await flushGistWrites();
+      await clearAllData();
 
       expect(await getAllGists()).toHaveLength(0);
       expect(await getPendingWrites()).toHaveLength(0);
