@@ -2,8 +2,8 @@
 name: triz-solver
 description: Systematic problem-solving using TRIZ (Theory of Inventive Problem Solving) principles adapted for software engineering. Use when stuck on complex problems, facing technical contradictions, optimizing system design, or seeking innovative solutions beyond trial-and-error. Prevents solving the wrong problem correctly.
 category: innovation-problem-solving
-version: "1.0"
-template_version: ">=1.0"
+version: '0.1.0'
+template_version: '0.1.0'
 ---
 
 # TRIZ Problem Solver

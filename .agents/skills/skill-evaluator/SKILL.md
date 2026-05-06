@@ -1,8 +1,8 @@
 ---
 name: skill-evaluator
 description: "Reusable skill for evaluating other skills with structure checks, eval coverage review, and real usage spot checks. Use when you need to check a skill, add evals, benchmark a skill, validate outputs against assertions, or compare current skill behavior against a baseline."
-version: "0.1.0"
-template_version: "0.1.0"
+version: '0.1.0'
+template_version: '0.1.0'
 license: MIT
 metadata:
   author: d.o.

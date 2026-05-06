@@ -98,6 +98,17 @@ describe('crypto', () => {
       const decoded = b64decode(encoded);
       expect(decoded).toEqual(original);
     });
+
+    it('should encode an empty buffer to an empty string', () => {
+      const emptyBuf = new ArrayBuffer(0);
+      expect(b64encode(emptyBuf)).toBe('');
+    });
+
+    it('should decode an empty string to an empty Uint8Array', () => {
+      const decoded = b64decode('');
+      expect(decoded).toBeInstanceOf(Uint8Array);
+      expect(decoded.length).toBe(0);
+    });
   });
 
   describe('error handling', () => {

@@ -2,6 +2,7 @@ import { defineConfig, Plugin } from 'vite';
 import path from 'path';
 import fs from 'fs';
 import zlib from 'zlib';
+import esbuild from 'esbuild';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { APP } from './src/config/app.config';
 import { PERFORMANCE_BUDGETS } from './src/services/perf/budgets';
@@ -53,7 +54,7 @@ function cspPlugin(): Plugin {
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    "upgrade-insecure-requests",
+    'upgrade-insecure-requests',
   ].join('; ');
 
   return {
@@ -93,29 +94,41 @@ function manifestPlugin(): Plugin {
       const manifestPath = path.join(publicDir, 'manifest.webmanifest');
 
       // Import the built output to get typed values
-      import(configPath).then((mod) => {
-        const { APP } = mod;
-        const manifest = {
-          name: APP.name,
-          short_name: APP.shortName,
-          description: APP.description,
-          theme_color: APP.themeColor,
-          background_color: '#ffffff',
-          display: 'standalone',
-          scope: '/',
-          start_url: '/',
-          orientation: 'any' as const,
-          categories: ['productivity', 'developer tools'],
-          icons: [
-            { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-            { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
-            { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
-          ],
-        };
-        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
-      }).catch(() => {
-        // Silent fallback during dev — manifest is written manually
-      });
+      import(configPath)
+        .then((mod) => {
+          const { APP } = mod;
+          const manifest = {
+            name: APP.name,
+            short_name: APP.shortName,
+            description: APP.description,
+            theme_color: APP.themeColor,
+            background_color: '#ffffff',
+            display: 'standalone',
+            scope: '/',
+            start_url: '/',
+            orientation: 'any' as const,
+            categories: ['productivity', 'developer tools'],
+            icons: [
+              {
+                src: '/pwa-192x192.png',
+                sizes: '192x192',
+                type: 'image/png',
+                purpose: 'any maskable',
+              },
+              {
+                src: '/pwa-512x512.png',
+                sizes: '512x512',
+                type: 'image/png',
+                purpose: 'any maskable',
+              },
+              { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
+            ],
+          };
+          fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+        })
+        .catch(() => {
+          // Silent fallback during dev — manifest is written manually
+        });
     },
   };
 }
@@ -193,6 +206,49 @@ function performanceBudgetPlugin(): Plugin {
   };
 }
 
+/**
+ * Generates sw.js from TypeScript template at build time.
+ * Injects cache names from app.config.ts and build timestamp.
+ */
+function swGeneratorPlugin(): Plugin {
+  return {
+    name: 'sw-generator',
+    apply: 'build', // Only run during production builds
+    async closeBundle() {
+      const swEntry = path.resolve(__dirname, 'src/sw/sw.ts');
+      const swOutput = path.resolve(__dirname, 'dist/sw.js');
+      const buildTimestamp = Date.now().toString();
+
+      const distDir = path.resolve(__dirname, 'dist');
+      if (!fs.existsSync(distDir)) {
+        fs.mkdirSync(distDir, { recursive: true });
+      }
+
+      try {
+        const result = await esbuild.build({
+          entryPoints: [swEntry],
+          bundle: true,
+          platform: 'browser',
+          target: 'esnext',
+          format: 'iife',
+          write: false,
+          minify: process.env.NODE_ENV === 'production',
+        });
+
+        if (result.outputFiles?.[0]) {
+          let swCode = result.outputFiles[0].text;
+          swCode = swCode.replace(/__BUILD_TIMESTAMP__/g, buildTimestamp);
+          fs.writeFileSync(swOutput, swCode);
+          console.log(`✓ Service Worker generated: dist/sw.js`);
+        }
+      } catch (error) {
+        console.error('Failed to generate Service Worker:', error);
+        throw error;
+      }
+    },
+  };
+}
+
 const shouldAnalyze = process.env.ANALYZE === 'true';
 
 export default defineConfig({
@@ -201,6 +257,7 @@ export default defineConfig({
     cspPlugin(),
     manifestPlugin(),
     performanceBudgetPlugin(),
+    swGeneratorPlugin(),
     ...(shouldAnalyze
       ? [
           visualizer({

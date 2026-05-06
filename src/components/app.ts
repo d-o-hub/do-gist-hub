@@ -7,6 +7,7 @@ import syncQueue from '../services/sync/queue';
 import { APP } from '../config/app.config';
 import { commandPalette } from './ui/command-palette';
 import { bottomSheet } from './ui/bottom-sheet';
+import { navRail, type NavRailRoute } from './ui/nav-rail';
 import { withViewTransition } from '../utils/view-transitions';
 import { announcer } from '../utils/announcer';
 import * as offlineRoute from '../routes/offline';
@@ -102,7 +103,10 @@ export class App {
       if (!isSameRoute || !this.container?.querySelector('.app-shell')) {
         this.render();
         this.setupNavigation();
+        this.mountNavComponents();
       }
+
+      navRail.updateActive(route as NavRailRoute);
 
       const main = this.container?.querySelector('#main-content');
       if (!main) return;
@@ -175,19 +179,16 @@ export class App {
             <ul role="menubar" aria-labelledby="nav-primary-title">
               <li role="none">
                 <button role="menuitem" class="sidebar-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home" ${this.currentRoute === 'home' ? 'aria-current="page"' : ''}>
-                  <span class="nav-icon" aria-hidden="true">🏠</span>
                   <span>Home</span>
                 </button>
               </li>
               <li role="none">
                 <button role="menuitem" class="sidebar-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" data-testid="nav-starred" ${this.currentRoute === 'starred' ? 'aria-current="page"' : ''}>
-                  <span class="nav-icon" aria-hidden="true">⭐</span>
                   <span>Starred</span>
                 </button>
               </li>
               <li role="none">
                 <button role="menuitem" class="sidebar-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create" ${this.currentRoute === 'create' ? 'aria-current="page"' : ''}>
-                  <span class="nav-icon" aria-hidden="true">➕</span>
                   <span>Create</span>
                 </button>
               </li>
@@ -198,7 +199,6 @@ export class App {
             <ul role="menubar" aria-labelledby="nav-secondary-title">
               <li role="none">
                 <button role="menuitem" class="sidebar-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="nav-offline" ${this.currentRoute === 'offline' ? 'aria-current="page"' : ''}>
-                  <span class="nav-icon" aria-hidden="true">📶</span>
                   <span>Sync Status</span>
                 </button>
               </li>
@@ -209,7 +209,6 @@ export class App {
             <ul role="menubar" aria-labelledby="nav-system-title">
               <li role="none">
                 <button role="menuitem" class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="settings-btn" ${this.currentRoute === 'settings' ? 'aria-current="page"' : ''}>
-                  <span class="nav-icon" aria-hidden="true">⚙️</span>
                   <span>Settings</span>
                 </button>
               </li>
@@ -217,13 +216,7 @@ export class App {
           </div>
         </aside>
 
-        <aside class="rail-nav" role="navigation" aria-label="Rail navigation">
-          <button class="rail-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home" aria-label="Home" ${this.currentRoute === 'home' ? 'aria-current="page"' : ''}>🏠</button>
-          <button class="rail-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" data-testid="nav-starred" aria-label="Starred" ${this.currentRoute === 'starred' ? 'aria-current="page"' : ''}>⭐</button>
-          <button class="rail-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create" aria-label="Create" ${this.currentRoute === 'create' ? 'aria-current="page"' : ''}>➕</button>
-          <button class="rail-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="nav-offline" aria-label="Offline" ${this.currentRoute === 'offline' ? 'aria-current="page"' : ''}>📶</button>
-          <button class="rail-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="settings-btn" aria-label="Settings" ${this.currentRoute === 'settings' ? 'aria-current="page"' : ''}>⚙️</button>
-        </aside>
+        ${navRail.render(this.currentRoute as NavRailRoute)}
 
         <header class="app-header">
           <div class="header-left">
@@ -231,8 +224,8 @@ export class App {
           </div>
           <div class="header-right">
             <div id="sync-indicator" class="sync-indicator" data-status="online"><span class="sync-dot" aria-hidden="true"></span><span class="sr-only">online</span></div>
-            <button id="mobile-menu-btn" class="icon-button" aria-label="Open menu" data-testid="mobile-menu-btn" aria-expanded="false" aria-controls="mobile-menu">☰</button>
-            <button class="icon-button" aria-label="Settings" data-testid="settings-btn" data-route="settings">⚙️</button>
+            <button id="mobile-menu-btn" class="icon-button" aria-label="Open menu" data-testid="mobile-menu-btn" aria-expanded="false" aria-controls="mobile-menu">Menu</button>
+            <button class="icon-button" aria-label="Settings" data-testid="settings-btn" data-route="settings">Settings</button>
           </div>
         </header>
 
@@ -240,24 +233,27 @@ export class App {
 
         <nav class="bottom-nav" data-testid="bottom-nav" role="navigation" aria-label="Bottom navigation">
           <button class="nav-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home" ${this.currentRoute === 'home' ? 'aria-current="page"' : ''}>
-            <span class="nav-icon" aria-hidden="true">🏠</span>
             <span class="nav-label">Home</span>
           </button>
           <button class="nav-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" data-testid="nav-starred" ${this.currentRoute === 'starred' ? 'aria-current="page"' : ''}>
-            <span class="nav-icon" aria-hidden="true">⭐</span>
             <span class="nav-label">Starred</span>
           </button>
           <button class="nav-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create" ${this.currentRoute === 'create' ? 'aria-current="page"' : ''}>
-            <span class="nav-icon" aria-hidden="true">➕</span>
             <span class="nav-label">Create</span>
           </button>
           <button class="nav-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="nav-offline" ${this.currentRoute === 'offline' ? 'aria-current="page"' : ''}>
-            <span class="nav-icon" aria-hidden="true">📶</span>
             <span class="nav-label">Offline</span>
           </button>
         </nav>
       </div>
     `;
+  }
+
+  private mountNavComponents(): void {
+    const railElement = this.container?.querySelector('.rail-nav') as HTMLElement | null;
+    if (railElement) {
+      navRail.mount(railElement, this.currentRoute as NavRailRoute);
+    }
   }
 
   private async updateSyncIndicator(): Promise<void> {
@@ -372,6 +368,7 @@ export class App {
     this.container = element;
     this.render();
     this.setupNavigation();
+    this.mountNavComponents();
     void this.navigate('home');
   }
 }

@@ -51,11 +51,7 @@ export class ToastManager {
     toast.classList.add('toast', `toast-${type}`, 'toast-enter');
     toast.style.pointerEvents = 'auto';
 
-    // Icon based on type
-    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : type === 'warning' ? '⚠' : 'ℹ';
-
     toast.innerHTML = `
-      <span class="toast-icon" aria-hidden="true">${icon}</span>
       <span class="toast-message">${sanitizeHtml(message)}</span>
       <button class="toast-close" aria-label="Dismiss notification" type="button">×</button>
     `;

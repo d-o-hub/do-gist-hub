@@ -10,15 +10,20 @@ let nextFileId = 0;
 function createFileRow(id: number, container: HTMLElement): HTMLElement {
   const div = document.createElement('div');
   div.className = 'file-entry';
-  div.dataset.fileId = String(id);
-  div.style.cssText = `
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    padding: var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-overlay);
+  div.innerHTML = `
+    <div class="file-entry-header">
+      <div class="form-group">
+        <label class="form-label" for="gist-filename-${id}">Filename</label>
+        <input type="text" id="gist-filename-${id}" class="form-input gist-filename" placeholder="e.g. index.js" required>
+      </div>
+      <button type="button" class="btn btn-ghost btn-remove-file" data-file-id="${id}">
+          REMOVE
+        </button>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="gist-content-${id}">Content</label>
+      <textarea id="gist-content-${id}" class="form-textarea gist-content" placeholder="File content..." required></textarea>
+    </div>
   `;
   div.innerHTML = `
     <div style="display: flex; gap: var(--space-2); align-items: flex-end;">
@@ -75,24 +80,24 @@ export function render(container: HTMLElement): void {
           <input type="text" id="gist-description" class="form-input" placeholder="Gist description..." required>
         </div>
 
-        <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2);">
-            <span class="form-label">Files</span>
-            <button type="button" id="add-file-btn" class="btn btn-ghost" style="min-height: auto; padding: var(--space-2) var(--space-3);">+ ADD FILE</button>
-          </div>
-          <div id="files-container" style="display: flex; flex-direction: column; gap: var(--space-3); margin-top: var(--space-2);"></div>
-        </div>
+       <div class="form-group">
+         <div class="files-header">
+           <span class="form-label">Files</span>
+           <button type="button" id="add-file-btn" class="btn btn-ghost">+ ADD FILE</button>
+         </div>
+         <div id="files-container" class="files-container"></div>
+       </div>
 
-        <div class="form-group">
-          <label class="form-label" style="display: flex; align-items: center; gap: var(--space-3); cursor: pointer;">
-            <input type="checkbox" id="gist-public" checked style="width: 1.25rem; height: 1.25rem; accent-color: var(--color-accent); cursor: pointer;">
-            <span>Public Gist</span>
-          </label>
-        </div>
+       <div class="form-group">
+         <label class="form-label checkbox-label">
+           <input type="checkbox" id="gist-public" checked>
+           <span>Public Gist</span>
+         </label>
+       </div>
 
-        <div class="form-actions" style="display: flex; gap: var(--space-3);">
-          <button type="submit" class="btn btn-primary" style="flex: 1;">CREATE GIST</button>
-        </div>
+       <div class="form-actions">
+         <button type="submit" class="btn btn-primary">CREATE GIST</button>
+       </div>
       </form>
     </div>
   `;

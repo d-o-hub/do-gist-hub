@@ -22,7 +22,6 @@ export function renderConflictList(conflicts: GistConflict[]): string {
     return EmptyState.render({
       title: 'No Conflicts',
       description: 'All your gists are in sync with GitHub',
-      icon: '✅',
       actionLabel: 'Go Home',
       actionRoute: 'home',
     });

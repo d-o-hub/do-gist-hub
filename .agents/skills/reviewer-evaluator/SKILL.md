@@ -1,8 +1,8 @@
 ---
 name: reviewer-evaluator
 description: Evaluate code quality, security, performance, and adherence to project conventions before merging.
-version: "0.1.0"
-template_version: "0.1.0"
+version: '0.1.0'
+template_version: '0.1.0'
 ---
 
 # Reviewer-evaluator Skill

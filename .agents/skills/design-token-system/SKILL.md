@@ -1,8 +1,8 @@
 ---
 name: design-token-system
 description: Build a production-ready token architecture aligned with DTCG standards. Supports themes, responsive scaling, and component tokens.
-version: "0.1.0"
-template_version: "0.1.0"
+version: '0.1.0'
+template_version: '0.1.0'
 ---
 
 # Design Token System Skill

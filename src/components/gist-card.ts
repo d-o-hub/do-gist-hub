@@ -59,7 +59,6 @@ export function renderCard(gist: GistRecord): string {
           <button class="gist-action-btn star-btn" data-id="${sanitizeHtml(gist.id)}"
                   aria-label="${gist.starred ? 'Unstar' : 'Star'} gist"
                   aria-pressed="${gist.starred}">
-            ${gist.starred ? '★' : '☆'}
             <span class="micro-label">${gist.starred ? 'STARRED' : 'STAR'}</span>
           </button>
           <button class="gist-action-btn delete-btn" data-id="${sanitizeHtml(gist.id)}" aria-label="Delete gist">
