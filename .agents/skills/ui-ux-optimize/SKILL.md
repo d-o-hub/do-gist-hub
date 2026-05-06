@@ -1,8 +1,8 @@
 ---
 name: ui-ux-optimize
 description: >
-version: "0.1.0"
-template_version: "0.1.0"
+version: '0.1.0'
+template_version: '0.1.0'
   Swarm-powered UI/UX prompt optimizer with auto-research agents, handoff coordination,
   confidence-scored autoresearch loops, and backpressure quality gates. Use for web apps,
   mobile apps, games, dashboards, SaaS, e-commerce, kiosks, and any screen-based product.

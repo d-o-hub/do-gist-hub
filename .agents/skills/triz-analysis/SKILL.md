@@ -2,8 +2,8 @@
 name: triz-analysis
 description: Run a systematic TRIZ contradiction audit against a codebase, architecture, or workflow to identify hidden trade-offs and innovation opportunities. Use when auditing a repository for technical contradictions, reviewing a CI/CD pipeline for hidden trade-offs, analyzing architecture for scalability vs. complexity bottlenecks, or performing a swarm-based TRIZ audit on a project.
 category: analysis
-version: "1.0"
-template_version: ">=1.0"
+version: '0.1.0'
+template_version: '0.1.0'
 ---
 
 # TRIZ Analysis

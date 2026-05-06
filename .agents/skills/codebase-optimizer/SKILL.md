@@ -1,12 +1,12 @@
 ---
 name: codebase-optimizer
 description: "Autonomous codebase optimization with self-learning, pattern detection, and automated fixing. Analyzes code, identifies issues, learns from fixes, and prevents regressions through continuous monitoring."
-version: "0.1.0"
-template_version: "0.1.0"
+version: '0.1.0'
+template_version: '0.1.0'
 license: MIT
 metadata:
   author: d.o.
-  version: "1.0"
+  version: '0.1.0'
   spec: "agentskills.io"
 ---
 
