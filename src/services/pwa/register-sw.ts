@@ -94,7 +94,7 @@ export async function requestBackgroundSync(): Promise<boolean> {
   try {
     const registration = await navigator.serviceWorker.ready;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (registration as any).sync?.register('sync-gists');
+    await (registration as any).sync?.register('sync-gists'); // skipcq: JS-0308
     safeLog('[PWA] Background sync registered');
     return true;
   } catch (error) {

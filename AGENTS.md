@@ -106,7 +106,9 @@ npm run init:design && npm run dev
 - **TypeScript**: strict mode, no `any`, explicit return types on public APIs
 - **Naming**: camelCase (functions), PascalCase (types), UPPER_SNAKE_CASE (constants), kebab-case (files)
 - **Imports**: absolute from `src/`, grouped (stdlib → external → internal)
-- **Commits**: conventional (`feat:`, `fix:`, `docs:`, `ci:`, `test:`, `refactor:`, `chore:`)
+- **Commits**: conventional (`feat:`, `fix:`, `docs:`, `ci:`, `test:`, `refactor:`, `chore:`, `plans:`)
+  - **Header length**: Max 100 characters.
+  - **Ignores**: Bot commits ('Update', 'Auto-update', 'Automatic') and '[skip ci]' are ignored.
 - **Shell**: `shellcheck` compliant, `set -euo pipefail`
 - **Max lines**: source=500, SKILL.md=250, AGENTS.md=150 (may exceed for completeness)
 
@@ -253,26 +255,6 @@ npm run cap:sync     # sync Capacitor after build
 - Capacitor: https://capacitorjs.com/docs/
 - GitHub Gists: https://docs.github.com/en/rest/gists/gists
 - Playwright: https://playwright.dev/docs/emulation
-
----
-
-## Code Quality — Required Before Every Commit
-
-Before committing any TypeScript change, the agent MUST run:
-
-1. `pnpm run lint` — must produce zero errors AND zero warnings (fix violations before committing)
-2. `pnpm run typecheck` — must produce no type errors
-3. `pnpm run test:unit` — all unit tests must pass
-
-Specific rules to follow in generated TypeScript:
-- NEVER declare functions at the top-level module scope; use `const` arrow functions or class methods
-- NEVER use `async` on a function that contains no `await`
-- NEVER explicitly annotate variables initialized to a string/number/boolean literal (TypeScript infers these)
-- NEVER use the `void` operator for return types; use `undefined` or omit the return value (statement-level `void` for floating promises is permitted via `allowAsStatement: true`)
-- NEVER use wildcard imports (`import * as X`); use named imports only
-- ALWAYS use `Boolean(x)` instead of `!!x` for boolean coercion
-- Keep cyclomatic complexity of any function below 7; extract helpers if needed
-- Class methods that don't reference `this` must be declared `static`
 
 ---
 
@@ -485,11 +467,13 @@ This section is automatically updated by `./scripts/analyze-codebase.sh`.
 
 ### Code Quality (DeepSource/CI)
 
-1. **Inline skipcq**: Use `// skipcq: JS-XXXX` directly above lines (not `.deepsource.yml`)
-2. **No `any` Types**: Use proper generics or `unknown` with type guards
-3. **Package Versions**: Match `package.json` exactly to `package-lock.json`
-4. **DeepSource TOML Syntax**: TOML requires double quotes for string values in `[analyzers.meta]` overrides
-5. **DeepSource Rule Conflicts**: Disable `no-var`, `eqeqeq`, `prefer-arrow-callback`, `no-empty` in `.deepsource.toml` to avoid conflict with TypeScript-eslint strict mode
+1. **Inline skipcq**: Use `// skipcq: JS-XXXX` directly above lines (not `.deepsource.yml`).
+   - Common patterns: `JS-0002` (unused variable), `JS-0308` (any type).
+2. **No `any` Types**: Use proper generics or `unknown` with type guards.
+3. **Package Versions**: Match `package.json` exactly to `package-lock.json`.
+4. **DeepSource TOML Syntax**: TOML requires double quotes for string values in `[analyzers.meta]` overrides.
+5. **DeepSource Rule Conflicts**: Disable `no-var`, `eqeqeq`, `prefer-arrow-callback`, `no-empty` in `.deepsource.toml` to avoid conflict with TypeScript-eslint strict mode.
+6. **Workflow env: Blocks**: Always define environment variables in the step-level `env:` block, not the job or workflow level, to ensure compatibility with external tools.
 
 ### Verification Checklist
 

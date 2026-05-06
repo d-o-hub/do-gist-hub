@@ -10,12 +10,22 @@ test.describe('GistStore logic', () => {
     const results = await page.evaluate(async () => {
       const { default: gistStore } = await import('./src/stores/gist-store');
       gistStore.gists = [
-        { id: '1', description: 'test gist', files: { 'a.txt': { filename: 'a.txt' } }, updatedAt: new Date().toISOString() },
-        { id: '2', description: 'other', files: { 'other.js': { filename: 'other.js' } }, updatedAt: new Date().toISOString() }
+        {
+          id: '1',
+          description: 'test gist',
+          files: { 'a.txt': { filename: 'a.txt' } },
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: '2',
+          description: 'other',
+          files: { 'other.js': { filename: 'other.js' } },
+          updatedAt: new Date().toISOString(),
+        },
       ];
       return {
         descSearch: gistStore.searchGists('test'),
-        fileSearch: gistStore.searchGists('other.js')
+        fileSearch: gistStore.searchGists('other.js'),
       };
     });
     expect(results.descSearch.length).toBe(1);

@@ -20,7 +20,7 @@ test.describe('Accessibility - Semantics', () => {
     const headings = await page.locator('h1, h2, h3').all();
     let lastLevel = 0;
     for (const heading of headings) {
-      const tagName = await heading.evaluate(el => el.tagName.toLowerCase());
+      const tagName = await heading.evaluate((el) => el.tagName.toLowerCase());
       const level = parseInt(tagName[1]);
       expect(level).toBeGreaterThanOrEqual(lastLevel);
       lastLevel = level;
@@ -113,7 +113,10 @@ test.describe('Accessibility - Semantics', () => {
       // Check for associated label
       let hasLabel = false;
       if (id) {
-        hasLabel = await page.locator(`label[for="${id}"]`).count().then(c => c > 0);
+        hasLabel = await page
+          .locator(`label[for="${id}"]`)
+          .count()
+          .then((c) => c > 0);
       }
       if (!hasLabel && ariaLabel) hasLabel = true;
 
@@ -125,7 +128,9 @@ test.describe('Accessibility - Semantics', () => {
   });
 
   test('should have alt text or aria-label on icon buttons', async ({ page }) => {
-    const iconButtons = page.locator('.icon-button, [aria-label*="toggle"], [aria-label*="settings"]');
+    const iconButtons = page.locator(
+      '.icon-button, [aria-label*="toggle"], [aria-label*="settings"]'
+    );
     const iconCount = await iconButtons.count();
 
     for (let i = 0; i < iconCount; i++) {
