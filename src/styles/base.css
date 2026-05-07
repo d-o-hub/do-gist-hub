@@ -71,11 +71,23 @@ body {
   width: 100%;
 }
 
-/* Grid layout for gist cards */
+/* Grid layout for gist cards - Bento Grid (ADR-022) */
 .gist-grid {
   display: grid;
   gap: var(--space-4);
   grid-template-columns: 1fr;
+  grid-auto-flow: dense;
+}
+
+/* Featured card (starred) - spans 2 columns on larger screens */
+.gist-card.featured {
+  @media (min-width: 768px) {
+    grid-column: span 2;
+  }
+  @media (min-width: 1280px) {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
 }
 
 /* Phone (390px): slightly larger typography, relaxed spacing, 2-column cards */
@@ -93,6 +105,7 @@ body {
 
   .gist-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-5);
   }
 
   .detail-title {
@@ -285,9 +298,29 @@ body {
   flex-direction: column;
   gap: var(--space-4);
   container-type: inline-size;
+  container-name: gist-card;
   transition:
     transform var(--motion-duration-base) var(--motion-easing),
     background-color var(--motion-duration-base) var(--motion-easing);
+}
+
+/* Container Query: Larger card layout for wider containers */
+@container gist-card (min-width: 400px) {
+  .gist-card-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .gist-card-title {
+    font-size: var(--text-base);
+  }
+}
+
+@container gist-card (min-width: 600px) {
+  .gist-card-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
 }
 
 .gist-card:hover {

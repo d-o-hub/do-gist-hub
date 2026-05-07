@@ -39,7 +39,7 @@ export function renderCard(gist: GistRecord): string {
   const snippet = content.slice(0, 120);
 
   const html = `
-    <article class="glass-card gist-card" data-gist-id="${sanitizeHtml(gist.id)}" data-testid="gist-item" tabindex="0" role="button"
+    <article class="glass-card gist-card${gist.starred ? ' featured' : ''}" data-gist-id="${sanitizeHtml(gist.id)}" data-testid="gist-item" tabindex="0" role="button"
              aria-label="Open gist: ${sanitizeHtml(description)}">
       <div class="gist-card-header">
         <div class="gist-card-meta">

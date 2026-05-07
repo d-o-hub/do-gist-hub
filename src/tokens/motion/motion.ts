@@ -25,7 +25,12 @@ export const motionTokens = {
     outExpo: 'cubic-bezier(0.16, 1, 0.3, 1)', // Dramatic entrances
     inExpo: 'cubic-bezier(0.7, 0, 0.84, 0)', // Quick exits
     elastic: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)', // Playful interactions
-    spring: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)', // Physical feel
+
+    // Spring physics (2026: CSS linear() for natural motion)
+    spring:
+      'linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938, 1.058, 1.072, 1.074, 1.065, 1.048, 1.026, 1.007, 0.995, 0.988)',
+    springOut:
+      'linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938, 1.058, 1.072, 1.074, 1.065, 1.048, 1.026, 1.007, 0.995, 0.988)',
   },
 
   // Reduced motion preference
