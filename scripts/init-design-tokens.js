@@ -19,14 +19,85 @@ console.log('🎨 Initializing design tokens...');
 // Design token values (canonical source)
 const tokens = {
   colors: {
-    gray: { 50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db', 400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151', 800: '#1f2937', 900: '#111827' },
-    blue: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' },
-    green: { 50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0', 300: '#86efac', 400: '#4ade80', 500: '#22c55e', 600: '#16a34a', 700: '#15803d', 800: '#166534', 900: '#14532d' },
-    red: { 50: '#fef2f2', 100: '#fee2e2', 200: '#fecaca', 300: '#fca5a5', 400: '#f87171', 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c', 800: '#991b1b', 900: '#7f1d1d' },
-    yellow: { 50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047', 400: '#facc15', 500: '#eab308', 600: '#ca8a04', 700: '#a16207', 800: '#854d0e', 900: '#713f12' },
+    gray: {
+      50: '#f9fafb',
+      100: '#f3f4f6',
+      200: '#e5e7eb',
+      300: '#d1d5db',
+      400: '#9ca3af',
+      500: '#6b7280',
+      600: '#4b5563',
+      700: '#374151',
+      800: '#1f2937',
+      900: '#111827',
+    },
+    blue: {
+      50: '#eff6ff',
+      100: '#dbeafe',
+      200: '#bfdbfe',
+      300: '#93c5fd',
+      400: '#60a5fa',
+      500: '#3b82f6',
+      600: '#2563eb',
+      700: '#1d4ed8',
+      800: '#1e40af',
+      900: '#1e3a8a',
+    },
+    green: {
+      50: '#f0fdf4',
+      100: '#dcfce7',
+      200: '#bbf7d0',
+      300: '#86efac',
+      400: '#4ade80',
+      500: '#22c55e',
+      600: '#16a34a',
+      700: '#15803d',
+      800: '#166534',
+      900: '#14532d',
+    },
+    red: {
+      50: '#fef2f2',
+      100: '#fee2e2',
+      200: '#fecaca',
+      300: '#fca5a5',
+      400: '#f87171',
+      500: '#ef4444',
+      600: '#dc2626',
+      700: '#b91c1c',
+      800: '#991b1b',
+      900: '#7f1d1d',
+    },
+    yellow: {
+      50: '#fefce8',
+      100: '#fef9c3',
+      200: '#fef08a',
+      300: '#fde047',
+      400: '#facc15',
+      500: '#eab308',
+      600: '#ca8a04',
+      700: '#a16207',
+      800: '#854d0e',
+      900: '#713f12',
+    },
   },
-  spacing: [0, 1, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 96],
-  breakpoints: { 'phone-small': '320px', phone: '390px', 'phone-large': '480px', 'tablet-portrait': '768px', 'tablet-landscape': '1024px', desktop: '1280px', 'desktop-wide': '1536px' },
+  rgba: {
+    accentSubtle: 'rgba(56, 139, 253, 0.15)',
+    overlayDark: 'rgba(0, 0, 0, 0.2)',
+    overlayLight: 'rgba(255, 255, 255, 0.05)',
+    warningSubtle: 'rgba(250, 204, 21, 0.05)',
+  },
+  spacing: [
+    0, 1, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 96,
+  ],
+  breakpoints: {
+    'phone-small': '320px',
+    phone: '390px',
+    'phone-large': '480px',
+    'tablet-portrait': '768px',
+    'tablet-landscape': '1024px',
+    desktop: '1280px',
+    'desktop-wide': '1536px',
+  },
 };
 
 // Generate CSS
@@ -56,17 +127,20 @@ const cssContent = `/* Auto-generated design tokens - DO NOT EDIT */
   --color-status-error-bg: ${tokens.colors.red[50]};
   --color-status-error-fg: ${tokens.colors.red[700]};
   --color-status-error-border: ${tokens.colors.red[200]};
-  --color-status-warning-bg: ${tokens.colors.yellow[50]};
-  --color-status-warning-fg: ${tokens.colors.yellow[700]};
-  --color-status-warning-border: ${tokens.colors.yellow[200]};
-  --color-status-info-bg: ${tokens.colors.blue[50]};
+   --color-status-warning-bg: ${tokens.colors.yellow[50]};
+   --color-status-warning-fg: ${tokens.colors.yellow[700]};
+   --color-status-warning-border: ${tokens.colors.yellow[200]};
+   --color-status-warning-subtle: ${tokens.rgba.warningSubtle};
+   --color-status-info-bg: ${tokens.colors.blue[50]};
   --color-status-info-fg: ${tokens.colors.blue[700]};
   --color-status-info-border: ${tokens.colors.blue[200]};
-  --color-interactive-hover: ${tokens.colors.blue[700]};
-  --color-interactive-active: ${tokens.colors.blue[600]};
-  --color-interactive-focus: ${tokens.colors.blue[400]};
+   --color-interactive-hover: ${tokens.colors.blue[700]};
+   --color-interactive-active: ${tokens.colors.blue[600]};
+   --color-interactive-focus: ${tokens.colors.blue[400]};
+   --color-overlay-dark: ${tokens.rgba.overlayDark};
+   --color-overlay-light: ${tokens.rgba.overlayLight};
 
-  /* Spacing */
+   /* Spacing */
   ${tokens.spacing.map((s, i) => `--spacing-${i}: ${s}px;`).join('\n  ')}
 
   /* Typography */
@@ -104,24 +178,27 @@ const cssContent = `/* Auto-generated design tokens - DO NOT EDIT */
 }
 
 [data-theme="dark"] {
-  --color-background-primary: #0d1117;
-  --color-background-secondary: ${tokens.colors.gray[900]};
-  --color-background-tertiary: ${tokens.colors.gray[800]};
-  --color-background-elevated: ${tokens.colors.gray[800]};
-  --color-foreground-primary: #f0f6fc;
-  --color-foreground-secondary: ${tokens.colors.gray[300]};
-  --color-foreground-muted: ${tokens.colors.gray[400]};
-  --color-foreground-inverse: ${tokens.colors.gray[900]};
-  --color-accent-primary: ${tokens.colors.blue[400]};
-  --color-accent-hover: ${tokens.colors.blue[300]};
-  --color-accent-active: ${tokens.colors.blue[200]};
-  --color-accent-subtle: rgba(56, 139, 253, 0.15);
-  --color-border-default: ${tokens.colors.gray[700]};
+   --color-background-primary: #0d1117;
+   --color-background-secondary: ${tokens.colors.gray[900]};
+   --color-background-tertiary: ${tokens.colors.gray[800]};
+   --color-background-elevated: ${tokens.colors.gray[800]};
+   --color-foreground-primary: #f0f6fc;
+   --color-foreground-secondary: ${tokens.colors.gray[300]};
+   --color-foreground-muted: ${tokens.colors.gray[400]};
+   --color-foreground-inverse: ${tokens.colors.gray[900]};
+   --color-accent-primary: ${tokens.colors.blue[400]};
+   --color-accent-hover: ${tokens.colors.blue[300]};
+   --color-accent-active: ${tokens.colors.blue[200]};
+   --color-accent-subtle: ${tokens.rgba.accentSubtle};
+   --color-border-default: ${tokens.colors.gray[700]};
   --color-border-emphasis: ${tokens.colors.gray[500]};
   --color-border-strong: ${tokens.colors.gray[400]};
-  --color-interactive-hover: ${tokens.colors.blue[300]};
-  --color-interactive-active: ${tokens.colors.blue[400]};
-  --color-interactive-focus: ${tokens.colors.blue[500]};
+   --color-interactive-hover: ${tokens.colors.blue[300]};
+   --color-interactive-active: ${tokens.colors.blue[400]};
+   --color-interactive-focus: ${tokens.colors.blue[500]};
+   --color-overlay-dark: ${tokens.rgba.overlayDark};
+   --color-overlay-light: ${tokens.rgba.overlayLight};
+   --color-status-warning-subtle: ${tokens.rgba.warningSubtle};
 }
 
 /* Responsive container spacing */

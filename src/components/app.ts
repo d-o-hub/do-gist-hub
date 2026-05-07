@@ -55,7 +55,7 @@ export class App {
       }
     });
 
-    const savedTheme = localStorage.getItem('theme-preference') || 'auto';
+    const savedTheme = localStorage.getItem('theme-preference') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
 
     this.initializeCommandPalette();

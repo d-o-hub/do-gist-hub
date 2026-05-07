@@ -84,14 +84,14 @@
 
 .comp-field {
   padding: var(--space-4);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--color-overlay-dark);
   border-radius: var(--radius-md);
   border: 1px solid transparent;
 }
 
 .comp-field.has-conflict {
   border-color: var(--color-warning);
-  background: rgba(250, 204, 21, 0.05);
+  background: var(--color-status-warning-subtle);
 }
 
 .comp-value {
@@ -110,7 +110,7 @@
   display: flex;
   justify-content: space-between;
   padding: var(--space-2) var(--space-3);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-overlay-light);
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
   font-size: var(--text-micro);

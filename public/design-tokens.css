@@ -1,5 +1,5 @@
 /* Auto-generated design tokens - DO NOT EDIT */
-/* Run pnpm run init:design to regenerate */
+/* Run npm run init:design to regenerate */
 
 :root {
   /* Colors - Light Theme */
@@ -24,17 +24,20 @@
   --color-status-error-bg: #fef2f2;
   --color-status-error-fg: #b91c1c;
   --color-status-error-border: #fecaca;
-  --color-status-warning-bg: #fefce8;
-  --color-status-warning-fg: #a16207;
-  --color-status-warning-border: #fef08a;
-  --color-status-info-bg: #eff6ff;
+   --color-status-warning-bg: #fefce8;
+   --color-status-warning-fg: #a16207;
+   --color-status-warning-border: #fef08a;
+   --color-status-warning-subtle: rgba(250, 204, 21, 0.05);
+   --color-status-info-bg: #eff6ff;
   --color-status-info-fg: #1d4ed8;
   --color-status-info-border: #bfdbfe;
-  --color-interactive-hover: #1d4ed8;
-  --color-interactive-active: #2563eb;
-  --color-interactive-focus: #60a5fa;
+   --color-interactive-hover: #1d4ed8;
+   --color-interactive-active: #2563eb;
+   --color-interactive-focus: #60a5fa;
+   --color-overlay-dark: rgba(0, 0, 0, 0.2);
+   --color-overlay-light: rgba(255, 255, 255, 0.05);
 
-  /* Spacing */
+   /* Spacing */
   --spacing-0: 0px;
   --spacing-1: 1px;
   --spacing-2: 2px;
@@ -96,24 +99,27 @@
 }
 
 [data-theme="dark"] {
-  --color-background-primary: #0d1117;
-  --color-background-secondary: #111827;
-  --color-background-tertiary: #1f2937;
-  --color-background-elevated: #1f2937;
-  --color-foreground-primary: #f0f6fc;
-  --color-foreground-secondary: #d1d5db;
-  --color-foreground-muted: #9ca3af;
-  --color-foreground-inverse: #111827;
-  --color-accent-primary: #60a5fa;
-  --color-accent-hover: #93c5fd;
-  --color-accent-active: #bfdbfe;
-  --color-accent-subtle: rgba(56, 139, 253, 0.15);
-  --color-border-default: #374151;
+   --color-background-primary: #0d1117;
+   --color-background-secondary: #111827;
+   --color-background-tertiary: #1f2937;
+   --color-background-elevated: #1f2937;
+   --color-foreground-primary: #f0f6fc;
+   --color-foreground-secondary: #d1d5db;
+   --color-foreground-muted: #9ca3af;
+   --color-foreground-inverse: #111827;
+   --color-accent-primary: #60a5fa;
+   --color-accent-hover: #93c5fd;
+   --color-accent-active: #bfdbfe;
+   --color-accent-subtle: rgba(56, 139, 253, 0.15);
+   --color-border-default: #374151;
   --color-border-emphasis: #6b7280;
   --color-border-strong: #9ca3af;
-  --color-interactive-hover: #93c5fd;
-  --color-interactive-active: #60a5fa;
-  --color-interactive-focus: #3b82f6;
+   --color-interactive-hover: #93c5fd;
+   --color-interactive-active: #60a5fa;
+   --color-interactive-focus: #3b82f6;
+   --color-overlay-dark: rgba(0, 0, 0, 0.2);
+   --color-overlay-light: rgba(255, 255, 255, 0.05);
+   --color-status-warning-subtle: rgba(250, 204, 21, 0.05);
 }
 
 /* Responsive container spacing */
