@@ -1,0 +1,100 @@
+# CodeRabbit configuration for do-gist-hub
+# Docs: https://docs.coderabbit.ai/reference/configuration
+
+language: "en-US"
+
+# ---------------------------------------------------------------------------
+# Tone & early access
+# ---------------------------------------------------------------------------
+tone_instructions: >
+  Be concise and constructive. Focus on correctness, security, and
+  maintainability. Avoid nit-picking formatting issues already enforced
+  by ESLint / Prettier.
+
+early_access: false
+
+# ---------------------------------------------------------------------------
+# Review settings
+# ---------------------------------------------------------------------------
+reviews:
+  request_changes_workflow: false
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+  poem: false
+  review_status: true
+  commit_status: true
+
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+      - develop
+
+  # --- Path filters ---
+  # Exclude AI-agent config dirs, generated lock files, assets & non-code dirs
+  path_filters:
+    - "!**/.jules/**"
+    - "!**/.memory/**"
+    - "!**/.claude/**"
+    - "!**/.gemini/**"
+    - "!**/.qwen/**"
+    - "!**/.cursor/**"
+    - "!**/.agents/**"
+    - "!**/.vscode/**"
+    - "!**/plans/**"
+    - "!**/analysis/**"
+    - "!**/agents-docs/**"
+    - "!**/screenshots/**"
+    - "!**/public/**"
+    - "!**/android/**"
+    - "!**/docs/**"
+    - "!package-lock.json"
+    - "!pnpm-lock.yaml"
+    - "!CHANGELOG.md"
+    - "!commit_msg.txt"
+    - "!skills-lock.json"
+
+  # --- Path-based review instructions ---
+  path_instructions:
+    - path: "src/**/*.{ts,tsx,vue}"
+      instructions: >
+        Review for TypeScript correctness, Vue/component best practices,
+        accessibility, and proper use of Vite/ESM imports.
+        Check that no sensitive data (tokens, secrets) is hard-coded.
+
+    - path: "src/**/*.{css,scss}"
+      instructions: >
+        Verify CSS follows project conventions. Prefer CSS variables over
+        magic numbers. Flag unused selectors.
+
+    - path: "tests/**"
+      instructions: >
+        Ensure tests are deterministic, isolated, and cover edge cases.
+        Playwright selectors should prefer role/label over fragile CSS ids.
+
+    - path: "scripts/**"
+      instructions: >
+        Review for error handling (set -euo pipefail in bash), no
+        hard-coded secrets, and clear usage comments.
+
+    - path: "*.config.{ts,js,mjs}"
+      instructions: >
+        Confirm no dev-only settings leak into production builds.
+        Vite configs should have a proper chunking and sourcemap strategy.
+
+    - path: ".github/workflows/**"
+      instructions: >
+        Check for pinned action versions, no secrets exposed in logs,
+        correct permissions (least privilege), and caching strategy.
+
+    - path: "capacitor.config.ts"
+      instructions: >
+        Verify appId, appName, and webDir are correct.
+        No localhost URLs in production configuration.
+
+# ---------------------------------------------------------------------------
+# Chat (interactive @coderabbitai commands in PR comments)
+# ---------------------------------------------------------------------------
+chat:
+  auto_reply: true
