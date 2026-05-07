@@ -452,24 +452,27 @@ class GistStore {
   private notifyListeners(): void {
     this.listeners.forEach((l) => l(this.gists));
   }
+
+  // BOLT: Persistent cache for parsed timestamps to maximize sorting efficiency
+  private static timestampCache = new Map<string, number>();
+
   /**
    * Sort gists by updatedAt descending.
    * BOLT: Optimize by pre-parsing timestamps to avoid O(N log N) Date.parse calls.
    */
   private sortGists(): void {
-    const timestampMap = new Map<string, number>();
-    const getTimestamp = (id: string, dateStr: string): number => {
-      let ts = timestampMap.get(id);
+    const getTimestamp = (dateStr: string): number => {
+      let ts = GistStore.timestampCache.get(dateStr);
       if (ts === undefined) {
         ts = Date.parse(dateStr);
-        timestampMap.set(id, ts);
+        GistStore.timestampCache.set(dateStr, ts);
       }
       return ts;
     };
 
     this.gists.sort((a, b) => {
-      const tsB = getTimestamp(b.id, b.updatedAt);
-      const tsA = getTimestamp(a.id, a.updatedAt);
+      const tsB = getTimestamp(b.updatedAt);
+      const tsA = getTimestamp(a.updatedAt);
       return tsB - tsA;
     });
   }
