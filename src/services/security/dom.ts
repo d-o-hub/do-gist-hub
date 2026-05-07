@@ -3,18 +3,21 @@
  * Prevents XSS and ensures secure DOM manipulation.
  */
 
+const ESCAPE_LOOKUP: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#039;',
+};
+
 /**
  * Sanitize a string for HTML insertion
- * ⚡ Bolt: Fast regex-based escaping for security and performance
+ * ⚡ Bolt: Fast single-pass regex-based escaping for maximum performance
  */
 export function sanitizeHtml(input: string): string {
   if (input === null || input === undefined) return '';
-  return String(input)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+  return String(input).replace(/[&<>"']/g, (match) => ESCAPE_LOOKUP[match]!);
 }
 
 /**

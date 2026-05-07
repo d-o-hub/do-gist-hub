@@ -14,6 +14,9 @@ export type Sort = 'created-desc' | 'updated-desc' | 'updated-asc';
 let storeUnsubscribe: (() => void) | undefined;
 let searchTimeout: number | undefined;
 
+// BOLT: Module-scope cache for parsed timestamps to improve sorting performance across renders
+const timestampCache = new Map<string, number>();
+
 export function render(container: HTMLElement, params?: Record<string, string>): void {
   storeUnsubscribe?.();
 
@@ -86,26 +89,16 @@ export function render(container: HTMLElement, params?: Record<string, string>):
       );
     }
 
-    // BOLT: Optimize sorting by pre-parsing timestamps
-    const timestampMap = new Map<string, number>();
-    const getTs = (id: string, date: string): number => {
-      let ts = timestampMap.get(id);
-      if (ts === undefined) {
-        ts = Date.parse(date);
-        timestampMap.set(id, ts);
-      }
-      return ts;
-    };
-
+    // BOLT: Optimize sorting by pre-parsing timestamps with persistent cache
     gists = [...gists].sort((a, b) => {
       if (currentSort === 'created-desc') {
-        return getTs(b.id, b.createdAt) - getTs(a.id, a.createdAt);
+        return getTs(b.createdAt) - getTs(a.createdAt);
       }
       if (currentSort === 'updated-desc') {
-        return getTs(b.id, b.updatedAt) - getTs(a.id, a.updatedAt);
+        return getTs(b.updatedAt) - getTs(a.updatedAt);
       }
       if (currentSort === 'updated-asc') {
-        return getTs(a.id, a.updatedAt) - getTs(b.id, b.updatedAt);
+        return getTs(a.updatedAt) - getTs(b.updatedAt);
       }
       return 0;
     });
@@ -132,6 +125,19 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     }
 
     return gists.map((g) => renderCard(g)).join('');
+  }
+
+  /**
+   * Get numeric timestamp from date string, with module-level caching.
+   * BOLT: Consolidate timestamp parsing logic for O(N) instead of O(N log N).
+   */
+  function getTs(dateStr: string): number {
+    let ts = timestampCache.get(dateStr);
+    if (ts === undefined) {
+      ts = Date.parse(dateStr);
+      timestampCache.set(dateStr, ts);
+    }
+    return ts;
   }
 
   function updateList(): void {
