@@ -91,8 +91,13 @@ export function renderGistDetail(gist: GistRecord): string {
         ${
           firstFile
             ? `
-          <span class="micro-label">Language: ${sanitizeHtml(firstFile.language || 'Unknown')}</span>
-          <span class="micro-label">Raw URL: <a href="${sanitizeHtml(firstFile.rawUrl || '')}" target="_blank" rel="noopener noreferrer">Link</a></span>
+          <div class="file-info-left">
+            <span class="micro-label">Language: ${sanitizeHtml(firstFile.language || 'Unknown')}</span>
+            <span class="micro-label">Raw URL: <a href="${sanitizeHtml(firstFile.rawUrl || '')}" target="_blank" rel="noopener noreferrer">Link</a></span>
+          </div>
+          <button class="btn btn-ghost btn-copy-sm" data-action="copy-content" aria-label="Copy file content">
+            <span class="micro-label">COPY</span>
+          </button>
         `
             : ''
         }
@@ -190,6 +195,88 @@ export function bindDetailEvents(
       if (ok) void loadGistDetail(gistId, container, onBack, onEdit, onViewRevision);
     })();
   });
+
+  // File Tabs
+  const tabs = container.querySelectorAll('.file-tab');
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const fileKey = (tab as HTMLElement).dataset.fileKey;
+      if (!fileKey) return;
+
+      // Update active tab UI
+      tabs.forEach((t) => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+
+      // Update content
+      void (async () => {
+        if (!gistId) return;
+        const gist = await (await import('../stores/gist-store')).default.getGist(gistId);
+        if (!gist) return;
+        const file = gist.files[fileKey];
+        if (!file) return;
+
+        const contentArea = container.querySelector('#file-content-area');
+        if (contentArea) {
+          contentArea.innerHTML = renderFileContent(file.content || '', file.language);
+          contentArea.setAttribute('aria-labelledby', tab.id);
+        }
+
+        const infoArea = container.querySelector('#file-info');
+        if (infoArea) {
+          infoArea.innerHTML = `
+            <div class="file-info-left">
+              <span class="micro-label">Language: ${sanitizeHtml(file.language || 'Unknown')}</span>
+              <span class="micro-label">Raw URL: <a href="${sanitizeHtml(file.rawUrl || '')}" target="_blank" rel="noopener noreferrer">Link</a></span>
+            </div>
+            <button class="btn btn-ghost btn-copy-sm" data-action="copy-content" aria-label="Copy file content">
+              <span class="micro-label">COPY</span>
+            </button>
+          `;
+        }
+      })();
+    });
+  });
+
+  // Copy Content
+  if (container.dataset.copyBound !== 'true') {
+    container.addEventListener('click', (e) => {
+      const copyBtn = (e.target as HTMLElement).closest(
+        '[data-action="copy-content"]'
+      ) as HTMLElement;
+      if (!copyBtn || copyBtn.classList.contains('btn-success')) return;
+
+      void (async () => {
+        const contentArea = container.querySelector('#file-content-area code');
+        if (!contentArea) return;
+
+        const text = contentArea.textContent || '';
+        try {
+          if (!navigator.clipboard) {
+            throw new Error('Clipboard API not available');
+          }
+          await navigator.clipboard.writeText(text);
+
+          const originalText = copyBtn.innerHTML;
+          copyBtn.innerHTML = '<span class="micro-label">✅ COPIED!</span>';
+          copyBtn.classList.add('btn-success');
+          toast.success('COPIED TO CLIPBOARD');
+
+          setTimeout(() => {
+            copyBtn.innerHTML = originalText;
+            copyBtn.classList.remove('btn-success');
+          }, 2000);
+        } catch (err) {
+          safeError('Failed to copy', err);
+          toast.error('COPY FAILED');
+        }
+      })();
+    });
+    container.dataset.copyBound = 'true';
+  }
 }
 
 function bindRevisionEvents(
