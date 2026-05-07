@@ -397,7 +397,9 @@ export const clearAllData = async (): Promise<void> => {
 };
 
 /**
- * Export data for backup
+ * Export data for backup.
+ * Sentinel: Filters out sensitive encryption keys and tokens from the export
+ * to prevent potential exposure of secrets in plain-text backup files.
  */
 export async function exportData(): Promise<string> {
   const db = getDB();
@@ -406,12 +408,18 @@ export async function exportData(): Promise<string> {
   const metadata = await db.getAll('metadata');
   const logs = await db.getAll('logs');
 
+  // Sentinel: Sensitive secrets (PATs and encryption keys) are excluded from
+  // standard exports. This ensures that a compromised backup file does not
+  // leak credentials, although it requires re-authentication on restore.
+  const SENSITIVE_METADATA_KEYS = ['gist-hub-master-key', 'github-pat-enc', 'github-pat'];
+  const safeMetadata = metadata.filter((m) => !SENSITIVE_METADATA_KEYS.includes(m.key));
+
   const data = {
     version: '3.0.0',
     exportedAt: new Date().toISOString(),
     gists,
     pendingWrites,
-    metadata,
+    metadata: safeMetadata,
     logs,
   };
 
