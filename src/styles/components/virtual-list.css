@@ -1,0 +1,53 @@
+/**
+ * Virtual List Component Styles
+ * Optimized for rendering large result sets
+ */
+
+.virtual-list-viewport {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.virtual-list-container {
+  position: relative;
+  width: 100%;
+}
+
+.virtual-list-empty {
+  padding: var(--spacing-8);
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+}
+
+/* Smooth scrolling */
+.virtual-list-viewport {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .virtual-list-viewport {
+    scroll-behavior: auto;
+  }
+}
+
+/* Custom scrollbar */
+.virtual-list-viewport::-webkit-scrollbar {
+  width: 8px;
+}
+
+.virtual-list-viewport::-webkit-scrollbar-track {
+  background: var(--color-surface-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.virtual-list-viewport::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.virtual-list-viewport::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}

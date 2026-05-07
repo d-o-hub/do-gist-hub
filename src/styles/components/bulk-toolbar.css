@@ -1,0 +1,142 @@
+/**
+ * Bulk Toolbar Component Styles
+ * Sticky toolbar for bulk operations
+ */
+
+.bulk-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-3) var(--spacing-4);
+  background: var(--color-surface-elevated);
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: blur(10px);
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.bulk-toolbar-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+}
+
+.selected-count {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-accent-primary);
+  font-size: var(--font-size-base);
+}
+
+.btn-text {
+  padding: var(--spacing-2) var(--spacing-3);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.btn-text:hover {
+  color: var(--color-text-primary);
+  text-decoration: underline;
+}
+
+.bulk-toolbar-actions {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-primary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.btn-icon:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-accent-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-icon:active {
+  transform: scale(0.95);
+}
+
+.btn-icon.btn-danger:hover {
+  background: var(--color-accent-red);
+  border-color: var(--color-accent-red);
+  color: var(--color-text-inverse);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Mobile-first responsive design */
+@media (max-width: 767px) {
+  .bulk-toolbar {
+    flex-direction: column;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+  }
+  
+  .bulk-toolbar-info {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .bulk-toolbar-actions {
+    width: 100%;
+    justify-content: space-around;
+  }
+  
+  .btn-icon {
+    flex: 1;
+    max-width: 60px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .bulk-toolbar {
+    animation: none;
+  }
+  
+  .btn-icon:hover {
+    transform: none;
+  }
+}
