@@ -1,24 +1,24 @@
 import {
-  GistRecord,
+  type GistRecord,
+  deleteGist as dbDeleteGist,
   getAllGists as dbGetAllGists,
   saveGist as dbSaveGist,
-  deleteGist as dbDeleteGist,
   saveGists,
 } from '../services/db';
-import { safeError } from '../services/security/logger';
 import * as GitHub from '../services/github/client';
+import type { AppError } from '../services/github/error-handler';
 import networkMonitor from '../services/network/offline-monitor';
-import syncQueue from '../services/sync/queue';
+import { safeError } from '../services/security/logger';
 import {
+  type GistConflict,
+  clearConflict,
   detectConflict,
+  getConflicts,
   resolveConflict,
   storeConflicts,
-  getConflicts,
-  clearConflict,
-  GistConflict,
 } from '../services/sync/conflict-detector';
-import { GitHubGist, UpdateGistRequest } from '../types/api';
-import { AppError } from '../services/github/error-handler';
+import syncQueue from '../services/sync/queue';
+import type { GitHubGist, UpdateGistRequest } from '../types/api';
 
 export type GistStoreListener = (gists: GistRecord[]) => void;
 
@@ -223,10 +223,9 @@ class GistStore {
         this.sortGists();
         this.notifyListeners();
         return record;
-      } else {
-        await syncQueue.queueOperation('pending', 'create', payload);
-        return null;
       }
+      await syncQueue.queueOperation('pending', 'create', payload);
+      return null;
     } catch (err) {
       // Rollback: remove temp record
       this.gists = this.gists.filter((g) => g.id !== tempId);
@@ -279,10 +278,9 @@ class GistStore {
         if (idx !== -1) this.gists[idx] = record;
         this.notifyListeners();
         return true;
-      } else {
-        await syncQueue.queueOperation(id, 'update', payload);
-        return true;
       }
+      await syncQueue.queueOperation(id, 'update', payload);
+      return true;
     } catch (err) {
       // Rollback: restore original state
       if (originalRecord) {
@@ -312,12 +310,11 @@ class GistStore {
         await GitHub.deleteGist(id);
         await dbDeleteGist(id);
         return true;
-      } else {
-        await syncQueue.queueOperation(id, 'delete', {});
-        this.gists = this.gists.filter((g) => g.id !== id);
-        this.notifyListeners();
-        return true;
       }
+      await syncQueue.queueOperation(id, 'delete', {});
+      this.gists = this.gists.filter((g) => g.id !== id);
+      this.notifyListeners();
+      return true;
     } catch (err) {
       // Rollback: restore original gist
       if (originalGist) {

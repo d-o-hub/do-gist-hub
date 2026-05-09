@@ -2,13 +2,13 @@
  * Settings Route
  */
 
-import { getToken, saveToken, removeToken } from '../services/github/auth';
-import { redactToken, sanitizeHtml } from '../services/security';
 import { toast } from '../components/ui/toast';
-import { showConfirmDialog } from '../utils/dialog';
+import { getToken, removeToken, saveToken } from '../services/github/auth';
 import networkMonitor from '../services/network/offline-monitor';
-import gistStore from '../stores/gist-store';
+import { redactToken, sanitizeHtml } from '../services/security';
 import { safeError } from '../services/security/logger';
+import gistStore from '../stores/gist-store';
+import { showConfirmDialog } from '../utils/dialog';
 
 export async function render(
   container: HTMLElement,

@@ -4,29 +4,29 @@
  */
 
 import type { PendingWrite } from '../../types';
-import type { CreateGistRequest, UpdateGistRequest, GitHubGist } from '../../types/api';
+import type { CreateGistRequest, GitHubGist, UpdateGistRequest } from '../../types/api';
 import {
-  getPendingWrites,
-  queueWrite as dbQueueWrite,
-  removePendingWrite,
-  updatePendingWriteError,
-  saveGist,
+  type GistRecord,
   deleteGist as dbDeleteGist,
+  queueWrite as dbQueueWrite,
   getGist,
-  GistRecord,
+  getPendingWrites,
+  removePendingWrite,
+  saveGist,
+  updatePendingWriteError,
 } from '../db';
 import {
-  getGist as githubGetGist,
   createGist,
-  updateGist,
   deleteGist,
+  forkGist,
+  getGist as githubGetGist,
   starGist,
   unstarGist,
-  forkGist,
+  updateGist,
 } from '../github';
 import { isSafeToRequest } from '../github/rate-limiter';
 import networkMonitor from '../network/offline-monitor';
-import { safeLog, safeError } from '../security/logger';
+import { safeError, safeLog } from '../security/logger';
 import { detectConflict, storeConflict } from './conflict-detector';
 
 export type SyncAction = 'create' | 'update' | 'delete' | 'star' | 'unstar' | 'fork';
@@ -263,7 +263,7 @@ export class SyncQueue {
     }
     const base = RETRY_BACKOFF_MS;
     const max = RETRY_MAX_DELAY_MS;
-    const exponential = base * Math.pow(2, attempt);
+    const exponential = base * 2 ** attempt;
     const jitter = Math.random() * base;
     return Math.min(exponential + jitter, max);
   }

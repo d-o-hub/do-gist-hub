@@ -1,13 +1,13 @@
-import { safeLog, safeError } from './services/security/logger';
 import { App } from './components/app';
-import { initDesignTokens, initTheme } from './tokens/design-tokens';
 import { initIndexedDB } from './services/db';
 import { isAuthenticated } from './services/github/auth';
 import networkMonitor from './services/network/offline-monitor';
+import { initWebVitals } from './services/perf';
+import { registerServiceWorker } from './services/pwa/register-sw';
+import { safeError, safeLog } from './services/security/logger';
 import syncQueue from './services/sync/queue';
 import gistStore from './stores/gist-store';
-import { registerServiceWorker } from './services/pwa/register-sw';
-import { initWebVitals } from './services/perf';
+import { initDesignTokens, initTheme } from './tokens/design-tokens';
 import { isViewTransitionSupported } from './utils/view-transitions';
 import './styles/base.css';
 import './styles/empty-state.css';

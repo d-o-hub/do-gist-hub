@@ -1,4 +1,4 @@
-import { safeLog, safeError, safeWarn } from '../security/logger';
+import { safeError, safeLog, safeWarn } from '../security/logger';
 /**
  * Service Worker Registration
  * Registers the PWA service worker and handles updates

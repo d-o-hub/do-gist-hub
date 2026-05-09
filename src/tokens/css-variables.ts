@@ -3,23 +3,23 @@
  * Converts design tokens into CSS custom properties
  */
 
+import { gistCard } from './component/cards';
+import { navTokens } from './component/navigation';
+import { uiTokens } from './component/ui';
+import { shadowTokens } from './elevation/shadows';
+import { motionTokens } from './motion/motion';
 import { colors } from './primitive/colors';
+import { radius } from './primitive/radius';
 import { spacing } from './primitive/spacing';
 import {
   fontFamily,
   fontSize,
   fontWeight,
-  lineHeight,
   letterSpacing,
+  lineHeight,
 } from './primitive/typography';
-import { radius } from './primitive/radius';
-import { motionTokens } from './motion/motion';
-import { shadowTokens } from './elevation/shadows';
-import { colorSemantic } from './semantic/color-semantic';
 import { breakpoints } from './responsive/breakpoints';
-import { navTokens } from './component/navigation';
-import { uiTokens } from './component/ui';
-import { gistCard } from './component/cards';
+import { colorSemantic } from './semantic/color-semantic';
 
 export function generateCSSVariables(): string {
   return `

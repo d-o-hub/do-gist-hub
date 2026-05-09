@@ -53,7 +53,7 @@ export class Announcer {
   /**
    * Announce loading state
    */
-  loading(message: string = 'Loading'): void {
+  loading(message = 'Loading'): void {
     this.announce(`${message}...`, 'polite');
   }
 

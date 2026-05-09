@@ -22,10 +22,12 @@
 		"rules": {
 			"recommended": true,
 			"style": {
+				"noParameterAssign": "off",
 				"noNonNullAssertion": "off",
 				"useConst": "error"
 			},
 			"complexity": {
+				"noForEach": "off",
 				"noExtraBooleanCast": "error",
 				"noUselessCatch": "error",
 				"noStaticOnlyClass": "off",

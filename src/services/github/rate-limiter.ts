@@ -38,17 +38,17 @@ export function trackRateLimit(response: Response): void {
   const used = response.headers.get('x-ratelimit-used');
 
   if (remaining && reset) {
-    rateLimit.remaining = parseInt(remaining, 10);
-    rateLimit.resetAt = parseInt(reset, 10) * 1000; // Convert to ms
+    rateLimit.remaining = Number.parseInt(remaining, 10);
+    rateLimit.resetAt = Number.parseInt(reset, 10) * 1000; // Convert to ms
     rateLimit.isLow = rateLimit.remaining < 100;
     rateLimit.isExceeded = rateLimit.remaining <= 0;
     rateLimit.updatedAt = Date.now();
 
     if (limit) {
-      rateLimit.limit = parseInt(limit, 10);
+      rateLimit.limit = Number.parseInt(limit, 10);
     }
     if (used) {
-      rateLimit.used = parseInt(used, 10);
+      rateLimit.used = Number.parseInt(used, 10);
     }
   }
 }

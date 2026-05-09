@@ -4,7 +4,7 @@
  */
 
 import { cancelAllRequests } from './github/client';
-import { safeLog, safeError } from './security/logger';
+import { safeError, safeLog } from './security/logger';
 
 export type CleanupFunction = () => void;
 

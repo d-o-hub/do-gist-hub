@@ -1,7 +1,7 @@
-import { GistRecord, getAllGists, getGist, getDB, saveGists } from './db';
-import { detectConflict, storeConflict } from './sync/conflict-detector';
-import { GitHubGist } from '../types/api';
+import type { GitHubGist } from '../types/api';
+import { type GistRecord, getAllGists, getDB, getGist, saveGists } from './db';
 import { safeError } from './security/logger';
+import { detectConflict, storeConflict } from './sync/conflict-detector';
 
 export interface ExportData {
   version: string;

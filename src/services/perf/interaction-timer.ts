@@ -3,8 +3,8 @@
  * Measures duration of user interactions and warns if budgets are exceeded.
  */
 
-import { PERFORMANCE_BUDGETS } from './budgets';
 import { safeWarn } from '../security/logger';
+import { PERFORMANCE_BUDGETS } from './budgets';
 
 /**
  * Timer for measuring interaction performance.

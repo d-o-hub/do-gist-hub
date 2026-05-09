@@ -1,4 +1,4 @@
-import { safeLog, safeError } from '../security/logger';
+import { safeError, safeLog } from '../security/logger';
 /**
  * Network Monitor Service
  * Tracks online/offline status and triggers sync events

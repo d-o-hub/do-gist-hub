@@ -3,9 +3,9 @@
  * Cmd+K searchable action interface.
  */
 
-import { focusTrap } from '../../utils/focus-trap';
-import { announcer } from '../../utils/announcer';
 import { sanitizeHtml } from '../../services/security';
+import { announcer } from '../../utils/announcer';
+import { focusTrap } from '../../utils/focus-trap';
 import { withViewTransition } from '../../utils/view-transitions';
 
 export interface Command {
@@ -49,7 +49,7 @@ export class CommandPalette {
     this.container.addEventListener('click', (e) => {
       const item = (e.target as HTMLElement).closest('.command-item');
       if (item) {
-        const index = parseInt(item.getAttribute('data-index') || '-1', 10);
+        const index = Number.parseInt(item.getAttribute('data-index') || '-1', 10);
         if (index >= 0 && this.filteredCommands[index]) {
           void this.filteredCommands[index].action();
           void this.close();

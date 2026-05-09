@@ -4,8 +4,8 @@ import { safeWarn } from './security/logger';
  * Offline-first local storage for gists and app data
  */
 
-import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import { APP } from '@/config/app.config';
+import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 
 // Schema version
 const DB_VERSION = 3;
