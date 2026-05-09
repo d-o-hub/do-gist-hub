@@ -3,7 +3,7 @@
  * Layered error handling for different failure scopes.
  */
 
-import { AppError, ErrorCategory } from '../../services/github/error-handler';
+import { type AppError, ErrorCategory } from '../../services/github/error-handler';
 import { safeError } from '../../services/security/logger';
 import { announcer } from '../../utils/announcer';
 
@@ -15,11 +15,11 @@ export class ErrorBoundary {
     const isFatal =
       error.category === ErrorCategory.UNKNOWN || error.category === ErrorCategory.NETWORK;
     const categoryClass = (error.category || 'unknown').toLowerCase();
-    const iconHtml = this.getIcon(error.category);
+    const iconHtml = ErrorBoundary.getIcon(error.category);
     const titleText = error.message || 'An error occurred';
 
     const detailsHtml = error.technicalDetails
-      ? `<p class="error-details">${this.escapeHtml(error.technicalDetails)}</p>`
+      ? `<p class="error-details">${ErrorBoundary.escapeHtml(error.technicalDetails)}</p>`
       : '';
 
     const actionMap: Record<string, string> = {

@@ -41,7 +41,7 @@ export class ToastManager {
     return this.container;
   }
 
-  show(message: string, type: ToastType = 'info', durationMs: number = 4000): string {
+  show(message: string, type: ToastType = 'info', durationMs = 4000): string {
     const id = `toast-${++this.idCounter}`;
     const container = this.getContainer();
 

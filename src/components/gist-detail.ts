@@ -3,13 +3,13 @@
  * Redesigned for App Mode
  */
 
-import { GistRecord } from '../types';
-import { GistRevision } from '../types/api';
 import * as GitHub from '../services/github/client';
-import gistStore from '../stores/gist-store';
-import { toast } from './ui/toast';
-import { safeError } from '../services/security/logger';
 import { sanitizeHtml } from '../services/security/dom';
+import { safeError } from '../services/security/logger';
+import gistStore from '../stores/gist-store';
+import type { GistRecord } from '../types';
+import type { GistRevision } from '../types/api';
+import { toast } from './ui/toast';
 
 function formatRelativeTime(dateStr: string): string {
   const now = new Date();

@@ -14,11 +14,11 @@ Thank you for your interest in contributing! This document will help you get sta
    ```
 3. Install dependencies and set up skills:
    ```bash
-   npm install && ./scripts/setup-skills.sh
+   pnpm install && ./scripts/setup-skills.sh
    ```
 4. Start the dev server:
    ```bash
-   npm run dev
+   pnpm run dev
    ```
 
 ## Development Environment

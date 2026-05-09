@@ -2,16 +2,16 @@
  * Root App Component
  */
 
+import { APP } from '../config/app.config';
+import * as createRoute from '../routes/create';
+import * as offlineRoute from '../routes/offline';
 import networkMonitor from '../services/network/offline-monitor';
 import syncQueue from '../services/sync/queue';
-import { APP } from '../config/app.config';
-import { commandPalette } from './ui/command-palette';
-import { bottomSheet } from './ui/bottom-sheet';
-import { navRail, type NavRailRoute } from './ui/nav-rail';
-import { withViewTransition } from '../utils/view-transitions';
 import { announcer } from '../utils/announcer';
-import * as offlineRoute from '../routes/offline';
-import * as createRoute from '../routes/create';
+import { withViewTransition } from '../utils/view-transitions';
+import { bottomSheet } from './ui/bottom-sheet';
+import { commandPalette } from './ui/command-palette';
+import { type NavRailRoute, navRail } from './ui/nav-rail';
 
 type Route = 'home' | 'starred' | 'create' | 'settings' | 'offline' | 'detail' | 'conflicts';
 

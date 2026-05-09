@@ -6,19 +6,19 @@
  */
 
 import type {
-  GitHubGist,
   CreateGistRequest,
-  UpdateGistRequest,
   GistRevision,
-  TokenInfo,
   GitHubError,
+  GitHubGist,
   PaginatedResult,
   PaginationInfo,
+  TokenInfo,
+  UpdateGistRequest,
 } from '../../types/api';
-import { trackRateLimit } from './rate-limiter';
+import { getEtag, setEtag } from '../db';
 import { safeError } from '../security/logger';
 import { handleGitHubError } from './error-handler';
-import { getEtag, setEtag } from '../db';
+import { trackRateLimit } from './rate-limiter';
 
 const BASE_URL = 'https://api.github.com';
 
@@ -122,7 +122,7 @@ function parseLinkHeader(linkHeader: string | null): PaginationInfo {
   for (const part of linkHeader.split(',')) {
     const match = part.match(/<[^>]+[?&]page=(\d+)[^>]*>;\s*rel="(\w+)"/);
     if (match) {
-      const page = parseInt(match[1]!, 10);
+      const page = Number.parseInt(match[1]!, 10);
       const rel = match[2]!;
       if (rel === 'next') result.nextPage = page;
       else if (rel === 'prev') result.prevPage = page;

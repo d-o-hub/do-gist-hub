@@ -4,11 +4,11 @@
  */
 
 import {
-  isAuthenticated,
   getUsername,
-  saveToken,
+  isAuthenticated,
   removeToken,
   revalidateToken,
+  saveToken,
 } from '../services/github/auth';
 import { safeError } from '../services/security/logger';
 

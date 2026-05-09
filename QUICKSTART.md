@@ -18,7 +18,7 @@ git clone https://github.com/d-o-hub/do-gist-hub.git
 cd do-gist-hub
 
 # Install dependencies
-npm install
+pnpm install
 
 # Set up AI agent skill symlinks
 ./scripts/setup-skills.sh
@@ -28,7 +28,7 @@ npm install
 
 ```bash
 # Start the dev server
-npm run dev
+pnpm run dev
 
 # Open http://localhost:5173 in your browser
 ```
@@ -52,8 +52,8 @@ pre-commit install
 ./scripts/quality_gate.sh
 
 # Or run individual checks
-npm run check        # typecheck + lint + format:check
-npm run lint:fix     # auto-fix lint issues
+pnpm run check        # typecheck + lint + format:check
+pnpm run lint:fix     # auto-fix lint issues
 ```
 
 Expected output:

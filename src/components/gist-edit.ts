@@ -5,9 +5,9 @@
 
 import type { GistRecord } from '../services/db';
 import { getGist } from '../services/db';
+import { sanitizeHtml } from '../services/security/dom';
 import gistStore from '../stores/gist-store';
 import { toast } from './ui/toast';
-import { sanitizeHtml } from '../services/security/dom';
 // import { customConfirm } from './app';
 
 export function renderEditForm(gist: GistRecord): string {

@@ -3,14 +3,14 @@
  * Provides UI for viewing and resolving sync conflicts.
  */
 
-import { GistConflict, getConflicts } from '../services/sync/conflict-detector';
-import gistStore from '../stores/gist-store';
-import { toast } from './ui/toast';
-import { EmptyState } from './ui/empty-state';
-import { withViewTransition } from '../utils/view-transitions';
-import { safeError } from '../services/security/logger';
-import { announcer } from '../utils/announcer';
 import { sanitizeHtml } from '../services/security/dom';
+import { safeError } from '../services/security/logger';
+import { type GistConflict, getConflicts } from '../services/sync/conflict-detector';
+import gistStore from '../stores/gist-store';
+import { announcer } from '../utils/announcer';
+import { withViewTransition } from '../utils/view-transitions';
+import { EmptyState } from './ui/empty-state';
+import { toast } from './ui/toast';
 
 let currentConflictId: string | null = null;
 

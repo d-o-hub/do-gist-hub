@@ -24,7 +24,7 @@ Mobile shows unstyled sidebar buttons
 
 ## Verification
 - [x] `./scripts/analyze-codebase.sh --validate` passes
-- [x] `npm run check` passes
+- [x] `pnpm run check` passes
 - [x] No console errors
 
 ## Learning

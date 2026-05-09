@@ -3,11 +3,11 @@
  * Button-specific tokens derived from semantic tokens
  */
 
+import { motionTokens } from '../motion/motion';
+import { radius } from '../primitive/radius';
 import { spacing } from '../primitive/spacing';
 import { fontSize } from '../primitive/typography';
 import { fontWeight } from '../primitive/typography';
-import { radius } from '../primitive/radius';
-import { motionTokens } from '../motion/motion';
 
 export const buttonTokens = {
   // Padding by size

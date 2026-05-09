@@ -2,8 +2,8 @@
  * Create Gist Route
  */
 
-import gistStore from '../stores/gist-store';
 import { toast } from '../components/ui/toast';
+import gistStore from '../stores/gist-store';
 
 let nextFileId = 0;
 

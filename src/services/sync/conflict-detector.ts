@@ -4,8 +4,8 @@
  * Provides resolution strategies (local-wins, remote-wins, manual).
  */
 
-import { GistRecord, getDB } from '../db';
 import type { GitHubGist } from '../../types/api';
+import { type GistRecord, getDB } from '../db';
 
 /**
  * Conflict information for a single gist.

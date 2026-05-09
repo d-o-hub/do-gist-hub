@@ -66,20 +66,20 @@ git clone https://github.com/d-o-hub/do-gist-hub.git
 cd do-gist-hub
 
 # Install dependencies
-npm install        # or: pnpm install
+pnpm install        # or: ppnpm install
 
 # Set up AI agent skills
 ./scripts/setup-skills.sh
 
 # Start development server
-npm run dev        # or: pnpm dev
+pnpm run dev        # or: pnpm dev
 ```
 
 ### Verify
 
 ```bash
 # Run all quality checks (typecheck + lint + format)
-npm run check      # or: pnpm check
+pnpm run check      # or: pnpm check
 
 # Run the full quality gate
 ./scripts/quality_gate.sh
@@ -89,10 +89,10 @@ npm run check      # or: pnpm check
 
 ```bash
 # Production build
-npm run build
+pnpm run build
 
 # Package for Android
-npm run build:android
+pnpm run build:android
 ```
 
 ---

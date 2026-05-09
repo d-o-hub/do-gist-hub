@@ -4,7 +4,7 @@ import { safeLog } from '../security/logger';
  * Uses the web-vitals library to track Core Web Vitals.
  */
 
-import { onLCP, onCLS, onINP, onFCP, type Metric } from 'web-vitals';
+import { type Metric, onCLS, onFCP, onINP, onLCP } from 'web-vitals';
 import { PERFORMANCE_BUDGETS } from './budgets';
 
 /**
@@ -20,8 +20,7 @@ function reportMetric(metric: Metric): void {
     const budgetExceeded = typeof budget === 'number' && value > budget;
 
     safeLog(
-      `[Web Vitals] ${name}: ${value.toFixed(2)}ms (rating: ${rating})` +
-        (budgetExceeded ? ` [BUDGET EXCEEDED: ${budget}ms]` : '')
+      `[Web Vitals] ${name}: ${value.toFixed(2)}ms (rating: ${rating})${budgetExceeded ? ` [BUDGET EXCEEDED: ${budget}ms]` : ''}`
     );
   }
 

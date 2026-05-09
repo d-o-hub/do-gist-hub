@@ -4,11 +4,11 @@
  * Encrypted at rest using Web Cryptography API
  */
 
-import { validateToken, clearUsernameCache } from './client';
+import { getMetadata, setMetadata } from '../db';
+import { decrypt, encrypt } from '../security/crypto';
+import { redactToken, safeError, safeLog } from '../security/logger';
+import { clearUsernameCache, validateToken } from './client';
 import { resetRateLimit } from './rate-limiter';
-import { setMetadata, getMetadata } from '../db';
-import { safeLog, safeError, redactToken } from '../security/logger';
-import { encrypt, decrypt } from '../security/crypto';
 
 // Session-level token cache to avoid decrypting on every API request
 let sessionTokenCache: { token: string; cachedAt: number } | null = null;

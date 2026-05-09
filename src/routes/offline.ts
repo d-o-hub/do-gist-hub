@@ -2,10 +2,10 @@
  * Offline Route
  */
 
-import syncQueue from '../services/sync/queue';
 import { EmptyState } from '../components/ui/empty-state';
-import { getConflicts } from '../services/sync/conflict-detector';
 import { sanitizeHtml } from '../services/security/dom';
+import { getConflicts } from '../services/sync/conflict-detector';
+import syncQueue from '../services/sync/queue';
 
 let syncChangeHandler: (() => void) | undefined;
 

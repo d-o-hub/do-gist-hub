@@ -4,10 +4,10 @@
  */
 
 import type { GistRecord } from '../services/db';
-import gistStore from '../stores/gist-store';
-import { toast } from './ui/toast';
-import { showConfirmDialog } from '../utils/dialog';
 import { sanitizeHtml } from '../services/security/dom';
+import gistStore from '../stores/gist-store';
+import { showConfirmDialog } from '../utils/dialog';
+import { toast } from './ui/toast';
 
 function formatRelativeTime(dateStr: string): string {
   const now = new Date();

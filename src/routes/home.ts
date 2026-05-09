@@ -3,10 +3,10 @@
  * Gist list with search, filter, and sort
  */
 
-import gistStore from '../stores/gist-store';
-import { renderCard, bindCardEvents } from '../components/gist-card';
+import { bindCardEvents, renderCard } from '../components/gist-card';
 import { EmptyState } from '../components/ui/empty-state';
 import { sanitizeHtml } from '../services/security';
+import gistStore from '../stores/gist-store';
 
 export type Filter = 'all' | 'mine' | 'starred';
 export type Sort = 'created-desc' | 'updated-desc' | 'updated-asc';

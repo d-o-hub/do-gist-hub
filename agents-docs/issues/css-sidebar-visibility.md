@@ -17,7 +17,7 @@ Sidebar, rail, and bottom navigation elements must have `display: none` in their
 
 ## Verification
 - [x] `./scripts/analyze-codebase.sh --validate` passes
-- [x] `npm run check` passes
+- [x] `pnpm run check` passes
 - [x] No console errors
 - [x] Screenshot at 320px shows correct layout
 - [x] Screenshot at 768px shows correct layout

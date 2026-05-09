@@ -223,8 +223,11 @@ describe('SyncQueue', () => {
 
       await queue.processQueue();
 
-      expect(github.createGist).toHaveBeenCalledBefore(github.updateGist);
-      expect(github.updateGist).toHaveBeenCalledBefore(github.deleteGist);
+      const createOrder = vi.mocked(github.createGist).mock.invocationCallOrder[0];
+      const updateOrder = vi.mocked(github.updateGist).mock.invocationCallOrder[0];
+      expect(createOrder).toBeLessThan(updateOrder);
+      const deleteOrder = vi.mocked(github.deleteGist).mock.invocationCallOrder[0];
+      expect(updateOrder).toBeLessThan(deleteOrder);
       expect(db.removePendingWrite).toHaveBeenCalledWith(1);
       expect(db.removePendingWrite).toHaveBeenCalledWith(2);
       expect(db.removePendingWrite).toHaveBeenCalledWith(3);
