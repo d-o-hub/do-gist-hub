@@ -27,10 +27,10 @@ jobs:
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
-      - name: Run npm audit
-        run: pnpm audit --audit-level critical
+      - name: Run pnpm audit
+        run: ppnpm audit --audit-level critical
       - name: Run Quality Gate
-        run: pnpm run quality
+        run: ppnpm run quality
 
   tests:
     name: Playwright Tests
@@ -58,7 +58,7 @@ jobs:
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json', 'pnpm-lock.yaml') }}
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
@@ -94,7 +94,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
       - name: Build Web App and Sync Android
-        run: pnpm run build:android
+        run: ppnpm run build:android
       - name: Build Android Debug APK
         working-directory: android
         run: |
@@ -126,7 +126,7 @@ jobs:
       - name: Ensure analysis directory exists
         run: mkdir -p analysis
       - name: Build with bundle analyzer and performance budgets
-        run: ANALYZE=true pnpm run build
+        run: ANALYZE=true ppnpm run build
       - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: bundle-analysis
@@ -154,7 +154,7 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
       - name: Run Visual Tests
-        run: pnpm run test:visual
+        run: ppnpm run test:visual
       - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         if: always()
         with:

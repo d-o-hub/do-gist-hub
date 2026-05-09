@@ -27,7 +27,7 @@
 
 /* Hide header settings button when sidebar is visible (desktop has Settings in sidebar) */
 @media (min-width: 1024px) {
-  .header-right .icon-button[data-route='settings'] {
+  .header-right .icon-button[data-route="settings"] {
     display: none;
   }
 }
@@ -110,7 +110,7 @@
 }
 
 .chip.active,
-.chip[aria-pressed='true'] {
+.chip[aria-pressed="true"] {
   background: var(--color-accent);
   border-color: var(--color-accent);
   color: var(--color-foreground-inverse);
@@ -186,7 +186,7 @@
 }
 
 .nav-item.active::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: calc(var(--spacing-1) * -1);
   left: 50%;
@@ -254,7 +254,7 @@
 }
 
 .rail-item.active::before {
-  content: '';
+  content: "";
   position: absolute;
   left: calc(var(--spacing-2-5) * -1);
   top: 50%;
@@ -376,7 +376,7 @@
 }
 
 .sidebar-item.active::before {
-  content: '';
+  content: "";
   position: absolute;
   left: calc(var(--spacing-1-5) * -1);
   width: calc(var(--spacing-1) * 0.75);
@@ -404,8 +404,8 @@
     grid-template-columns: auto 1fr;
     grid-template-rows: auto 1fr;
     grid-template-areas:
-      'nav header'
-      'nav main';
+      "nav header"
+      "nav main";
   }
 
   .app-header {

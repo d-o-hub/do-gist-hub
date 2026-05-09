@@ -1,6 +1,6 @@
 /**
  * Bulk Toolbar Component
- * 
+ *
  * Sticky toolbar that appears when gists are selected.
  * Provides bulk actions: star, unstar, export, tag, delete.
  */
@@ -16,7 +16,7 @@ export interface BulkToolbarOptions {
  */
 export function renderBulkToolbar(options: BulkToolbarOptions): string {
   const { selectedCount } = options;
-  
+
   return `
     <div class="bulk-toolbar" role="toolbar" aria-label="Bulk actions">
       <div class="bulk-toolbar-info">
@@ -69,18 +69,15 @@ export interface BulkToolbarHandlers {
 /**
  * Bind event handlers to bulk toolbar
  */
-export function bindBulkToolbarEvents(
-  container: HTMLElement,
-  handlers: BulkToolbarHandlers
-): void {
+export function bindBulkToolbarEvents(container: HTMLElement, handlers: BulkToolbarHandlers): void {
   container.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
     const button = target.closest('[data-action]') as HTMLElement;
-    
+
     if (!button) return;
-    
+
     const action = button.dataset.action;
-    
+
     switch (action) {
       case 'bulk-delete':
         handlers.onDelete();

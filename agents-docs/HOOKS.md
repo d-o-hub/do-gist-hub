@@ -27,9 +27,9 @@ chmod +x .git/hooks/pre-commit
 
 3. Quality Gate
    └── ./scripts/quality_gate.sh
-       ├── npm run typecheck
-       ├── npm run lint
-       ├── npm run format:check
+       ├── pnpm run typecheck
+       ├── pnpm run lint
+       ├── pnpm run format:check
        └── ./scripts/validate-skills.sh
 ```
 
@@ -64,13 +64,13 @@ git commit --no-verify -m "..."
 set -euo pipefail
 
 echo "→ Type checking..."
-npm run typecheck        # strict TypeScript compilation
+pnpm run typecheck        # strict TypeScript compilation
 
 echo "→ Linting..."
-npm run lint             # ESLint with project rules
+pnpm run lint             # ESLint with project rules
 
 echo "→ Format checking..."
-npm run format:check     # Prettier consistency
+pnpm run format:check     # Prettier consistency
 
 echo "→ Skill validation..."
 ./scripts/validate-skills.sh  # SKILL.md frontmatter + structure
@@ -97,7 +97,7 @@ jobs:
   quality-gate:
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci
+      - run: pnpm i
       - run: ./scripts/quality_gate.sh
 ```
 
@@ -164,7 +164,7 @@ set -euo pipefail
 
 echo "→ Running pre-push checks..."
 ./scripts/analyze-codebase.sh --validate
-npm run test:e2e
+pnpm run test:e2e
 
 echo "✓ Pre-push checks passed"
 ```

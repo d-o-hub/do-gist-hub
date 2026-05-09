@@ -175,7 +175,7 @@
 
 /* Empty state */
 .comment-list:empty::after {
-  content: 'No comments yet. Be the first to comment!';
+  content: "No comments yet. Be the first to comment!";
   display: block;
   padding: var(--spacing-6);
   text-align: center;
@@ -184,7 +184,7 @@
 }
 
 /* Loading state */
-.comment-thread[data-loading='true'] {
+.comment-thread[data-loading="true"] {
   opacity: 0.6;
   pointer-events: none;
 }

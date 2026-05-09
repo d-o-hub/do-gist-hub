@@ -11,8 +11,8 @@
 function isAutomatedEnvironment(): boolean {
   return Boolean(
     (navigator as Navigator & { webdriver?: boolean }).webdriver ||
-    /HeadlessChrome/.test(navigator.userAgent) ||
-    /PhantomJS/.test(navigator.userAgent)
+      /HeadlessChrome/.test(navigator.userAgent) ||
+      /PhantomJS/.test(navigator.userAgent)
   );
 }
 

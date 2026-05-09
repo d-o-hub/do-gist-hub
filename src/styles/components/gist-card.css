@@ -226,12 +226,12 @@
   .gist-action-btn .micro-label {
     display: none;
   }
-  
+
   .gist-card-checkbox {
     top: var(--spacing-2);
     left: var(--spacing-2);
   }
-  
+
   .selection-checkbox {
     width: 24px;
     height: 24px;

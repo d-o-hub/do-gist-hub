@@ -127,7 +127,9 @@ export class SearchEngine {
 
     const duration = performance.now() - startTime;
     if (duration > 500) {
-      console.warn(`[SearchEngine] Slow indexing: ${duration.toFixed(2)}ms for ${gists.length} gists`);
+      console.warn(
+        `[SearchEngine] Slow indexing: ${duration.toFixed(2)}ms for ${gists.length} gists`
+      );
     }
   }
 
@@ -289,9 +291,7 @@ export class SearchEngine {
     }
 
     // Apply filters
-    const filtered = results.filter((r) =>
-      this.applyFilters([r.gist], filters).length > 0
-    );
+    const filtered = results.filter((r) => this.applyFilters([r.gist], filters).length > 0);
 
     // Sort by relevance or other criteria
     const sorted = this.sortResults(
@@ -310,7 +310,7 @@ export class SearchEngine {
     });
 
     const duration = performance.now() - startTime;
-    
+
     // Log search metrics
     this.logSearchMetrics({
       query,
@@ -432,11 +432,7 @@ export class SearchEngine {
   /**
    * Extract snippet around matching tokens
    */
-  private extractSnippet(
-    text: string,
-    queryTokens: string[],
-    maxLength = 100
-  ): string | null {
+  private extractSnippet(text: string, queryTokens: string[], maxLength = 100): string | null {
     const lowerText = text.toLowerCase();
     const tokens = this.tokenize(text);
 
@@ -475,9 +471,7 @@ export class SearchEngine {
         const gistLanguages = Object.values(gist.files)
           .map((f) => f.language?.toLowerCase())
           .filter(Boolean);
-        return filters.languages!.some((lang) =>
-          gistLanguages.includes(lang.toLowerCase())
-        );
+        return filters.languages!.some((lang) => gistLanguages.includes(lang.toLowerCase()));
       });
     }
 
@@ -521,11 +515,7 @@ export class SearchEngine {
   /**
    * Sort search results
    */
-  private sortResults(
-    results: SearchResult[],
-    sortBy: string,
-    order: string
-  ): SearchResult[] {
+  private sortResults(results: SearchResult[], sortBy: string, order: string): SearchResult[] {
     const sorted = [...results];
 
     sorted.sort((a, b) => {
@@ -536,12 +526,10 @@ export class SearchEngine {
           comparison = b.score - a.score;
           break;
         case 'updated':
-          comparison =
-            new Date(b.gist.updatedAt).getTime() - new Date(a.gist.updatedAt).getTime();
+          comparison = new Date(b.gist.updatedAt).getTime() - new Date(a.gist.updatedAt).getTime();
           break;
         case 'created':
-          comparison =
-            new Date(b.gist.createdAt).getTime() - new Date(a.gist.createdAt).getTime();
+          comparison = new Date(b.gist.createdAt).getTime() - new Date(a.gist.createdAt).getTime();
           break;
         case 'stars':
           comparison = (b.gist.starred ? 1 : 0) - (a.gist.starred ? 1 : 0);
@@ -613,8 +601,6 @@ export class SearchEngine {
       cacheSize: this.searchCache['cache'].size,
     };
   }
-}
-
 
   /**
    * Log search performance metrics
@@ -657,3 +643,4 @@ export class SearchEngine {
       });
     }
   }
+}

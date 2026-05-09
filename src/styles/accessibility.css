@@ -25,9 +25,8 @@ select:focus-visible,
   outline: var(--spacing-0-5) solid var(--color-accent);
   outline-offset: var(--spacing-0-5);
   box-shadow: 0 0 0 var(--spacing-1) var(--color-accent-subtle);
-  transition:
-    outline-offset var(--motion-duration-fast) var(--motion-easing-smooth),
-    box-shadow var(--motion-duration-fast) var(--motion-easing-smooth);
+  transition: outline-offset var(--motion-duration-fast) var(--motion-easing-smooth), box-shadow
+    var(--motion-duration-fast) var(--motion-easing-smooth);
 }
 
 /* ===== Skip Links ===== */

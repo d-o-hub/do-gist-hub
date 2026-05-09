@@ -14,6 +14,7 @@ vi.mock('../../src/services/db', () => {
 });
 
 vi.mock('../../src/services/security/logger', () => ({
+  redactToken: vi.fn().mockImplementation((t) => 'REDACTED'),
   safeLog: vi.fn(),
   safeError: vi.fn(),
 }));
@@ -66,7 +67,7 @@ describe('Auth Service', () => {
       expect(token).toBeNull();
     });
 
-    it('returns null when legacy token exists but no new format', async () => {
+    it('migrates and returns legacy token when it exists but no new format', async () => {
       vi.mocked(getMetadata).mockImplementation((key: string) => {
         if (key === 'github-pat') return Promise.resolve('legacy-token');
         if (key === 'github-pat-enc') return Promise.resolve(undefined);
@@ -74,7 +75,7 @@ describe('Auth Service', () => {
       });
 
       const token = await getToken();
-      expect(token).toBeNull();
+      expect(token).toBe('legacy-token');
     });
 
     it('decrypts token from new format', async () => {
@@ -88,7 +89,7 @@ describe('Auth Service', () => {
 
       const token = await getToken();
       expect(token).toBe('decrypted-token');
-      expect(decrypt).toHaveBeenCalledWith({ data: 'enc-data', iv: 'iv' });
+      expect(decrypt).toHaveBeenCalledWith('enc-data', 'iv');
     });
 
     it('handles decryption failure gracefully', async () => {

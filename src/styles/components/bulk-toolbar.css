@@ -113,17 +113,17 @@
     gap: var(--spacing-2);
     padding: var(--spacing-2) var(--spacing-3);
   }
-  
+
   .bulk-toolbar-info {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .bulk-toolbar-actions {
     width: 100%;
     justify-content: space-around;
   }
-  
+
   .btn-icon {
     flex: 1;
     max-width: 60px;
@@ -135,7 +135,7 @@
   .bulk-toolbar {
     animation: none;
   }
-  
+
   .btn-icon:hover {
     transform: none;
   }

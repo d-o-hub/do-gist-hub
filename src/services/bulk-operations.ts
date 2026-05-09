@@ -1,12 +1,12 @@
 /**
  * Bulk Operations Service
- * 
+ *
  * Handles bulk actions on multiple gists:
  * - Delete with undo support
  * - Star/Unstar
  * - Export to JSON
  * - Tag management (local-only)
- * 
+ *
  * Features:
  * - Sequential processing with rate limiting (100ms delay)
  * - Partial failure handling with detailed error reporting
@@ -36,7 +36,7 @@ class BulkOperationsService {
   private undoStack: UndoOperation[] = [];
   private readonly MAX_UNDO_STACK = 10;
   private readonly RATE_LIMIT_DELAY = 100; // ms between operations
-  
+
   /**
    * Delete multiple gists with rollback support
    */
@@ -46,18 +46,18 @@ class BulkOperationsService {
       failed: [],
       total: ids.length,
     };
-    
+
     // Store gists for undo
     const gistsToDelete = ids
-      .map(id => gistStore.getGist(id))
+      .map((id) => gistStore.getGist(id))
       .filter((g): g is GistRecord => g !== undefined);
-    
+
     this.pushUndo({
       type: 'delete',
       gists: gistsToDelete,
       timestamp: Date.now(),
     });
-    
+
     // Process deletions sequentially to avoid rate limits
     for (const id of ids) {
       try {
@@ -72,54 +72,51 @@ class BulkOperationsService {
         result.failed.push({ id, error: message });
         safeError(`[BulkOps] Delete failed for ${id}`, err);
       }
-      
+
       // Small delay to avoid rate limiting
       if (result.success.length + result.failed.length < ids.length) {
         await this.delay(this.RATE_LIMIT_DELAY);
       }
     }
-    
+
     return result;
   }
-  
+
   /**
    * Star multiple gists
    */
   async bulkStar(ids: string[]): Promise<BulkOperationResult> {
     return this.bulkToggleStar(ids, true);
   }
-  
+
   /**
    * Unstar multiple gists
    */
   async bulkUnstar(ids: string[]): Promise<BulkOperationResult> {
     return this.bulkToggleStar(ids, false);
   }
-  
+
   /**
    * Toggle star state for multiple gists
    */
-  private async bulkToggleStar(
-    ids: string[], 
-    shouldStar: boolean
-  ): Promise<BulkOperationResult> {
+  private async bulkToggleStar(ids: string[], shouldStar: boolean): Promise<BulkOperationResult> {
     const result: BulkOperationResult = {
       success: [],
       failed: [],
       total: ids.length,
     };
-    
+
     // Store original state for undo
     const gistsToModify = ids
-      .map(id => gistStore.getGist(id))
+      .map((id) => gistStore.getGist(id))
       .filter((g): g is GistRecord => g !== undefined);
-    
+
     this.pushUndo({
       type: shouldStar ? 'star' : 'unstar',
       gists: gistsToModify,
       timestamp: Date.now(),
     });
-    
+
     for (const id of ids) {
       try {
         const gist = gistStore.getGist(id);
@@ -127,13 +124,13 @@ class BulkOperationsService {
           result.failed.push({ id, error: 'Gist not found' });
           continue;
         }
-        
+
         // Only toggle if needed
         if (gist.starred === shouldStar) {
           result.success.push(id);
           continue;
         }
-        
+
         const success = await gistStore.toggleStar(id);
         if (success) {
           result.success.push(id);
@@ -145,33 +142,33 @@ class BulkOperationsService {
         result.failed.push({ id, error: message });
         safeError(`[BulkOps] Star failed for ${id}`, err);
       }
-      
+
       if (result.success.length + result.failed.length < ids.length) {
         await this.delay(this.RATE_LIMIT_DELAY);
       }
     }
-    
+
     return result;
   }
-  
+
   /**
    * Export multiple gists to JSON
    */
   async bulkExport(ids: string[]): Promise<void> {
     try {
       const gists = ids
-        .map(id => gistStore.getGist(id))
+        .map((id) => gistStore.getGist(id))
         .filter((g): g is GistRecord => g !== undefined);
-      
+
       if (gists.length === 0) {
         toast.error('No gists to export');
         return;
       }
-      
+
       const exportData = {
         version: '1.0',
         exportedAt: new Date().toISOString(),
-        gists: gists.map(g => ({
+        gists: gists.map((g) => ({
           id: g.id,
           description: g.description,
           public: g.public,
@@ -181,11 +178,11 @@ class BulkOperationsService {
           starred: g.starred,
         })),
       };
-      
+
       const blob = new Blob([JSON.stringify(exportData, null, 2)], {
         type: 'application/json',
       });
-      
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -194,7 +191,7 @@ class BulkOperationsService {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       toast.success(`Exported ${ids.length} gist${ids.length > 1 ? 's' : ''}`);
     } catch (err) {
       toast.error('Export failed');
@@ -202,7 +199,7 @@ class BulkOperationsService {
       throw err;
     }
   }
-  
+
   /**
    * Add tags to multiple gists (local-only, stored in IndexedDB)
    * Note: This is a placeholder - full tag implementation in Phase 4
@@ -213,7 +210,7 @@ class BulkOperationsService {
       failed: [],
       total: ids.length,
     };
-    
+
     // TODO: Implement tag storage in IndexedDB (Phase 4)
     for (const id of ids) {
       try {
@@ -225,10 +222,10 @@ class BulkOperationsService {
         safeError(`[BulkOps] Tag failed for ${id}`, err);
       }
     }
-    
+
     return result;
   }
-  
+
   /**
    * Undo last bulk operation
    */
@@ -238,14 +235,14 @@ class BulkOperationsService {
       toast.info('Nothing to undo');
       return false;
     }
-    
+
     try {
       switch (operation.type) {
         case 'delete':
           // Restore deleted gists - requires re-sync from GitHub
           toast.info('Undo delete: Re-sync from GitHub to restore gists');
           break;
-          
+
         case 'star':
         case 'unstar':
           // Toggle star state back
@@ -255,14 +252,14 @@ class BulkOperationsService {
           }
           toast.success('Undo successful');
           break;
-          
+
         case 'tag':
           // Remove tags
           // TODO: Implement tag removal (Phase 4)
           toast.success('Undo successful');
           break;
       }
-      
+
       return true;
     } catch (err) {
       toast.error('Undo failed');
@@ -270,28 +267,28 @@ class BulkOperationsService {
       return false;
     }
   }
-  
+
   /**
    * Check if undo is available
    */
   canUndo(): boolean {
     return this.undoStack.length > 0;
   }
-  
+
   /**
    * Get last operation for display
    */
   getLastOperation(): UndoOperation | null {
     return this.undoStack[this.undoStack.length - 1] || null;
   }
-  
+
   /**
    * Clear undo stack
    */
   clearUndoStack(): void {
     this.undoStack = [];
   }
-  
+
   /**
    * Push operation to undo stack
    */
@@ -301,12 +298,12 @@ class BulkOperationsService {
       this.undoStack.shift();
     }
   }
-  
+
   /**
    * Delay helper for rate limiting
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 

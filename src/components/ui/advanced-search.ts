@@ -309,11 +309,13 @@ export class AdvancedSearch extends HTMLElement {
           ).map((opt) => opt.value);
           break;
         case 'dateStart':
-          if (!this.currentFilters.dateRange) this.currentFilters.dateRange = { start: '', end: '' };
+          if (!this.currentFilters.dateRange)
+            this.currentFilters.dateRange = { start: '', end: '' };
           this.currentFilters.dateRange.start = (target as HTMLInputElement).value;
           break;
         case 'dateEnd':
-          if (!this.currentFilters.dateRange) this.currentFilters.dateRange = { start: '', end: '' };
+          if (!this.currentFilters.dateRange)
+            this.currentFilters.dateRange = { start: '', end: '' };
           this.currentFilters.dateRange.end = (target as HTMLInputElement).value;
           break;
         case 'starred':

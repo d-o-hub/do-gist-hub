@@ -32,7 +32,7 @@ Map primitives to meaning:
 }
 ```
 
-Update components to use semantic names. Run `npm run check`.
+Update components to use semantic names. Run `pnpm run check`.
 
 ### Phase 3: Component Tokens (ongoing)
 
@@ -181,7 +181,7 @@ Use all patterns from day one:
 
 After each migration phase:
 
-- [ ] `npm run check` passes
+- [ ] `pnpm run check` passes
 - [ ] Screenshots at 320px, 768px, 1536px match expectations
 - [ ] Offline mode works (simulate in DevTools Network tab)
 - [ ] No console errors

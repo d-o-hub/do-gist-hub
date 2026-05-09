@@ -1,6 +1,6 @@
 /**
  * Selection Store - Manages multi-select state for bulk operations
- * 
+ *
  * Features:
  * - Multi-select with checkboxes
  * - Range selection (Shift+Click)
@@ -23,9 +23,9 @@ class SelectionStore {
     selectionMode: false,
     lastSelectedId: null,
   };
-  
+
   private listeners: SelectionListener[] = [];
-  
+
   /**
    * Toggle selection for a single gist
    */
@@ -38,7 +38,7 @@ class SelectionStore {
     this.state.lastSelectedId = id;
     this.notifyListeners();
   }
-  
+
   /**
    * Select all gists
    */
@@ -47,7 +47,7 @@ class SelectionStore {
     this.state.selectionMode = true;
     this.notifyListeners();
   }
-  
+
   /**
    * Clear all selections
    */
@@ -57,27 +57,27 @@ class SelectionStore {
     this.state.lastSelectedId = null;
     this.notifyListeners();
   }
-  
+
   /**
    * Select a range of gists (Shift+Click)
    */
   selectRange(fromId: string, toId: string, allIds: string[]): void {
     const fromIndex = allIds.indexOf(fromId);
     const toIndex = allIds.indexOf(toId);
-    
+
     if (fromIndex === -1 || toIndex === -1) return;
-    
+
     const start = Math.min(fromIndex, toIndex);
     const end = Math.max(fromIndex, toIndex);
-    
+
     for (let i = start; i <= end; i++) {
       this.state.selectedIds.add(allIds[i]);
     }
-    
+
     this.state.selectionMode = true;
     this.notifyListeners();
   }
-  
+
   /**
    * Toggle selection mode on/off
    */
@@ -88,42 +88,42 @@ class SelectionStore {
     }
     this.notifyListeners();
   }
-  
+
   /**
    * Get array of selected IDs
    */
   getSelectedIds(): string[] {
     return Array.from(this.state.selectedIds);
   }
-  
+
   /**
    * Get count of selected items
    */
   getSelectedCount(): number {
     return this.state.selectedIds.size;
   }
-  
+
   /**
    * Check if a gist is selected
    */
   isSelected(id: string): boolean {
     return this.state.selectedIds.has(id);
   }
-  
+
   /**
    * Check if selection mode is active
    */
   isSelectionMode(): boolean {
     return this.state.selectionMode;
   }
-  
+
   /**
    * Get last selected ID (for range selection)
    */
   getLastSelectedId(): string | null {
     return this.state.lastSelectedId;
   }
-  
+
   /**
    * Subscribe to state changes
    */
@@ -131,15 +131,15 @@ class SelectionStore {
     this.listeners.push(listener);
     listener(this.state);
     return () => {
-      this.listeners = this.listeners.filter(l => l !== listener);
+      this.listeners = this.listeners.filter((l) => l !== listener);
     };
   }
-  
+
   /**
    * Notify all listeners of state change
    */
   private notifyListeners(): void {
-    this.listeners.forEach(l => l(this.state));
+    this.listeners.forEach((l) => l(this.state));
   }
 }
 
