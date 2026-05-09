@@ -9,7 +9,7 @@
 .icon-button {
   transition:
     background-color var(--motion-duration-fast) var(--motion-easing-out),
-    transform 100ms var(--motion-easing-out),
+    transform var(--motion-duration-fast) var(--motion-easing-out),
     box-shadow var(--motion-duration-fast) var(--motion-easing-out);
   will-change: transform;
 }

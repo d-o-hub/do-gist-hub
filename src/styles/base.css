@@ -186,9 +186,9 @@ body {
   border: 1px solid var(--color-border-default);
   cursor: pointer;
   transition:
-    transform 200ms var(--motion-easing-spring),
-    background 200ms ease,
-    border-color 200ms ease;
+    transform var(--motion-duration-normal) var(--motion-easing-spring),
+    background var(--motion-duration-normal) ease,
+    border-color var(--motion-duration-normal) ease;
   gap: var(--spacing-2);
   min-height: 44px;
   min-width: 44px;
@@ -414,9 +414,9 @@ body {
   font-size: var(--font-size-sm);
   font-family: var(--font-body);
   transition:
-    transform 200ms var(--motion-easing-spring),
-    background 200ms ease,
-    border-color 200ms ease;
+    transform var(--motion-duration-normal) var(--motion-easing-spring),
+    background var(--motion-duration-normal) ease,
+    border-color var(--motion-duration-normal) ease;
   min-height: 44px;
   min-width: 44px;
 }
@@ -648,9 +648,9 @@ body {
   color: var(--color-foreground-muted);
   cursor: pointer;
   transition:
-    transform 200ms var(--motion-easing-spring),
-    background 200ms ease,
-    border-color 200ms ease;
+    transform var(--motion-duration-normal) var(--motion-easing-spring),
+    background var(--motion-duration-normal) ease,
+    border-color var(--motion-duration-normal) ease;
   min-height: 44px;
   min-width: 44px;
 }
@@ -760,10 +760,10 @@ body {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   transition:
-    transform 200ms var(--motion-easing-spring),
-    background 200ms ease,
-    border-color 200ms ease,
-    color 200ms ease;
+    transform var(--motion-duration-normal) var(--motion-easing-spring),
+    background var(--motion-duration-normal) ease,
+    border-color var(--motion-duration-normal) ease,
+    color var(--motion-duration-normal) ease;
   min-height: 44px;
   min-width: 44px;
   text-align: left;

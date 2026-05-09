@@ -15,19 +15,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # actions/checkout@v6
 
       - name: Check for gitleaks v3+ release with node24
         id: check
         run: |
           set -euo pipefail
-          LATEST=$(curl -sL "https://api.github.com/repos/gitleaks/gitleaks-action/releases/latest" | jq -r '.tag_name')
+          LATEST=$(curl -sL --fail --max-time 10 --retry 3 "https://api.github.com/repos/gitleaks/gitleaks-action/releases/latest" | jq -r '.tag_name')
+          # Validate LATEST is a semver-like tag
+          if [[ -z "$LATEST" ]] || ! echo "$LATEST" | grep -qE '^v?[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Failed to fetch valid gitleaks-action release tag (got: '$LATEST')"
+            exit 1
+          fi
           echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
           echo "Latest gitleaks-action: $LATEST"
 
           MAJOR=$(echo "$LATEST" | sed -E 's/^v?([0-9]+).*/\1/')
           if [[ "$MAJOR" -ge 3 ]]; then
-            RUNTIME=$(curl -sL "https://raw.githubusercontent.com/gitleaks/gitleaks-action/$LATEST/action.yml" | grep -oP 'using:\s*\K\S+' || echo "unknown")
+            RUNTIME=$(curl -sL --fail --max-time 10 --retry 3 "https://raw.githubusercontent.com/gitleaks/gitleaks-action/$LATEST/action.yml" 2>/dev/null | grep -oP 'using:\s*\K\S+' || echo "unknown")
             echo "Runtime for $LATEST: $RUNTIME"
             if [[ "$RUNTIME" == "node24" ]]; then
               echo "node24_available=true" >> "$GITHUB_OUTPUT"
@@ -40,7 +45,7 @@ jobs:
 
       - name: Open issue when node24 version available
         if: steps.check.outputs.node24_available == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # actions/github-script@v8
         with:
           script: |
             const latest = '${{ steps.check.outputs.latest }}';
