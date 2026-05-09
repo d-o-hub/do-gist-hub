@@ -35,6 +35,12 @@ GitHub Actions deprecated Node.js 20, generating persistent warnings across all 
 - [x] `android-actions/setup-android@v4` confirmed as `node24` runtime
 - [x] All CI jobs pass including Android Debug Build
 
+## Followups Completed
+- [x] Created `deprecated-runtime` GitHub label for audit workflow issue tracking
+- [x] Checked `gitleaks/gitleaks-action` for node24-native version — **blocked**: latest is v2.3.9 (node20), no v3 release available
+- [x] Attempted local Android build — **blocked**: `ANDROID_HOME` not set and Java not installed in this environment
+- [x] Added exception rationale comments to `audit-actions.yml` documenting why each action is skipped
+
 ## Prevention
 - Created `plans/adr-015-ci-node24-android-hardening.md` capturing the decision, tradeoffs, and rollback triggers
 - Updated `AGENTS.md` self-learning rules with CI/CD maintenance patterns
