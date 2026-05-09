@@ -2,13 +2,13 @@
  * GitHub Services Index
  */
 
-export * from './client';
 export * from './auth';
+export * from './client';
 export * from './error-handler';
+export type { RateLimitState } from './rate-limiter';
 export {
   getRateLimitState,
-  isSafeToRequest,
   getTimeUntilReset,
+  isSafeToRequest,
   resetRateLimit,
 } from './rate-limiter';
-export type { RateLimitState } from './rate-limiter';

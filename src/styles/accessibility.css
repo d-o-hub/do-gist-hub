@@ -25,8 +25,9 @@ select:focus-visible,
   outline: var(--spacing-0-5) solid var(--color-accent);
   outline-offset: var(--spacing-0-5);
   box-shadow: 0 0 0 var(--spacing-1) var(--color-accent-subtle);
-  transition: outline-offset var(--motion-duration-fast) var(--motion-easing-smooth), box-shadow
-    var(--motion-duration-fast) var(--motion-easing-smooth);
+  transition:
+    outline-offset var(--motion-duration-fast) var(--motion-easing-smooth),
+    box-shadow var(--motion-duration-fast) var(--motion-easing-smooth);
 }
 
 /* ===== Skip Links ===== */
@@ -54,9 +55,13 @@ select:focus-visible,
   *,
   *::before,
   *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     transition-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     scroll-behavior: auto !important;
   }
 }

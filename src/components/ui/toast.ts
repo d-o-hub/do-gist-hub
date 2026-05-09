@@ -117,7 +117,9 @@ export class ToastManager {
 
   dismissAll(): void {
     const ids = Array.from(this.toasts.keys());
-    ids.forEach((id) => this.dismiss(id));
+    for (const id of ids) {
+      this.dismiss(id);
+    }
   }
 }
 

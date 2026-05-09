@@ -1,0 +1,86 @@
+name: Track Gitleaks Node 24 Upgrade
+
+on:
+  schedule:
+    - cron: '0 10 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    name: Check Gitleaks Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check for gitleaks v3+ release with node24
+        id: check
+        run: |
+          set -euo pipefail
+          LATEST=$(curl -sL "https://api.github.com/repos/gitleaks/gitleaks-action/releases/latest" | jq -r '.tag_name')
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+          echo "Latest gitleaks-action: $LATEST"
+
+          MAJOR=$(echo "$LATEST" | sed -E 's/^v?([0-9]+).*/\1/')
+          if [[ "$MAJOR" -ge 3 ]]; then
+            RUNTIME=$(curl -sL "https://raw.githubusercontent.com/gitleaks/gitleaks-action/$LATEST/action.yml" | grep -oP 'using:\s*\K\S+' || echo "unknown")
+            echo "Runtime for $LATEST: $RUNTIME"
+            if [[ "$RUNTIME" == "node24" ]]; then
+              echo "node24_available=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "node24_available=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "node24_available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open issue when node24 version available
+        if: steps.check.outputs.node24_available == 'true'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const latest = '${{ steps.check.outputs.latest }}';
+            const title = `ci: gitleaks-action ${latest} is node24-native — bump security-scan.yml`;
+            const bodyLines = [
+              '## Gitleaks Node 24 Upgrade Available',
+              '',
+              `A new major version of \`gitleaks/gitleaks-action\` has been released that uses \`node24\`.`,
+              '',
+              `**Latest version:** ${latest}`,
+              '**Current version in repo:** v2.3.9 (node20)',
+              '',
+              '### Action Required',
+              `1. Update \`.github/workflows/security-scan.yml\` to use \`gitleaks/gitleaks-action@${latest}\``,
+              '2. Remove `gitleaks/gitleaks-action` from the exceptions list in `.github/workflows/audit-actions.yml`',
+              '3. Validate YAML syntax',
+              '4. Run quality gate',
+              '5. Push and monitor CI',
+              '',
+              'See ADR-015 and agents-docs/fixes/2026-07-17-ci-node24-migration.md for the full remediation playbook.',
+            ];
+            const body = bodyLines.join('\n');
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'ci,deprecated-runtime',
+            });
+
+            const existing = issues.find(i => i.title === title);
+            if (!existing) {
+              const { data: created } = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['ci', 'deprecated-runtime'],
+              });
+              console.log(`Created issue #${created.number}`);
+            } else {
+              console.log(`Issue already exists: #${existing.number}`);
+            }

@@ -7,8 +7,10 @@
 .primary-btn,
 .secondary-btn,
 .icon-button {
-  transition: background-color var(--motion-duration-fast) var(--motion-easing-out), transform 100ms
-    var(--motion-easing-out), box-shadow var(--motion-duration-fast) var(--motion-easing-out);
+  transition:
+    background-color var(--motion-duration-fast) var(--motion-easing-out),
+    transform 100ms var(--motion-easing-out),
+    box-shadow var(--motion-duration-fast) var(--motion-easing-out);
   will-change: transform;
 }
 
@@ -31,9 +33,10 @@
 .search-input,
 .filename-input,
 .content-editor {
-  transition: border-color var(--motion-duration-fast) var(--motion-easing-out), box-shadow
-    var(--motion-duration-fast) var(--motion-easing-out), background-color
-    var(--motion-duration-fast) var(--motion-easing-out);
+  transition:
+    border-color var(--motion-duration-fast) var(--motion-easing-out),
+    box-shadow var(--motion-duration-fast) var(--motion-easing-out),
+    background-color var(--motion-duration-fast) var(--motion-easing-out);
 }
 
 /* ===== Card Entrance Animation ===== */
@@ -78,7 +81,9 @@
     box-shadow: 0 2px 8px var(--color-accent-glow);
   }
   50% {
-    box-shadow: 0 4px 16px var(--color-accent-glow), 0 0 24px var(--color-accent-subtle);
+    box-shadow:
+      0 4px 16px var(--color-accent-glow),
+      0 0 24px var(--color-accent-subtle);
   }
 }
 
@@ -227,9 +232,13 @@
   *,
   *::before,
   *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     transition-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     scroll-behavior: auto !important;
   }
 
