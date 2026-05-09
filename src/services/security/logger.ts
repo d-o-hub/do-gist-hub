@@ -4,7 +4,7 @@
  * Persists logs to IndexedDB for offline diagnostics.
  */
 
-import { type LogEntry, getDB } from '../db';
+import { getDB, type LogEntry } from '../db';
 
 /**
  * Redact a token, unconditionally returning '[REDACTED]'.

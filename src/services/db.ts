@@ -1,11 +1,12 @@
 import { safeWarn } from './security/logger';
+
 /**
  * IndexedDB Service
  * Offline-first local storage for gists and app data
  */
 
-import { APP } from '@/config/app.config';
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
+import { APP } from '@/config/app.config';
 
 // Schema version
 const DB_VERSION = 3;

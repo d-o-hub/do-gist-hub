@@ -171,7 +171,9 @@ export function render(container: HTMLElement, params?: Record<string, string>):
       const chip = (e.target as HTMLElement).closest('.chip') as HTMLElement;
       if (!chip) return;
 
-      container.querySelectorAll('.chip').forEach((b) => b.classList.remove('active'));
+      for (const b of container.querySelectorAll('.chip')) {
+        b.classList.remove('active');
+      }
       chip.classList.add('active');
       currentFilter = (chip.dataset.filter as Filter) || 'all';
       updateList();

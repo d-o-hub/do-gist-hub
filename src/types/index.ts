@@ -2,13 +2,12 @@
  * Application-wide TypeScript types
  */
 
-export * from './api';
-
 // Re-export database types from db service
 export type {
-  GistRecord,
   GistFile as GistFileRecord,
   GistOwner as GistOwnerRecord,
-  PendingWrite,
+  GistRecord,
   MetadataRecord,
+  PendingWrite,
 } from '../services/db';
+export * from './api';

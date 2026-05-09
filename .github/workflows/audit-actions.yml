@@ -37,7 +37,7 @@ jobs:
             VERSION=$(echo "$ref" | cut -d'@' -f2)
 
             # Skip local/relative paths
-            if [[ "$ACTION" == .* ]] || [[ "$ACTION" == \/* ]]; then
+            if [[ "$ACTION" == .* ]] || [[ "$ACTION" == /* ]]; then
               continue
             fi
 
