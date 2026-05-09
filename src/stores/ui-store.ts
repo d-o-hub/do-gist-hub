@@ -94,7 +94,9 @@ class UIStore {
 
   private notifyListeners(): void {
     const state = { ...this.state };
-    this.listeners.forEach((l) => l(state));
+    for (const l of this.listeners) {
+      l(state);
+    }
   }
 }
 

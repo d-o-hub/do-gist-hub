@@ -6,9 +6,9 @@
 import type { PendingWrite } from '../../types';
 import type { CreateGistRequest, GitHubGist, UpdateGistRequest } from '../../types/api';
 import {
-  type GistRecord,
   deleteGist as dbDeleteGist,
   queueWrite as dbQueueWrite,
+  type GistRecord,
   getGist,
   getPendingWrites,
   removePendingWrite,

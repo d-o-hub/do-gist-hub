@@ -1,8 +1,8 @@
 import {
-  type GistRecord,
   deleteGist as dbDeleteGist,
   getAllGists as dbGetAllGists,
   saveGist as dbSaveGist,
+  type GistRecord,
   saveGists,
 } from '../services/db';
 import * as GitHub from '../services/github/client';
@@ -10,9 +10,9 @@ import type { AppError } from '../services/github/error-handler';
 import networkMonitor from '../services/network/offline-monitor';
 import { safeError } from '../services/security/logger';
 import {
-  type GistConflict,
   clearConflict,
   detectConflict,
+  type GistConflict,
   getConflicts,
   resolveConflict,
   storeConflicts,
@@ -447,7 +447,9 @@ class GistStore {
   }
 
   private notifyListeners(): void {
-    this.listeners.forEach((l) => l(this.gists));
+    for (const l of this.listeners) {
+      l(this.gists);
+    }
   }
 
   // BOLT: Persistent cache for parsed timestamps to maximize sorting efficiency

@@ -6,8 +6,7 @@
 import { motionTokens } from '../motion/motion';
 import { radius } from '../primitive/radius';
 import { spacing } from '../primitive/spacing';
-import { fontSize } from '../primitive/typography';
-import { fontWeight } from '../primitive/typography';
+import { fontSize, fontWeight } from '../primitive/typography';
 
 export const buttonTokens = {
   // Padding by size

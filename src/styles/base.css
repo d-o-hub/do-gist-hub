@@ -185,8 +185,10 @@ body {
   font-family: var(--font-body);
   border: 1px solid var(--color-border-default);
   cursor: pointer;
-  transition: transform 200ms var(--motion-easing-spring), background 200ms ease, border-color 200ms
-    ease;
+  transition:
+    transform var(--motion-duration-normal) var(--motion-easing-spring),
+    background var(--motion-duration-normal) ease,
+    border-color var(--motion-duration-normal) ease;
   gap: var(--spacing-2);
   min-height: 44px;
   min-width: 44px;
@@ -301,8 +303,9 @@ body {
   gap: var(--space-4);
   container-type: inline-size;
   container-name: gist-card;
-  transition: transform var(--motion-duration-base) var(--motion-easing), background-color
-    var(--motion-duration-base) var(--motion-easing);
+  transition:
+    transform var(--motion-duration-base) var(--motion-easing),
+    background-color var(--motion-duration-base) var(--motion-easing);
 }
 
 /* Container Query: Larger card layout for wider containers */
@@ -410,8 +413,10 @@ body {
   cursor: pointer;
   font-size: var(--font-size-sm);
   font-family: var(--font-body);
-  transition: transform 200ms var(--motion-easing-spring), background 200ms ease, border-color 200ms
-    ease;
+  transition:
+    transform var(--motion-duration-normal) var(--motion-easing-spring),
+    background var(--motion-duration-normal) ease,
+    border-color var(--motion-duration-normal) ease;
   min-height: 44px;
   min-width: 44px;
 }
@@ -642,8 +647,10 @@ body {
   border: 1px solid transparent;
   color: var(--color-foreground-muted);
   cursor: pointer;
-  transition: transform 200ms var(--motion-easing-spring), background 200ms ease, border-color 200ms
-    ease;
+  transition:
+    transform var(--motion-duration-normal) var(--motion-easing-spring),
+    background var(--motion-duration-normal) ease,
+    border-color var(--motion-duration-normal) ease;
   min-height: 44px;
   min-width: 44px;
 }
@@ -752,8 +759,11 @@ body {
   font-family: var(--font-body);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  transition: transform 200ms var(--motion-easing-spring), background 200ms ease, border-color 200ms
-    ease, color 200ms ease;
+  transition:
+    transform var(--motion-duration-normal) var(--motion-easing-spring),
+    background var(--motion-duration-normal) ease,
+    border-color var(--motion-duration-normal) ease,
+    color var(--motion-duration-normal) ease;
   min-height: 44px;
   min-width: 44px;
   text-align: left;
