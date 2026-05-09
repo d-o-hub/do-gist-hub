@@ -17,7 +17,9 @@ Additionally, the Android Debug APK build step failed intermittently with exit c
 
 ### 1. Migrate All Actions to Node 24-Native Major Versions
 
-Audit every third-party and official action across `.github/workflows/ci.yml`, `.github/workflows/cd.yml`, and `.github/workflows/release.yml`. Bump each to the lowest major version that declares `using: node24` in its `action.yml`.
+Audit every third-party and official action across all workflow files. Bump each to the lowest major version that declares `using: node24` in its `action.yml`.
+
+**Core workflows (ci.yml, cd.yml, release.yml):**
 
 | Action | Old | New | Node Runtime |
 |--------|-----|-----|--------------|
@@ -30,6 +32,17 @@ Audit every third-party and official action across `.github/workflows/ci.yml`, `
 | `actions/deploy-pages` | `@v4` | `@v5` | `node24` |
 | `actions/configure-pages` | `@v5` | `@v6` | `node24` |
 | `softprops/action-gh-release` | `@v2` | `@v3` | `node24` |
+
+**Additional workflows (followup pass):**
+
+| Action | Old | New | Workflow |
+|--------|-----|-----|----------|
+| `actions/stale` | `@v9.1.0` | `@v10.2.0` | `stale.yml` |
+| `actions/labeler` | `@v5.0.0` | `@v6.1.0` | `labeler.yml` |
+| `dependabot/fetch-metadata` | `@v2.3.0` | `@v3.1.0` | `dependabot-auto-merge.yml` |
+| `actions/checkout` (pinned) | `@v4.2.2` | `@v6` | `commitlint.yml`, `yaml-lint.yml`, `version-propagation.yml`, `cleanup.yml`, `dependabot-auto-merge.yml` |
+| `pnpm/action-setup` (pinned) | `@v4` | `@v6` | `commitlint.yml`, `security-scan.yml` |
+| `actions/setup-node` (pinned) | `@v4.2.0` | `@v6` | `commitlint.yml`, `security-scan.yml` |
 
 Verification method: `curl -s https://raw.githubusercontent.com/{owner}/{repo}/{tag}/action.yml | grep "using:"`
 
@@ -58,6 +71,15 @@ Gradle 8.2.1 predates Java 21 GA and lacks full bytecode instrumentation support
 
 Capacitor Android 8.3.2 references `Build.VERSION_CODES.VANILLA_ICE_CREAM` (Android 15 / API 35). The CI `setup-android` step and `android/variables.gradle` must install and declare `compileSdkVersion = 35` and `targetSdkVersion = 35`.
 
+Additionally, AGP was bumped from `8.2.1` to `8.3.2` in `android/build.gradle` for compatibility with Gradle 8.5, and explicit `compileOptions` were added to `android/app/build.gradle`:
+
+```groovy
+compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+}
+```
+
 ### 6. Kotlin Stdlib Duplicate-Class Exclusion
 
 Capacitor's transitive dependency tree pulls in both `kotlin-stdlib:1.8.22` (which merged the JDK7/JDK8 artifacts) and older `kotlin-stdlib-jdk7:1.6.21` / `kotlin-stdlib-jdk8:1.6.21`. This causes `Duplicate class` errors during `checkDebugDuplicateClasses`. The fix is to exclude the legacy JDK7/JDK8 modules in `android/app/build.gradle`:
@@ -73,9 +95,18 @@ configurations.all {
 
 Append `--stacktrace` to all `./gradlew assembleDebug` invocations in CI so future failures emit actionable diagnostics without requiring manual log retrieval.
 
-### 4. Build Timeouts
+### 8. Build Timeouts
 
 Add `timeout-minutes: 30` to the `android-debug-build` job. Gradle network dependency resolution can hang indefinitely; the default 6-hour runner timeout is excessive for a debug APK build.
+
+### 9. Monthly Action Runtime Audit
+
+Created `.github/workflows/audit-actions.yml` — a scheduled monthly workflow that scans all `uses:` references across `.github/workflows/`, fetches each action's `action.yml`, and flags any action still using `node16` or `node20`. On failure, it opens/updates a GitHub issue with a remediation checklist.
+
+**Known exceptions (documented in workflow comments):**
+- `gitleaks/gitleaks-action` — latest v2.3.9 still uses `node20`; no v3 release available
+- `ludeeus/action-shellcheck` — docker-based action, no Node runtime
+- `wagoid/commitlint-github-action` — docker-based action, no Node runtime
 
 ## Tradeoffs
 
@@ -126,8 +157,9 @@ Add `timeout-minutes: 30` to the `android-debug-build` job. Gradle network depen
 - `.github/workflows/release.yml` — tagged release with APK artifact
 - `android/variables.gradle` — `compileSdkVersion = 35`, `targetSdkVersion = 35`
 - `android/gradle/wrapper/gradle-wrapper.properties` — `gradle-8.5-all.zip`
-- `android/app/build.gradle` — Kotlin stdlib exclusions
+- `android/app/build.gradle` — Kotlin stdlib exclusions, `compileOptions`
 - `agents-docs/fixes/2026-07-17-ci-node24-migration.md` — fix verification record
+- `.github/workflows/audit-actions.yml` — monthly Node runtime audit
 
 ---
 

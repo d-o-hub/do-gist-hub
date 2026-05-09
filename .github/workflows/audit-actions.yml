@@ -24,6 +24,10 @@ jobs:
 
           DEPRECATED=""
           EXCEPTIONS="gitleaks/gitleaks-action ludeeus/action-shellcheck wagoid/commitlint-github-action"
+          # EXCEPTION RATIONALE:
+          #   gitleaks/gitleaks-action: latest is v2.3.9 (node20); no v3 release available yet
+          #   ludeeus/action-shellcheck: docker-based action, no Node runtime
+          #   wagoid/commitlint-github-action: docker-based action, no Node runtime
 
           # Extract all uses: lines, deduplicate
           ACTIONS=$(grep -rhoP 'uses:\s+\K[^/\s]+/[^@\s]+@[^\s]+' .github/workflows/ || true)
