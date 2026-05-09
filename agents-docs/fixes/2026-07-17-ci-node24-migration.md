@@ -20,7 +20,11 @@ GitHub Actions deprecated Node.js 20, generating persistent warnings across all 
 - `softprops/action-gh-release@v2` → `@v3`
 
 ### Android Build Hardening
-- Added `android-actions/setup-android@v4` with `platforms;android-34 build-tools;34.0.0` to `ci.yml` and `release.yml`
+- Added `android-actions/setup-android@v4` with `platforms;android-35 build-tools;35.0.0` to `ci.yml` and `release.yml`
+- Bumped CI JDK from 17 → 21 (`actions/setup-java@v5` with `java-version: '21'`)
+- Upgraded Gradle wrapper from 8.2.1 → 8.5 for Java 21 ASM bytecode instrumentation support
+- Bumped `compileSdkVersion` and `targetSdkVersion` from 34 → 35 in `android/variables.gradle`
+- Added Kotlin stdlib exclusions (`kotlin-stdlib-jdk7`, `kotlin-stdlib-jdk8`) in `android/app/build.gradle`
 - Added `--stacktrace` to `./gradlew assembleDebug` for diagnostic output
 - Added `timeout-minutes: 30` to the `android-debug-build` job
 - Removed hardcoded `ANDROID_HOME` env variable; `setup-android` configures the SDK path correctly
@@ -29,9 +33,10 @@ GitHub Actions deprecated Node.js 20, generating persistent warnings across all 
 - [x] Python `yaml.safe_load` validates all three workflow files
 - [x] `curl` verification confirms all bumped actions use `node24` (or `composite` where applicable)
 - [x] `android-actions/setup-android@v4` confirmed as `node24` runtime
-- [x] No unstyled elements or layout regressions (not applicable — workflow-only change)
+- [x] All CI jobs pass including Android Debug Build
 
 ## Prevention
 - Created `plans/adr-015-ci-node24-android-hardening.md` capturing the decision, tradeoffs, and rollback triggers
 - Updated `AGENTS.md` self-learning rules with CI/CD maintenance patterns
 - Updated `agents-docs/SUMMARY.md` with CI version-audit checklist
+- Documented Java 21 bytecode / Gradle ASM compatibility requirement
