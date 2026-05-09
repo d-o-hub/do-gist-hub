@@ -20,6 +20,13 @@ This directory serves as the persistent memory and self-learning database for AI
 5. **Offline Dynamic Imports**: Preload modules via `page.evaluate()` before going offline
 6. **Empty Element Visibility**: Playwright treats empty elements as hidden; always render inner content
 
+### CI/CD Maintenance (Node Runtime Compatibility)
+1. **Action Version Audit**: Before any CI change, verify the target action's Node runtime via `curl -s https://raw.githubusercontent.com/{owner}/{repo}/{tag}/action.yml | grep "using:"`. Only use versions that declare `node24` (or `composite`).
+2. **Android SDK Explicit Setup**: Never rely on implicit `ubuntu-latest` Android SDK state. Always add `android-actions/setup-android@v4` with platform/build-tools matching `compileSdkVersion`.
+3. **Gradle Diagnostics in CI**: Append `--stacktrace` to all `./gradlew` commands in CI workflows so failures are self-diagnosing.
+4. **Build Timeouts**: Add `timeout-minutes` to any Gradle or long-running build job to prevent hung runners from burning minutes.
+5. **Runner Env Fallbacks**: Do not hardcode `ANDROID_HOME` when `setup-android` is present; let the action configure the SDK path.
+
 ### Code Quality (DeepSource/CI)
 1. **Inline skipcq Annotations**: Use `// skipcq: JS-XXXX` directly above lines
 2. **No `any` Types**: Avoid `any` — use proper generics or `unknown` with type guards
@@ -35,5 +42,5 @@ This directory serves as the persistent memory and self-learning database for AI
 - **Green CI**: All quality gates pass — typecheck, lint, format, Playwright tests
 - **Visual Validation**: All 3 breakpoints verified for zero overflow and correct nav patterns
 - **DeepSource Config**: Created `.deepsource.toml` with runtime_version=24 and rule disables for JS conflicts
-- **Node.js 24 Ready**: CI uses `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true`
+- **Node.js 24 Native**: All workflow actions bumped to node24-native major versions; Android CI hardened with explicit SDK setup and Gradle diagnostics
 - **Documentation Updated**: README v0.2.0, AGENTS.md self-learning rules, SUMMARY.md comprehensive learnings
