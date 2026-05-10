@@ -39,6 +39,9 @@
     "@capacitor/android": "^8.3.2",
     "@capacitor/cli": "^8.3.2",
     "@capacitor/core": "^8.3.2",
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
+    "@fontsource/anton": "^5.2.7",
     "idb": "^8.0.3",
     "web-vitals": "^5.2.0"
   },

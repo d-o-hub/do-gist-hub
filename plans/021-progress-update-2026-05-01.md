@@ -19,12 +19,12 @@ Since the swarm analysis on 2026-04-28 (Plan 019) and Phase A completion (ADR-02
 - **Test infrastructure transformed** — Vitest unit test runner wired, 10 unit test files covering auth, crypto, sync queue, security, and DOM
 - **Architecture debt eliminated** — routes extracted, reactive stores added, sync queue conflict checks implemented
 
-### Remaining v1 Gaps (3%)
+### Remaining v1 Gaps (3%) → All Resolved as of 2026-05-10
 
-- ADR-010 (build-time `sw.js` generation from template)
-- Container query infrastructure is present but unused
-- 3 hardcoded `rgba()` values in `conflicts.css`
-- 4 visual regression tests still marked `test.fixme`
+- ~~ADR-010 (build-time `sw.js` generation from template)~~ ✅ Implemented (`swGeneratorPlugin()` in `vite.config.ts`)
+- ~~Container query infrastructure is present but unused~~ ✅ Implemented (2 `@container` rules in `base.css`)
+- ~~3 hardcoded `rgba()` values in `conflicts.css`~~ ✅ Fixed (all values now use tokens)
+- ~~4 visual regression tests still marked `test.fixme`~~ ✅ Resolved or replaced with validating tests
 
 ---
 

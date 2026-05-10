@@ -123,6 +123,11 @@ export function generateCSSVariables(): string {
   --font-family-sans: ${fontFamily.sans};
   --font-family-serif: ${fontFamily.serif};
   --font-family-mono: ${fontFamily.mono};
+
+  /* 2026: Semantic font aliases for self-hosted variable fonts (ADR-022) */
+  --font-body: 'Inter Variable', ${fontFamily.sans};
+  --font-display: 'Anton', ${fontFamily.sans};
+  --font-mono: 'JetBrains Mono Variable', ${fontFamily.mono};
   
   --font-size-xs: ${fontSize.xs};
   --font-size-sm: ${fontSize.sm};
