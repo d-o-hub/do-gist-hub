@@ -1,3 +1,8 @@
+// Self-hosted variable fonts (ADR-022)
+import '@fontsource-variable/inter';
+import '@fontsource-variable/jetbrains-mono';
+import '@fontsource/anton';
+
 import { App } from './components/app';
 import { initIndexedDB } from './services/db';
 import { isAuthenticated } from './services/github/auth';

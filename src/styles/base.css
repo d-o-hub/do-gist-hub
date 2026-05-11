@@ -41,7 +41,7 @@ body {
   min-height: 100dvh;
   background-color: var(--color-bg);
   color: var(--color-text);
-  font-family: var(--font-body, "Inter", "Helvetica Neue", sans-serif);
+  font-family: var(--font-body, "Inter Variable", "Helvetica Neue", sans-serif);
   font-size: var(--text-base);
   line-height: var(--line-height-normal);
   -webkit-font-smoothing: antialiased;

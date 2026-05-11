@@ -81,14 +81,8 @@ test.describe('UI Modernization - Implementation Verification', () => {
         return found;
       });
 
-      // Container queries are set up but @container rules may not exist yet
-      // This is expected if ADR-022 bento grid hasn't been implemented
-      if (!hasContainerRules) {
-        test.info().annotations.push({
-          type: 'warning',
-          description: '@container rules not found - ADR-022 bento grid may need implementation',
-        });
-      }
+      // Container queries implemented (ADR-022) — verify they exist
+      expect(hasContainerRules).toBe(true);
     }
   });
 

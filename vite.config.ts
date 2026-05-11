@@ -44,9 +44,9 @@ function cspPlugin(): Plugin {
   const csp = [
     "default-src 'self'",
     "script-src 'self'",
-    "style-src 'self' blob: https://fonts.googleapis.com",
+    "style-src 'self' blob:",
     "img-src 'self' data: https: blob:",
-    "font-src 'self' https://fonts.gstatic.com",
+    "font-src 'self'",
     "connect-src 'self' https://api.github.com",
     "media-src 'self'",
     "object-src 'none'",
