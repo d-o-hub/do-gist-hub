@@ -38,6 +38,7 @@ export class CommandPalette {
 
     this.container = document.createElement('div');
     this.container.className = 'command-palette';
+    this.container.setAttribute('data-testid', 'command-palette');
     this.container.setAttribute('role', 'combobox');
     this.container.setAttribute('aria-expanded', 'false');
     this.container.setAttribute('aria-haspopup', 'listbox');

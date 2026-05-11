@@ -11,21 +11,6 @@ function createFileRow(id: number, container: HTMLElement): HTMLElement {
   const div = document.createElement('div');
   div.className = 'file-entry';
   div.innerHTML = `
-    <div class="file-entry-header">
-      <div class="form-group">
-        <label class="form-label" for="gist-filename-${id}">Filename</label>
-        <input type="text" id="gist-filename-${id}" class="form-input gist-filename" placeholder="e.g. index.js" required>
-      </div>
-      <button type="button" class="btn btn-ghost btn-remove-file" data-file-id="${id}">
-          REMOVE
-        </button>
-    </div>
-    <div class="form-group">
-      <label class="form-label" for="gist-content-${id}">Content</label>
-      <textarea id="gist-content-${id}" class="form-textarea gist-content" placeholder="File content..." required></textarea>
-    </div>
-  `;
-  div.innerHTML = `
     <div class="flex-row gap-2 flex-end">
       <div class="form-group flex-1 mb-0">
         <label class="form-label" for="gist-filename-${id}">Filename</label>
@@ -35,9 +20,9 @@ function createFileRow(id: number, container: HTMLElement): HTMLElement {
           REMOVE
         </button>
     </div>
-    <div class="form-group" style="margin-bottom: 0;">
+    <div class="form-group mb-0">
       <label class="form-label" for="gist-content-${id}">Content</label>
-      <textarea id="gist-content-${id}" class="form-textarea gist-content" placeholder="File content..." required style="min-height: 160px;"></textarea>
+      <textarea id="gist-content-${id}" class="form-textarea gist-content gist-content-minh" placeholder="File content..." required></textarea>
     </div>
   `;
 
