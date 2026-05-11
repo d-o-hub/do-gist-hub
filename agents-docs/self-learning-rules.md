@@ -37,11 +37,14 @@
 | `html_unstyled_button` | Button without CSS class | High |
 | `ts_noStaticOnlyClass` | Class with only static members (refactor to object literal) | Medium |
 | `commit_footer_max_length` | Commit footer/body line exceeds 100 chars (commitlint default) | Medium |
+| `commit_subject_case` | Conventional commit subjects must be lowercase; uppercase acronyms (PWA, CSS) fail `subject-case` rule | High |
 | `idb_boolean_index_key` | IndexedDB schema indexes boolean properties, but TS DOM `IDBValidKey` excludes boolean | Medium |
 | `css_class_rename_breakage` | Changing a CSS class name without updating all selectors (Playwright, CSS, JS) | High |
 | `css_duplicate_class_attr` | Duplicate `class="..."` attributes in template literals — browsers ignore the second | High |
 | `css_scroll_timeline_scope` | `animation-timeline: scroll()` only works on elements that themselves scroll; use `scroll(root)` or `view()` for parent-scrolled effects | Medium |
 | `biome_important_in_css` | Biome CSS linter warns on `!important` in utility classes; prefer specificity or avoid the pattern | Low |
+| `biome_format_double_write` | `pnpm run format` already includes `--write`; passing `-- --write` causes Biome to treat it as a file path and crash | Medium |
+| `toast_api_positional` | `ToastManager` methods use positional args `(message, durationMs?, action?)` not an options object | Medium |
 
 ## Autonomous Optimization
 

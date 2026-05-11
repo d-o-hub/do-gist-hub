@@ -78,19 +78,32 @@ Delivered ADR-022 backlog items via PR #149:
 - Export/import UI — Already present in `settings.ts` with `exportAllGists`, `importGists`, `exportData` buttons
 - `lifecycle.cleanupRoute()` — Called in `app.ts` `navigate()` before route switch
 
-## P2/P3 Backlog
-See full gap analysis for bento grid, spring physics, scroll-driven animations, CSS token migration, context-aware theming, pagination UI, revision history UI.
+## Cleanup Batch (PR #150)
+Addressed remaining P0 gaps found during comprehensive analysis:
 
-## P2/P3 Backlog
-See full gap analysis for bento grid, spring physics, scroll-driven animations, CSS token migration, context-aware theming, pagination UI, revision history UI.
+- **PWA update notification** — Replaced placeholder `safeLog` in `register-sw.ts` with real `toast.info()` including Refresh action button. Added `ToastAction` interface and `action?` parameter to all `ToastManager` variant methods.
+- **Dead code removal** — Removed double `innerHTML` assignment in `create.ts` file row builder.
+- **Remaining inline styles** — Replaced hardcoded `style="..."` in `create.ts`, `offline.ts` with utility classes (`.mb-0`, `.gist-content-minh`, `.text-center`).
+- **Testability** — Added `data-testid="command-palette"` to command palette container for Playwright selectors.
+- **CSS** — Added `.toast-action` styles to `base.css` using token-driven values.
 
-## Files Changed
-- `src/main.ts` — Import + call `initGlobalErrorHandling()`
-- `src/components/app.ts` — Import `lifecycle`, call `cleanupRoute()` on navigation
-- `src/components/ui/error-boundary.ts` — Class → object literal refactor
-- `src/components/ui/empty-state.ts` — Class → object literal refactor
+## Learnings Captured
+- Commit subjects must be lowercase (commitlint `subject-case` rule)
+- `pnpm run format` already includes `--write`; don't pass `-- --write`
+- `ToastManager` uses positional args `(message, durationMs?, action?)` not an options object
+
+## Files Changed (PR #150)
+- `src/services/pwa/register-sw.ts` — Toast notification with action button
+- `src/components/ui/toast.ts` — `ToastAction` support
+- `src/components/ui/command-palette.ts` — `data-testid`
+- `src/routes/create.ts` — Dead code removal, utility classes
+- `src/routes/offline.ts` — Utility class
+- `src/styles/base.css` — `.toast-action`, `.text-center`, `.gist-content-minh`
 
 ## Validation
 - `pnpm run typecheck` — ✅ clean
-- `pnpm run lint` — ✅ clean (0 errors, 78 files)
+- `pnpm run lint` — ✅ clean (0 errors, 77 files)
+- `pnpm run build` — ✅ success
+- `pnpm run test:unit` — ✅ 130 tests passed
 - `./scripts/quality_gate.sh` — ✅ passed
+- CI (PR #150) — ✅ 13 checks passed including Android Debug Build
