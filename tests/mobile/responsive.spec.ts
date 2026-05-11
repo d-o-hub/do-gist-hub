@@ -34,9 +34,9 @@ test.describe('Mobile Responsive', () => {
       const bottomNav = page.locator('[data-testid="bottom-nav"]');
       await expect(bottomNav).toBeVisible();
 
-      // Should have 4 navigation items
+      // Should have 5 navigation items
       const navItems = bottomNav.locator('.nav-item');
-      await expect(navItems).toHaveCount(4);
+      await expect(navItems).toHaveCount(5);
     });
   }
 

@@ -5,6 +5,7 @@
 
 import { bindCardEvents, renderCard } from '../components/gist-card';
 import { EmptyState } from '../components/ui/empty-state';
+import { Skeleton } from '../components/ui/skeleton';
 import { sanitizeHtml } from '../services/security';
 import gistStore from '../stores/gist-store';
 
@@ -62,18 +63,7 @@ export function render(container: HTMLElement, params?: Record<string, string>):
 
   function renderGistList(): string {
     if (gistStore.getLoading() && gistStore.getGists().length === 0) {
-      return Array(3)
-        .fill('')
-        .map(
-          () => `
-        <div class="gist-card skeleton">
-          <div class="loading-skeleton" style="height:20px;width:80%;margin-bottom:12px;"></div>
-          <div class="loading-skeleton" style="height:14px;width:60%;margin-bottom:8px;"></div>
-          <div class="loading-skeleton" style="height:12px;width:40%;"></div>
-        </div>
-      `
-        )
-        .join('');
+      return Skeleton.renderList(3);
     }
 
     let gists = gistStore.filterGists(

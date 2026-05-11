@@ -13,6 +13,7 @@ import { withViewTransition } from '../utils/view-transitions';
 import { bottomSheet } from './ui/bottom-sheet';
 import { commandPalette } from './ui/command-palette';
 import { type NavRailRoute, navRail } from './ui/nav-rail';
+import { RouteBoundary } from './ui/route-boundary';
 
 type Route = 'home' | 'starred' | 'create' | 'settings' | 'offline' | 'detail' | 'conflicts';
 
@@ -119,54 +120,68 @@ export class App {
 
       switch (route) {
         case 'home': {
-          const { render } = await import('../routes/home');
-          render(main as HTMLElement, {
-            filter: 'all',
-            sort: savedSort,
-            searchQuery: '',
+          await RouteBoundary.wrap(main as HTMLElement, 'home', async () => {
+            const { render } = await import('../routes/home');
+            render(main as HTMLElement, {
+              filter: 'all',
+              sort: savedSort,
+              searchQuery: '',
+            });
           });
           break;
         }
         case 'starred': {
-          const { render } = await import('../routes/home');
-          render(main as HTMLElement, {
-            filter: 'starred',
-            sort: savedSort,
-            searchQuery: '',
+          await RouteBoundary.wrap(main as HTMLElement, 'starred', async () => {
+            const { render } = await import('../routes/home');
+            render(main as HTMLElement, {
+              filter: 'starred',
+              sort: savedSort,
+              searchQuery: '',
+            });
           });
           break;
         }
         case 'create': {
-          createRoute.render(main as HTMLElement);
+          await RouteBoundary.wrap(main as HTMLElement, 'create', () => {
+            createRoute.render(main as HTMLElement);
+          });
           break;
         }
         case 'settings': {
-          const { render } = await import('../routes/settings');
-          await render(main as HTMLElement, {
-            currentTheme: document.documentElement.getAttribute('data-theme') || 'auto',
+          await RouteBoundary.wrap(main as HTMLElement, 'settings', async () => {
+            const { render } = await import('../routes/settings');
+            await render(main as HTMLElement, {
+              currentTheme: document.documentElement.getAttribute('data-theme') || 'auto',
+            });
           });
           break;
         }
         case 'offline': {
-          await offlineRoute.render(main as HTMLElement);
+          await RouteBoundary.wrap(main as HTMLElement, 'offline', async () => {
+            await offlineRoute.render(main as HTMLElement);
+          });
           break;
         }
         case 'detail': {
-          const { render } = await import('../routes/gist-detail');
-          render(main as HTMLElement, { gistId: this.currentGistId || '' });
+          await RouteBoundary.wrap(main as HTMLElement, 'detail', async () => {
+            const { render } = await import('../routes/gist-detail');
+            render(main as HTMLElement, { gistId: this.currentGistId || '' });
+          });
           break;
         }
         case 'conflicts': {
-          (main as HTMLElement).innerHTML = '<div id="conflict-resolution-container"></div>';
-          const conflictContainer = (main as HTMLElement).querySelector(
-            '#conflict-resolution-container'
-          );
-          if (conflictContainer instanceof HTMLElement) {
-            const { loadConflictResolution } = await import('./conflict-resolution');
-            await loadConflictResolution(conflictContainer, () => {
-              window.dispatchEvent(new CustomEvent('app:sync-change'));
-            });
-          }
+          await RouteBoundary.wrap(main as HTMLElement, 'conflicts', async () => {
+            (main as HTMLElement).innerHTML = '<div id="conflict-resolution-container"></div>';
+            const conflictContainer = (main as HTMLElement).querySelector(
+              '#conflict-resolution-container'
+            );
+            if (conflictContainer instanceof HTMLElement) {
+              const { loadConflictResolution } = await import('./conflict-resolution');
+              await loadConflictResolution(conflictContainer, () => {
+                window.dispatchEvent(new CustomEvent('app:sync-change'));
+              });
+            }
+          });
           break;
         }
       }
@@ -208,6 +223,11 @@ export class App {
                   <span>Sync Status</span>
                 </button>
               </li>
+              <li role="none">
+                <button role="menuitem" class="sidebar-item ${this.currentRoute === 'conflicts' ? 'active' : ''}" data-route="conflicts" data-testid="nav-conflicts" ${this.currentRoute === 'conflicts' ? 'aria-current="page"' : ''}>
+                  <span>Conflicts</span>
+                </button>
+              </li>
             </ul>
           </div>
           <div class="nav-section nav-section-system">
@@ -246,6 +266,9 @@ export class App {
           </button>
           <button class="nav-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" data-testid="nav-create" ${this.currentRoute === 'create' ? 'aria-current="page"' : ''}>
             <span class="nav-label">Create</span>
+          </button>
+          <button class="nav-item ${this.currentRoute === 'conflicts' ? 'active' : ''}" data-route="conflicts" data-testid="nav-conflicts" ${this.currentRoute === 'conflicts' ? 'aria-current="page"' : ''}>
+            <span class="nav-label">Conflicts</span>
           </button>
           <button class="nav-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" data-testid="nav-offline" ${this.currentRoute === 'offline' ? 'aria-current="page"' : ''}>
             <span class="nav-label">Offline</span>
@@ -292,6 +315,9 @@ export class App {
           <div class="mobile-menu-section-title">Offline</div>
           <button class="mobile-menu-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" role="menuitem" ${this.currentRoute === 'offline' ? 'aria-current="page"' : ''}>
             Sync Status
+          </button>
+          <button class="mobile-menu-item ${this.currentRoute === 'conflicts' ? 'active' : ''}" data-route="conflicts" role="menuitem" ${this.currentRoute === 'conflicts' ? 'aria-current="page"' : ''}>
+            Conflicts
           </button>
         </div>
         <div class="mobile-menu-section">
