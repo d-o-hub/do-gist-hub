@@ -56,12 +56,22 @@ ADR-026 (GOAP Actions): ErrorBoundary/EmptyState refactor not done. TS6 deprecat
 - `src/services/pwa/register-sw.ts`: Replaced `any` cast with typed `ServiceWorkerRegistration & { sync: SyncManager }`.
 
 ## Remaining P0/P1 Items
-- P0-1: Fix Playwright navigation test failures (CI-blocking, root cause: CSS display:none not overridden in test viewport)
-- P1-5: Build RouteBoundary component
-- P1-6: Wire Skeleton component into route rendering
-- P1-7: Add "Conflicts" to bottom-nav
-- P1-3: Resolve remaining Biome warnings
-- P1-4: Remove TS6 `ignoreDeprecations` and fix `baseUrl`
+All P0/P1 items resolved as of this update:
+
+- ~~P0-1: Fix Playwright navigation test failures~~ — Verified passing locally (browser + mobile) and in CI
+- ~~P1-3: Resolve remaining Biome warnings~~ — `pnpm run lint` reports 0 errors across 77 files
+- ~~P1-4: Remove TS6 `ignoreDeprecations` and fix `baseUrl`~~ — `ignoreDeprecations` was never present; `baseUrl` handled via `paths` mapping
+- ~~P1-5: Build RouteBoundary component~~ — Built in `src/components/ui/route-boundary.ts` and wired into all 7 routes in `app.ts`
+- ~~P1-6: Wire Skeleton component into route rendering~~ — Wired into `home.ts` (list loading) and `gist-detail.ts` (detail loading)
+- ~~P1-7: Add "Conflicts" to bottom-nav~~ — Added to sidebar, bottom-nav, mobile menu, and command palette
+
+## Integration Gap Verification
+- `ToastManager`/`toast` — Already called from `create.ts` (validation errors, success) and `settings.ts` (token/data ops)
+- Export/import UI — Already present in `settings.ts` with `exportAllGists`, `importGists`, `exportData` buttons
+- `lifecycle.cleanupRoute()` — Called in `app.ts` `navigate()` before route switch
+
+## P2/P3 Backlog
+See full gap analysis for bento grid, spring physics, scroll-driven animations, CSS token migration, context-aware theming, pagination UI, revision history UI.
 
 ## P2/P3 Backlog
 See full gap analysis for bento grid, spring physics, scroll-driven animations, CSS token migration, context-aware theming, pagination UI, revision history UI.
