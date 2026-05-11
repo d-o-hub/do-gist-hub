@@ -609,6 +609,42 @@ body {
   border-radius: var(--radius-card);
 }
 
+/* Detail skeleton — mirrors detail view structure */
+.gist-detail-skeleton {
+  display: flex;
+  flex-direction: column;
+}
+
+.skeleton-header {
+  padding: var(--space-8) var(--space-6) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.skeleton-content {
+  padding: var(--space-4) var(--space-6);
+}
+
+.skeleton-code-lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface-overlay);
+  border-radius: var(--radius-card);
+  margin-top: var(--space-4);
+}
+
+.skeleton-code-line {
+  height: 1rem;
+}
+
+.skeleton-file-tab {
+  margin-bottom: var(--space-4);
+}
+
 /* ===== Search and Filters ===== */
 .search-container {
   margin-bottom: var(--space-6);
