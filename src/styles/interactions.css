@@ -129,8 +129,4 @@ html {
 }
 
 /* ===== List Items ===== */
-.gist-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
+/* .gist-list layout is now handled by .gist-grid in base.css; selector kept on element for tests */

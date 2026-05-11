@@ -27,15 +27,15 @@ export async function render(
           <summary class="settings-section-header">
             <h3 class="form-label">Authentication</h3>
           </summary>
-          <div class="settings-section-content" style="padding-top: var(--space-4);">
+          <div class="settings-section-content">
             <div class="form-group">
               <label class="form-label" for="pat-input">GitHub Personal Access Token</label>
-              <div style="display: flex; gap: var(--space-2);">
-                  <input type="password" id="pat-input" class="form-input" style="flex: 1;" placeholder="ghp_...">
+              <div class="flex-row gap-2">
+                  <input type="password" id="pat-input" class="form-input flex-1" placeholder="ghp_...">
                   <button id="save-token-btn" class="btn btn-primary">SAVE</button>
                   <button id="remove-token-btn" class="btn btn-ghost">REMOVE</button>
               </div>
-              <div id="token-status" style="margin-top: var(--space-2);"></div>
+              <div id="token-status" class="token-status-mt"></div>
             </div>
           </div>
         </details>
@@ -44,12 +44,12 @@ export async function render(
           <summary class="settings-section-header">
             <h3 class="form-label">Data Management</h3>
           </summary>
-          <div class="settings-section-content" style="padding-top: var(--space-4);">
-              <div class="form-actions" style="display: flex; flex-direction: column; gap: var(--space-2);">
-                  <div style="display: flex; gap: var(--space-2);">
-                      <button id="export-all-btn" class="btn btn-secondary" style="flex: 1;">EXPORT ALL GISTS</button>
-                      <button id="import-btn" class="btn btn-secondary" style="flex: 1;">IMPORT GISTS</button>
-                      <input type="file" id="import-file-input" accept=".json" style="display: none;" />
+          <div class="settings-section-content">
+              <div class="form-actions flex-col gap-2">
+                  <div class="flex-row gap-2">
+                      <button id="export-all-btn" class="btn btn-secondary flex-1">EXPORT ALL GISTS</button>
+                      <button id="import-btn" class="btn btn-secondary flex-1">IMPORT GISTS</button>
+                      <input type="file" id="import-file-input" accept=".json" class="hidden" />
                   </div>
               </div>
           </div>
@@ -59,7 +59,7 @@ export async function render(
           <summary class="settings-section-header">
             <h3 class="form-label">Preferences</h3>
           </summary>
-          <div class="settings-section-content" style="padding-top: var(--space-4);">
+          <div class="settings-section-content">
             <div class="form-group">
               <label class="form-label" for="theme-select">Theme</label>
               <select id="theme-select" class="form-input">
@@ -75,12 +75,12 @@ export async function render(
           <summary class="settings-section-header">
             <h3 class="form-label">Data & Diagnostics</h3>
           </summary>
-          <div class="settings-section-content" style="padding-top: var(--space-4);">
-            <div class="form-actions" style="display: flex; flex-direction: column; gap: var(--space-2);">
+          <div class="settings-section-content">
+            <div class="form-actions flex-col gap-2">
               <button id="export-data-btn" class="btn btn-ghost">Export Data (JSON)</button>
               <button id="clear-cache-btn" class="btn btn-danger">CLEAR LOCAL CACHE</button>
             </div>
-            <div id="diagnostics-info" class="diagnostics-info" style="margin-top: var(--space-4);"></div>
+            <div id="diagnostics-info" class="diagnostics-info diagnostics-mt"></div>
           </div>
         </details>
       </div>

@@ -212,7 +212,7 @@ export async function loadConflictResolution(
       <header class="detail-header">
         <h1 class="detail-title">SYNC CONFLICTS</h1>
       </header>
-      <div style="padding: 0 var(--space-6);">
+      <div class="px-6">
         ${renderConflictList(conflicts)}
       </div>
     `;
