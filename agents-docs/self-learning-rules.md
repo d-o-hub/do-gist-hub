@@ -36,6 +36,7 @@
 | `ts_any_type` | TypeScript `any` usage | Medium |
 | `html_unstyled_button` | Button without CSS class | High |
 | `ts_noStaticOnlyClass` | Class with only static members (refactor to object literal) | Medium |
+| `commit_footer_max_length` | Commit footer/body line exceeds 100 chars (commitlint default) | Medium |
 
 ## Autonomous Optimization
 

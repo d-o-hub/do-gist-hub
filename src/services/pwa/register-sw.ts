@@ -69,6 +69,13 @@ export async function clearCaches(): Promise<void> {
 }
 
 /**
+ * Background Sync API (not yet in standard TS lib types)
+ */
+interface SyncManager {
+  register(tag: string): Promise<void>;
+}
+
+/**
  * Notify user of update (placeholder - can be enhanced with UI)
  */
 function notifyUpdateAvailable(): void {
@@ -93,8 +100,7 @@ export async function requestBackgroundSync(): Promise<boolean> {
 
   try {
     const registration = await navigator.serviceWorker.ready;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (registration as any).sync?.register('sync-gists');
+    await (registration as ServiceWorkerRegistration & { sync: SyncManager }).sync.register('sync-gists');
     safeLog('[PWA] Background sync registered');
     return true;
   } catch (error) {

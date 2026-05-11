@@ -26,7 +26,11 @@ pnpm run test:unit
 - **Strict Types**: No `any`. Explicit returns.
 - **No Static-Only Classes**: `export class Foo { static ... }` → `export const Foo = { ... }`. Module-level helpers for private methods. (ADR-026)
 - **Tools**: Format and Lint with Biome (`pnpm run lint:fix`).
-- **Commits**: Conventional Commits only (`feat:`, `fix:`, `chore:`, etc.).
+- **Commits**: Conventional Commits only (`feat:`, `fix:`, `chore:`, etc.). Line limits: header 150, body 200, footer 200.
+- **Commit-msg Hook**: Install locally to catch format errors before push:
+  ```bash
+  cp scripts/commit-msg-hook.sh .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
+  ```
 - **Style**: Direct, professional. No conversational filler or emojis in generated docs.
 
 ## Architecture

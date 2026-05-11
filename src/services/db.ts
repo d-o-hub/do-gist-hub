@@ -12,9 +12,6 @@ import { APP } from '@/config/app.config';
 const DB_VERSION = 3;
 const DB_NAME = APP.dbName;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type DBSchemaIndex = any;
-
 /**
  * Database Schema Definition
  */
@@ -52,7 +49,6 @@ export interface GistDBSchema extends DBSchema {
       'by-level': string;
     };
   };
-  [key: string]: DBSchemaIndex;
 }
 
 /**
