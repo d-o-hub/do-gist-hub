@@ -45,6 +45,16 @@ ADR-026 (GOAP Actions): ErrorBoundary/EmptyState refactor not done. TS6 deprecat
 - All 3 callers (home.ts, offline.ts, conflict-resolution.ts) use `EmptyState.render()` — no API change needed.
 - Fixes Biome `noStaticOnlyClass` violation.
 
+## Subsequent Fixes (post-2026-07-18)
+
+### Commitlint Footer Line Length + Type Safety
+- `commitlint.config.mjs`: Added `footer-max-line-length: [2, 'always', 200]` to prevent CI failures when commitlint body lines are parsed as footer lines (was default 100).
+- `AGENTS.md`: Documented commit line limits (header 150, body 200, footer 200) and added commit-msg hook installation instructions.
+- `package.json`: Added `"commitlint:last"` script for local validation of the most recent commit.
+- `scripts/pre-commit-hook.sh`: Added warning when commit-msg hook is not installed.
+- `src/services/db.ts`: Removed `DBSchemaIndex` alias and `[key: string]` index signature from `GistDBSchema`; changed `by-starred: boolean` to `number` to satisfy `IDBValidKey` constraint.
+- `src/services/pwa/register-sw.ts`: Replaced `any` cast with typed `ServiceWorkerRegistration & { sync: SyncManager }`.
+
 ## Remaining P0/P1 Items
 - P0-1: Fix Playwright navigation test failures (CI-blocking, root cause: CSS display:none not overridden in test viewport)
 - P1-5: Build RouteBoundary component
