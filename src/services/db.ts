@@ -12,9 +12,6 @@ import { APP } from '@/config/app.config';
 const DB_VERSION = 3;
 const DB_NAME = APP.dbName;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type DBSchemaIndex = any;
-
 /**
  * Database Schema Definition
  */
@@ -24,7 +21,10 @@ export interface GistDBSchema extends DBSchema {
     value: GistRecord;
     indexes: {
       'by-updated-at': string;
-      'by-starred': boolean;
+      // ⚠️ Type-level mismatch: IndexedDB stores boolean values at runtime, but
+      // TypeScript DOM types restrict IDBValidKey to number|string|Date|BufferSource|Array.
+      // Querying this index via idb APIs requires numeric arguments at compile time.
+      'by-starred': number;
       'by-sync-status': string;
     };
   };
@@ -52,7 +52,6 @@ export interface GistDBSchema extends DBSchema {
       'by-level': string;
     };
   };
-  [key: string]: DBSchemaIndex;
 }
 
 /**

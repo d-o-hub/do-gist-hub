@@ -36,6 +36,8 @@
 | `ts_any_type` | TypeScript `any` usage | Medium |
 | `html_unstyled_button` | Button without CSS class | High |
 | `ts_noStaticOnlyClass` | Class with only static members (refactor to object literal) | Medium |
+| `commit_footer_max_length` | Commit footer/body line exceeds 100 chars (commitlint default) | Medium |
+| `idb_boolean_index_key` | IndexedDB schema indexes boolean properties, but TS DOM `IDBValidKey` excludes boolean | Medium |
 
 ## Autonomous Optimization
 
