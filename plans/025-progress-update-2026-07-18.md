@@ -65,6 +65,14 @@ All P0/P1 items resolved as of this update:
 - ~~P1-6: Wire Skeleton component into route rendering~~ — Wired into `home.ts` (list loading) and `gist-detail.ts` (detail loading)
 - ~~P1-7: Add "Conflicts" to bottom-nav~~ — Added to sidebar, bottom-nav, mobile menu, and command palette
 
+## UI Modernization Batch (2026-07-18 follow-up)
+Delivered ADR-022 backlog items via PR #149:
+
+- **Scroll-driven animations** — Added `.scroll-progress` bar, `.scroll-reveal`, and `.file-tab-scroll`/`.file-content-scroll` animations using CSS `animation-timeline` with `@supports` progressive enhancement.
+- **Bento-grid layout** — Converted gist list from single-column to responsive bento-grid (`.gist-grid`) with featured-card spanning for starred gists.
+- **Token-driven CSS utilities** — Replaced hardcoded inline `style="..."` across 7 files with utility classes in `base.css`.
+- **Fixed**: preserved `.gist-list` class alongside `.gist-grid` to maintain Playwright test selector compatibility.
+
 ## Integration Gap Verification
 - `ToastManager`/`toast` — Already called from `create.ts` (validation errors, success) and `settings.ts` (token/data ops)
 - Export/import UI — Already present in `settings.ts` with `exportAllGists`, `importGists`, `exportData` buttons
