@@ -24,4 +24,21 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     () => {},
     () => {}
   );
+
+  // Progressive enhancement: add scroll-progress bar if supported
+  if (
+    CSS.supports('animation-timeline', 'scroll()') &&
+    !document.querySelector('.scroll-progress')
+  ) {
+    const progressBar = document.createElement('div');
+    progressBar.className = 'scroll-progress';
+    progressBar.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(progressBar);
+    // Remove on navigation away
+    const removeBar = () => {
+      progressBar.remove();
+      window.removeEventListener('app:navigate', removeBar);
+    };
+    window.addEventListener('app:navigate', removeBar);
+  }
 }

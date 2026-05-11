@@ -29,7 +29,7 @@ export async function render(container: HTMLElement): Promise<void> {
                 <div class="stat-value" id="conflict-count">0</div>
             </div>
         </div>
-      <div class="pending-operations" id="pending-ops" style="margin-top: var(--space-6);"></div>
+      <div class="pending-operations pending-ops-mt" id="pending-ops"></div>
     </div>
   `;
 
@@ -56,7 +56,7 @@ async function updateOfflineStatus(container: HTMLElement): Promise<void> {
   if (opsEl) {
     const content =
       count > 0
-        ? `<div class="glass-card" style="padding: var(--spacing-6); text-align: center;">
+        ? `<div class="glass-card p-6" style="text-align: center;">
              <p class="micro-label">${sanitizeHtml(String(count))} operation${count !== 1 ? 's' : ''} waiting for connection</p>
            </div>`
         : EmptyState.render({
@@ -66,7 +66,7 @@ async function updateOfflineStatus(container: HTMLElement): Promise<void> {
             actionRoute: 'home',
           });
 
-    opsEl.innerHTML = `<h3 class="form-label" style="margin-bottom: var(--space-4);">Pending Operations</h3>${content}`;
+    opsEl.innerHTML = `<h3 class="form-label mb-4">Pending Operations</h3>${content}`;
   }
 
   const conflicts = await getConflicts();

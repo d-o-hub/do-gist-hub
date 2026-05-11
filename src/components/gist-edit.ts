@@ -14,12 +14,12 @@ export function renderEditForm(gist: GistRecord): string {
   const filesHtml = Object.entries(gist.files)
     .map(
       ([key, file]) => `
-    <div class="file-editor glass-card" data-file-key="${sanitizeHtml(key)}" style="padding: var(--space-4); margin-bottom: var(--space-4);">
+    <div class="file-editor glass-card file-editor-p file-editor-mb" data-file-key="${sanitizeHtml(key)}">
       <div class="form-group">
         <label class="form-label">FILENAME</label>
-        <div style="display: flex; gap: var(--space-2);">
+        <div class="flex-row gap-2">
             <input type="text" class="form-input filename-input" value="${sanitizeHtml(file.filename)}" placeholder="example.js" />
-            <button type="button" class="btn btn-danger remove-file-btn" ${Object.keys(gist.files).length <= 1 ? 'style="display: none;"' : ''}>×</button>
+            <button type="button" class="btn btn-danger remove-file-btn" ${Object.keys(gist.files).length <= 1 ? 'hidden' : ''}>×</button>
         </div>
       </div>
       <div class="form-group">
@@ -38,18 +38,18 @@ export function renderEditForm(gist: GistRecord): string {
         <h1 class="detail-title">EDIT GIST</h1>
       </header>
 
-      <form id="edit-gist-form" class="gist-form" style="padding: var(--space-6);">
+      <form id="edit-gist-form" class="gist-form edit-form-p">
         <div class="form-group">
           <label class="form-label">DESCRIPTION</label>
           <input type="text" id="edit-description" name="description" class="form-input" value="${sanitizeHtml(gist.description || '')}" />
         </div>
 
         <div class="files-section" id="edit-files-section">
-          <div class="micro-label" style="margin-bottom: var(--space-2);">FILES</div>
+          <div class="micro-label mb-2">FILES</div>
           ${filesHtml}
         </div>
 
-        <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4);">
+        <div class="edit-actions">
             <button type="button" id="edit-add-file-btn" class="btn btn-ghost">+ ADD FILE</button>
             <button type="submit" class="btn btn-primary" id="edit-submit-btn">SAVE CHANGES</button>
             <button type="button" id="edit-cancel-btn" class="btn btn-ghost">CANCEL</button>
@@ -69,13 +69,11 @@ export function bindEditEvents(container: HTMLElement, onBack: () => void): void
     const section = container.querySelector('#edit-files-section');
     if (!section) return;
     const editor = document.createElement('div');
-    editor.className = 'file-editor glass-card';
-    editor.style.padding = 'var(--space-4)';
-    editor.style.marginBottom = 'var(--space-4)';
+    editor.className = 'file-editor glass-card file-editor-p file-editor-mb';
     editor.innerHTML = `
       <div class="form-group">
         <label class="form-label">FILENAME</label>
-        <div style="display: flex; gap: var(--space-2);">
+        <div class="flex-row gap-2">
             <input type="text" class="form-input filename-input" placeholder="example.js" />
             <button type="button" class="btn btn-danger remove-file-btn">×</button>
         </div>

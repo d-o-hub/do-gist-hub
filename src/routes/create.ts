@@ -26,12 +26,12 @@ function createFileRow(id: number, container: HTMLElement): HTMLElement {
     </div>
   `;
   div.innerHTML = `
-    <div style="display: flex; gap: var(--space-2); align-items: flex-end;">
-      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+    <div class="flex-row gap-2 flex-end">
+      <div class="form-group flex-1 mb-0">
         <label class="form-label" for="gist-filename-${id}">Filename</label>
         <input type="text" id="gist-filename-${id}" class="form-input gist-filename" placeholder="e.g. index.js" required>
       </div>
-      <button type="button" class="btn btn-ghost btn-remove-file" data-file-id="${id}" style="min-height: auto; padding: var(--space-2) var(--space-3);">
+      <button type="button" class="btn btn-ghost btn-remove-file remove-file-minh remove-file-p" data-file-id="${id}">
           REMOVE
         </button>
     </div>
@@ -74,7 +74,7 @@ export function render(container: HTMLElement): void {
       <header class="detail-header">
         <h2 class="detail-title">Create New Gist</h2>
       </header>
-      <form id="create-gist-form" class="glass-card" style="padding: var(--space-6);">
+      <form id="create-gist-form" class="glass-card create-form-p">
         <div class="form-group">
           <label class="form-label" for="gist-description">Description</label>
           <input type="text" id="gist-description" class="form-input" placeholder="Gist description..." required>

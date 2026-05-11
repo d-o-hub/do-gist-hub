@@ -42,19 +42,19 @@ export function render(container: HTMLElement, params?: Record<string, string>):
         <div class="search-container">
           <input type="text" id="gist-search" class="search-input" placeholder="Search gists..." value="${sanitizeHtml(query)}">
         </div>
-        <div class="filter-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+        <div class="filter-header flex-between mb-4">
             <div class="filter-buttons filter-chips">
               <button class="chip ${filter === 'all' ? 'active' : ''}" data-filter="all">All</button>
               <button class="chip ${filter === 'mine' ? 'active' : ''}" data-filter="mine">Mine</button>
               <button class="chip ${filter === 'starred' ? 'active' : ''}" data-filter="starred">Starred</button>
             </div>
-            <select id="sort-select" class="form-input" style="width: auto; margin-bottom: 0;">
+            <select id="sort-select" class="form-input w-auto mb-0">
                 <option value="updated-desc" ${sort === 'updated-desc' ? 'selected' : ''}>Recent</option>
                 <option value="created-desc" ${sort === 'created-desc' ? 'selected' : ''}>Newest</option>
                 <option value="updated-asc" ${sort === 'updated-asc' ? 'selected' : ''}>Oldest</option>
             </select>
         </div>
-        <div id="gist-list" class="gist-list">
+        <div id="gist-list" class="gist-list gist-grid">
           ${renderGistList()}
         </div>
       </div>
