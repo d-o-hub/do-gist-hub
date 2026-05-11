@@ -7,19 +7,40 @@ import { type AppError, ErrorCategory } from '../../services/github/error-handle
 import { safeError } from '../../services/security/logger';
 import { announcer } from '../../utils/announcer';
 
-export class ErrorBoundary {
+function getIcon(category: ErrorCategory): string {
+  switch (category) {
+    case ErrorCategory.AUTH:
+      return 'Auth Error';
+    case ErrorCategory.NETWORK:
+      return 'Network Error';
+    case ErrorCategory.RATE_LIMIT:
+      return 'Rate Limited';
+    case ErrorCategory.VALIDATION:
+      return 'Validation Error';
+    default:
+      return 'Error';
+  }
+}
+
+function escapeHtml(text: string): string {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+export const ErrorBoundary = {
   /**
    * Render a fallback UI for a specific error
    */
-  static render(error: AppError, onRetry?: () => void): string {
+  render(error: AppError, onRetry?: () => void): string {
     const isFatal =
       error.category === ErrorCategory.UNKNOWN || error.category === ErrorCategory.NETWORK;
     const categoryClass = (error.category || 'unknown').toLowerCase();
-    const iconHtml = ErrorBoundary.getIcon(error.category);
+    const iconHtml = getIcon(error.category);
     const titleText = error.message || 'An error occurred';
 
     const detailsHtml = error.technicalDetails
-      ? `<p class="error-details">${ErrorBoundary.escapeHtml(error.technicalDetails)}</p>`
+      ? `<p class="error-details">${escapeHtml(error.technicalDetails)}</p>`
       : '';
 
     const actionMap: Record<string, string> = {
@@ -46,12 +67,12 @@ export class ErrorBoundary {
         </div>
       </div>
     `;
-  }
+  },
 
   /**
    * Bind event listeners for the error boundary UI
    */
-  static bindEvents(container: HTMLElement, onRetry?: () => void): void {
+  bindEvents(container: HTMLElement, onRetry?: () => void): void {
     if (onRetry) {
       container.querySelector('#error-retry-btn')?.addEventListener('click', () => onRetry());
     }
@@ -65,29 +86,8 @@ export class ErrorBoundary {
         }
       })();
     });
-  }
-
-  private static getIcon(category: ErrorCategory): string {
-    switch (category) {
-      case ErrorCategory.AUTH:
-        return 'Auth Error';
-      case ErrorCategory.NETWORK:
-        return 'Network Error';
-      case ErrorCategory.RATE_LIMIT:
-        return 'Rate Limited';
-      case ErrorCategory.VALIDATION:
-        return 'Validation Error';
-      default:
-        return 'Error';
-    }
-  }
-
-  private static escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-}
+  },
+};
 
 /**
  * Global Error Handler for uncaught exceptions

@@ -5,6 +5,7 @@
 import { APP } from '../config/app.config';
 import * as createRoute from '../routes/create';
 import * as offlineRoute from '../routes/offline';
+import { lifecycle } from '../services/lifecycle';
 import networkMonitor from '../services/network/offline-monitor';
 import syncQueue from '../services/sync/queue';
 import { announcer } from '../utils/announcer';
@@ -92,6 +93,11 @@ export class App {
 
   private async navigate(route: Route): Promise<void> {
     const isSameRoute = this.currentRoute === route;
+
+    // Cancel in-flight requests from the previous route before navigating to a different route
+    if (!isSameRoute) {
+      lifecycle.cleanupRoute();
+    }
     this.currentRoute = route;
     announcer.announce(`Navigating to ${route} page`);
 

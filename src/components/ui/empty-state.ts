@@ -13,8 +13,8 @@ export interface EmptyStateOptions {
   actionType?: string;
 }
 
-export class EmptyState {
-  static render(options: EmptyStateOptions): string {
+export const EmptyState = {
+  render(options: EmptyStateOptions): string {
     const { title, description, actionLabel, actionRoute, actionType } = options;
 
     const actionAttr = actionRoute
@@ -38,5 +38,5 @@ export class EmptyState {
         }
       </div>
     `;
-  }
-}
+  },
+};

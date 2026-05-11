@@ -4,6 +4,7 @@ import '@fontsource-variable/jetbrains-mono';
 import '@fontsource/anton';
 
 import { App } from './components/app';
+import { initGlobalErrorHandling } from './components/ui/error-boundary';
 import { initIndexedDB } from './services/db';
 import { isAuthenticated } from './services/github/auth';
 import networkMonitor from './services/network/offline-monitor';
@@ -23,6 +24,9 @@ import './styles/navigation.css';
 import './styles/modern-glass.css';
 import './styles/conflicts.css';
 import './styles/command-palette.css';
+
+// Initialize global error handling (uncaught exceptions + promise rejections)
+initGlobalErrorHandling();
 
 // Initialize design tokens
 initDesignTokens();
