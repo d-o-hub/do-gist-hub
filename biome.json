@@ -30,7 +30,7 @@
 				"noForEach": "off",
 				"noExtraBooleanCast": "error",
 				"noUselessCatch": "error",
-				"noStaticOnlyClass": "off",
+				"noStaticOnlyClass": "error",
 				"useLiteralKeys": "off"
 			},
 			"correctness": {

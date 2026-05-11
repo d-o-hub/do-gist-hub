@@ -4,6 +4,7 @@
  */
 
 import { type AppError, ErrorCategory } from '../../services/github/error-handler';
+import { sanitizeHtml } from '../../services/security/dom';
 import { safeError } from '../../services/security/logger';
 import { announcer } from '../../utils/announcer';
 
@@ -22,12 +23,6 @@ function getIcon(category: ErrorCategory): string {
   }
 }
 
-function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
 export const ErrorBoundary = {
   /**
    * Render a fallback UI for a specific error
@@ -40,7 +35,7 @@ export const ErrorBoundary = {
     const titleText = error.message || 'An error occurred';
 
     const detailsHtml = error.technicalDetails
-      ? `<p class="error-details">${escapeHtml(error.technicalDetails)}</p>`
+      ? `<p class="error-details">${sanitizeHtml(error.technicalDetails)}</p>`
       : '';
 
     const actionMap: Record<string, string> = {

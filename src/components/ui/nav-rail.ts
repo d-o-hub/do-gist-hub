@@ -25,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { route: 'home', label: 'Home', testId: 'nav-home' },
   { route: 'starred', label: 'Starred', testId: 'nav-starred' },
   { route: 'create', label: 'Create', testId: 'nav-create' },
+  { route: 'conflicts', label: 'Conflicts', testId: 'nav-conflicts' },
   { route: 'offline', label: 'Offline', testId: 'nav-offline' },
   { route: 'settings', label: 'Settings', testId: 'settings-btn' },
 ];

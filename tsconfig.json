@@ -16,15 +16,13 @@
     "noEmit": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "ignoreDeprecations": "6.0",
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@tokens/*": ["src/tokens/*"],
-      "@components/*": ["src/components/*"],
-      "@services/*": ["src/services/*"]
+      "@/*": ["./src/*"],
+      "@tokens/*": ["./src/tokens/*"],
+      "@components/*": ["./src/components/*"],
+      "@services/*": ["./src/services/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
