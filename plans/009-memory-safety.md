@@ -1,4 +1,4 @@
-<!-- Last Audit: 2024-05-15 -->
+<!-- Last Audit: 2026-05-11 -->
 # Memory Safety
 
 ## Cleanup Requirements
@@ -15,4 +15,4 @@ Store and Network subscriptions are scoped to routes and auto-unsubscribed.
 
 ---
 
-*Created: 2026. Status: Completed (Audited and Verified) (Missing Playwright coverage).*
+*Created: 2026. Last Audit: 2026-05-11. Status: Verified — AbortController on all API calls, LifecycleManager, route-scoped subscriptions, memory leak tests implemented.*

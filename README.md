@@ -39,14 +39,14 @@
 
 | Layer | Technology |
 |-------|------------|
-| App Shell | Vite + TypeScript 5.5+ (strict mode) |
+| App Shell | Vite 8 + TypeScript 6.x (strict mode) |
 | UI | Vanilla TS + DTCG-aligned CSS tokens |
 | Storage | IndexedDB via `idb` library |
 | Security | Web Cryptography API (AES-GCM) |
 | HTTP | Native Fetch + AbortController |
 | PWA | Service Worker + Manifest |
-| Android | Capacitor 6 |
-| Testing | Playwright (cross-browser, mobile emulation, offline) |
+| Android | Capacitor 8 |
+| Testing | Playwright + Vitest (cross-browser, mobile emulation, offline) |
 
 ---
 
@@ -66,7 +66,7 @@ git clone https://github.com/d-o-hub/do-gist-hub.git
 cd do-gist-hub
 
 # Install dependencies
-pnpm install        # or: ppnpm install
+pnpm install
 
 # Set up AI agent skills
 ./scripts/setup-skills.sh
@@ -150,7 +150,7 @@ ACT_JOB=quality-gate ./scripts/run_act_local.sh
 | [SECURITY.md](./SECURITY.md) | Security policy and vulnerability reporting |
 | [CHANGELOG.md](./CHANGELOG.md) | Version history and release notes |
 | [Plans](./plans/) | Architecture decisions (ADRs) and roadmaps |
-| [agents-docs/2026-patterns.md](./agents-docs/2026-patterns.md) | Deep dive into 2026 UI/UX implementations |
+| [docs/2026-ui-ux-modernization.md](./docs/2026-ui-ux-modernization.md) | Deep dive into 2026 UI/UX implementations |
 
 ---
 

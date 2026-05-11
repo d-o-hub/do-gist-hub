@@ -3,7 +3,7 @@
 ## Context
 During the 2026-grade modernization pass, we standardized the repository on \`pnpm\`, upgraded Capacitor to v8, TypeScript to v6, Vite to v8, Playwright to v1.59, and Vitest to v4. We also migrated the primary linting and formatting tooling from ESLint/Prettier to Biome.
 
-However, the legacy structural code (e.g. classes with only static members like \`ErrorBoundary\`, \`EmptyState\`, and somewhat rigid object typing in \`search-engine\`) conflicts with the strict rules enforced by Biome and TypeScript v6 out of the box. Attempting to auto-fix or manually refactor these inside a strict sandbox environment with tight git diff tracking proved problematic, as the diff size immediately breaches sandbox limitations, interrupting automation loops.
+However, the legacy structural code (e.g. classes with only static members like \`ErrorBoundary\`, \`EmptyState\`) conflicts with the strict rules enforced by Biome and TypeScript v6 out of the box. Attempting to auto-fix or manually refactor these inside a strict sandbox environment with tight git diff tracking proved problematic, as the diff size immediately breaches sandbox limitations, interrupting automation loops.
 
 ## Decision
 Instead of fighting the sandbox's git diff restrictions and embarking on an extensive structural refactor right now, we will:
@@ -21,11 +21,11 @@ Instead of fighting the sandbox's git diff restrictions and embarking on an exte
 - **Cost**: Low.
 - **Execution**: Convert `export class ErrorBoundary` to `export const ErrorBoundary = { ... }` or an ES Module with named exports. Keep this in a single isolated commit.
 
-**Action 2: Modernize `search-engine.ts` typing**
+**Action 2: Resolve remaining Biome warnings**
 - **Precondition**: Action 1 complete.
-- **Effect**: Fixes `TS1005` parsing errors regarding object syntax and scoping of `logSearchMetrics`.
+- **Effect**: Clears remaining `noStaticOnlyClass` and other Biome rule violations.
 - **Cost**: Low.
-- **Execution**: Ensure standard class methods are utilized inside the `SearchEngine` scope or extracted as pure functions.
+- **Execution**: Review and address any remaining Biome lint warnings across the codebase.
 
 **Action 3: Clean up deprecated TS rules**
 - **Precondition**: `tsconfig.json` ignores `baseUrl` deprecations.

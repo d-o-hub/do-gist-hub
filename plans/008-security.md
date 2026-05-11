@@ -1,4 +1,4 @@
-<!-- Last Audit: 2024-05-15 -->
+<!-- Last Audit: 2026-05-11 -->
 # Security
 
 ## PAT Handling
@@ -15,4 +15,4 @@ Sanitization of all user-controlled data via `sanitizeHtml` and `html` template 
 
 ---
 
-*Created: 2026. Status: Completed (Audited and Verified) (Missing Playwright coverage).*
+*Created: 2026. Last Audit: 2026-05-11. Status: Verified — CSP, AES-GCM encryption, non-extractable runtime keys, export redaction, SHA-pinned CI actions all implemented.*
