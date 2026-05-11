@@ -1,6 +1,6 @@
 # Progress Update — 2026-07-18 (Follow-up to 026)
 
-> **Status**: P1-4 through P1-7 resolved. RouteBoundary (P1-5) built. Dead code removed. Config fixed.
+> **Status**: All P1 items resolved. RouteBoundary (P1-5) built. Skeleton wired everywhere. Dead code removed. Config fixed. Skeleton detail CSS added.
 
 ## Completed Actions
 
@@ -35,6 +35,14 @@
 
 ### P1-6: Skeleton Wiring
 - **`src/routes/home.ts`**: Replaced 8-line inline skeleton HTML with `import { Skeleton }` + `Skeleton.renderList(3)`
+- **`src/routes/gist-detail.ts`**: Show `Skeleton.renderDetail()` as loading state before `loadGistDetail` completes (was an empty `<div>`)
+- CSS layout for skeleton detail classes added to `src/styles/base.css`:
+  - `.gist-detail-skeleton` — flex column wrapper
+  - `.skeleton-header` — mirrors `.detail-header` (padding, border-bottom, gap)
+  - `.skeleton-content` — horizontal padding matching detail view
+  - `.skeleton-code-lines` — surface background, border-radius, gap matching `.file-content-area`
+  - `.skeleton-code-line` — `height: 1rem` fallback
+  - `.skeleton-file-tab` — `margin-bottom` spacing
 - CSS classes (`.loading-skeleton`, `.skeleton-card`) verified in `base.css` and `motion.css`
 
 ### P1-7: Conflicts Navigation
@@ -84,8 +92,17 @@ Remaining P3/future items: context-aware theming (sensor-based, opt-in).
 | `src/components/app.ts` | Import RouteBoundary; wrap all 7 route cases |
 | `src/components/ui/nav-rail.ts` | Add Conflicts to NAV_ITEMS |
 | `src/routes/home.ts` | Import Skeleton; replace inline HTML with `Skeleton.renderList(3)` |
+| `src/routes/gist-detail.ts` | Import Skeleton; show `Skeleton.renderDetail()` as loading state |
+| `src/styles/base.css` | Add skeleton detail CSS layout (`.gist-detail-skeleton`, `.skeleton-header`, etc.) |
 | `tests/mobile/responsive.spec.ts` | Nav item count 4 → 5 |
 | `src/stores/ui-store.ts` | **Deleted** — dead code |
 | `src/stores/auth-store.ts` | **Deleted** — dead code |
+## PRs Merged
+
+| PR | Branch | Commits | Description |
+|----|--------|---------|-------------|
+| #146 | `fix/goap-p1-items-ts6-routeboundary-skeleton-conflicts` | `865fad7` | P1-4 through P1-7: TS6 migration, RouteBoundary, Skeleton, Conflicts nav, dead code |
+| — | `main` (direct) | `04bae14` | Wire `Skeleton.renderDetail()` into gist-detail route loading state |
+| #147 | `fix/skeleton-detail-css-layout` | `fbbde4b` | Add skeleton detail CSS layout for gist-detail loading placeholder |
 
 *Last updated: 2026-07-18*
