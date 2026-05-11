@@ -1,3 +1,4 @@
+import { toast } from '../../components/ui/toast';
 import { safeError, safeLog, safeWarn } from '../security/logger';
 /**
  * Service Worker Registration
@@ -76,11 +77,13 @@ interface SyncManager {
 }
 
 /**
- * Notify user of update (placeholder - can be enhanced with UI)
+ * Notify user of update via toast notification
  */
 function notifyUpdateAvailable(): void {
-  // Could show a toast or banner: "New version available. Refresh to update."
-  safeLog('[PWA] Update available - refresh to get latest version');
+  toast.info('New version available — refresh to update', 0, {
+    label: 'Refresh',
+    onClick: () => window.location.reload(),
+  });
 }
 
 /**

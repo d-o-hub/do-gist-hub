@@ -56,7 +56,7 @@ async function updateOfflineStatus(container: HTMLElement): Promise<void> {
   if (opsEl) {
     const content =
       count > 0
-        ? `<div class="glass-card p-6" style="text-align: center;">
+        ? `<div class="glass-card p-6 text-center">
              <p class="micro-label">${sanitizeHtml(String(count))} operation${count !== 1 ? 's' : ''} waiting for connection</p>
            </div>`
         : EmptyState.render({

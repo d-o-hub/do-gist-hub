@@ -7,6 +7,11 @@ import { sanitizeHtml } from '../../services/security';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 export class ToastManager {
   private container: HTMLElement | null = null;
   private toasts: Map<string, HTMLElement> = new Map();
@@ -41,7 +46,7 @@ export class ToastManager {
     return this.container;
   }
 
-  show(message: string, type: ToastType = 'info', durationMs = 4000): string {
+  show(message: string, type: ToastType = 'info', durationMs = 4000, action?: ToastAction): string {
     const id = `toast-${++this.idCounter}`;
     const container = this.getContainer();
 
@@ -51,13 +56,27 @@ export class ToastManager {
     toast.classList.add('toast', `toast-${type}`, 'toast-enter');
     toast.style.pointerEvents = 'auto';
 
+    const actionHtml = action
+      ? `<button class="toast-action btn btn-ghost" type="button">${sanitizeHtml(action.label)}</button>`
+      : '';
+
     toast.innerHTML = `
       <span class="toast-message">${sanitizeHtml(message)}</span>
+      ${actionHtml}
       <button class="toast-close" aria-label="Dismiss notification" type="button">×</button>
     `;
 
     container.appendChild(toast);
     this.toasts.set(id, toast);
+
+    // Action handler
+    if (action) {
+      const actionBtn = toast.querySelector('.toast-action');
+      actionBtn?.addEventListener('click', () => {
+        action.onClick();
+        this.dismiss(id);
+      });
+    }
 
     // Close handler
     const closeBtn = toast.querySelector('.toast-close');
@@ -71,21 +90,21 @@ export class ToastManager {
     return id;
   }
 
-  success(message: string, durationMs?: number): string {
-    return this.show(message, 'success', durationMs);
+  success(message: string, durationMs?: number, action?: ToastAction): string {
+    return this.show(message, 'success', durationMs, action);
   }
 
-  error(message: string, durationMs?: number): string {
+  error(message: string, durationMs?: number, action?: ToastAction): string {
     // Errors stay longer so users can read them
-    return this.show(message, 'error', durationMs ?? 6000);
+    return this.show(message, 'error', durationMs ?? 6000, action);
   }
 
-  info(message: string, durationMs?: number): string {
-    return this.show(message, 'info', durationMs);
+  info(message: string, durationMs?: number, action?: ToastAction): string {
+    return this.show(message, 'info', durationMs, action);
   }
 
-  warn(message: string, durationMs?: number): string {
-    return this.show(message, 'warning', durationMs);
+  warn(message: string, durationMs?: number, action?: ToastAction): string {
+    return this.show(message, 'warning', durationMs, action);
   }
 
   dismiss(id: string): void {
