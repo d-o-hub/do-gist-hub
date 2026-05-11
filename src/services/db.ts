@@ -21,7 +21,10 @@ export interface GistDBSchema extends DBSchema {
     value: GistRecord;
     indexes: {
       'by-updated-at': string;
-      'by-starred': boolean;
+      // ⚠️ Type-level mismatch: IndexedDB stores boolean values at runtime, but
+      // TypeScript DOM types restrict IDBValidKey to number|string|Date|BufferSource|Array.
+      // Querying this index via idb APIs requires numeric arguments at compile time.
+      'by-starred': number;
       'by-sync-status': string;
     };
   };

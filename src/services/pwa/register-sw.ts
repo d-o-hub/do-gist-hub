@@ -100,7 +100,9 @@ export async function requestBackgroundSync(): Promise<boolean> {
 
   try {
     const registration = await navigator.serviceWorker.ready;
-    await (registration as ServiceWorkerRegistration & { sync: SyncManager }).sync.register('sync-gists');
+    await (registration as ServiceWorkerRegistration & { sync: SyncManager }).sync.register(
+      'sync-gists'
+    );
     safeLog('[PWA] Background sync registered');
     return true;
   } catch (error) {
