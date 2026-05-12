@@ -42,7 +42,7 @@ export function isAmbientLightSupported(): boolean {
  * Request ambient-light-sensor permission via the Permissions API.
  * Returns true only if the user explicitly grants permission.
  */
-export async function requestAmbientLightPermission(): Promise<boolean> {
+export async function checkAmbientLightPermission(): Promise<boolean> {
   if (!isAmbientLightSupported()) return false;
 
   try {
@@ -83,7 +83,7 @@ export async function startAmbientLightSensor(): Promise<boolean> {
     return true;
   }
 
-  const granted = await requestAmbientLightPermission();
+  const granted = await checkAmbientLightPermission();
   if (!granted) {
     return false;
   }
@@ -168,7 +168,7 @@ export async function enableAmbientLightTheming(): Promise<boolean> {
     return false;
   }
 
-  const granted = await requestAmbientLightPermission();
+  const granted = await checkAmbientLightPermission();
   if (!granted) {
     toast.info('Ambient light permission denied. Using time-based theme instead.');
     localStorage.setItem('theme-preference', 'time');

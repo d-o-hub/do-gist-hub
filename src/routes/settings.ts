@@ -187,7 +187,9 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
         initTheme();
       } else if (theme === 'ambient') {
         void (async () => {
+          if (signal.aborted) return;
           const ok = await enableAmbientLightTheming();
+          if (signal.aborted) return;
           if (!ok) {
             // Fallback already handled inside enableAmbientLightTheming
             // Refresh select to show the effective preference
@@ -195,6 +197,7 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
             const effective = getThemePreference() || 'auto';
             select.value = effective;
           }
+          if (signal.aborted) return;
           loadDiagnostics(container);
         })();
         return;
