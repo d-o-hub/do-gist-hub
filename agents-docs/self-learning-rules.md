@@ -66,6 +66,20 @@ agents-docs/
 └── detected/     # Auto-detected issues
 ```
 
+## PR Workflow & CI Automation
+
+1. **GitHub CLI for PRs**: Use `gh pr create --title "..." --body "..." --base main --head <branch>` to create PRs from CLI. Use `gh pr checks <num> --repo owner/repo` to poll check status and `gh pr view <num> --repo owner/repo --comments` to read reviews.
+2. **Monitor Until Completion**: After pushing fixes, poll `gh pr checks` in a loop until all checks pass. Do not assume checks pass immediately after push — GitHub Actions can take 2–10 minutes.
+3. **CodeRabbit Integration**: CodeRabbit runs automatically on PRs and provides actionable review comments. Address its "nitpick" items by fixing the code, committing, and pushing. Re-monitor until CodeRabbit shows `pass` (or `Review skipped` if no new issues).
+4. **Docstring Coverage Threshold**: CodeRabbit enforces 80% docstring coverage. Add JSDoc comments to all exported and helper functions in changed files. Private functions should also be documented if they contain non-trivial logic.
+5. **Conventional Commits for Review Fixes**: When addressing review comments, use `fix:` or `docs:` scope (e.g., `fix: address CodeRabbit review comments — validate localStorage, add cleanupThemeSystem()`).
+
+## Swarm Coordination Patterns
+
+1. **Parallel Polling**: Spawn multiple bashers simultaneously — one polling `gh pr checks`, another polling `gh pr view --comments` — to monitor PR status and review feedback in parallel.
+2. **Handoff After Review**: When review comments arrive, spawn a new swarm phase: (a) read affected files, (b) implement fixes, (c) run validation + code review in parallel, (d) commit and push, (e) re-monitor.
+3. **Agent Type Selection**: Use `basher` for all CLI tasks (`gh`, `git`, `pnpm`). Use `code-searcher` to find exact line numbers for targeted edits. Never use `explore` for bash tasks.
+
 ## Issue History
 
 See `agents-docs/issues/` for documented issues and fixes.
