@@ -22,7 +22,8 @@
   --text-3xl: var(--font-size-3xl);
   --text-display: var(--font-size-5xl);
 
-  /* Container query breakpoints */
+  /* Container query breakpoints (reference tokens — @container size queries
+     cannot use var() per CSS spec; these document the magic numbers below) */
   --cq-sm: 400px;
   --cq-md: 500px;
   --cq-lg: 600px;
@@ -309,7 +310,7 @@ body {
   container-name: detail-view;
 }
 
-@container detail-view (min-width: var(--cq-md)) {
+@container detail-view (min-width: 500px) {
   .file-info-left {
     flex-direction: row;
     gap: var(--space-4);
@@ -317,7 +318,7 @@ body {
   }
 }
 
-@container detail-view (min-width: var(--cq-xl)) {
+@container detail-view (min-width: 700px) {
   .file-tabs {
     gap: var(--space-3);
     padding: var(--space-4) var(--space-8);
@@ -334,7 +335,7 @@ body {
   container-name: settings-panel;
 }
 
-@container settings-panel (min-width: var(--cq-sm)) {
+@container settings-panel (min-width: 400px) {
   .settings-section .form-actions {
     flex-direction: row;
     align-items: center;
@@ -345,7 +346,7 @@ body {
   }
 }
 
-@container settings-panel (min-width: var(--cq-lg)) {
+@container settings-panel (min-width: 600px) {
   .settings-section-content {
     padding: var(--space-6) var(--space-8);
   }
@@ -360,13 +361,13 @@ body {
   container-name: offline-panel;
 }
 
-@container offline-panel (min-width: var(--cq-sm)) {
+@container offline-panel (min-width: 400px) {
   .stat-card {
     padding: var(--space-6);
   }
 }
 
-@container offline-panel (min-width: var(--cq-lg)) {
+@container offline-panel (min-width: 600px) {
   .stat-card {
     padding: var(--space-8);
   }
@@ -391,7 +392,7 @@ body {
 }
 
 /* Container Query: Larger card layout for wider containers */
-@container gist-card (min-width: var(--cq-sm)) {
+@container gist-card (min-width: 400px) {
   .gist-card-header {
     flex-direction: row;
     align-items: center;
@@ -402,14 +403,14 @@ body {
   }
 }
 
-@container gist-card (min-width: var(--cq-lg)) {
+@container gist-card (min-width: 600px) {
   .gist-card-actions {
     flex-direction: row;
     justify-content: flex-end;
   }
 }
 
-@container gist-card (min-width: var(--cq-2xl)) {
+@container gist-card (min-width: 800px) {
   .gist-card-title {
     font-size: var(--text-xl);
   }
