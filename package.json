@@ -37,9 +37,9 @@
     "quality": "./scripts/quality_gate.sh"
   },
   "dependencies": {
-    "@capacitor/android": "^8.3.2",
-    "@capacitor/cli": "^8.3.2",
-    "@capacitor/core": "^8.3.2",
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/cli": "^8.3.4",
+    "@capacitor/core": "^8.3.4",
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@fontsource/anton": "^5.2.7",
@@ -55,20 +55,20 @@
     }
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.14",
-    "@commitlint/config-conventional": "^21.0.0",
-    "@playwright/test": "^1.49.1",
-    "@types/node": "^25.6.2",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@biomejs/biome": "^2.4.15",
+    "@commitlint/config-conventional": "^21.0.1",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.7.0",
+    "@vitest/coverage-v8": "^4.1.6",
     "canvas": "^3.0.1",
-    "commitlint": "^21.0.0",
+    "commitlint": "^21.0.1",
     "esbuild": "^0.28.0",
     "fake-indexeddb": "^6.0.0",
     "jsdom": "^29.1.1",
-    "lint-staged": "^17.0.3",
+    "lint-staged": "^17.0.4",
     "rollup-plugin-visualizer": "^7.0.1",
     "typescript": "^6.0.3",
-    "vite": "^8.0.11",
-    "vitest": "^4.1.5"
+    "vite": "^8.0.12",
+    "vitest": "^4.1.6"
   }
 }
