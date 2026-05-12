@@ -8,6 +8,7 @@ import networkMonitor from '../services/network/offline-monitor';
 import { redactToken, sanitizeHtml } from '../services/security';
 import { safeError } from '../services/security/logger';
 import gistStore from '../stores/gist-store';
+import { initTheme } from '../tokens/design-tokens';
 import { showConfirmDialog } from '../utils/dialog';
 
 export async function render(
@@ -66,6 +67,7 @@ export async function render(
                 <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>Light</option>
                 <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>Dark</option>
                 <option value="auto" ${currentTheme === 'auto' ? 'selected' : ''}>Auto (System)</option>
+                <option value="time" ${currentTheme === 'time' ? 'selected' : ''}>Time-based (Dark 7PM–7AM)</option>
               </select>
             </div>
           </div>
@@ -92,6 +94,9 @@ export async function render(
   bindEvents(container);
 }
 
+/**
+ * Load and display the current GitHub PAT status in the settings UI.
+ */
 async function loadTokenInfo(container: HTMLElement): Promise<void> {
   const el = container.querySelector('#token-status');
   const token = await getToken();
@@ -104,6 +109,9 @@ async function loadTokenInfo(container: HTMLElement): Promise<void> {
   }
 }
 
+/**
+ * Render diagnostics info (online status, gist count, current theme) into the settings UI.
+ */
 function loadDiagnostics(container: HTMLElement): void {
   const diagnosticsContainer = container.querySelector('#diagnostics-info');
   if (!diagnosticsContainer) return;
@@ -123,6 +131,9 @@ function loadDiagnostics(container: HTMLElement): void {
   `;
 }
 
+/**
+ * Bind all event listeners for the settings route (auth, import/export, theme, cache).
+ */
 function bindEvents(container: HTMLElement): void {
   container.querySelector('#save-token-btn')?.addEventListener('click', () => {
     const input = container.querySelector('#pat-input') as HTMLInputElement;
@@ -147,9 +158,14 @@ function bindEvents(container: HTMLElement): void {
   });
 
   container.querySelector('#theme-select')?.addEventListener('change', (e) => {
-    const theme = (e.target as HTMLSelectElement).value;
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme-preference', theme);
+    const theme = (e.target as HTMLSelectElement).value as 'light' | 'dark' | 'auto' | 'time';
+    if (theme === 'auto') {
+      localStorage.removeItem('theme-preference');
+    } else {
+      localStorage.setItem('theme-preference', theme);
+    }
+    initTheme();
+    loadDiagnostics(container);
   });
 
   container.querySelector('#export-all-btn')?.addEventListener('click', () => {
