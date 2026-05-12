@@ -4,7 +4,8 @@
  * Uses getComputedStyle to confirm container query behavior at different widths.
  */
 import { test, expect } from '@playwright/test';
-import { seedGists } from '../helpers/seed-gists';
+import { seedGists, DEFAULT_TEST_GISTS } from '../helpers/seed-gists';
+import { mockGitHubApi } from '../helpers/mock-github-api';
 
 const CONTAINER_QUERIES = [
   { selector: '.gist-card', name: 'gist-card', expectedType: 'inline-size' },
@@ -18,6 +19,7 @@ test.describe('Container Queries', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     await seedGists(page);
+    await mockGitHubApi(page, DEFAULT_TEST_GISTS);
     await page.reload();
     await page.waitForLoadState('networkidle');
   });
@@ -49,34 +51,15 @@ test.describe('Container Queries', () => {
   });
 
   test('should have container-name set on gist detail', async ({ page }) => {
-    // Navigate to a gist detail if available
-    const card = page.locator('.gist-card').first();
-    const cardVisible = await card.isVisible().catch(() => false);
-
-    if (!cardVisible) {
-      test.skip(true, 'No gist cards available');
-      return;
-    }
-
-    // Dispatch offline event so networkMonitor thinks we're offline.
-    // This makes hydrateGist() skip the GitHub API call and read
-    // directly from IndexedDB (seeded in beforeEach).
-    // It does NOT block actual network requests, so SPA routing works.
+    // Navigate directly to detail (more reliable than clicking cards)
     await page.evaluate(() => {
-      window.dispatchEvent(new Event('offline'));
+      window.dispatchEvent(new CustomEvent('app:navigate', {
+        detail: { route: 'detail', params: { gistId: 'test-gist-1' } },
+      }));
     });
 
-    await card.click();
-    await page.waitForSelector('.gist-detail', { timeout: 8000 }).catch(() => {});
-
-    // Verify navigation succeeded before asserting
     const detail = page.locator('.gist-detail');
-    const detailVisible = await detail.isVisible().catch(() => false);
-
-    if (!detailVisible) {
-      test.skip(true, 'Navigation to detail failed (may need auth)');
-      return;
-    }
+    await detail.waitFor({ state: 'visible', timeout: 5000 });
 
     const containerName = await detail.evaluate(
       (el) => window.getComputedStyle(el).containerName
@@ -176,18 +159,7 @@ test.describe('Container Queries', () => {
   });
 
   test('should respect @container gist-card responsive breakpoints', async ({ page }) => {
-    // Dispatch offline event so networkMonitor thinks we're offline.
-    await page.evaluate(() => {
-      window.dispatchEvent(new Event('offline'));
-    });
-
-    // Wait for cards to load with proper locator-based wait
-    try {
-      await page.locator('.gist-card').first().waitFor({ state: 'visible', timeout: 5000 });
-    } catch {
-      test.skip(true, 'No gist cards rendered (may need authentication)');
-      return;
-    }
+    await page.locator('.gist-card').first().waitFor({ state: 'visible', timeout: 5000 });
 
     // Test at multiple viewport widths that change card layout
     const widths = [390, 768, 1280];

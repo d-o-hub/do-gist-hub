@@ -3,41 +3,28 @@
  * Verifies the detail header parallax animation and reduced-motion compliance.
  */
 import { test, expect } from '@playwright/test';
-import { seedGists } from '../helpers/seed-gists';
+import { seedGists, DEFAULT_TEST_GISTS } from '../helpers/seed-gists';
+import { mockGitHubApi } from '../helpers/mock-github-api';
 
 test.describe('Scroll-Driven Parallax', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     await seedGists(page);
+    await mockGitHubApi(page, DEFAULT_TEST_GISTS);
     await page.reload();
     await page.waitForLoadState('networkidle');
   });
 
   test('should inject scroll-progress bar on gist detail page', async ({ page }) => {
-    // Navigate to a gist detail page if available
-    const card = page.locator('.gist-card').first();
-    const cardVisible = await card.isVisible().catch(() => false);
-
-    if (!cardVisible) {
-      test.skip(true, 'No gist cards available to navigate to detail');
-      return;
-    }
-
-    // Dispatch offline event so hydrateGist() reads from IndexedDB
     await page.evaluate(() => {
-      window.dispatchEvent(new Event('offline'));
+      window.dispatchEvent(new CustomEvent('app:navigate', {
+        detail: { route: 'detail', params: { gistId: 'test-gist-1' } },
+      }));
     });
 
-    await card.click();
-    await page.waitForSelector('.gist-detail', { timeout: 8000 }).catch(() => {});
-
-    // Verify navigation succeeded before checking scroll-progress
-    const detailVisible = await page.locator('.gist-detail').isVisible().catch(() => false);
-    if (!detailVisible) {
-      test.skip(true, 'Navigation to gist detail failed');
-      return;
-    }
+    // Wait for detail view (API is mocked, responsive)
+    await page.locator('.gist-detail').waitFor({ state: 'visible', timeout: 5000 });
 
     // Check if scroll-progress bar was injected (progressive enhancement)
     const supportsScrollTimeline = await page.evaluate(() =>
@@ -116,29 +103,14 @@ test.describe('Scroll-Driven Parallax', () => {
     // Emulate prefers-reduced-motion: reduce
     await page.emulateMedia({ reducedMotion: 'reduce' });
 
-    // Navigate to gist detail
-    const card = page.locator('.gist-card').first();
-    const cardVisible = await card.isVisible().catch(() => false);
-
-    if (!cardVisible) {
-      test.skip(true, 'No gist cards available');
-      return;
-    }
-
-    // Dispatch offline event so hydrateGist() reads from IndexedDB
     await page.evaluate(() => {
-      window.dispatchEvent(new Event('offline'));
+      window.dispatchEvent(new CustomEvent('app:navigate', {
+        detail: { route: 'detail', params: { gistId: 'test-gist-1' } },
+      }));
     });
 
-    await card.click();
-    await page.waitForSelector('.gist-detail', { timeout: 8000 }).catch(() => {});
-
-    // Verify navigation succeeded before checking scroll-progress
-    const detailVisible = await page.locator('.gist-detail').isVisible().catch(() => false);
-    if (!detailVisible) {
-      test.skip(true, 'Navigation to gist detail failed');
-      return;
-    }
+    // Wait for detail view (API is mocked)
+    await page.locator('.gist-detail').waitFor({ state: 'visible', timeout: 5000 });
 
     const detailHeader = page.locator('.detail-header').first();
     const headerVisible = await detailHeader.isVisible().catch(() => false);
