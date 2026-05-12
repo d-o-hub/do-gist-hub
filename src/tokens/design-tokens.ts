@@ -1,13 +1,14 @@
-import { safeLog } from '../services/security/logger';
 /**
  * Design Token System Initialization
  * Injects CSS custom properties into the document
  */
 
+import { safeLog } from '../services/security/logger';
 import { generateCSSVariables } from './css-variables';
 
 let tokensLink: HTMLLinkElement | null = null;
 let themeIntervalId: ReturnType<typeof setInterval> | null = null;
+let ambientInitAttempted = false;
 
 /**
  * Initialize design tokens by linking a blob URL stylesheet.
@@ -44,9 +45,15 @@ export function resolveTimeBasedTheme(): 'light' | 'dark' {
 /**
  * Resolve any stored preference to the actual light/dark theme to apply.
  */
-export function resolveTheme(preference: 'light' | 'dark' | 'time' | null): 'light' | 'dark' {
+export function resolveTheme(
+  preference: 'light' | 'dark' | 'time' | 'ambient' | null
+): 'light' | 'dark' {
   if (preference === 'time') {
     return resolveTimeBasedTheme();
+  }
+
+  if (preference === 'ambient') {
+    return 'dark';
   }
 
   if (preference) {
@@ -96,9 +103,11 @@ export function cleanupThemeSystem(): void {
 }
 
 /**
- * Update theme (light/dark/time)
+ * Apply and persist a theme preference.
+ * Ambient mode is started by the settings route on user selection;
+ * initTheme() also restarts the sensor on page reload via dynamic import.
  */
-export function setTheme(theme: 'light' | 'dark' | 'time'): void {
+export function setTheme(theme: 'light' | 'dark' | 'time' | 'ambient'): void {
   const resolved = resolveTheme(theme);
   document.documentElement.setAttribute('data-theme', resolved);
 
@@ -110,6 +119,11 @@ export function setTheme(theme: 'light' | 'dark' | 'time'): void {
     startTimeBasedInterval();
   } else {
     clearThemeInterval();
+    if (theme !== 'ambient') {
+      // Reset one-shot guard when leaving ambient mode so a future
+      // initTheme() or manual selection can re-attempt sensor startup.
+      ambientInitAttempted = false;
+    }
   }
 }
 
@@ -118,9 +132,9 @@ export function setTheme(theme: 'light' | 'dark' | 'time'): void {
  * Validates the stored value against known valid preferences.
  * Returns null for invalid or missing values (including legacy 'auto').
  */
-export function getThemePreference(): 'light' | 'dark' | 'time' | null {
+export function getThemePreference(): 'light' | 'dark' | 'time' | 'ambient' | null {
   const raw = localStorage.getItem('theme-preference');
-  if (raw === 'light' || raw === 'dark' || raw === 'time') {
+  if (raw === 'light' || raw === 'dark' || raw === 'time' || raw === 'ambient') {
     return raw;
   }
   return null;
@@ -142,10 +156,20 @@ export function initTheme(): void {
   const resolved = resolveTheme(preference);
   document.documentElement.setAttribute('data-theme', resolved);
 
-  // Manage interval based on stored preference
+  // Manage interval / sensor based on stored preference
   if (preference === 'time') {
     startTimeBasedInterval();
   } else {
     clearThemeInterval();
+    if (preference === 'ambient') {
+      // Dynamically import to avoid circular dependency with UI layer.
+      // Guard with a one-shot flag so a broken sensor does not loop.
+      if (!ambientInitAttempted) {
+        ambientInitAttempted = true;
+        void import('../components/ui/ambient-light').then(({ startAmbientLightSensor }) => {
+          void startAmbientLightSensor();
+        });
+      }
+    }
   }
 }

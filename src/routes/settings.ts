@@ -2,13 +2,17 @@
  * Settings Route
  */
 
+import {
+  cleanupAmbientLightSensor,
+  enableAmbientLightTheming,
+} from '../components/ui/ambient-light';
 import { toast } from '../components/ui/toast';
 import { getToken, removeToken, saveToken } from '../services/github/auth';
 import networkMonitor from '../services/network/offline-monitor';
 import { redactToken, sanitizeHtml } from '../services/security';
 import { safeError } from '../services/security/logger';
 import gistStore from '../stores/gist-store';
-import { initTheme } from '../tokens/design-tokens';
+import { getThemePreference, initTheme } from '../tokens/design-tokens';
 import { showConfirmDialog } from '../utils/dialog';
 
 export async function render(
@@ -16,6 +20,16 @@ export async function render(
   params?: Record<string, string>
 ): Promise<void> {
   const currentTheme = params?.currentTheme || 'auto';
+
+  // Abort any previous route-level listeners before re-rendering
+  const previousController = (container as unknown as Record<string, unknown>)[
+    '_settingsAbortController'
+  ] as AbortController | undefined;
+  previousController?.abort();
+
+  const controller = new AbortController();
+  (container as unknown as Record<string, unknown>)['_settingsAbortController'] = controller;
+  const signal = controller.signal;
 
   container.innerHTML = `
     <div class="route-settings">
@@ -68,6 +82,7 @@ export async function render(
                 <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>Dark</option>
                 <option value="auto" ${currentTheme === 'auto' ? 'selected' : ''}>Auto (System)</option>
                 <option value="time" ${currentTheme === 'time' ? 'selected' : ''}>Time-based (Dark 7PM–7AM)</option>
+                <option value="ambient" ${currentTheme === 'ambient' ? 'selected' : ''}>Ambient Light (Opt-in)</option>
               </select>
             </div>
           </div>
@@ -91,7 +106,7 @@ export async function render(
 
   await loadTokenInfo(container);
   loadDiagnostics(container);
-  bindEvents(container);
+  bindEvents(container, signal);
 }
 
 /**
@@ -134,7 +149,7 @@ function loadDiagnostics(container: HTMLElement): void {
 /**
  * Bind all event listeners for the settings route (auth, import/export, theme, cache).
  */
-function bindEvents(container: HTMLElement): void {
+function bindEvents(container: HTMLElement, signal: AbortSignal): void {
   container.querySelector('#save-token-btn')?.addEventListener('click', () => {
     const input = container.querySelector('#pat-input') as HTMLInputElement;
     if (input.value) {
@@ -157,16 +172,43 @@ function bindEvents(container: HTMLElement): void {
     })();
   });
 
-  container.querySelector('#theme-select')?.addEventListener('change', (e) => {
-    const theme = (e.target as HTMLSelectElement).value as 'light' | 'dark' | 'auto' | 'time';
-    if (theme === 'auto') {
-      localStorage.removeItem('theme-preference');
-    } else {
-      localStorage.setItem('theme-preference', theme);
-    }
-    initTheme();
-    loadDiagnostics(container);
-  });
+  container.querySelector('#theme-select')?.addEventListener(
+    'change',
+    (e) => {
+      const theme = (e.target as HTMLSelectElement).value as
+        | 'light'
+        | 'dark'
+        | 'auto'
+        | 'time'
+        | 'ambient';
+      cleanupAmbientLightSensor();
+      if (theme === 'auto') {
+        localStorage.removeItem('theme-preference');
+        initTheme();
+      } else if (theme === 'ambient') {
+        void (async () => {
+          if (signal.aborted) return;
+          const ok = await enableAmbientLightTheming();
+          if (signal.aborted) return;
+          if (!ok) {
+            // Fallback already handled inside enableAmbientLightTheming
+            // Refresh select to show the effective preference
+            const select = container.querySelector('#theme-select') as HTMLSelectElement;
+            const effective = getThemePreference() || 'auto';
+            select.value = effective;
+          }
+          if (signal.aborted) return;
+          loadDiagnostics(container);
+        })();
+        return;
+      } else {
+        localStorage.setItem('theme-preference', theme);
+        initTheme();
+      }
+      loadDiagnostics(container);
+    },
+    { signal }
+  );
 
   container.querySelector('#export-all-btn')?.addEventListener('click', () => {
     void (async () => {

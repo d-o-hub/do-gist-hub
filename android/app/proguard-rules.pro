@@ -1,21 +1,35 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# ProGuard rules for d.o. Gist Hub (Capacitor Android)
+# These rules preserve Capacitor plugin classes and the JS bridge
+# so that minification does not break WebView ↔ native communication.
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep Capacitor core classes
+-keep class com.getcapacitor.** { *; }
+-keep class com.getcapacitor.annotation.** { *; }
+-keepclassmembers class com.getcapacitor.** {
+    @com.getcapacitor.annotation.CapacitorPlugin <methods>;
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep plugin classes
+-keep public class * extends com.getcapacitor.Plugin { *; }
+-keepclassmembers public class * extends com.getcapacitor.Plugin {
+    @com.getcapacitor.annotation.PluginMethod <methods>;
+}
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep Cordova plugin classes (if any are used)
+-keep public class * extends org.apache.cordova.CordovaPlugin { *; }
+
+# Keep JavaScript interface
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# Keep WebViewClient and WebChromeClient
+-keep public class * extends android.webkit.WebViewClient { *; }
+-keep public class * extends android.webkit.WebChromeClient { *; }
+
+# Keep the Capacitor Bridge and Config
+-keep class com.getcapacitor.Bridge { *; }
+-keep class com.getcapacitor.CapConfig { *; }
+
+# Keep the main activity
+-keep public class com.dogisthub.app.MainActivity { *; }
