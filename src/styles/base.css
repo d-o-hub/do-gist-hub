@@ -18,7 +18,16 @@
   --text-sm: var(--font-size-base);
   --text-base: var(--font-size-lg);
   --text-lg: var(--font-size-xl);
+  --text-xl: var(--font-size-2xl);
+  --text-3xl: var(--font-size-3xl);
   --text-display: var(--font-size-5xl);
+
+  /* Container query breakpoints */
+  --cq-sm: 400px;
+  --cq-md: 500px;
+  --cq-lg: 600px;
+  --cq-xl: 700px;
+  --cq-2xl: 800px;
 
   --radius-chip: var(--radius-full);
 
@@ -300,7 +309,7 @@ body {
   container-name: detail-view;
 }
 
-@container detail-view (min-width: 500px) {
+@container detail-view (min-width: var(--cq-md)) {
   .file-info-left {
     flex-direction: row;
     gap: var(--space-4);
@@ -308,7 +317,7 @@ body {
   }
 }
 
-@container detail-view (min-width: 700px) {
+@container detail-view (min-width: var(--cq-xl)) {
   .file-tabs {
     gap: var(--space-3);
     padding: var(--space-4) var(--space-8);
@@ -325,7 +334,7 @@ body {
   container-name: settings-panel;
 }
 
-@container settings-panel (min-width: 400px) {
+@container settings-panel (min-width: var(--cq-sm)) {
   .settings-section .form-actions {
     flex-direction: row;
     align-items: center;
@@ -336,7 +345,7 @@ body {
   }
 }
 
-@container settings-panel (min-width: 600px) {
+@container settings-panel (min-width: var(--cq-lg)) {
   .settings-section-content {
     padding: var(--space-6) var(--space-8);
   }
@@ -351,13 +360,13 @@ body {
   container-name: offline-panel;
 }
 
-@container offline-panel (min-width: 400px) {
+@container offline-panel (min-width: var(--cq-sm)) {
   .stat-card {
     padding: var(--space-6);
   }
 }
 
-@container offline-panel (min-width: 600px) {
+@container offline-panel (min-width: var(--cq-lg)) {
   .stat-card {
     padding: var(--space-8);
   }
@@ -382,7 +391,7 @@ body {
 }
 
 /* Container Query: Larger card layout for wider containers */
-@container gist-card (min-width: 400px) {
+@container gist-card (min-width: var(--cq-sm)) {
   .gist-card-header {
     flex-direction: row;
     align-items: center;
@@ -393,14 +402,14 @@ body {
   }
 }
 
-@container gist-card (min-width: 600px) {
+@container gist-card (min-width: var(--cq-lg)) {
   .gist-card-actions {
     flex-direction: row;
     justify-content: flex-end;
   }
 }
 
-@container gist-card (min-width: 800px) {
+@container gist-card (min-width: var(--cq-2xl)) {
   .gist-card-title {
     font-size: var(--text-xl);
   }
