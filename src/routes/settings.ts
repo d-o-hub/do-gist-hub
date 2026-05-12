@@ -150,7 +150,11 @@ function bindEvents(container: HTMLElement): void {
 
   container.querySelector('#theme-select')?.addEventListener('change', (e) => {
     const theme = (e.target as HTMLSelectElement).value as 'light' | 'dark' | 'auto' | 'time';
-    localStorage.setItem('theme-preference', theme);
+    if (theme === 'auto') {
+      localStorage.removeItem('theme-preference');
+    } else {
+      localStorage.setItem('theme-preference', theme);
+    }
     initTheme();
     loadDiagnostics(container);
   });

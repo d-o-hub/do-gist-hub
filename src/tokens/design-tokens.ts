@@ -61,6 +61,9 @@ export function resolveTheme(preference: 'light' | 'dark' | 'time' | null): 'lig
   return 'light';
 }
 
+/**
+ * Clear the active time-based theme re-evaluation interval.
+ */
 function clearThemeInterval(): void {
   if (themeIntervalId) {
     clearInterval(themeIntervalId);
@@ -68,6 +71,10 @@ function clearThemeInterval(): void {
   }
 }
 
+/**
+ * Start a periodic interval to re-evaluate the time-based theme.
+ * Clears any existing interval first to prevent duplicates.
+ */
 function startTimeBasedInterval(): void {
   clearThemeInterval();
   themeIntervalId = setInterval(() => {
@@ -78,6 +85,14 @@ function startTimeBasedInterval(): void {
       window.dispatchEvent(new CustomEvent('app:theme-change', { detail: { theme: next } }));
     }
   }, 900_000);
+}
+
+/**
+ * Clean up the theme system by clearing any active interval.
+ * Should be called on page unload or route teardown.
+ */
+export function cleanupThemeSystem(): void {
+  clearThemeInterval();
 }
 
 /**
@@ -99,10 +114,16 @@ export function setTheme(theme: 'light' | 'dark' | 'time'): void {
 }
 
 /**
- * Get stored theme preference (may be 'time')
+ * Get stored theme preference from localStorage.
+ * Validates the stored value against known valid preferences.
+ * Returns null for invalid or missing values (including legacy 'auto').
  */
 export function getThemePreference(): 'light' | 'dark' | 'time' | null {
-  return localStorage.getItem('theme-preference') as 'light' | 'dark' | 'time' | null;
+  const raw = localStorage.getItem('theme-preference');
+  if (raw === 'light' || raw === 'dark' || raw === 'time') {
+    return raw;
+  }
+  return null;
 }
 
 /**
