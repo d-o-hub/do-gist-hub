@@ -94,6 +94,9 @@ export async function render(
   bindEvents(container);
 }
 
+/**
+ * Load and display the current GitHub PAT status in the settings UI.
+ */
 async function loadTokenInfo(container: HTMLElement): Promise<void> {
   const el = container.querySelector('#token-status');
   const token = await getToken();
@@ -106,6 +109,9 @@ async function loadTokenInfo(container: HTMLElement): Promise<void> {
   }
 }
 
+/**
+ * Render diagnostics info (online status, gist count, current theme) into the settings UI.
+ */
 function loadDiagnostics(container: HTMLElement): void {
   const diagnosticsContainer = container.querySelector('#diagnostics-info');
   if (!diagnosticsContainer) return;
@@ -125,6 +131,9 @@ function loadDiagnostics(container: HTMLElement): void {
   `;
 }
 
+/**
+ * Bind all event listeners for the settings route (auth, import/export, theme, cache).
+ */
 function bindEvents(container: HTMLElement): void {
   container.querySelector('#save-token-btn')?.addEventListener('click', () => {
     const input = container.querySelector('#pat-input') as HTMLInputElement;
