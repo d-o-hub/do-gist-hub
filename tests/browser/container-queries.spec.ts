@@ -27,27 +27,23 @@ test.describe('Container Queries', () => {
   for (const cq of CONTAINER_QUERIES) {
     test(`should have container-type: ${cq.expectedType} on ${cq.name}`, async ({ page }) => {
       const el = page.locator(cq.selector).first();
-      const visible = await el.isVisible().catch(() => false);
+      await expect(el).toBeVisible();
 
-      if (visible) {
-        const containerType = await el.evaluate(
-          (el) => window.getComputedStyle(el).containerType
-        );
-        expect(containerType).toBe(cq.expectedType);
-      }
+      const containerType = await el.evaluate(
+        (el) => window.getComputedStyle(el).containerType
+      );
+      expect(containerType).toBe(cq.expectedType);
     });
   }
 
   test('should have container-name set on gist cards', async ({ page }) => {
     const card = page.locator('.gist-card').first();
-    const visible = await card.isVisible().catch(() => false);
+    await expect(card).toBeVisible();
 
-    if (visible) {
-      const containerName = await card.evaluate(
-        (el) => window.getComputedStyle(el).containerName
-      );
-      expect(containerName).toBe('gist-card');
-    }
+    const containerName = await card.evaluate(
+      (el) => window.getComputedStyle(el).containerName
+    );
+    expect(containerName).toBe('gist-card');
   });
 
   test('should have container-name set on gist detail', async ({ page }) => {
@@ -59,7 +55,7 @@ test.describe('Container Queries', () => {
     });
 
     const detail = page.locator('.gist-detail');
-    await detail.waitFor({ state: 'visible', timeout: 5000 });
+    await expect(detail).toBeVisible({ timeout: 5000 });
 
     const containerName = await detail.evaluate(
       (el) => window.getComputedStyle(el).containerName
@@ -72,94 +68,74 @@ test.describe('Container Queries', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
 
     const card = page.locator('.gist-card').first();
-    const cardVisible = await card.isVisible().catch(() => false);
+    await expect(card).toBeVisible();
 
-    if (cardVisible) {
-      const cardWidth = await card.evaluate((el) => el.getBoundingClientRect().width);
-      test.info().annotations.push({
-        type: 'card-width',
-        description: `gist-card width at 1440px viewport: ${cardWidth}px`,
-      });
+    const cardWidth = await card.evaluate((el) => el.getBoundingClientRect().width);
+    test.info().annotations.push({
+      type: 'card-width',
+      description: `gist-card width at 1440px viewport: ${cardWidth}px`,
+    });
 
-      // Card header should be in row layout when card width >= 400px
-      // (flex-direction: row from @container gist-card (min-width: 400px))
-      const header = card.locator('.gist-card-header');
-      const headerVisible = await header.isVisible().catch(() => false);
+    // Card header should be in row layout when card width >= 400px
+    const header = card.locator('.gist-card-header');
+    await expect(header).toBeVisible();
 
-      if (headerVisible) {
-        const flexDirection = await header.evaluate(
-          (el) => window.getComputedStyle(el).flexDirection
-        );
-        // The header should be row if the container query is active.
-        // This depends on the actual card width at the time of rendering.
-        test.info().annotations.push({
-          type: 'header-flex',
-          description: `gist-card-header flex-direction at ${cardWidth}px card width: ${flexDirection}`,
-        });
-      }
-    }
+    const flexDirection = await header.evaluate(
+      (el) => window.getComputedStyle(el).flexDirection
+    );
+    test.info().annotations.push({
+      type: 'header-flex',
+      description: `gist-card-header flex-direction at ${cardWidth}px card width: ${flexDirection}`,
+    });
   });
 
   test('should apply @container settings-panel rules on settings page', async ({ page }) => {
     // Navigate to settings
     const settingsBtn = page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first();
-    const btnVisible = await settingsBtn.isVisible().catch(() => false);
-
-    if (!btnVisible) {
-      test.skip(true, 'Settings button not visible');
-      return;
-    }
+    await expect(settingsBtn).toBeVisible();
 
     await settingsBtn.click();
-    await page.waitForSelector('.settings-section', { timeout: 5000 }).catch(() => {});
-
     const section = page.locator('.settings-section').first();
-    const visible = await section.isVisible().catch(() => false);
+    await expect(section).toBeVisible({ timeout: 5000 });
 
-    if (visible) {
-      const containerType = await section.evaluate(
-        (el) => window.getComputedStyle(el).containerType
-      );
-      const containerName = await section.evaluate(
-        (el) => window.getComputedStyle(el).containerName
-      );
-      expect(containerType).toBe('inline-size');
-      expect(containerName).toBe('settings-panel');
+    const containerType = await section.evaluate(
+      (el) => window.getComputedStyle(el).containerType
+    );
+    const containerName = await section.evaluate(
+      (el) => window.getComputedStyle(el).containerName
+    );
+    expect(containerType).toBe('inline-size');
+    expect(containerName).toBe('settings-panel');
 
-      test.info().annotations.push({
-        type: 'settings-container',
-        description: `settings-section: type=${containerType}, name=${containerName}`,
-      });
-    }
+    test.info().annotations.push({
+      type: 'settings-container',
+      description: `settings-section: type=${containerType}, name=${containerName}`,
+    });
   });
 
   test('should apply @container offline-panel rules on offline page', async ({ page }) => {
     // Navigate to offline
     await page.locator('[data-testid="nav-offline"]').first().click();
-    await page.waitForSelector('.offline-stats', { timeout: 5000 }).catch(() => {});
+    const section = page.locator('.offline-stats').first();
+    await expect(section).toBeVisible({ timeout: 5000 });
 
-    const stats = page.locator('.offline-stats').first();
-    const visible = await stats.isVisible().catch(() => false);
+    const containerType = await section.evaluate(
+      (el) => window.getComputedStyle(el).containerType
+    );
+    const containerName = await section.evaluate(
+      (el) => window.getComputedStyle(el).containerName
+    );
+    expect(containerType).toBe('inline-size');
+    expect(containerName).toBe('offline-panel');
 
-    if (visible) {
-      const containerType = await stats.evaluate(
-        (el) => window.getComputedStyle(el).containerType
-      );
-      const containerName = await stats.evaluate(
-        (el) => window.getComputedStyle(el).containerName
-      );
-      expect(containerType).toBe('inline-size');
-      expect(containerName).toBe('offline-panel');
-
-      test.info().annotations.push({
-        type: 'offline-container',
-        description: `offline-stats: type=${containerType}, name=${containerName}`,
-      });
-    }
+    test.info().annotations.push({
+      type: 'offline-container',
+      description: `offline-stats: type=${containerType}, name=${containerName}`,
+    });
   });
 
   test('should respect @container gist-card responsive breakpoints', async ({ page }) => {
-    await page.locator('.gist-card').first().waitFor({ state: 'visible', timeout: 5000 });
+    await expect(page.locator('.gist-card').first()).toBeVisible({ timeout: 5000 });
 
     // Test at multiple viewport widths that change card layout
     const widths = [390, 768, 1280];
@@ -169,20 +145,15 @@ test.describe('Container Queries', () => {
       await page.setViewportSize({ width, height: 800 });
 
       const card = page.locator('.gist-card').first();
-      const visible = await card.isVisible().catch(() => false);
+      await expect(card).toBeVisible();
 
-      if (visible) {
-        const cardWidth = await card.evaluate((el) => el.getBoundingClientRect().width);
-        const actions = card.locator('.gist-card-actions');
-        const actionsVisible = await actions.isVisible().catch(() => false);
+      const cardWidth = await card.evaluate((el) => el.getBoundingClientRect().width);
+      const actions = card.locator('.gist-card-actions');
+      await expect(actions).toBeVisible();
 
-        let flexDir = 'N/A';
-        if (actionsVisible) {
-          flexDir = await actions.evaluate((el) => window.getComputedStyle(el).flexDirection);
-        }
+      const flexDir = await actions.evaluate((el) => window.getComputedStyle(el).flexDirection);
 
-        results.push(`${width}px vp → card ${Math.round(cardWidth)}px → actions flex:${flexDir}`);
-      }
+      results.push(`${width}px vp → card ${Math.round(cardWidth)}px → actions flex:${flexDir}`);
     }
 
     test.info().annotations.push({
@@ -190,7 +161,6 @@ test.describe('Container Queries', () => {
       description: results.join(' | '),
     });
 
-    // At least one viewport should have rendered cards
-    expect(results.length).toBeGreaterThan(0);
+    expect(results.length).toBe(widths.length);
   });
 });

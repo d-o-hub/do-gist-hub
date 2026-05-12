@@ -4,7 +4,7 @@
  * Persists logs to IndexedDB for offline diagnostics.
  */
 
-import { getDB, type LogEntry } from '../db';
+import { getDB, isDBReady, type LogEntry } from '../db';
 
 /**
  * Redact a token, unconditionally returning '[REDACTED]'.
@@ -103,9 +103,12 @@ export async function persistLog(
   message: string,
   data?: unknown
 ): Promise<void> {
+  // Avoid circular dependency: if DB is being initialized (upgrade in progress),
+  // skip persistence to prevent getDB() from throwing before dbInstance is set.
+  if (!isDBReady()) return;
+
   try {
     const db = getDB();
-    if (!db) return;
 
     await db.add('logs', {
       timestamp: Date.now(),

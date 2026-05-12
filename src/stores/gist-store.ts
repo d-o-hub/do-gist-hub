@@ -39,7 +39,9 @@ class GistStore {
       this.notifyListeners();
       // Only sync from GitHub when both online and authenticated.
       // This prevents error noise from loadGists() on every unauthenticated page load.
-      if (networkMonitor.isOnline() && (await isAuthenticated())) await this.loadGists();
+      // Pass refresh=true to bypass the isLoading guard that would otherwise
+      // short-circuit the sync on startup (isLoading is set to true in init()).
+      if (networkMonitor.isOnline() && (await isAuthenticated())) await this.loadGists(true);
     } catch {
       safeError('[GistStore] Init failed');
     } finally {

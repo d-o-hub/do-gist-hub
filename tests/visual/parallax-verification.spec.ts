@@ -113,24 +113,22 @@ test.describe('Scroll-Driven Parallax', () => {
     await page.locator('.gist-detail').waitFor({ state: 'visible', timeout: 5000 });
 
     const detailHeader = page.locator('.detail-header').first();
-    const headerVisible = await detailHeader.isVisible().catch(() => false);
+    await expect(detailHeader).toBeVisible();
 
-    if (headerVisible) {
-      // When reduced motion is active, animation-duration should be ~0.01ms
-      // due to the reduced-motion media query
-      const animationDuration = await detailHeader.evaluate(
-        (el) => window.getComputedStyle(el).animationDuration
-      );
+    // When reduced motion is active, animation-duration should be ~0.01ms
+    // due to the reduced-motion media query
+    const animationDuration = await detailHeader.evaluate(
+      (el) => window.getComputedStyle(el).animationDuration
+    );
 
-      // The animation duration should be negligible (0.01ms or 0s)
-      const durationSec = parseFloat(animationDuration) || 0;
-      expect(durationSec).toBeLessThan(0.1);
+    // The animation duration should be negligible (0.01ms or 0s)
+    const durationSec = parseFloat(animationDuration) || 0;
+    expect(durationSec).toBeLessThan(0.1);
 
-      test.info().annotations.push({
-        type: 'reduced-motion',
-        description: `detail-header animation-duration with reduced-motion: ${animationDuration}`,
-      });
-    }
+    test.info().annotations.push({
+      type: 'reduced-motion',
+      description: `detail-header animation-duration with reduced-motion: ${animationDuration}`,
+    });
   });
 
   test('should have detail-header-parallax keyframe with translateY and opacity', async ({ page }) => {

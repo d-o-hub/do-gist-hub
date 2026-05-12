@@ -297,6 +297,7 @@
   }
 
   .detail-header {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     animation: none !important;
   }
 }

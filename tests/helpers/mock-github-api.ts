@@ -124,7 +124,10 @@ export async function mockGitHubApi(
       return;
     }
 
-    // Pass through all other API calls (e.g. /user for validateToken)
-    await route.continue();
+    // Fail unmocked API calls to prevent hitting the real GitHub API in tests
+    await route.fulfill({
+      status: 500,
+      json: { message: 'Unmocked API call — all GitHub requests must be explicitly mocked in tests' },
+    });
   });
 }
