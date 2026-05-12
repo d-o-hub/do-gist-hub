@@ -8,6 +8,7 @@ import networkMonitor from '../services/network/offline-monitor';
 import { redactToken, sanitizeHtml } from '../services/security';
 import { safeError } from '../services/security/logger';
 import gistStore from '../stores/gist-store';
+import { initTheme } from '../tokens/design-tokens';
 import { showConfirmDialog } from '../utils/dialog';
 
 export async function render(
@@ -66,6 +67,7 @@ export async function render(
                 <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>Light</option>
                 <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>Dark</option>
                 <option value="auto" ${currentTheme === 'auto' ? 'selected' : ''}>Auto (System)</option>
+                <option value="time" ${currentTheme === 'time' ? 'selected' : ''}>Time-based (Dark 7PM–7AM)</option>
               </select>
             </div>
           </div>
@@ -147,9 +149,10 @@ function bindEvents(container: HTMLElement): void {
   });
 
   container.querySelector('#theme-select')?.addEventListener('change', (e) => {
-    const theme = (e.target as HTMLSelectElement).value;
-    document.documentElement.setAttribute('data-theme', theme);
+    const theme = (e.target as HTMLSelectElement).value as 'light' | 'dark' | 'auto' | 'time';
     localStorage.setItem('theme-preference', theme);
+    initTheme();
+    loadDiagnostics(container);
   });
 
   container.querySelector('#export-all-btn')?.addEventListener('click', () => {

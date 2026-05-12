@@ -12,6 +12,13 @@ export default defineConfig({
     screenshot: 'on',
   },
 
+  webServer: {
+    command: 'pnpm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+    timeout: 300_000,
+  },
+
   projects: [
     {
       name: 'chromium',

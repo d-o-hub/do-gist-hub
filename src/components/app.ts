@@ -8,6 +8,7 @@ import * as offlineRoute from '../routes/offline';
 import { lifecycle } from '../services/lifecycle';
 import networkMonitor from '../services/network/offline-monitor';
 import syncQueue from '../services/sync/queue';
+import { getThemePreference } from '../tokens/design-tokens';
 import { announcer } from '../utils/announcer';
 import { withViewTransition } from '../utils/view-transitions';
 import { bottomSheet } from './ui/bottom-sheet';
@@ -56,9 +57,6 @@ export class App {
         localStorage.setItem('sort-preference', detail.sort);
       }
     });
-
-    const savedTheme = localStorage.getItem('theme-preference') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
 
     this.initializeCommandPalette();
   }
@@ -151,7 +149,7 @@ export class App {
           await RouteBoundary.wrap(main as HTMLElement, 'settings', async () => {
             const { render } = await import('../routes/settings');
             await render(main as HTMLElement, {
-              currentTheme: document.documentElement.getAttribute('data-theme') || 'auto',
+              currentTheme: getThemePreference() || 'auto',
             });
           });
           break;
