@@ -73,6 +73,7 @@ agents-docs/
 3. **CodeRabbit Integration**: CodeRabbit runs automatically on PRs and provides actionable review comments. Address its "nitpick" items by fixing the code, committing, and pushing. Re-monitor until CodeRabbit shows `pass` (or `Review skipped` if no new issues).
 4. **Docstring Coverage Threshold**: CodeRabbit enforces 80% docstring coverage. Add JSDoc comments to all exported and helper functions in changed files. Private functions should also be documented if they contain non-trivial logic.
 5. **Conventional Commits for Review Fixes**: When addressing review comments, use `fix:` or `docs:` scope (e.g., `fix: address CodeRabbit review comments — validate localStorage, add cleanupThemeSystem()`).
+6. **Review Iteration Commits vs Amend**: For a PR that has already passed checks, prefer creating a new `fix:` commit for additional review-round fixes rather than amending the existing commit. This preserves CI history and makes review iterations visible in the PR timeline. Only amend when the PR has not yet been reviewed or CI has not yet run.
 
 ## Swarm Coordination Patterns
 
