@@ -2,8 +2,8 @@
 
 > **Date**: 2026-05-13  
 > **PR**: [#156](https://github.com/d-o-hub/do-gist-hub/pull/156) — `test/add-unit-test-coverage`  
-> **Branch**: `test/add-unit-test-coverage`  
-> **Status**: All CI passing ✅  
+> **Status**: ✅ **MERGED** into `main` (commit `fb23476`)  
+> **Branch**: Deleted (local + remote auto-deleted by GitHub)  
 
 ## Summary
 
@@ -87,4 +87,16 @@ pnpm run lint         # ✅ 0 errors (78 files)
 pnpm run test:unit    # ✅ 790 passed (47 files)
 ```
 
-*Last updated: 2026-05-13*
+## Post-Merge Validation
+
+| Check | Status |
+|-------|--------|
+| Quality Gate (post-merge) | ✅ Pass |
+| Coverage (statements) | 80.19% ✅ |
+| Coverage (branches) | 70.47% ✅ |
+| Coverage (functions) | 82.07% ✅ |
+| Coverage (lines) | 81.88% ✅ |
+| TypeScript strict | ✅ Clean |
+| Biome lint | ✅ 0 errors (78 files) |
+
+*Last updated: 2026-05-13 (post-merge)*

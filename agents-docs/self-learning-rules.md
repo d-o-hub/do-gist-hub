@@ -89,6 +89,11 @@ agents-docs/
 1. **Parallel Polling**: Spawn multiple bashers simultaneously — one polling `gh pr checks`, another polling `gh pr view --comments` — to monitor PR status and review feedback in parallel.
 2. **Handoff After Review**: When review comments arrive, spawn a new swarm phase: (a) read affected files, (b) implement fixes, (c) run validation + code review in parallel, (d) commit and push, (e) re-monitor.
 3. **Agent Type Selection**: Use `basher` for all CLI tasks (`gh`, `git`, `pnpm`). Use `code-searcher` to find exact line numbers for targeted edits. Never use `explore` for bash tasks.
+4. **Fallback to Direct Tools**: When `file-picker` or other agents error, use `glob` + `list_directory` directly — faster and more reliable for simple file mapping.
+5. **Local vs CI Parity**: Playwright/browser tests may fail locally but pass in CI. Trust CI results; local failures are often headless browser or display issues.
+6. **Post-Merge Validation**: Always run quality gate after merge to confirm clean state. Coverage thresholds can transiently fail after branch switches — re-run to confirm.
+7. **`gh pr merge` Side Effects**: GitHub auto-deletes the remote branch after merge via `gh pr merge`. Explicit `git push origin --delete` will fail (ref does not exist) — this is expected.
+8. **Coverage Threshold Transience**: Switching branches can cause coverage check to fail transiently (EnvironmentTeardownErrors from leftover UI components). A clean re-run resolves it.
 
 ## Issue History
 

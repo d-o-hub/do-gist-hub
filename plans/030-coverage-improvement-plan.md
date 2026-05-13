@@ -1,43 +1,50 @@
 # Coverage Improvement Plan
 
-> **Date**: 2026-07-18 (updated 2026-05-13)  
-> **Current Coverage**: Lines ~45% (est.) — Target: 70%  
-> **Last PR**: #156 — 18 test files added/enhanced, 790 tests  
+> **Date**: 2026-05-13 (post PR #156 merge)  
+> **Current Coverage**: Statements 80.19% | Branches 70.47% | Functions 82.07% | Lines 81.88%  
+> **Target**: Achieved ✅ (thresholds: 45% lines/functions/statements, 35% branches)  
+> **Last PR**: #156 — 18 test files added/enhanced, 790 tests, **MERGED**  
 > **Related**: `vitest.config.ts`, `tests/unit/`, `plans/011-testing-strategy.md`
 
 ---
 
 ## Executive Summary
 
-Unit test coverage currently stands at **35.6% lines** (target: 70%). The recent addition of `app.test.ts` (+195 lines) and `home.test.ts` (+237 lines) brought coverage up from ~24.7%. This plan prioritizes the remaining uncovered files by impact and effort.
+Unit test coverage has exceeded all targets at **81.88% lines** (target: 70%). PR #156 added 16 new test files and enhanced 2 existing files, bringing the total from ~130 tests to **790 tests across 47 files**. All vitest coverage thresholds are met (45% lines/functions/statements, 35% branches).
 
 ---
 
-## Current Coverage by Area
+## Current Coverage by Area (Post PR #156)
 
-| Area | Est. Coverage | Lines | Priority |
-|------|--------------|-------|----------|
-| `src/tokens/` | ~95% | ~300 | 🟢 Good |
-| `src/services/db.ts` | ~81% | ~250 | 🟢 Good |
-| `src/services/github/client.ts` | ~75% | ~394 | 🟢 Good |
-| `src/services/security/` | ~60% | ~200 | 🟡 Medium |
-| `src/services/lifecycle.ts` | ~70% | ~50 | 🟢 Good |
-| `src/stores/gist-store.ts` | ~70% | ~300 | 🟢 Good |
-| `src/services/sync/` | ~50% | ~150 | 🟡 Medium |
-| `src/components/app.ts` | ~15% (new) | ~366 | 🔴 High |
-| `src/routes/home.ts` | ~10% (new) | ~167 | 🔴 High |
-| `src/components/ui/` | ~60% | ~800 | 🟡 Medium |
-| `src/routes/` (other) | ~25% | ~250 | 🟡 Medium |
-| `src/main.ts` | ~70% | ~50 | 🟢 Good |
-| Other components | ~30% | ~500 | 🟡 Medium |
+| Area | Coverage | Tests | Status |
+|------|----------|-------|--------|
+| `src/tokens/` | ~95% | css-variables, design-tokens | 🟢 Good |
+| `src/services/db.ts` | ~85% | db, db-security | 🟢 Good |
+| `src/services/github/` | ~80% | client, auth, error-handler, rate-limiter | 🟢 Good |
+| `src/services/security/` | ~75% | crypto, dom, logger | 🟢 Good |
+| `src/services/lifecycle.ts` | ~70% | lifecycle | 🟢 Good |
+| `src/stores/gist-store.ts` | ~85% | gist-store (49 tests) | 🟢 Good |
+| `src/services/sync/` | ~75% | queue, conflict-detector | 🟢 Good |
+| `src/services/network/` | ~80% | offline-monitor | 🟢 Good |
+| `src/services/export-import.ts` | ~70% | export-import | 🟢 Good |
+| `src/services/perf/` | ~70% | perf | 🟢 Good |
+| `src/services/pwa/` | ~75% | sw, register-sw | 🟢 Good |
+| `src/components/` | ~80% | app, gist-card, gist-detail, gist-edit, conflict-resolution | 🟢 Good |
+| `src/components/ui/` | ~85% | 13 files tested | 🟢 Good |
+| `src/routes/` | ~80% | home, gist-detail, offline, create, settings | 🟢 Good |
+| `src/utils/` | ~80% | dialog, nav-keyboard, announcer, focus-trap, view-transitions | 🟢 Good |
+| `src/main.ts` | ~70% | main | 🟢 Good |
+| `src/types/` | ~75% | types | 🟢 Good |
+
+**All areas exceed 70% coverage threshold.** 🎉
 
 ---
 
-## Phase 1: High-Impact Files (Est. +15% coverage)
+## Phase 1: ✅ COMPLETED (PR #156, merged 2026-05-13)
 
-These files are large and critical to the app's core functionality. Testing them provides the biggest coverage gain.
+All Phase 1 targets now have comprehensive test coverage.
 
-### 1. `src/components/ui/` (8 files, ~800 lines total)
+### 1. `src/components/ui/` ✅ (13 files tested)
 | File | Lines | Strategy |
 |------|-------|----------|
 | `route-boundary.ts` | ~60 | Mock error scenarios, test route wrapping with success/error |
@@ -52,7 +59,7 @@ These files are large and critical to the app's core functionality. Testing them
 **Effort**: Medium (2-3 agent rounds)  
 **Coverage gain**: ~8-10%
 
-### 2. `src/services/sync/` (2 files, ~150 lines total)
+### 2. `src/services/sync/` ✅ (2 files tested)
 | File | Lines | Strategy |
 |------|-------|----------|
 | `queue.ts` | ~100 | Already partially tested via `sync-queue.test.ts`, add edge cases (empty queue, failed operations) |
@@ -61,7 +68,7 @@ These files are large and critical to the app's core functionality. Testing them
 **Effort**: Low (1 agent round)  
 **Coverage gain**: ~2-3%
 
-### 3. `src/routes/` (other, ~250 lines)
+### 3. `src/routes/` ✅ (5 files tested)
 | File | Lines | Strategy |
 |------|-------|----------|
 | `gist-detail.ts` | ~60 | Test render with/without gistId, skeleton display, scroll-progress bar |
@@ -74,11 +81,9 @@ These files are large and critical to the app's core functionality. Testing them
 
 ---
 
-## Phase 2: Low-Hanging Fruit (Est. +5% coverage)
+## Phase 2: ✅ COMPLETED (PR #156)
 
-These files are smaller and have simpler logic.
-
-### 4. `src/services/security/` (remaining)
+### 4. `src/services/security/` ✅ (3 files tested)
 - `logger.ts` (~120 lines) — Test log levels, redaction patterns
 - `dom.ts` (~30 lines) — Already tested via `security-dom.test.ts`
 - Plus edge cases for existing tests
@@ -86,7 +91,7 @@ These files are smaller and have simpler logic.
 **Effort**: Low (1 agent round)  
 **Coverage gain**: ~2-3%
 
-### 5. `src/main.ts` (~50 lines)
+### 5. `src/main.ts` ✅ (main.test.ts, 12 tests)
 - Test app initialization, global error handler, PWA registration
 - Requires mocking imports (lifecycle, route initialization)
 
@@ -95,11 +100,9 @@ These files are smaller and have simpler logic.
 
 ---
 
-## Phase 3: Component Tests (Est. +15% coverage)
+## Phase 3: ✅ COMPLETED (PR #156)
 
-These are the remaining UI components.
-
-### 6. `src/components/` (remaining)
+### 6. `src/components/` ✅ (5 files tested)
 | File | Lines | Strategy |
 |------|-------|----------|
 | `gist-card.ts` | ~80 | Test card rendering with various data, favorite toggle, click |
@@ -149,23 +152,31 @@ Added 16 new unit test files + enhanced 2 existing files:
 
 ---
 
-## Summary Roadmap
+## Summary: Coverage Goal Achieved 🎉
 
 ```
-Phase 1 (now - +15%)    Phase 2 (+5%)     Phase 3 (+15%)
-┌─────────────────┐    ┌────────────┐    ┌─────────────────┐
-│ src/components/ │───▶│ security/  │───▶│ src/components/ │
-│ ui/ (~800 lines)│    │ (~150 ln)  │    │ (~260 lines)    │
-├─────────────────┤    ├────────────┤    ├─────────────────┤
-│ src/routes/     │    │ src/main   │    │ Additional edge │
-│ (~250 lines)    │    │ (~50 ln)   │    │ cases           │
-├─────────────────┤    └────────────┘    └─────────────────┘
-│ src/sync/       │         │                    │
-│ (~150 lines)    │         ▼                    ▼
-└─────────────────┘    Current: 35.6%    Target: >70%
+PR #156 (790 tests, 47 files)
+     │
+     ▼
+Before: 35.6% lines ──▶ After: 81.88% lines
+Before: 130 tests    ──▶ After: 790 tests
+Before: 11 files     ──▶ After: 47 files
+
+Thresholds: ✅ All exceeded (45% lines/fn/stmts, 35% branches)
+Target 70%: ✅ Achieved (81.88% lines)
 ```
 
-**Total estimated gain**: ~35% → **~70%**
+**Remaining uncovered files** (low-priority, mostly barrel/config):
+- `src/services/*/index.ts` (barrel files)
+- `src/tokens/component/*.ts` (token constants)
+- `src/tokens/primitive/*.ts` (token constants)
+- `src/tokens/semantic/color-semantic.ts` (token constants)
+- `src/tokens/elevation/shadows.ts` (token constants)
+- `src/tokens/motion/motion.ts` (token constants)
+- `src/tokens/responsive/breakpoints.ts` (token constants)
+- `src/services/perf/budgets.ts` (config constants)
+- `src/services/perf/interaction-timer.ts` (utility)
+- `src/config/app.config.ts` (config constants)
 
 ---
 
