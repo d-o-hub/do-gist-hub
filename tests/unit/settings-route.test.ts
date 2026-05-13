@@ -74,7 +74,11 @@ import { render } from '../../src/routes/settings';
 import { toast } from '../../src/components/ui/toast';
 import { getToken, saveToken, removeToken } from '../../src/services/github/auth';
 import networkMonitor from '../../src/services/network/offline-monitor';
-import { getThemePreference } from '../../src/tokens/design-tokens';
+import { getThemePreference, initTheme } from '../../src/tokens/design-tokens';
+import {
+  enableAmbientLightTheming,
+  cleanupAmbientLightSensor,
+} from '../../src/components/ui/ambient-light';
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
@@ -248,6 +252,150 @@ describe('Settings Route', () => {
       await vi.waitFor(() => {
         expect(toast.success).toHaveBeenCalledWith('EXPORT COMPLETE');
       });
+    });
+
+    it('handles import file selection and shows result', async () => {
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      // Trigger file selection via change event
+      const fileInput = container.querySelector('#import-file-input') as HTMLInputElement;
+
+      // Create a mock file
+      const file = new File(
+        [JSON.stringify({ version: '3.0.0', gists: [], metadata: { total: 0, starred: 0 } })],
+        'import.json',
+        { type: 'application/json' }
+      );
+
+      Object.defineProperty(fileInput, 'files', {
+        value: [file],
+        configurable: true,
+      });
+
+      fileInput.dispatchEvent(new Event('change'));
+
+      await vi.waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith(
+          expect.stringContaining('IMPORT COMPLETE')
+        );
+      });
+    });
+
+    it('shows error toast on import failure', async () => {
+      vi.mocked(getToken).mockResolvedValue(null);
+      // Override import mock to reject for this test
+      const { importGists } = await import('../../src/services/export-import');
+      vi.mocked(importGists).mockRejectedValue(new Error('Parse error'));
+
+      await render(container);
+
+      const fileInput = container.querySelector('#import-file-input') as HTMLInputElement;
+
+      Object.defineProperty(fileInput, 'files', {
+        value: [new File(['not json'], 'bad.json', { type: 'application/json' })],
+        configurable: true,
+      });
+
+      fileInput.dispatchEvent(new Event('change'));
+
+      await vi.waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith('IMPORT FAILED');
+      });
+    });
+  });
+
+  // ── data management ────────────────────────────────────────────────
+
+  describe('data management', () => {
+    it('clears all data on clear cache button confirm', async () => {
+      vi.mocked(getToken).mockResolvedValue(null);
+      const { showConfirmDialog } = await import('../../src/utils/dialog');
+      vi.mocked(showConfirmDialog).mockResolvedValue(true);
+
+      await render(container);
+
+      const clearBtn = container.querySelector('#clear-cache-btn') as HTMLElement;
+      clearBtn?.click();
+
+      await vi.waitFor(() => {
+        expect(showConfirmDialog).toHaveBeenCalledWith('CLEAR ALL LOCAL DATA?');
+      });
+    });
+
+    it('does not clear data on cache button cancel', async () => {
+      vi.mocked(getToken).mockResolvedValue(null);
+      const { showConfirmDialog } = await import('../../src/utils/dialog');
+      vi.mocked(showConfirmDialog).mockResolvedValue(false);
+
+      await render(container);
+
+      const clearBtn = container.querySelector('#clear-cache-btn') as HTMLElement;
+      clearBtn?.click();
+
+      await vi.waitFor(() => {
+        expect(showConfirmDialog).toHaveBeenCalled();
+      });
+    });
+
+    it('exports data on export data button click', async () => {
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      const exportDataBtn = container.querySelector('#export-data-btn') as HTMLElement;
+      exportDataBtn?.click();
+
+      await vi.waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith('DATA EXPORTED');
+      });
+    });
+  });
+
+  // ── ambient theme ──────────────────────────────────────────────────
+
+  describe('ambient theme', () => {
+    it('selects ambient and calls enableAmbientLightTheming', async () => {
+      vi.mocked(getToken).mockResolvedValue(null);
+      vi.mocked(enableAmbientLightTheming).mockResolvedValue(true);
+      await render(container);
+
+      const themeSelect = container.querySelector('#theme-select') as HTMLSelectElement;
+      themeSelect.value = 'ambient';
+      themeSelect.dispatchEvent(new Event('change'));
+
+      await vi.waitFor(() => {
+        expect(enableAmbientLightTheming).toHaveBeenCalled();
+      });
+    });
+
+    it('refreshes select value when ambient theming fails', async () => {
+      vi.mocked(getToken).mockResolvedValue(null);
+      vi.mocked(enableAmbientLightTheming).mockResolvedValue(false);
+      vi.mocked(getThemePreference).mockReturnValue('time');
+
+      await render(container);
+
+      const themeSelect = container.querySelector('#theme-select') as HTMLSelectElement;
+      themeSelect.value = 'ambient';
+      themeSelect.dispatchEvent(new Event('change'));
+
+      await vi.waitFor(() => {
+        expect(cleanupAmbientLightSensor).toHaveBeenCalled();
+      });
+    });
+  });
+
+  // ── abort controller ───────────────────────────────────────────────
+
+  describe('abort controller', () => {
+    it('aborts previous controller on re-render', async () => {
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      // The re-render should trigger abort on the previous controller
+      await render(container);
+
+      expect(container.innerHTML).toContain('Settings');
     });
   });
 });

@@ -25,9 +25,18 @@ vi.mock('../../src/services/sync/conflict-detector', () => ({
   storeConflict: vi.fn(),
 }));
 
-import { exportAllGists, importGists } from '../../src/services/export-import';
+vi.mock('../../src/services/security/logger', () => ({
+  safeError: vi.fn(),
+}));
+
+import {
+  exportAllGists,
+  importGists,
+  type ImportResult,
+} from '../../src/services/export-import';
 import * as db from '../../src/services/db';
 import * as conflictDetector from '../../src/services/sync/conflict-detector';
+import type { GistConflict } from '../../src/services/sync/conflict-detector';
 
 const mockGist = {
   id: 'gist-1',
@@ -154,6 +163,113 @@ describe('ExportImport', () => {
       const result = await importGists(file);
       expect(result.errors.length).toBeGreaterThan(0);
       expect(result.errors[0]).toContain('missing gists array');
+    });
+
+    it('detects conflict when existing gist differs', async () => {
+      vi.mocked(db.getGist).mockResolvedValue(mockGist);
+      vi.mocked(conflictDetector.detectConflict).mockReturnValue({
+        gistId: 'gist-1',
+        localVersion: mockGist,
+        remoteVersion: {} as GistConflict['remoteVersion'],
+        detectedAt: new Date().toISOString(),
+        conflictingFields: ['description'],
+      });
+
+      const file = new File(
+        [
+          JSON.stringify({
+            version: '3.0.0',
+            exportedAt: '2026-02-01T00:00:00Z',
+            gists: [{ ...mockGist, description: 'Changed description' }],
+            metadata: { total: 1, starred: 0 },
+          }),
+        ],
+        'import.json',
+        { type: 'application/json' }
+      );
+
+      const result = await importGists(file);
+
+      expect(conflictDetector.storeConflict).toHaveBeenCalled();
+      expect(result.conflicts).toBe(1);
+      expect(result.imported).toBe(0);
+    });
+
+    it('updates gist when imported version is newer and no conflict', async () => {
+      const newerGist = {
+        ...mockGist,
+        updatedAt: '2026-02-01T00:00:00Z',
+        description: 'Newer version',
+      };
+      vi.mocked(db.getGist).mockResolvedValue(mockGist);
+      vi.mocked(conflictDetector.detectConflict).mockReturnValue(null);
+
+      const file = new File(
+        [
+          JSON.stringify({
+            version: '3.0.0',
+            exportedAt: '2026-02-01T00:00:00Z',
+            gists: [newerGist],
+            metadata: { total: 1, starred: 0 },
+          }),
+        ],
+        'import.json',
+        { type: 'application/json' }
+      );
+
+      const result = await importGists(file);
+      expect(result.updated).toBe(1);
+      expect(db.saveGists).toHaveBeenCalledWith(
+        expect.arrayContaining([expect.objectContaining({ description: 'Newer version' })])
+      );
+    });
+
+    it('skips gist when local is newer than imported', async () => {
+      const olderGist = {
+        ...mockGist,
+        updatedAt: '2025-12-01T00:00:00Z',
+        description: 'Older version',
+      };
+      vi.mocked(db.getGist).mockResolvedValue(mockGist);
+      vi.mocked(conflictDetector.detectConflict).mockReturnValue(null);
+
+      const file = new File(
+        [
+          JSON.stringify({
+            version: '3.0.0',
+            exportedAt: '2026-02-01T00:00:00Z',
+            gists: [olderGist],
+            metadata: { total: 1, starred: 0 },
+          }),
+        ],
+        'import.json',
+        { type: 'application/json' }
+      );
+
+      const result = await importGists(file);
+      expect(result.skipped).toBe(1);
+      expect(result.updated).toBe(0);
+    });
+
+    it('handles per-gist import errors gracefully', async () => {
+      vi.mocked(db.getGist).mockRejectedValue(new Error('DB error'));
+
+      const file = new File(
+        [
+          JSON.stringify({
+            version: '3.0.0',
+            exportedAt: '2026-02-01T00:00:00Z',
+            gists: [mockGist],
+            metadata: { total: 1, starred: 0 },
+          }),
+        ],
+        'import.json',
+        { type: 'application/json' }
+      );
+
+      const result = await importGists(file);
+      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.imported).toBe(0);
     });
   });
 });

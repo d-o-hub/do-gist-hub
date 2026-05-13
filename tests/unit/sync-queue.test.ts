@@ -3,6 +3,8 @@ import { SyncQueue, type SyncAction } from '../../src/services/sync/queue';
 import * as db from '../../src/services/db';
 import networkMonitor from '../../src/services/network/offline-monitor';
 import * as github from '../../src/services/github';
+import * as rateLimiter from '../../src/services/github/rate-limiter';
+import * as conflictDetector from '../../src/services/sync/conflict-detector';
 import type { GitHubGist } from '../../src/types/api';
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
@@ -32,6 +34,10 @@ vi.mock('../../src/services/github', () => ({
   unstarGist: vi.fn(),
   forkGist: vi.fn(),
   getGist: vi.fn(),
+}));
+
+vi.mock('../../src/services/github/rate-limiter', () => ({
+  isSafeToRequest: vi.fn(() => true),
 }));
 
 vi.mock('../../src/services/security/logger', () => ({
@@ -318,6 +324,173 @@ describe('SyncQueue', () => {
 
       const length = await queue.getQueueLength();
       expect(length).toBe(2);
+    });
+  });
+
+  // ── executeWrite ─────────────────────────────────────────────────────────
+
+  describe('executeWrite', () => {
+    it('handles star action via syncStar', async () => {
+      vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
+      vi.mocked(db.getPendingWrites).mockResolvedValue([
+        {
+          id: 1,
+          gistId: 'gist-1',
+          action: 'star' as SyncAction,
+          payload: undefined,
+          createdAt: 1000,
+          retryCount: 0,
+        },
+      ]);
+      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+      vi.mocked(github.starGist).mockResolvedValue(undefined);
+
+      await queue.processQueue();
+
+      expect(github.starGist).toHaveBeenCalledWith('gist-1');
+    });
+
+    it('handles unstar action via syncUnstar', async () => {
+      vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
+      vi.mocked(db.getPendingWrites).mockResolvedValue([
+        {
+          id: 1,
+          gistId: 'gist-1',
+          action: 'unstar' as SyncAction,
+          payload: undefined,
+          createdAt: 1000,
+          retryCount: 0,
+        },
+      ]);
+      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+      vi.mocked(github.unstarGist).mockResolvedValue(undefined);
+
+      await queue.processQueue();
+
+      expect(github.unstarGist).toHaveBeenCalledWith('gist-1');
+    });
+
+    it('handles fork action via syncFork', async () => {
+      vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
+      vi.mocked(db.getPendingWrites).mockResolvedValue([
+        {
+          id: 1,
+          gistId: 'gist-1',
+          action: 'fork' as SyncAction,
+          payload: undefined,
+          createdAt: 1000,
+          retryCount: 0,
+        },
+      ]);
+      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+      const forkedGist = makeMockGist('gist-forked');
+      vi.mocked(github.forkGist).mockResolvedValue(forkedGist);
+
+      await queue.processQueue();
+
+      expect(github.forkGist).toHaveBeenCalledWith('gist-1');
+    });
+
+    it('detects pre-write conflict when expectedRemoteVersion mismatches', async () => {
+      vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
+      vi.mocked(db.getPendingWrites).mockResolvedValue([
+        {
+          id: 1,
+          gistId: 'gist-1',
+          action: 'update' as SyncAction,
+          payload: { description: 'updated' },
+          createdAt: 1000,
+          retryCount: 0,
+          expectedRemoteVersion: '2026-01-01T10:00:00Z',
+        },
+      ]);
+      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+      const remoteGist = makeMockGist('gist-1');
+      remoteGist.updated_at = '2026-01-15T12:00:00Z'; // Different from expected
+      vi.mocked(github.getGist).mockResolvedValue(remoteGist);
+      vi.mocked(db.getGist).mockResolvedValue({ id: 'gist-1', description: 'local' } as never);
+      vi.mocked(conflictDetector.detectConflict).mockReturnValue({
+        gistId: 'gist-1',
+        conflictingFields: ['updated_at'],
+        detectedAt: new Date().toISOString(),
+      } as never);
+
+      await queue.processQueue();
+
+      expect(conflictDetector.storeConflict).toHaveBeenCalled();
+      expect(db.removePendingWrite).not.toHaveBeenCalledWith(1);
+    });
+
+    it('handles unknown action gracefully', async () => {
+      vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
+      vi.mocked(db.getPendingWrites).mockResolvedValue([
+        {
+          id: 5,
+          gistId: 'gist-5',
+          action: 'unknown' as SyncAction,
+          payload: undefined,
+          createdAt: 1000,
+          retryCount: 0,
+        },
+      ]);
+      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+
+      await queue.processQueue();
+
+      expect(db.updatePendingWriteError).toHaveBeenCalledWith(
+        5,
+        expect.stringContaining('Unknown action')
+      );
+    });
+  });
+
+  // ── isRetryableError ───────────────────────────────────────────────────
+
+  describe('isRetryableError', () => {
+    it('is retryable for network errors', () => {
+      // Access via the SyncQueue type to test private static method
+      const SyncQueueAny = SyncQueue as unknown as { isRetryableError(e: unknown): boolean };
+      expect(SyncQueueAny.isRetryableError(new Error('network error'))).toBe(true);
+      expect(SyncQueueAny.isRetryableError(new Error('fetch failed'))).toBe(true);
+      expect(SyncQueueAny.isRetryableError(new Error('rate limit exceeded'))).toBe(true);
+      expect(SyncQueueAny.isRetryableError(new Error('timeout'))).toBe(true);
+    });
+
+    it('is not retryable for non-network errors', () => {
+      const SyncQueueAny = SyncQueue as unknown as { isRetryableError(e: unknown): boolean };
+      expect(SyncQueueAny.isRetryableError(new Error('bad request'))).toBe(false);
+      expect(SyncQueueAny.isRetryableError(new Error('not found'))).toBe(false);
+    });
+
+    it('is not retryable for non-Error values', () => {
+      const SyncQueueAny = SyncQueue as unknown as { isRetryableError(e: unknown): boolean };
+      expect(SyncQueueAny.isRetryableError('string error')).toBe(false);
+      expect(SyncQueueAny.isRetryableError(null)).toBe(false);
+    });
+  });
+
+  // ── rate limiter ───────────────────────────────────────────────────────
+
+  describe('rate limiter integration', () => {
+    it('pauses queue processing when rate limit is low', async () => {
+      vi.mocked(rateLimiter.isSafeToRequest).mockReturnValue(false);
+      vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
+      vi.mocked(db.getPendingWrites).mockResolvedValue([
+        {
+          id: 1,
+          gistId: 'gist-1',
+          action: 'create' as SyncAction,
+          payload: {},
+          createdAt: 1000,
+          retryCount: 0,
+        },
+      ]);
+      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+
+      await queue.processQueue();
+
+      // Should not call createGist since rate limiter says not safe
+      expect(github.createGist).not.toHaveBeenCalled();
     });
   });
 
