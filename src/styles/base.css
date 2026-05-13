@@ -18,7 +18,17 @@
   --text-sm: var(--font-size-base);
   --text-base: var(--font-size-lg);
   --text-lg: var(--font-size-xl);
+  --text-xl: var(--font-size-2xl);
+  --text-3xl: var(--font-size-3xl);
   --text-display: var(--font-size-5xl);
+
+  /* Container query breakpoints (reference tokens — @container size queries
+     cannot use var() per CSS spec; these document the magic numbers below) */
+  --cq-sm: 400px;
+  --cq-md: 500px;
+  --cq-lg: 600px;
+  --cq-xl: 700px;
+  --cq-2xl: 800px;
 
   --radius-chip: var(--radius-full);
 
@@ -336,6 +346,16 @@ body {
   }
 }
 
+@container settings-panel (min-width: 600px) {
+  .settings-section-content {
+    padding: var(--space-6) var(--space-8);
+  }
+
+  .settings-section-header {
+    padding: var(--space-5) var(--space-8);
+  }
+}
+
 .offline-stats {
   container-type: inline-size;
   container-name: offline-panel;
@@ -344,6 +364,16 @@ body {
 @container offline-panel (min-width: 400px) {
   .stat-card {
     padding: var(--space-6);
+  }
+}
+
+@container offline-panel (min-width: 600px) {
+  .stat-card {
+    padding: var(--space-8);
+  }
+
+  .stat-number {
+    font-size: var(--text-3xl);
   }
 }
 
@@ -377,6 +407,20 @@ body {
   .gist-card-actions {
     flex-direction: row;
     justify-content: flex-end;
+  }
+}
+
+@container gist-card (min-width: 800px) {
+  .gist-card-title {
+    font-size: var(--text-xl);
+  }
+
+  .gist-card-actions {
+    gap: var(--space-4);
+  }
+
+  .gist-preview-code {
+    max-height: var(--spacing-28);
   }
 }
 

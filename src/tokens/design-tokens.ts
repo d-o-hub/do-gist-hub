@@ -11,7 +11,11 @@ let themeIntervalId: ReturnType<typeof setInterval> | null = null;
 let ambientInitAttempted = false;
 
 /**
- * Initialize design tokens by linking a blob URL stylesheet.
+ * Initialize design tokens by linking a stylesheet.
+ *
+ * - Production: uses build-time generated static /design-tokens.css (no blob URL needed).
+ * - Development: uses runtime blob URL for HMR compatibility.
+ *
  * Avoids inline styles to comply with strict CSP (no unsafe-inline).
  */
 export function initDesignTokens(): void {
@@ -19,14 +23,19 @@ export function initDesignTokens(): void {
     return;
   }
 
-  const css = generateCSSVariables();
-  const blob = new Blob([css], { type: 'text/css' });
-  const url = URL.createObjectURL(blob);
-
   tokensLink = document.createElement('link');
   tokensLink.rel = 'stylesheet';
-  tokensLink.href = url;
   tokensLink.id = 'design-tokens';
+
+  if (import.meta.env.DEV) {
+    // Dev: use blob URL for HMR compatibility
+    const css = generateCSSVariables();
+    const blob = new Blob([css], { type: 'text/css' });
+    tokensLink.href = URL.createObjectURL(blob);
+  } else {
+    // Prod: use build-time generated static CSS file
+    tokensLink.href = '/design-tokens.css';
+  }
 
   document.head.appendChild(tokensLink);
 

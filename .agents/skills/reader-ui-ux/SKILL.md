@@ -115,7 +115,7 @@ See `references/checklist.md` for full accessibility, responsive, motion, naviga
 ## Quick Reference
 
 ```bash
-npm run init:design          # Initialize design tokens
+pnpm run build              # Generates design tokens CSS at build time (via designTokensBuildPlugin)
 npm run test:responsive -- --viewport=768  # Test breakpoint
 npm run test:a11y            # Check accessibility
 ```

@@ -56,10 +56,10 @@ void (async function init(): Promise<void> {
     const authenticated = await isAuthenticated();
     safeLog('[App] Authenticated:', authenticated);
 
-    // Initialize gist store (loads from IndexedDB, then syncs from GitHub if online)
-    if (authenticated) {
-      await gistStore.init();
-    }
+    // Initialize gist store (loads from IndexedDB, then syncs from GitHub if online).
+    // Always init to show cached gists even without auth (offline-first UX).
+    // loadGists() fails silently when unauthenticated.
+    await gistStore.init();
 
     // Mount app
     const app = new App();

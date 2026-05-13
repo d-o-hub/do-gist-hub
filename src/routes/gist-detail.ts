@@ -26,7 +26,9 @@ export function render(container: HTMLElement, params?: Record<string, string>):
   );
 
   // Progressive enhancement: add scroll-progress bar if supported
+  // Guard against environments where CSS is unavailable (e.g. jsdom)
   if (
+    typeof CSS !== 'undefined' &&
     CSS.supports('animation-timeline', 'scroll()') &&
     !document.querySelector('.scroll-progress')
   ) {

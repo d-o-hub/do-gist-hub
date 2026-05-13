@@ -5,6 +5,7 @@ import {
   type GistRecord,
   saveGists,
 } from '../services/db';
+import { isAuthenticated } from '../services/github/auth';
 import * as GitHub from '../services/github/client';
 import type { AppError } from '../services/github/error-handler';
 import networkMonitor from '../services/network/offline-monitor';
@@ -36,7 +37,11 @@ class GistStore {
       this.gists = await dbGetAllGists();
       this.sortGists();
       this.notifyListeners();
-      if (networkMonitor.isOnline()) await this.loadGists();
+      // Only sync from GitHub when both online and authenticated.
+      // This prevents error noise from loadGists() on every unauthenticated page load.
+      // Pass refresh=true to bypass the isLoading guard that would otherwise
+      // short-circuit the sync on startup (isLoading is set to true in init()).
+      if (networkMonitor.isOnline() && (await isAuthenticated())) await this.loadGists(true);
     } catch {
       safeError('[GistStore] Init failed');
     } finally {
