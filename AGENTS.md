@@ -65,3 +65,20 @@ pnpm run typecheck                         # TypeScript strict
 pnpm run lint                              # Biome zero errors
 ./scripts/quality_gate.sh                  # Full quality gate
 ```
+
+---
+
+## Self-Learning Rules (Auto-Generated)
+
+This section is automatically updated by `./scripts/analyze-codebase.sh`.
+
+### CSS Layout Rules
+
+1. **Mobile-First Navigation**: Always use `display: none` base style for sidebar
+2. **Dynamic Viewport**: Use `100dvh` for app shell on mobile
+3. **Safe Areas**: Include `env(safe-area-inset-*)` for header/footer padding
+4. **Flex Scrolling**: Add `min-height: 0` to flex children with overflow
+
+### Issue History
+
+See `agents-docs/issues/` for documented issues and fixes.

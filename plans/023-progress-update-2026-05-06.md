@@ -61,7 +61,7 @@ From plans/ analysis, still pending:
 
 - **ADR-022**: 2026 UI trends (bento grid, glassmorphism, dark mode first, etc.)
 - **Container queries**: Declared but unused in components
-- **Test stubs**: Several `*-stubs.spec.ts` files need full implementation
+- **Test stubs**: Several `*-stubs.spec.ts` files need full implementation *(2026-07-18: All since implemented and renamed — memory-lifecycle.spec.ts, security-compliance.spec.ts, performance-metrics.spec.ts, modernization-implementation.spec.ts)*
 
 ## Next Steps
 

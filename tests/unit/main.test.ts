@@ -6,6 +6,20 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 // main.ts has many imports that need to be mocked to test in isolation.
 
+// Mock CSS and font imports (side-effect only)
+vi.mock('@fontsource-variable/inter', () => ({}));
+vi.mock('@fontsource-variable/jetbrains-mono', () => ({}));
+vi.mock('@fontsource/anton', () => ({}));
+vi.mock('../../src/styles/base.css', () => ({}));
+vi.mock('../../src/styles/empty-state.css', () => ({}));
+vi.mock('../../src/styles/accessibility.css', () => ({}));
+vi.mock('../../src/styles/interactions.css', () => ({}));
+vi.mock('../../src/styles/motion.css', () => ({}));
+vi.mock('../../src/styles/navigation.css', () => ({}));
+vi.mock('../../src/styles/modern-glass.css', () => ({}));
+vi.mock('../../src/styles/conflicts.css', () => ({}));
+vi.mock('../../src/styles/command-palette.css', () => ({}));
+
 vi.mock('../../src/components/app', () => {
   const mockMount = vi.fn();
   return {
@@ -248,6 +262,38 @@ describe('main.ts bootstrap', () => {
       }
 
       expect(safeError).not.toHaveBeenCalled(); // still there since we didn't remove it
+    });
+  });
+
+  // ── Dynamic Import (actual main.ts coverage) ─────────────────────
+
+  describe('dynamic import of main.ts', () => {
+    it('executes main.ts top-level and IIFE without throwing', async () => {
+      // jsdom doesn't implement CSS.supports
+      vi.stubGlobal('CSS', { supports: vi.fn(() => true) });
+
+      // Set up mount point before dynamic import
+      const mountPoint = document.createElement('div');
+      mountPoint.id = 'app';
+      document.body.appendChild(mountPoint);
+
+      try {
+        // Dynamic import triggers top-level code (initGlobalErrorHandling,
+        // initDesignTokens, initTheme, safeLog calls) and the IIFE
+        await import('../../src/main');
+
+        // Verify top-level calls were made
+        expect(initGlobalErrorHandling).toHaveBeenCalled();
+        expect(initDesignTokens).toHaveBeenCalled();
+        expect(initTheme).toHaveBeenCalled();
+        expect(safeLog).toHaveBeenCalledWith(
+          '[App] View Transitions API:',
+          'supported'
+        );
+      } finally {
+        vi.unstubAllGlobals();
+        mountPoint.remove();
+      }
     });
   });
 

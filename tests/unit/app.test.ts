@@ -18,6 +18,18 @@ vi.mock('../../src/services/lifecycle', () => ({
   },
 }));
 
+vi.mock('../../src/services/security', () => ({
+  sanitizeHtml: vi.fn((s: string) => s),
+  html: vi.fn((strings: TemplateStringsArray, ...values: unknown[]) =>
+    strings.reduce((acc, str, i) => `${acc}${str}${values[i] ?? ''}`, ''),
+  ),
+  redactSecrets: vi.fn((s: unknown) => s),
+  redactToken: vi.fn((t: string) => t),
+  safeError: vi.fn(),
+  safeLog: vi.fn(),
+  safeWarn: vi.fn(),
+}));
+
 vi.mock('../../src/services/network/offline-monitor', () => ({
   default: {
     isOnline: vi.fn(() => true),
