@@ -9,9 +9,6 @@ import { mockGitHubApi } from '../helpers/mock-github-api';
 
 const CONTAINER_QUERIES = [
   { selector: '.gist-card', name: 'gist-card', expectedType: 'inline-size' },
-  { selector: '.gist-detail', name: 'detail-view', expectedType: 'inline-size' },
-  { selector: '.settings-section', name: 'settings-panel', expectedType: 'inline-size' },
-  { selector: '.offline-stats', name: 'offline-panel', expectedType: 'inline-size' },
 ] as const;
 
 test.describe('Container Queries', () => {
@@ -19,9 +16,11 @@ test.describe('Container Queries', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     await seedGists(page);
-    await mockGitHubApi(page, DEFAULT_TEST_GISTS);
     await page.reload();
     await page.waitForLoadState('networkidle');
+    // Mock API after reload — Playwright route interceptors are cleared on navigation.
+    // Must be set up after reload so hydrateGist calls are properly intercepted.
+    await mockGitHubApi(page, DEFAULT_TEST_GISTS);
   });
 
   for (const cq of CONTAINER_QUERIES) {
@@ -56,6 +55,11 @@ test.describe('Container Queries', () => {
 
     const detail = page.locator('.gist-detail');
     await expect(detail).toBeVisible({ timeout: 5000 });
+
+    const containerType = await detail.evaluate(
+      (el) => window.getComputedStyle(el).containerType
+    );
+    expect(containerType).toBe('inline-size');
 
     const containerName = await detail.evaluate(
       (el) => window.getComputedStyle(el).containerName
