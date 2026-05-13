@@ -74,6 +74,12 @@ beforeEach(() => {
 
   // Mock fetch to prevent real network requests and unhandled rejections
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('ok')));
+
+  mockCache.keys.mockResolvedValue([]);
+  mockCache.match.mockResolvedValue(undefined);
+  mockCache.put.mockResolvedValue(undefined);
+  mockCache.addAll.mockResolvedValue(undefined);
+  mockCacheStorage.match.mockResolvedValue(undefined);
 });
 
 beforeAll(async () => {
@@ -201,6 +207,112 @@ describe('ServiceWorker (sw.ts)', () => {
     });
   });
 
+  it('updates cache on successful navigation fetch', async () => {
+    const listener = getListener('fetch');
+    expect(listener).toBeDefined();
+
+    const respondWithSpy = vi.fn();
+    const request = new Request('http://localhost:3000/');
+    Object.defineProperty(request, 'mode', { value: 'navigate' });
+
+    // Mock fetch to return a successful response
+    const responseBody = '<html>test</html>';
+    const mockResponse = new Response(responseBody, {
+      status: 200,
+      headers: { 'Content-Type': 'text/html' },
+    });
+    vi.mocked(fetch).mockResolvedValue(mockResponse);
+
+    (listener as (e: Event) => void)({
+      type: 'fetch',
+      request,
+      respondWith: respondWithSpy,
+    } as unknown as Event);
+
+    await vi.waitFor(() => {
+      expect(respondWithSpy).toHaveBeenCalled();
+    });
+
+    // The response should eventually trigger cache.put for the updated response
+    await vi.waitFor(() => {
+      expect(mockCacheStorage.open).toHaveBeenCalled();
+    });
+  });
+
+  it('serves offline.html on navigation fetch failure', async () => {
+    const listener = getListener('fetch');
+    expect(listener).toBeDefined();
+
+    const respondWithSpy = vi.fn();
+    const request = new Request('http://localhost:3000/');
+    Object.defineProperty(request, 'mode', { value: 'navigate' });
+
+    // Fetch fails (offline)
+    vi.mocked(fetch).mockRejectedValue(new Error('Network offline'));
+    // offline.html is cached
+    mockCacheStorage.match.mockResolvedValue(new Response('<html>offline</html>'));
+
+    (listener as (e: Event) => void)({
+      type: 'fetch',
+      request,
+      respondWith: respondWithSpy,
+    } as unknown as Event);
+
+    await vi.waitFor(() => {
+      expect(mockCacheStorage.match).toHaveBeenCalledWith('/offline.html');
+    });
+  });
+
+  it('serves cached fallback when offline and no offline.html', async () => {
+    const listener = getListener('fetch');
+    expect(listener).toBeDefined();
+
+    const respondWithSpy = vi.fn();
+    const request = new Request('http://localhost:3000/');
+    Object.defineProperty(request, 'mode', { value: 'navigate' });
+
+    // Fetch fails (offline)
+    vi.mocked(fetch).mockRejectedValue(new Error('Network offline'));
+    // offline.html not cached, but request itself is cached
+    mockCacheStorage.match
+      .mockResolvedValueOnce(undefined) // First call: offline.html not found
+      .mockResolvedValueOnce(new Response('cached content')); // Second call: cached request
+
+    (listener as (e: Event) => void)({
+      type: 'fetch',
+      request,
+      respondWith: respondWithSpy,
+    } as unknown as Event);
+
+    await vi.waitFor(() => {
+      expect(mockCacheStorage.match).toHaveBeenCalledWith('/offline.html');
+    });
+  });
+
+  it('provides plain text fallback when completely offline', async () => {
+    const listener = getListener('fetch');
+    expect(listener).toBeDefined();
+
+    const respondWithSpy = vi.fn();
+    const request = new Request('http://localhost:3000/');
+    Object.defineProperty(request, 'mode', { value: 'navigate' });
+
+    // Fetch fails (offline)
+    vi.mocked(fetch).mockRejectedValue(new Error('Network offline'));
+    // Nothing cached
+    mockCacheStorage.match.mockResolvedValue(undefined);
+
+    (listener as (e: Event) => void)({
+      type: 'fetch',
+      request,
+      respondWith: respondWithSpy,
+    } as unknown as Event);
+
+    await vi.waitFor(() => {
+      expect(mockCacheStorage.match).toHaveBeenCalledTimes(2);
+    });
+  });
+
   it('bypasses cache for GitHub API requests', async () => {
     const listener = getListener('fetch');
     expect(listener).toBeDefined();
@@ -215,6 +327,97 @@ describe('ServiceWorker (sw.ts)', () => {
     } as unknown as Event);
 
     expect(respondWithSpy).toHaveBeenCalled();
+  });
+
+  it('uses cache-first strategy for static assets (style)', async () => {
+    const listener = getListener('fetch');
+    expect(listener).toBeDefined();
+
+    const respondWithSpy = vi.fn();
+    const request = new Request('http://localhost:3000/style.css');
+    // Override destination for style
+    Object.defineProperty(request, 'destination', { value: 'style' });
+
+    // Cache hit
+    mockCacheStorage.match.mockResolvedValue(new Response('cached css'));
+
+    (listener as (e: Event) => void)({
+      type: 'fetch',
+      request,
+      respondWith: respondWithSpy,
+    } as unknown as Event);
+
+    await vi.waitFor(() => {
+      expect(mockCacheStorage.match).toHaveBeenCalledWith(request);
+    });
+  });
+
+  it('fetches and caches static asset on cache miss', async () => {
+    const listener = getListener('fetch');
+    expect(listener).toBeDefined();
+
+    const respondWithSpy = vi.fn();
+    const request = new Request('http://localhost:3000/app.js');
+    Object.defineProperty(request, 'destination', { value: 'script' });
+
+    // Cache miss
+    mockCacheStorage.match.mockResolvedValue(undefined);
+    // Fetch succeeds
+    const mockResponse = new Response('console.log("ok")', { status: 200 });
+    vi.mocked(fetch).mockResolvedValue(mockResponse);
+
+    (listener as (e: Event) => void)({
+      type: 'fetch',
+      request,
+      respondWith: respondWithSpy,
+    } as unknown as Event);
+
+    await vi.waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(request);
+    });
+  });
+
+  it('uses network-first strategy for non-navigate, non-static requests', async () => {
+    const listener = getListener('fetch');
+    expect(listener).toBeDefined();
+
+    const respondWithSpy = vi.fn();
+    const request = new Request('http://localhost:3000/some-data.json');
+    Object.defineProperty(request, 'destination', { value: '' });
+
+    (listener as (e: Event) => void)({
+      type: 'fetch',
+      request,
+      respondWith: respondWithSpy,
+    } as unknown as Event);
+
+    await vi.waitFor(() => {
+      expect(respondWithSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('falls back to cache for network-first when fetch fails', async () => {
+    const listener = getListener('fetch');
+    expect(listener).toBeDefined();
+
+    const respondWithSpy = vi.fn();
+    const request = new Request('http://localhost:3000/some-data.json');
+    Object.defineProperty(request, 'destination', { value: '' });
+
+    // Fetch fails
+    vi.mocked(fetch).mockRejectedValue(new Error('offline'));
+    // Cache hit
+    mockCacheStorage.match.mockResolvedValue(new Response('cached data'));
+
+    (listener as (e: Event) => void)({
+      type: 'fetch',
+      request,
+      respondWith: respondWithSpy,
+    } as unknown as Event);
+
+    await vi.waitFor(() => {
+      expect(mockCacheStorage.match).toHaveBeenCalledWith(request);
+    });
   });
 
   it('handles sync event for sync-gists tag', async () => {

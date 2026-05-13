@@ -9,7 +9,7 @@ vi.mock('../../src/services/security/logger', () => ({
 
 let storedPreference: string | null = null;
 
-vi.stubGlobal('localStorage', {
+const mockLocalStorage = () => ({
   getItem: vi.fn((key: string) => (key === 'theme-preference' ? storedPreference : null)),
   setItem: vi.fn((key: string, value: string) => {
     if (key === 'theme-preference') {
@@ -67,6 +67,7 @@ describe('Design Tokens — Theme System', () => {
     vi.useFakeTimers();
     storedPreference = null;
     vi.clearAllMocks();
+    vi.stubGlobal('localStorage', mockLocalStorage());
 
     setAttributeSpy = vi.spyOn(document.documentElement, 'setAttribute');
     dispatchEventSpy = vi.spyOn(window, 'dispatchEvent');
@@ -88,6 +89,7 @@ describe('Design Tokens — Theme System', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
     setAttributeSpy.mockRestore();
     dispatchEventSpy.mockRestore();
     setIntervalSpy.mockRestore();

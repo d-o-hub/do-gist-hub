@@ -13,6 +13,11 @@ vi.mock('../../src/stores/gist-store', () => ({
   },
 }));
 
+// Mock GitHub client for bindDetailEvents
+vi.mock('../../src/services/github/client', () => ({
+  listGistRevisions: vi.fn(),
+}));
+
 // Mock toast so error handling doesn't throw
 vi.mock('../../src/components/ui/toast', () => ({
   toast: {
@@ -21,7 +26,19 @@ vi.mock('../../src/components/ui/toast', () => ({
   },
 }));
 
-import { renderFileContent, renderGistDetail, renderRevisions, loadGistDetail } from '../../src/components/gist-detail';
+// Mock logger
+vi.mock('../../src/services/security/logger', () => ({
+  safeError: vi.fn(),
+  safeLog: vi.fn(),
+}));
+
+import {
+  renderFileContent,
+  renderGistDetail,
+  renderRevisions,
+  loadGistDetail,
+  bindDetailEvents,
+} from '../../src/components/gist-detail';
 import type { GistRecord } from '../../src/types';
 import type { GistRevision } from '../../src/types/api';
 
@@ -199,6 +216,260 @@ describe('GistDetail', () => {
       expect(vi.mocked(gistStoreModule.default.hydrateGist)).toHaveBeenCalledWith('non-existent');
 
       document.body.removeChild(container);
+    });
+
+    it('renders gist detail successfully on hydrate', async () => {
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+
+      const mockGist = {
+        id: 'gist-1',
+        description: 'Test Gist',
+        files: {
+          'test.ts': { filename: 'test.ts', language: 'typescript', content: 'const x = 1;', rawUrl: 'http://example.com/test.ts', size: 100 },
+        },
+        public: true,
+        starred: false,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-15T12:00:00Z',
+        htmlUrl: 'http://example.com/gist-1',
+        gitPullUrl: 'http://example.com/gist-1.git',
+        gitPushUrl: 'http://example.com/gist-1.git',
+        owner: { login: 'testuser', id: 1, avatarUrl: '', htmlUrl: '' },
+        syncStatus: 'synced',
+        lastSyncedAt: '2026-01-15T12:00:00Z',
+      };
+
+      vi.mocked(gistStoreModule.default.hydrateGist).mockResolvedValue(mockGist);
+
+      const onBack = vi.fn();
+      const onEdit = vi.fn();
+      const onViewRevision = vi.fn();
+
+      await loadGistDetail('gist-1', container, onBack, onEdit, onViewRevision);
+
+      expect(container.querySelector('.gist-detail')).not.toBeNull();
+      expect(container.querySelector('.detail-title')?.textContent).toContain('Test Gist');
+
+      document.body.removeChild(container);
+    });
+  });
+
+  // ── bindDetailEvents ──────────────────────────────────────────────
+
+  describe('bindDetailEvents', () => {
+    let container: HTMLElement;
+    let onBack: ReturnType<typeof vi.fn>;
+    let onEdit: ReturnType<typeof vi.fn>;
+    let onViewRevision: ReturnType<typeof vi.fn>;
+
+    beforeEach(() => {
+      container = document.createElement('div');
+      container.innerHTML = `
+        <div class="gist-detail" data-gist-id="gist-1">
+          <header class="detail-header">
+            <button class="btn btn-ghost" id="gist-back-btn">← Back</button>
+            <div class="gist-detail-actions">
+              <button class="btn btn-primary" data-action="star">Star</button>
+              <button class="btn btn-ghost" data-action="edit">Edit</button>
+              <button class="btn btn-ghost" data-action="revisions">Revisions</button>
+            </div>
+          </header>
+          <div class="file-tabs scroll-x" role="tablist">
+            <button class="chip file-tab active" data-file-key="test.ts" id="tab-0" role="tab" aria-selected="true">TEST.TS</button>
+            <button class="chip file-tab" data-file-key="readme.md" id="tab-1" role="tab" aria-selected="false">README.MD</button>
+          </div>
+          <div class="file-content-area" id="file-content-area" role="tabpanel" aria-labelledby="tab-0">
+            <pre><code>content</code></pre>
+          </div>
+          <div class="file-info" id="file-info">
+            <button class="btn btn-ghost btn-copy-sm" data-action="copy-content">
+              <span class="micro-label">COPY</span>
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(container);
+
+      onBack = vi.fn();
+      onEdit = vi.fn();
+      onViewRevision = vi.fn();
+    });
+
+    afterEach(() => {
+      document.body.removeChild(container);
+    });
+
+    it('calls onBack when back button is clicked', () => {
+      bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+
+      const backBtn = container.querySelector('#gist-back-btn') as HTMLElement;
+      backBtn.click();
+
+      expect(onBack).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls onEdit with gistId when edit button is clicked', () => {
+      bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+
+      const editBtn = container.querySelector('[data-action="edit"]') as HTMLElement;
+      editBtn.click();
+
+      expect(onEdit).toHaveBeenCalledWith('gist-1');
+    });
+
+    it('calls toggleStar when star button is clicked', async () => {
+      const gistStoreModule = await import('../../src/stores/gist-store');
+      vi.mocked(gistStoreModule.default.toggleStar).mockResolvedValue(true);
+      vi.mocked(gistStoreModule.default.hydrateGist).mockResolvedValue({
+        id: 'gist-1',
+        description: 'Test',
+        files: {},
+        public: true,
+        starred: true,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-15T12:00:00Z',
+        htmlUrl: '',
+        gitPullUrl: '',
+        gitPushUrl: '',
+        owner: { login: 'testuser', id: 1, avatarUrl: '', htmlUrl: '' },
+        syncStatus: 'synced',
+        lastSyncedAt: '2026-01-15T12:00:00Z',
+      });
+
+      bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+
+      const starBtn = container.querySelector('[data-action="star"]') as HTMLElement;
+      starBtn.click();
+
+      await vi.waitFor(() => {
+        expect(gistStoreModule.default.toggleStar).toHaveBeenCalledWith('gist-1');
+      });
+    });
+
+    it('loads revisions when revisions button is clicked', async () => {
+      const { listGistRevisions } = await import('../../src/services/github/client');
+      vi.mocked(listGistRevisions).mockResolvedValue([
+        {
+          version: 'abc123',
+          committed_at: '2026-01-15T12:00:00Z',
+          user: { login: 'user1', id: 1, avatar_url: '', html_url: '' },
+          change_summary: {},
+          node_id: '1',
+          url: '',
+        },
+      ]);
+
+      bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+
+      const revisionsBtn = container.querySelector('[data-action="revisions"]') as HTMLElement;
+      revisionsBtn.click();
+
+      await vi.waitFor(() => {
+        expect(listGistRevisions).toHaveBeenCalledWith('gist-1');
+        expect(container.querySelector('.revisions-list')).not.toBeNull();
+      });
+    });
+
+    it('switches file content when a file tab is clicked', async () => {
+      const gistStoreModule = await import('../../src/stores/gist-store');
+      vi.mocked(gistStoreModule.default.getGist).mockReturnValue({
+        id: 'gist-1',
+        description: 'Test',
+        files: {
+          'test.ts': { filename: 'test.ts', language: 'typescript', content: 'const x = 1;', rawUrl: 'http://example.com/test.ts', size: 100 },
+          'readme.md': { filename: 'readme.md', language: 'markdown', content: '# Hello', rawUrl: 'http://example.com/readme.md', size: 50 },
+        },
+        public: true,
+        starred: false,
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-15T12:00:00Z',
+        htmlUrl: '',
+        gitPullUrl: '',
+        gitPushUrl: '',
+        owner: { login: 'testuser', id: 1, avatarUrl: '', htmlUrl: '' },
+        syncStatus: 'synced',
+        lastSyncedAt: '2026-01-15T12:00:00Z',
+      });
+
+      bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+
+      const secondTab = container.querySelector('#tab-1') as HTMLElement;
+      secondTab.click();
+
+      // Wait for microtask
+      await vi.waitFor(() => {
+        expect(gistStoreModule.default.getGist).toHaveBeenCalledWith('gist-1');
+      });
+
+      // Verify tab UI updated
+      expect(secondTab.classList.contains('active')).toBe(true);
+      expect(secondTab.getAttribute('aria-selected')).toBe('true');
+      expect(container.querySelector('#tab-0')?.getAttribute('aria-selected')).toBe('false');
+    });
+
+    it('copies content to clipboard when copy button is clicked', async () => {
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      const originalClipboard = navigator.clipboard;
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText },
+        writable: true,
+        configurable: true,
+      });
+
+      bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+
+      const copyBtn = container.querySelector('[data-action="copy-content"]') as HTMLElement;
+      copyBtn.click();
+
+      await vi.waitFor(() => {
+        expect(writeText).toHaveBeenCalledWith('content');
+      });
+
+      // Restore original clipboard
+      Object.defineProperty(navigator, 'clipboard', {
+        value: originalClipboard,
+        writable: true,
+        configurable: true,
+      });
+    });
+
+    it('shows copy success feedback and resets after timeout', async () => {
+      vi.useFakeTimers();
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      const originalClipboard = navigator.clipboard;
+      Object.defineProperty(navigator, 'clipboard', {
+        value: { writeText },
+        writable: true,
+        configurable: true,
+      });
+
+      bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+
+      const copyBtn = container.querySelector('[data-action="copy-content"]') as HTMLElement;
+      copyBtn.click();
+
+      // Let the async handler run
+      await vi.waitFor(() => {
+        expect(copyBtn.innerHTML).toContain('COPIED!');
+      });
+
+      expect(copyBtn.classList.contains('btn-success')).toBe(true);
+
+      // Advance timers to reset
+      vi.advanceTimersByTime(2000);
+
+      expect(copyBtn.innerHTML).toContain('COPY');
+      expect(copyBtn.classList.contains('btn-success')).toBe(false);
+
+      // Restore original clipboard
+      Object.defineProperty(navigator, 'clipboard', {
+        value: originalClipboard,
+        writable: true,
+        configurable: true,
+      });
+
+      vi.useRealTimers();
     });
   });
 });
