@@ -1,7 +1,8 @@
 # Coverage Improvement Plan
 
-> **Date**: 2026-07-18  
-> **Current Coverage**: Lines 35.6% — Target: 70%  
+> **Date**: 2026-07-18 (updated 2026-05-13)  
+> **Current Coverage**: Lines ~45% (est.) — Target: 70%  
+> **Last PR**: #156 — 18 test files added/enhanced, 790 tests  
 > **Related**: `vitest.config.ts`, `tests/unit/`, `plans/011-testing-strategy.md`
 
 ---
@@ -21,14 +22,14 @@ Unit test coverage currently stands at **35.6% lines** (target: 70%). The recent
 | `src/services/github/client.ts` | ~75% | ~394 | 🟢 Good |
 | `src/services/security/` | ~60% | ~200 | 🟡 Medium |
 | `src/services/lifecycle.ts` | ~70% | ~50 | 🟢 Good |
-| `src/stores/gist-store.ts` | ~45% | ~300 | 🟡 Medium |
-| `src/services/sync/` | ~25% | ~150 | 🔴 High |
+| `src/stores/gist-store.ts` | ~70% | ~300 | 🟢 Good |
+| `src/services/sync/` | ~50% | ~150 | 🟡 Medium |
 | `src/components/app.ts` | ~15% (new) | ~366 | 🔴 High |
 | `src/routes/home.ts` | ~10% (new) | ~167 | 🔴 High |
-| `src/components/ui/` | ~0% | ~800 | 🔴 Critical |
-| `src/routes/` (other) | ~0% | ~250 | 🔴 Critical |
-| `src/main.ts` | ~0% | ~50 | 🟡 Medium |
-| Other components | ~0% | ~500 | 🔴 High |
+| `src/components/ui/` | ~60% | ~800 | 🟡 Medium |
+| `src/routes/` (other) | ~25% | ~250 | 🟡 Medium |
+| `src/main.ts` | ~70% | ~50 | 🟢 Good |
+| Other components | ~30% | ~500 | 🟡 Medium |
 
 ---
 
@@ -107,6 +108,44 @@ These are the remaining UI components.
 
 **Effort**: Medium (2 agent rounds)  
 **Coverage gain**: ~5-8%
+
+---
+
+## PR #156 Progress (2026-05-13)
+
+Added 16 new unit test files + enhanced 2 existing files:
+
+### New Test Files
+| File | Tests | Coverage Area |
+|------|-------|---------------|
+| `command-palette.test.ts` | 34 | UI component |
+| `conflict-detector.test.ts` | 11 | Sync service |
+| `dialog.test.ts` | 13 | Utility |
+| `error-handler.test.ts` | 18 | Error handling |
+| `export-import.test.ts` | 8 | Data service |
+| `gist-card.test.ts` | 26 | UI component |
+| `main.test.ts` | 12 | App bootstrap |
+| `nav-keyboard.test.ts` | 20 | Navigation utility |
+| `offline-monitor.test.ts` | 11 | Network service |
+| `offline-route.test.ts` | 6 | Route |
+| `perf.test.ts` | 21 | Performance |
+| `rate-limiter.test.ts` | 10 | API service |
+| `register-sw.test.ts` | 20 | PWA service |
+| `sw.test.ts` | 13 | Service worker |
+| `toast.test.ts` | 30 | UI component |
+| `types.test.ts` | 9 | Type utilities |
+
+### Enhanced Test Files
+| File | Before | After | Changes |
+|------|--------|-------|---------|
+| `gist-detail.test.ts` | 6 route-level | 17 component-level | Full renderFileContent, renderGistDetail, renderRevisions, loadGistDetail coverage |
+| `gist-store.test.ts` | 15 basic | 49 comprehensive | Full CRUD, star toggle, search/filter, offline queue, API rollback, conflict resolution |
+
+### CodeRabbit Fixes (commit 7267e13)
+- Fixed misleading test name in `gist-store.test.ts` ("returns false" → "returns true")
+- Fixed non-deterministic relative time test in `gist-card.test.ts` using `vi.useFakeTimers()`
+- Added event listener cleanup in `offline-route.test.ts`
+- Restore original MessageChannel/SyncManager globals in `register-sw.test.ts`
 
 ---
 
