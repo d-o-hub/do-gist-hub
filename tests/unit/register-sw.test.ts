@@ -80,12 +80,18 @@ function createMockServiceWorkerRegistration(
 let mockRegister: ReturnType<typeof vi.fn>;
 let mockReady: ReturnType<typeof vi.fn>;
 let mockSWRegistration: ServiceWorkerRegistration;
+let originalMessageChannel: typeof MessageChannel | undefined;
+let originalSyncManager: typeof SyncManager | undefined;
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
 describe('Service Worker Registration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Save originals before replacing globals
+    originalMessageChannel = globalThis.MessageChannel;
+    originalSyncManager = (globalThis as Record<string, unknown>).SyncManager as typeof SyncManager | undefined;
 
     // Initialize shared mock ports
     currentMockPort1 = makePort();
@@ -120,6 +126,10 @@ describe('Service Worker Registration', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     delete (navigator as Record<string, unknown>).serviceWorker;
+
+    // Restore original globals to prevent cross-test contamination
+    globalThis.MessageChannel = originalMessageChannel as typeof MessageChannel;
+    (globalThis as Record<string, unknown>).SyncManager = originalSyncManager ?? undefined;
   });
 
   // ── registerServiceWorker ────────────────────────────────────────────

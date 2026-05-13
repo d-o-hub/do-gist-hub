@@ -106,5 +106,8 @@ describe('OfflineRoute', () => {
     expect(navigationHandler).toHaveBeenCalled();
     const event = navigationHandler.mock.calls[0][0] as CustomEvent;
     expect(event.detail.route).toBe('conflicts');
+
+    // Clean up event listener to prevent leaks
+    window.removeEventListener('app:navigate', navigationHandler);
   });
 });

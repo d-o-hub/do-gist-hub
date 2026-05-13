@@ -183,12 +183,20 @@ describe('Gist Card', () => {
     });
 
     it('renders relative time', () => {
+      // Use fake timers with a fixed date to avoid non-deterministic test results.
+      // formatRelativeTime uses `new Date()`, so we must set the system time.
+      const fixedNow = new Date('2026-01-15T12:00:00Z');
+      vi.useFakeTimers();
+      vi.setSystemTime(fixedNow);
+
       const gist = makeGist('gist-7', {
-        updatedAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+        updatedAt: new Date(fixedNow.getTime() - 3600000).toISOString(),
       });
       const html = renderCard(gist);
 
       expect(html).toContain('1H AGO');
+
+      vi.useRealTimers();
     });
 
     it('renders "featured" class when gist is starred', () => {

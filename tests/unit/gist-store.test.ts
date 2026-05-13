@@ -426,7 +426,7 @@ describe('GistStore', () => {
       expect(gistStore.getGist('gist-1')).toBeDefined();
     });
 
-    it('returns false for non-existent gist when offline', async () => {
+    it('returns true for non-existent gist when offline (no-op success)', async () => {
       vi.mocked(networkMonitor.isOnline).mockReturnValue(false);
       vi.mocked(dbGetAllGists).mockResolvedValue([] as never[]);
       await gistStore.init();
