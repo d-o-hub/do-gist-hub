@@ -45,6 +45,15 @@
 | `biome_important_in_css` | Biome CSS linter warns on `!important` in utility classes; prefer specificity or avoid the pattern | Low |
 | `biome_format_double_write` | `pnpm run format` already includes `--write`; passing `-- --write` causes Biome to treat it as a file path and crash | Medium |
 | `toast_api_positional` | `ToastManager` methods use positional args `(message, durationMs?, action?)` not an options object | Medium |
+| `date_mock_new_date` | `formatRelativeTime` uses `new Date()` internally — mocking `Date.now()` is insufficient; use `vi.useFakeTimers()` + `vi.setSystemTime()` to control current time | Medium |
+| `spy_on_cleanup` | `vi.clearAllMocks()` does NOT restore original implementations; use `vi.restoreAllMocks()` or explicit `.mockRestore()` to clean up `vi.spyOn` calls between tests | Medium |
+| `global_restore_aftereach` | When tests mutate `globalThis.MessageChannel`, `SyncManager`, or other globals, always save the original and restore it in `afterEach` to prevent cross-test contamination | Medium |
+| `test_name_match` | Ensure test names accurately reflect assertions — a test named "returns false" that asserts `toBe(true)` is a documentation bug | Low |
+
+## CodeRabbit Review Patterns
+
+1. **CodeRabbit nitpick items**: Typically valid. The `useIterableCallbackReturn` suggestion for `forEach((el) => el.remove())` is a false positive (`.remove()` returns `void`), but explicit block bodies `(el) => { el.remove(); }` are more readable and satisfy the linter.
+2. **Docstring coverage**: CodeRabbit enforces 80% docstring coverage threshold. Test files can have file-level JSDoc descriptions but inline docstrings on every test are excessive.
 
 ## Autonomous Optimization
 
