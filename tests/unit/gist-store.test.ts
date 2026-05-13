@@ -80,6 +80,7 @@ import * as GitHub from '../../src/services/github/client';
 import networkMonitor from '../../src/services/network/offline-monitor';
 import syncQueue from '../../src/services/sync/queue';
 import { isAuthenticated } from '../../src/services/github/auth';
+import { safeError } from '../../src/services/security/logger';
 
 import gistStore from '../../src/stores/gist-store';
 
@@ -138,6 +139,7 @@ function resetGistMocks() {
   vi.mocked(GitHub.listStarredGists).mockResolvedValue({ data: [] });
   vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
   vi.mocked(isAuthenticated).mockResolvedValue(true);
+  vi.mocked(syncQueue.queueOperation).mockResolvedValue(1);
 }
 
 /** Clear GitHub mock call counts after init() calls loadGists internally */
