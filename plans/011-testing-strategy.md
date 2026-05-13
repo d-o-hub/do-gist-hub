@@ -34,9 +34,9 @@
 
 ### Security & Performance (`tests/browser/`)
 
-- `security-stubs.spec.ts` - CSP validation, PAT encryption verification, token redaction (IMPLEMENTED)
-- `performance-stubs.spec.ts` - LCP budgets, interaction latency, bundle size, code splitting (IMPLEMENTED)
-- `memory-stubs.spec.ts` - AbortController cancellation, lifecycle cleanup, heap growth, IDB connections (IMPLEMENTED)
+- `security-compliance.spec.ts` - CSP validation, PAT encryption verification, token redaction (IMPLEMENTED)
+- `performance-metrics.spec.ts` - LCP budgets, interaction latency, bundle size, code splitting (IMPLEMENTED)
+- `memory-lifecycle.spec.ts` - AbortController cancellation, lifecycle cleanup, heap growth, IDB connections (IMPLEMENTED)
 
 ## Test Infrastructure
 

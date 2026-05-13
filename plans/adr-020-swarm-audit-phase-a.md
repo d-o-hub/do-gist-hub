@@ -53,7 +53,7 @@ A GOAP (Goal-Oriented Action Planning) orchestrated swarm audit was executed usi
 
 ### 5. Test Fixes
 
-- `tests/browser/performance-stubs.spec.ts`: Corrected JS bundle budget 500KB → 150KB
+- `tests/browser/performance-stubs.spec.ts` *(now performance-metrics.spec.ts)*: Corrected JS bundle budget 500KB → 150KB
 - `tests/browser/navigation.spec.ts`: Added `page.waitForSelector('.app-shell')` and `.first()` locators for strict mode
 - `tests/mobile/navigation.spec.ts`: Added `page.waitForSelector('.app-shell')` in `beforeEach`
 
@@ -137,7 +137,7 @@ Breakpoints at 390px, 480px, and 1280px are defined in `src/tokens/responsive/br
 | Playwright used for unit tests | `gist-store.spec.ts`, `github-client.spec.ts` run in browser | Medium |
 | Screenshot path violations | `tests/visual/screenshots.spec.ts` writes to `/workspaces/...` and `screenshots/` instead of `analysis/` | Low |
 | 4 visual tests marked `test.fixme` | View Transitions, Container Queries, prefers-reduced-motion, focus trap tests skipped | Medium |
-| Performance stub uses wrong budget | `performance-stubs.spec.ts` asserted 500KB instead of 150KB (FIXED in Phase A) | — |
+| Performance stub uses wrong budget | `performance-stubs.spec.ts` *(now performance-metrics.spec.ts)* asserted 500KB instead of 150KB (FIXED in Phase A) | — |
 
 ### 7. Missing Implementation Gaps (v1 Scope)
 

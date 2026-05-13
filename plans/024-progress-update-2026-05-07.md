@@ -94,9 +94,9 @@ All core features **implemented and verified**:
    - Status: Low priority, architectural decision to use token-driven responsive instead
 
 2. **Test Stubs**: Previously marked as "stubs" but actually fully implemented
-   - `security-stubs.spec.ts` → Full CSP, encryption, redaction tests
-   - `performance-stubs.spec.ts` → Full LCP, FID/INP, bundle budgets
-   - `memory-stubs.spec.ts` → Full lifecycle and heap tests
+   - `security-compliance.spec.ts` → Full CSP, encryption, redaction tests
+   - `performance-metrics.spec.ts` → Full LCP, FID/INP, bundle budgets
+   - `memory-lifecycle.spec.ts` → Full lifecycle and heap tests
 
 ## Files Updated
 
