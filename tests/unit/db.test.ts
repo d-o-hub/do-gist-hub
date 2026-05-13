@@ -6,6 +6,7 @@ import {
   initIndexedDB,
   getDB,
   closeDB,
+  isDBReady,
   saveGist,
   saveGists,
   getGist,
@@ -17,6 +18,10 @@ import {
   updatePendingWriteError,
   setMetadata,
   getMetadata,
+  setEtag,
+  getEtag,
+  exportData,
+  importData,
   clearAllData,
   type GistRecord,
 } from '../../src/services/db';
@@ -348,6 +353,149 @@ describe('db', () => {
       expect(await getAllGists()).toHaveLength(0);
       expect(await getPendingWrites()).toHaveLength(0);
       expect(await getMetadata('key')).toBeUndefined();
+    });
+  });
+
+  // ── closeDB ─────────────────────────────────────────────────────
+
+  describe('closeDB', () => {
+    it('closes database and nullifies instance', async () => {
+      await initIndexedDB();
+      expect(isDBReady()).toBe(true);
+
+      await closeDB();
+      expect(isDBReady()).toBe(false);
+    });
+
+    it('handles close when DB is already null (no-op)', async () => {
+      await closeDB(); // ensure DB is null
+      await expect(closeDB()).resolves.not.toThrow();
+    });
+  });
+
+  // ── setEtag / getEtag ────────────────────────────────────────────
+
+  describe('setEtag / getEtag', () => {
+    beforeEach(async () => {
+      await initIndexedDB();
+    });
+
+    it('stores and retrieves ETag information', async () => {
+      await setEtag('https://api.github.com/gists', 'abc123', { data: 'cached' });
+
+      const result = await getEtag('https://api.github.com/gists');
+      expect(result).toBeDefined();
+      expect(result?.etag).toBe('abc123');
+      expect(result?.data).toEqual({ data: 'cached' });
+    });
+
+    it('returns undefined for non-existent ETag URL', async () => {
+      const result = await getEtag('https://api.github.com/nonexistent');
+      expect(result).toBeUndefined();
+    });
+
+    it('overwrites existing ETag for same URL', async () => {
+      await setEtag('https://api.github.com/gists', 'old-etag', {});
+      await setEtag('https://api.github.com/gists', 'new-etag', { fresh: true });
+
+      const result = await getEtag('https://api.github.com/gists');
+      expect(result?.etag).toBe('new-etag');
+      expect(result?.data).toEqual({ fresh: true });
+    });
+  });
+
+  // ── exportData ───────────────────────────────────────────────────
+
+  describe('exportData', () => {
+    beforeEach(async () => {
+      await initIndexedDB();
+    });
+
+    it('exports gists, pending writes, metadata, and logs as JSON', async () => {
+      await saveGist(makeGistRecord('gist-1', { description: 'Test export' }));
+      await queueWrite({ gistId: 'gist-1', action: 'create', payload: {} });
+      await setMetadata('theme', 'dark');
+
+      const json = await exportData();
+      const parsed = JSON.parse(json);
+
+      expect(parsed.version).toBe('3.0.0');
+      expect(parsed.gists).toBeDefined();
+      expect(parsed.gists.length).toBe(1);
+      expect(parsed.gists[0].description).toBe('Test export');
+      expect(parsed.pendingWrites.length).toBe(1);
+      expect(parsed.metadata.length).toBeGreaterThanOrEqual(1);
+      expect(parsed.logs).toBeDefined();
+    });
+
+    it('filters out sensitive metadata keys from export', async () => {
+      await setMetadata('github-pat', 'secret-token');
+      await setMetadata('gist-hub-master-key', 'encryption-key');
+      await setMetadata('github-pat-enc', 'encrypted-token');
+      await setMetadata('theme', 'light');
+
+      const json = await exportData();
+      const parsed = JSON.parse(json);
+
+      const keys = parsed.metadata.map((m: { key: string }) => m.key);
+      expect(keys).not.toContain('github-pat');
+      expect(keys).not.toContain('gist-hub-master-key');
+      expect(keys).not.toContain('github-pat-enc');
+      expect(keys).toContain('theme');
+    });
+  });
+
+  // ── importData ───────────────────────────────────────────────────
+
+  describe('importData', () => {
+    beforeEach(async () => {
+      await initIndexedDB();
+    });
+
+    it('imports gists, pending writes, metadata, and logs', async () => {
+      const data = {
+        version: '3.0.0',
+        exportedAt: '2026-01-01T00:00:00Z',
+        gists: [
+          {
+            id: 'imported-gist',
+            description: 'Imported gist',
+            files: { 'test.txt': { filename: 'test.txt', content: 'imported' } },
+            htmlUrl: 'https://gist.github.com/imported-gist',
+            gitPullUrl: 'https://api.github.com/gists/imported-gist/git/pull',
+            gitPushUrl: 'https://api.github.com/gists/imported-gist/git/push',
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z',
+            starred: false,
+            public: true,
+            syncStatus: 'synced',
+          },
+        ],
+        pendingWrites: [],
+        metadata: [{ key: 'imported-key', value: 'imported-value', updatedAt: Date.now() }],
+        logs: [],
+      };
+
+      await importData(JSON.stringify(data));
+
+      const gist = await getGist('imported-gist');
+      expect(gist).toBeDefined();
+      expect(gist?.description).toBe('Imported gist');
+
+      const meta = await getMetadata<string>('imported-key');
+      expect(meta).toBe('imported-value');
+    });
+
+    it('handles import with empty logs array', async () => {
+      const data = {
+        version: '3.0.0',
+        exportedAt: '2026-01-01T00:00:00Z',
+        gists: [],
+        pendingWrites: [],
+        metadata: [],
+      };
+
+      await expect(importData(JSON.stringify(data))).resolves.not.toThrow();
     });
   });
 });
