@@ -25,6 +25,7 @@ pnpm run test:unit
 ## Code Guidelines
 - **Strict Types**: No `any`. Explicit returns.
 - **No Static-Only Classes**: `export class Foo { static ... }` → `export const Foo = { ... }`. Module-level helpers for private methods. (ADR-026)
+- **TypeScript-Only Source**: All source files in `src/` MUST be `.ts` or `.tsx`. No `.js`/`.jsx` files in `src/`. Utility scripts in `scripts/` may use `.js`/`.mjs` (run with `node`).
 - **Tools**: Format and Lint with Biome (`pnpm run lint:fix`).
 - **Commits**: Conventional Commits only (`feat:`, `fix:`, `chore:`, etc.). Line limits: header 150, body 200, footer 200.
 - **Commit-msg Hook**: Install locally to catch format errors before push:

@@ -33,9 +33,9 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
-            minifyEnabled false
-            // ProGuard rules exist at proguard-rules.pro but minification is disabled for stability.
-            // Enable minifyEnabled true and add proguardFiles before production release.
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }

@@ -27,8 +27,8 @@
     "test:report": "playwright show-report",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
-    "init:design": "node scripts/init-design-tokens.js",
     "generate:icons": "node scripts/generate-icons.mjs",
+    "verify:responsive": "npx tsx scripts/verify-ui.ts",
     "cap:sync": "npx cap sync android",
     "cap:android:open": "npx cap open android",
     "build:android": "pnpm run build && pnpm run cap:sync",
@@ -67,6 +67,7 @@
     "jsdom": "^29.1.1",
     "lint-staged": "^17.0.4",
     "rollup-plugin-visualizer": "^7.0.1",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.12",
     "vitest": "^4.1.6"

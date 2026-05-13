@@ -148,6 +148,14 @@ export interface LogEntry {
 let dbInstance: IDBPDatabase<GistDBSchema> | null = null;
 
 /**
+ * Check if database is initialized without throwing.
+ * Used by the logger to avoid circular dependency during DB upgrade.
+ */
+export function isDBReady(): boolean {
+  return dbInstance !== null;
+}
+
+/**
  * Initialize IndexedDB database
  */
 export async function initIndexedDB(): Promise<IDBPDatabase<GistDBSchema>> {

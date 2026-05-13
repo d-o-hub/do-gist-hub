@@ -248,6 +248,26 @@
   }
 }
 
+/* ===== Scroll-Driven Parallax — Detail Header (Phase C Action 5.2) ===== */
+@supports (animation-timeline: scroll()) {
+  .detail-header {
+    animation: detail-header-parallax linear both;
+    animation-timeline: scroll();
+    animation-range: 0% 100%;
+  }
+}
+
+@keyframes detail-header-parallax {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-16px);
+    opacity: 0.8;
+  }
+}
+
 /* ===== Reduced Motion ===== */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -274,5 +294,10 @@
 
   .gist-card {
     animation: none;
+  }
+
+  .detail-header {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    animation: none !important;
   }
 }

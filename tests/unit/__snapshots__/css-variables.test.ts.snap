@@ -1,4 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`generateCSSVariables > matches the full CSS output snapshot 1`] = `
+"
 :root {
   /* ===== Color Primitives ===== */
   --color-black: #000000;
@@ -371,3 +374,5 @@
     --color-border-emphasis: currentColor;
   }
 }
+"
+`;

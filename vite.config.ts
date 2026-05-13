@@ -6,6 +6,7 @@ import esbuild from 'esbuild';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { APP } from './src/config/app.config';
 import { PERFORMANCE_BUDGETS } from './src/services/perf/budgets';
+import { generateCSSVariables } from './src/tokens/css-variables';
 
 /**
  * Reads app.config.ts and injects values into index.html
@@ -37,14 +38,17 @@ function appConfigHtmlPlugin(): Plugin {
 /**
  * Injects Content-Security-Policy meta tag into index.html.
  * CSP restricts resource loading to prevent XSS and data injection attacks.
+ *
+ * Production: static design-tokens.css removes need for blob: and unsafe-inline.
+ * Dev mode uses index.html CSP which includes unsafe-inline for Vite HMR.
  */
 function cspPlugin(): Plugin {
-  // Strict CSP policy for production (no unsafe-inline)
-  // Dev mode uses index.html CSP which includes unsafe-inline for Vite HMR
+  // Strict CSP policy for production (no unsafe-inline, no blob style-src —
+  // design tokens are a static CSS file built by designTokensBuildPlugin)
   const csp = [
     "default-src 'self'",
     "script-src 'self'",
-    "style-src 'self' blob:",
+    "style-src 'self'",
     "img-src 'self' data: https: blob:",
     "font-src 'self'",
     "connect-src 'self' https://api.github.com",
@@ -207,6 +211,26 @@ function performanceBudgetPlugin(): Plugin {
 }
 
 /**
+ * Generates public/design-tokens.css at build time from TypeScript token definitions.
+ * Eliminates runtime blob URL injection in production (Phase C Action 4.2).
+ */
+function designTokensBuildPlugin(): Plugin {
+  return {
+    name: 'design-tokens-build',
+    closeBundle() {
+      const css = generateCSSVariables();
+      const publicDir = path.resolve(__dirname, 'public');
+      if (!fs.existsSync(publicDir)) {
+        fs.mkdirSync(publicDir, { recursive: true });
+      }
+      const targetPath = path.resolve(publicDir, 'design-tokens.css');
+      fs.writeFileSync(targetPath, css);
+      console.log(`✓ Design tokens CSS generated: public/design-tokens.css (${Buffer.byteLength(css, 'utf8')} bytes)`);
+    },
+  };
+}
+
+/**
  * Generates sw.js from TypeScript template at build time.
  * Injects cache names from app.config.ts and build timestamp.
  */
@@ -256,6 +280,7 @@ export default defineConfig({
     appConfigHtmlPlugin(),
     cspPlugin(),
     manifestPlugin(),
+    designTokensBuildPlugin(),
     performanceBudgetPlugin(),
     swGeneratorPlugin(),
     ...(shouldAnalyze
