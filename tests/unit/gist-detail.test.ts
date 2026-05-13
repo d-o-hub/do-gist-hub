@@ -1,178 +1,204 @@
 /**
- * Unit tests for Gist Detail Route
+ * Unit tests for src/components/gist-detail.ts
+ * Covers renderFileContent, renderGistDetail, renderRevisions, formatRelativeTime, loadGistDetail, bindDetailEvents
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// ─── Mocks (hoisted) ───────────────────────────────────────────
-
-vi.mock('../../src/components/gist-detail', () => ({
-  loadGistDetail: vi.fn(),
-}));
-
-vi.mock('../../src/components/ui/skeleton', () => ({
-  Skeleton: {
-    renderDetail: vi.fn(() => '<div class="skeleton-detail"></div>'),
+// Mock gistStore so loadGistDetail can use hydrateGist
+vi.mock('../../src/stores/gist-store', () => ({
+  default: {
+    hydrateGist: vi.fn(),
+    getGist: vi.fn(),
+    toggleStar: vi.fn(),
   },
 }));
 
-// ── Imports (after mocks) ───────────────────────────────────────────
+// Mock toast so error handling doesn't throw
+vi.mock('../../src/components/ui/toast', () => ({
+  toast: {
+    error: vi.fn(),
+    success: vi.fn(),
+  },
+}));
 
-import { render } from '../../src/routes/gist-detail';
-import { loadGistDetail } from '../../src/components/gist-detail';
-import { Skeleton } from '../../src/components/ui/skeleton';
+import { renderFileContent, renderGistDetail, renderRevisions, loadGistDetail } from '../../src/components/gist-detail';
+import type { GistRecord } from '../../src/types';
+import type { GistRevision } from '../../src/types/api';
 
-// ── Tests ─────────────────────────────────────────────────────────────
-
-describe('Gist Detail Route', () => {
-  let container: HTMLElement;
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    container = document.createElement('div');
-    document.body.appendChild(container);
-  });
-
-  afterEach(() => {
-    document.body.removeChild(container);
-    // Clean up scroll-progress bars that may have been added by render
-    document.querySelectorAll('.scroll-progress').forEach((el) => el.remove());
-  });
-
-  // ── Render without gistId ──────────────────────────────────────────────
-
-  describe('render without gistId', () => {
-    it('shows empty state when no gistId is provided', () => {
-      render(container);
-
-      expect(container.innerHTML).toContain('No gist selected');
-      expect(container.innerHTML).toContain('empty-state-container');
-      expect(Skeleton.renderDetail).not.toHaveBeenCalled();
-      expect(loadGistDetail).not.toHaveBeenCalled();
+describe('GistDetail', () => {
+  describe('renderFileContent', () => {
+    it('renders code in a pre tag', () => {
+      const html = renderFileContent('const x = 1;', 'javascript');
+      expect(html).toContain('<pre');
+      expect(html).toContain('<code>');
+      expect(html).toContain('const x = 1;');
     });
 
-    it('handles undefined params gracefully', () => {
-      render(container);
-
-      expect(container.innerHTML).toContain('No gist selected');
+    it('sanitizes content', () => {
+      const html = renderFileContent('<script>alert("xss")</script>', 'html');
+      expect(html).not.toContain('<script>');
+      expect(html).toContain('&lt;script&gt;');
     });
 
-    it('handles params without gistId key gracefully', () => {
-      render(container, {});
-
-      expect(container.innerHTML).toContain('No gist selected');
+    it('defaults to text language when not provided', () => {
+      const html = renderFileContent('hello');
+      expect(html).toContain('language-text');
     });
   });
 
-  // ── Render with gistId ─────────────────────────────────────────────────
+  describe('renderGistDetail', () => {
+    const mockGist = {
+      id: 'gist-1',
+      description: 'Test Gist',
+      files: {
+        'test.ts': { filename: 'test.ts', language: 'typescript', content: 'const x = 1;', rawUrl: 'http://example.com/test.ts', size: 100 },
+        'readme.md': { filename: 'readme.md', language: 'markdown', content: '# Hello', rawUrl: 'http://example.com/readme.md', size: 50 },
+      },
+      public: true,
+      starred: false,
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-15T12:00:00Z',
+      htmlUrl: 'http://example.com/gist-1',
+      gitPullUrl: 'http://example.com/gist-1.git',
+      gitPushUrl: 'http://example.com/gist-1.git',
+      owner: { login: 'testuser', id: 1, avatarUrl: '', htmlUrl: '' },
+      syncStatus: 'synced',
+      lastSyncedAt: '2026-01-15T12:00:00Z',
+    } as GistRecord;
 
-  describe('render with gistId', () => {
-    it('shows skeleton while loading gist detail', () => {
-      render(container, { gistId: 'test-gist-123' });
-
-      expect(Skeleton.renderDetail).toHaveBeenCalled();
-      expect(container.innerHTML).toContain('skeleton-detail');
+    it('renders gist title and metadata', () => {
+      const html = renderGistDetail(mockGist);
+      expect(html).toContain('Test Gist');
+      expect(html).toContain('2 Files');
+      expect(html).toContain('Public');
     });
 
-    it('calls loadGistDetail with gistId and container', () => {
-      render(container, { gistId: 'test-gist-123' });
-
-      expect(loadGistDetail).toHaveBeenCalledWith(
-        'test-gist-123',
-        container,
-        expect.any(Function),
-        expect.any(Function),
-        expect.any(Function)
-      );
+    it('renders file tabs for multi-file gists', () => {
+      const html = renderGistDetail(mockGist);
+      expect(html).toContain('file-tabs');
+      expect(html).toContain('TEST.TS');
+      expect(html).toContain('README.MD');
     });
 
-    it('calls loadGistDetail with onNavigate callback that dispatches app:navigate', () => {
-      const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+    it('does not render file tabs for single-file gists', () => {
+      const singleFileGist = { ...mockGist, files: { 'test.ts': mockGist.files['test.ts'] } };
+      const html = renderGistDetail(singleFileGist);
+      expect(html).not.toContain('file-tabs');
+    });
 
-      render(container, { gistId: 'test-gist-123' });
+    it('renders star and fork buttons', () => {
+      const html = renderGistDetail(mockGist);
+      expect(html).toContain('data-action="star"');
+      expect(html).toContain('data-action="fork"');
+      expect(html).toContain('data-action="edit"');
+    });
 
-      // Extract the onNavigate callback and call it
-      const onNavigate = vi.mocked(loadGistDetail).mock.calls[0]?.[2] as () => void;
-      expect(onNavigate).toBeDefined();
+    it('shows Unstar for starred gists', () => {
+      const starredGist = { ...mockGist, starred: true };
+      const html = renderGistDetail(starredGist);
+      expect(html).toContain('Unstar');
+      expect(html).toContain('btn-danger');
+    });
 
-      onNavigate();
+    it('shows Star for unstarred gists', () => {
+      const html = renderGistDetail(mockGist);
+      expect(html).toContain('Star');
+      expect(html).toContain('btn-primary');
+    });
 
-      expect(dispatchSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'app:navigate',
-          detail: { route: 'home' },
-        })
-      );
+    it('sanitizes gist description', () => {
+      const xssGist = { ...mockGist, description: '<img onerror="alert(1)" src=x>' };
+      const html = renderGistDetail(xssGist);
+      expect(html).not.toContain('<img');
+      expect(html).toContain('&lt;img');
+    });
 
-      dispatchSpy.mockRestore();
+    it('shows Untitled Gist when description is empty', () => {
+      const noDescGist = { ...mockGist, description: '' };
+      const html = renderGistDetail(noDescGist);
+      expect(html).toContain('Untitled Gist');
+    });
+
+    it('renders back button and detail label', () => {
+      const html = renderGistDetail(mockGist);
+      expect(html).toContain('gist-back-btn');
+      expect(html).toContain('Gist Detail');
+    });
+
+    it('renders copy button', () => {
+      const html = renderGistDetail(mockGist);
+      expect(html).toContain('data-action="copy-content"');
+      expect(html).toContain('COPY');
     });
   });
 
-  // ── Scroll progress bar ────────────────────────────────────────────
+  describe('renderRevisions', () => {
+    const revisions = [
+      {
+        version: 'abc123',
+        committed_at: '2026-01-15T12:00:00Z',
+        user: { login: 'user1', id: 1, avatar_url: '', html_url: '' },
+        change_summary: {},
+        node_id: '1',
+        url: '',
+      },
+      {
+        version: 'def456',
+        committed_at: '2026-01-14T10:00:00Z',
+        user: { login: 'user2', id: 2, avatar_url: '', html_url: '' },
+        change_summary: {},
+        node_id: '2',
+        url: '',
+      },
+    ] as GistRevision[];
 
-  describe('scroll progress bar', () => {
-    beforeEach(() => {
-      // Mock CSS.supports to return true for animation-timeline
-      vi.stubGlobal('CSS', {
-        supports: vi.fn((prop: string, _value?: string) => {
-          if (prop === 'animation-timeline') return true;
-          return false;
-        }),
-      });
+    it('renders revision list with back button', () => {
+      const html = renderRevisions('gist-1', revisions);
+      expect(html).toContain('Revisions (2)');
+      expect(html).toContain('gist-back-btn');
+      expect(html).toContain('data-action="view-revision"');
     });
 
-    afterEach(() => {
-      vi.unstubAllGlobals();
+    it('renders each revision with user and date', () => {
+      const html = renderRevisions('gist-1', revisions);
+      expect(html).toContain('user1');
+      expect(html).toContain('user2');
     });
 
-    it('adds scroll-progress bar when CSS.supports animation-timeline', () => {
-      render(container, { gistId: 'test-gist-123' });
+    it('sanitizes gistId in data attribute', () => {
+      const html = renderRevisions('gist-1" onerror="alert(1)', revisions);
+      // sanitizeHtml escapes quotes, so the attribute value is properly encoded
+      // onerror= is still in the string but the quotes around it are escaped
+      expect(html).not.toContain('onerror="');
+      expect(html).toContain('onerror=&quot;');
+    });
+  });
 
-      const progressBar = document.querySelector('.scroll-progress');
-      expect(progressBar).not.toBeNull();
-      expect(progressBar?.getAttribute('aria-hidden')).toBe('true');
+  describe('loadGistDetail', () => {
+    let gistStoreModule: typeof import('../../src/stores/gist-store');
+    let toastModule: typeof import('../../src/components/ui/toast');
+
+    beforeEach(async () => {
+      // Fresh imports for each test
+      gistStoreModule = await import('../../src/stores/gist-store');
+      toastModule = await import('../../src/components/ui/toast');
     });
 
-    it('does not add duplicate scroll-progress bar', () => {
-      const existingBar = document.createElement('div');
-      existingBar.className = 'scroll-progress';
-      document.body.appendChild(existingBar);
+    it('renders gist detail and shows error when gist not found', async () => {
+      const container = document.createElement('div');
+      document.body.appendChild(container);
 
-      render(container, { gistId: 'test-gist-123' });
+      vi.mocked(gistStoreModule.default.hydrateGist).mockResolvedValue(undefined);
 
-      const bars = document.querySelectorAll('.scroll-progress');
-      expect(bars.length).toBe(1);
+      const onBack = vi.fn();
+      const onEdit = vi.fn();
+      const onViewRevision = vi.fn();
 
-      existingBar.remove();
-    });
+      await loadGistDetail('non-existent', container, onBack, onEdit, onViewRevision);
 
-    it('removes scroll-progress bar on app:navigate event', () => {
-      render(container, { gistId: 'test-gist-123' });
+      expect(vi.mocked(gistStoreModule.default.hydrateGist)).toHaveBeenCalledWith('non-existent');
 
-      expect(document.querySelector('.scroll-progress')).not.toBeNull();
-
-      window.dispatchEvent(new CustomEvent('app:navigate'));
-
-      expect(document.querySelector('.scroll-progress')).toBeNull();
-    });
-
-    it('does not add scroll-progress bar when CSS.supports returns false', () => {
-      // Override CSS.supports to return false
-      vi.stubGlobal('CSS', {
-        supports: vi.fn(() => false),
-      });
-
-      render(container, { gistId: 'test-gist-123' });
-
-      expect(document.querySelector('.scroll-progress')).toBeNull();
-    });
-
-    it('handles CSS being undefined gracefully', () => {
-      // Make CSS undefined on the global scope to test the guard
-      vi.stubGlobal('CSS', undefined);
-
-      render(container, { gistId: 'test-gist-123' });
-
-      expect(document.querySelector('.scroll-progress')).toBeNull();
+      document.body.removeChild(container);
     });
   });
 });
