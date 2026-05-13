@@ -11,9 +11,10 @@ test.describe('Scroll-Driven Parallax', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     await seedGists(page);
-    await mockGitHubApi(page, DEFAULT_TEST_GISTS);
     await page.reload();
     await page.waitForLoadState('networkidle');
+    // Mock API after reload — Playwright route interceptors are cleared on navigation.
+    await mockGitHubApi(page, DEFAULT_TEST_GISTS);
   });
 
   test('should inject scroll-progress bar on gist detail page', async ({ page }) => {

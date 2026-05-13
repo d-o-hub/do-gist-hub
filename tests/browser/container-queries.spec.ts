@@ -67,6 +67,23 @@ test.describe('Container Queries', () => {
     expect(containerName).toBe('detail-view');
   });
 
+  test('should have container-type: inline-size on detail-view', async ({ page }) => {
+    // Navigate directly to detail view
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('app:navigate', {
+        detail: { route: 'detail', params: { gistId: 'test-gist-1' } },
+      }));
+    });
+
+    const detail = page.locator('.gist-detail');
+    await expect(detail).toBeVisible({ timeout: 5000 });
+
+    const containerType = await detail.evaluate(
+      (el) => window.getComputedStyle(el).containerType
+    );
+    expect(containerType).toBe('inline-size');
+  });
+
   test('should apply @container gist-card rules for wider cards', async ({ page }) => {
     // Set viewport to desktop width where gist-grid has 3 columns
     await page.setViewportSize({ width: 1440, height: 900 });
