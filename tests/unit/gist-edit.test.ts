@@ -295,5 +295,142 @@ describe('Gist Edit', () => {
       // updateGist should NOT have been called because filename is empty
       expect(gistStore.updateGist).not.toHaveBeenCalled();
     });
+
+    it('shows error when all filenames are empty', async () => {
+      const { toast } = await import('../../src/components/ui/toast');
+      vi.mocked(gistStore.updateGist).mockResolvedValue(true as never);
+
+      const onBack = vi.fn();
+      container.innerHTML = renderEditForm(makeGist('validate-2'));
+      bindEditEvents(container, onBack);
+
+      // Clear filename and content
+      const filenameInput = container.querySelector('.filename-input') as HTMLInputElement;
+      if (filenameInput) filenameInput.value = '';
+      const contentInput = container.querySelector('.content-editor') as HTMLTextAreaElement;
+      if (contentInput) contentInput.value = '';
+
+      const form = container.querySelector('#edit-gist-form') as HTMLFormElement;
+      form?.dispatchEvent(new Event('submit'));
+
+      await vi.waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith('ALL FILES MUST HAVE FILENAMES');
+      });
+    });
+
+    it('shows error toast when updateGist fails', async () => {
+      const { toast } = await import('../../src/components/ui/toast');
+      vi.mocked(gistStore.updateGist).mockRejectedValue(new Error('API error'));
+
+      const onBack = vi.fn();
+      container.innerHTML = renderEditForm(makeGist('update-fail-1'));
+      bindEditEvents(container, onBack);
+
+      const form = container.querySelector('#edit-gist-form') as HTMLFormElement;
+      form?.dispatchEvent(new Event('submit'));
+
+      await vi.waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith('FAILED TO UPDATE GIST');
+      });
+    });
+
+    it('shows success toast and calls onBack on successful update', async () => {
+      const { toast } = await import('../../src/components/ui/toast');
+      vi.mocked(gistStore.updateGist).mockResolvedValue(true as never);
+
+      const onBack = vi.fn();
+      container.innerHTML = renderEditForm(makeGist('update-ok-1'));
+      bindEditEvents(container, onBack);
+
+      const form = container.querySelector('#edit-gist-form') as HTMLFormElement;
+      form?.dispatchEvent(new Event('submit'));
+
+      await vi.waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith('GIST UPDATED');
+        expect(onBack).toHaveBeenCalled();
+      });
+    });
+  });
+
+  // ── File Removal Edge Cases ─────────────────────────────────────
+
+  describe('file removal edge cases', () => {
+    it('shows error when removing last file from dynamically added editor', async () => {
+      const { toast } = await import('../../src/components/ui/toast');
+      const onBack = vi.fn();
+      container.innerHTML = renderEditForm(makeGist('edge-1'));
+      bindEditEvents(container, onBack);
+
+      // Click remove on the only file editor
+      const removeBtn = container.querySelector('.remove-file-btn') as HTMLElement;
+      expect(removeBtn).not.toBeNull();
+      removeBtn?.click();
+
+      // Toast error should be called since it's the only file
+      expect(toast.error).toHaveBeenCalledWith('AT LEAST ONE FILE IS REQUIRED');
+    });
+
+    it('does nothing when add-file section is missing', () => {
+      const onBack = vi.fn();
+      container.innerHTML = '<div class="route-edit" data-gist-id="gist-x"><form id="edit-gist-form">';
+      bindEditEvents(container, onBack);
+
+      // Click add file button — no section, should not throw
+      const addBtn = container.querySelector('#edit-add-file-btn') as HTMLElement;
+      expect(() => addBtn?.click()).not.toThrow();
+    });
+  });
+
+  // ── loadEditForm Error Path ──────────────────────────────────────
+
+  describe('loadEditForm error path', () => {
+    it('shows error toast and calls onBack when getGist throws', async () => {
+      const { toast } = await import('../../src/components/ui/toast');
+      vi.mocked(getGist).mockRejectedValue(new Error('DB error'));
+
+      const onBack = vi.fn();
+      await loadEditForm('error-gist', container, onBack);
+
+      expect(toast.error).toHaveBeenCalledWith('FAILED TO LOAD GIST');
+      expect(onBack).toHaveBeenCalled();
+    });
+  });
+
+  // ── updateGist with filename change ─────────────────────────────
+
+  describe('updateGist with changed filename', () => {
+    it('uses new filename as key when creating a new file without fileKey', async () => {
+      const { toast } = await import('../../src/components/ui/toast');
+      vi.mocked(gistStore.updateGist).mockResolvedValue(true as never);
+
+      const onBack = vi.fn();
+      // Render with an existing file that has a known key
+      container.innerHTML = renderEditForm(makeGist('rename-1'));
+      bindEditEvents(container, onBack);
+
+      // Remove the data-file-key attribute so the code falls through to the input value
+      const editor = container.querySelector('.file-editor') as HTMLElement;
+      if (editor) {
+        editor.removeAttribute('data-file-key');
+      }
+
+      // Change filename
+      const filenameInput = container.querySelector('.filename-input') as HTMLInputElement;
+      if (filenameInput) {
+        filenameInput.value = 'renamed.js';
+      }
+
+      const form = container.querySelector('#edit-gist-form') as HTMLFormElement;
+      form?.dispatchEvent(new Event('submit'));
+
+      await vi.waitFor(() => {
+        expect(gistStore.updateGist).toHaveBeenCalledWith(
+          'rename-1',
+          expect.objectContaining({
+            files: expect.objectContaining({ 'renamed.js': expect.any(String) }),
+          })
+        );
+      });
+    });
   });
 });

@@ -21,6 +21,15 @@ vi.mock('../../src/utils/announcer', () => ({
   },
 }));
 
+// Mock dynamic imports for bindEvents clear-cache-btn path
+vi.mock('../../src/utils/dialog', () => ({
+  showConfirmDialog: vi.fn(),
+}));
+
+vi.mock('../../src/services/db', () => ({
+  clearAllData: vi.fn().mockResolvedValue(undefined),
+}));
+
 // ── Imports (after mocks) ───────────────────────────────────────────
 
 import { ErrorBoundary, initGlobalErrorHandling } from '../../src/components/ui/error-boundary';
@@ -169,6 +178,54 @@ describe('ErrorBoundary', () => {
 
       expect(() => {
         ErrorBoundary.bindEvents(container, onRetry);
+      }).not.toThrow();
+    });
+  });
+
+  // ── getIcon via render (default category) ──────────────────────
+
+  describe('getIcon (default/UNKNOWN category)', () => {
+    it('renders default icon for UNKNOWN category', () => {
+      const error = makeAppError({ category: ErrorCategory.UNKNOWN });
+      const html = ErrorBoundary.render(error);
+
+      // Default icon should be "Error"
+      expect(html).toContain('>Error<');
+    });
+
+    it('renders default icon when category is undefined', () => {
+      const error = makeAppError({ category: undefined as unknown as ErrorCategory });
+      const html = ErrorBoundary.render(error);
+
+      expect(html).toContain('error-boundary');
+    });
+  });
+
+  // ── bindEvents with clear cache button ──────────────────────────
+
+  describe('bindEvents clear cache', () => {
+    it('binds click handler on clear cache button', () => {
+      container.innerHTML = `
+        <div class="error-boundary">
+          <button id="error-clear-cache-btn">Clear Data</button>
+        </div>
+      `;
+
+      expect(() => {
+        ErrorBoundary.bindEvents(container);
+      }).not.toThrow();
+
+      const clearBtn = container.querySelector('#error-clear-cache-btn') as HTMLElement;
+      expect(clearBtn).not.toBeNull();
+      // Click should not throw (dynamic imports are mocked)
+      expect(() => clearBtn?.click()).not.toThrow();
+    });
+
+    it('does not throw when clear cache button is missing', () => {
+      container.innerHTML = '<div class="error-boundary"></div>';
+
+      expect(() => {
+        ErrorBoundary.bindEvents(container);
       }).not.toThrow();
     });
   });
