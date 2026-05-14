@@ -80,6 +80,7 @@ import * as GitHub from '../../src/services/github/client';
 import networkMonitor from '../../src/services/network/offline-monitor';
 import syncQueue from '../../src/services/sync/queue';
 import { isAuthenticated } from '../../src/services/github/auth';
+import { safeError } from '../../src/services/security/logger';
 
 import gistStore from '../../src/stores/gist-store';
 
@@ -138,6 +139,7 @@ function resetGistMocks() {
   vi.mocked(GitHub.listStarredGists).mockResolvedValue({ data: [] });
   vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
   vi.mocked(isAuthenticated).mockResolvedValue(true);
+  vi.mocked(syncQueue.queueOperation).mockResolvedValue(1);
 }
 
 /** Clear GitHub mock call counts after init() calls loadGists internally */
@@ -424,6 +426,30 @@ describe('GistStore', () => {
 
       expect(result).toBe(false);
       expect(gistStore.getGist('gist-1')).toBeDefined();
+    });
+
+    it('queues operation when offline and removes from store', async () => {
+      vi.mocked(networkMonitor.isOnline).mockReturnValue(false);
+
+      const result = await gistStore.deleteGist('gist-1');
+
+      expect(syncQueue.queueOperation).toHaveBeenCalledWith('gist-1', 'delete', {});
+      expect(result).toBe(true);
+      expect(gistStore.getGist('gist-1')).toBeUndefined();
+    });
+
+    it('rolls back deletion if queueOperation fails', async () => {
+      vi.mocked(networkMonitor.isOnline).mockReturnValue(false);
+      vi.mocked(syncQueue.queueOperation).mockRejectedValue(new Error('Queue Error'));
+
+      const result = await gistStore.deleteGist('gist-1');
+
+      expect(result).toBe(false);
+      expect(gistStore.getGist('gist-1')).toBeDefined();
+      expect(vi.mocked(safeError)).toHaveBeenCalledWith(
+        '[GistStore] Failed to delete gist',
+        expect.any(Error)
+      );
     });
 
     it('returns true for non-existent gist when offline (no-op success)', async () => {

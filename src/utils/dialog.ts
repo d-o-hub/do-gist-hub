@@ -3,6 +3,7 @@
  */
 
 import { sanitizeHtml } from '../services/security/dom';
+import { focusTrap } from './focus-trap';
 
 /**
  * Show a modal confirmation dialog. Returns true if the user confirms.
@@ -12,10 +13,12 @@ export function showConfirmDialog(message: string, title = 'CONFIRM'): Promise<b
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.className = 'confirm-overlay';
+    const dialogId = `dialog-${Date.now()}`;
+
     overlay.innerHTML = `
-      <div class="confirm-dialog glass-card" role="dialog" aria-modal="true">
-        <h2 class="confirm-title">${sanitizeHtml(title)}</h2>
-        <p class="confirm-message">${sanitizeHtml(message)}</p>
+      <div class="confirm-dialog glass-card" role="alertdialog" aria-modal="true" aria-labelledby="${dialogId}-title" aria-describedby="${dialogId}-desc">
+        <h2 class="confirm-title" id="${dialogId}-title">${sanitizeHtml(title)}</h2>
+        <p class="confirm-message" id="${dialogId}-desc">${sanitizeHtml(message)}</p>
         <div class="confirm-actions">
           <button class="btn btn-ghost" data-action="cancel">CANCEL</button>
           <button class="btn btn-danger" data-action="confirm">CONFIRM</button>
@@ -23,15 +26,26 @@ export function showConfirmDialog(message: string, title = 'CONFIRM'): Promise<b
       </div>
     `;
     document.body.appendChild(overlay);
-    requestAnimationFrame(() => overlay.classList.add('visible'));
+
+    const dialog = overlay.querySelector('.confirm-dialog') as HTMLElement;
 
     const cleanup = (result: boolean): void => {
+      focusTrap.deactivate();
       overlay.classList.remove('visible');
+      window.removeEventListener('keydown', handleEscape);
       setTimeout(() => {
         overlay.remove();
         resolve(result);
       }, 200);
     };
+
+    const handleEscape = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') {
+        cleanup(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
 
     overlay
       .querySelector('[data-action="cancel"]')
@@ -39,5 +53,12 @@ export function showConfirmDialog(message: string, title = 'CONFIRM'): Promise<b
     overlay
       .querySelector('[data-action="confirm"]')
       ?.addEventListener('click', () => cleanup(true));
+
+    requestAnimationFrame(() => {
+      overlay.classList.add('visible');
+      if (dialog) {
+        focusTrap.activate(dialog);
+      }
+    });
   });
 }

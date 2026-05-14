@@ -2,12 +2,47 @@
  * Unit tests for src/services/sync/conflict-detector.ts
  * Vitest port of conflict-detector.spec.ts (which used node:test and was never picked up)
  */
-import { describe, it, expect } from 'vitest';
-import { detectConflict, resolveConflict } from '../../src/services/sync/conflict-detector';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Shared store object so the same get/put functions are used in both
+// conflict-detector source code (storeConflict → store.get) and tests
+const mockStore = {
+  get: vi.fn().mockResolvedValue(undefined),
+  put: vi.fn().mockResolvedValue(undefined),
+};
+
+vi.mock('../../src/services/db', () => {
+  const mockIdb = {
+    transaction: vi.fn(() => ({
+      objectStore: vi.fn(() => mockStore),
+      done: Promise.resolve(),
+    })),
+  };
+  return {
+    getDB: vi.fn(() => mockIdb),
+    getMetadata: vi.fn(),
+    setMetadata: vi.fn(),
+  };
+});
+
+import {
+  detectConflict,
+  resolveConflict,
+  storeConflict,
+  storeConflicts,
+  getConflicts,
+  clearConflict,
+  clearAllConflicts,
+} from '../../src/services/sync/conflict-detector';
 import type { GistRecord } from '../../src/services/db';
 import type { GistConflict } from '../../src/services/sync/conflict-detector';
+import { getDB, getMetadata, setMetadata } from '../../src/services/db';
 
 describe('ConflictDetector', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe('detectConflict', () => {
     it('returns null for identical gists', () => {
       const local = {
@@ -167,6 +202,106 @@ describe('ConflictDetector', () => {
       const result = detectConflict(local, remote as Parameters<typeof detectConflict>[1]);
       expect(result).not.toBeNull();
       expect(result!.conflictingFields).toContain('content');
+    });
+  });
+
+  describe('storeConflict / storeConflicts', () => {
+    it('stores a single conflict via storeConflict', async () => {
+      const conflict: GistConflict = {
+        gistId: 'gist-1',
+        localVersion: {} as GistRecord,
+        remoteVersion: {} as GistConflict['remoteVersion'],
+        detectedAt: new Date().toISOString(),
+        conflictingFields: ['description'],
+      };
+      await storeConflict(conflict);
+
+      const db = getDB();
+      const tx = db.transaction('metadata', 'readwrite');
+      const store = tx.objectStore('metadata');
+      expect(store.get).toHaveBeenCalledWith('sync-conflicts');
+      expect(store.put).toHaveBeenCalledWith(
+        expect.objectContaining({
+          key: 'sync-conflicts',
+          value: [conflict],
+        })
+      );
+      await expect(tx.done).resolves.toBeUndefined();
+    });
+
+    it('merges multiple conflicts via storeConflicts', async () => {
+      const conflict1: GistConflict = {
+        gistId: 'gist-1',
+        localVersion: {} as GistRecord,
+        remoteVersion: {} as GistConflict['remoteVersion'],
+        detectedAt: new Date().toISOString(),
+        conflictingFields: ['description'],
+      };
+      const conflict2: GistConflict = {
+        gistId: 'gist-2',
+        localVersion: {} as GistRecord,
+        remoteVersion: {} as GistConflict['remoteVersion'],
+        detectedAt: new Date().toISOString(),
+        conflictingFields: ['public'],
+      };
+
+      await storeConflicts([conflict1, conflict2]);
+
+      const db = getDB();
+      const tx = db.transaction('metadata', 'readwrite');
+      const store = tx.objectStore('metadata');
+      expect(store.put).toHaveBeenCalledWith(
+        expect.objectContaining({
+          key: 'sync-conflicts',
+          value: expect.arrayContaining([conflict1, conflict2]),
+        })
+      );
+    });
+
+    it('does nothing when storeConflicts receives empty array', async () => {
+      await storeConflicts([]);
+      const db = getDB();
+      expect(db.transaction).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getConflicts', () => {
+    it('returns conflicts from metadata', async () => {
+      vi.mocked(getMetadata).mockResolvedValue([
+        { gistId: 'gist-1', conflictingFields: ['description'] },
+      ] as GistConflict[]);
+
+      const result = await getConflicts();
+      expect(result).toHaveLength(1);
+      expect(result[0].gistId).toBe('gist-1');
+    });
+
+    it('returns empty array when no conflicts stored', async () => {
+      vi.mocked(getMetadata).mockResolvedValue(undefined);
+      const result = await getConflicts();
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('clearConflict', () => {
+    it('removes a specific conflict by gistId', async () => {
+      vi.mocked(getMetadata).mockResolvedValue([
+        { gistId: 'gist-1', conflictingFields: ['description'] },
+        { gistId: 'gist-2', conflictingFields: ['public'] },
+      ] as GistConflict[]);
+
+      await clearConflict('gist-1');
+
+      expect(setMetadata).toHaveBeenCalledWith('sync-conflicts', [
+        { gistId: 'gist-2', conflictingFields: ['public'] },
+      ]);
+    });
+  });
+
+  describe('clearAllConflicts', () => {
+    it('clears all stored conflicts', async () => {
+      await clearAllConflicts();
+      expect(setMetadata).toHaveBeenCalledWith('sync-conflicts', []);
     });
   });
 

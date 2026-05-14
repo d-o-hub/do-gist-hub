@@ -10,9 +10,9 @@ import { showConfirmDialog } from '../utils/dialog';
 import { toast } from './ui/toast';
 
 function formatRelativeTime(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now.getTime() - date.getTime();
+  const now = Date.now();
+  const dateTs = Date.parse(dateStr);
+  const diffMs = now - dateTs;
   const diffSec = Math.floor(diffMs / 1000);
   if (diffSec < 60) return 'JUST NOW';
   const diffMin = Math.floor(diffSec / 60);
@@ -23,11 +23,13 @@ function formatRelativeTime(dateStr: string): string {
   return `${diffDay}D AGO`;
 }
 
-const cardCache = new Map<string, { html: string; updatedAt: string }>();
+const cardCache = new Map<string, { html: string; updatedAt: string; starred: boolean }>();
 
 export function renderCard(gist: GistRecord): string {
   const cached = cardCache.get(gist.id);
-  if (cached && cached.updatedAt === gist.updatedAt) return cached.html;
+  // BOLT: Fix stale cache bug by including starred status in the check
+  if (cached && cached.updatedAt === gist.updatedAt && cached.starred === gist.starred)
+    return cached.html;
 
   const fileCount = Object.keys(gist.files).length;
   const firstFile = Object.values(gist.files)[0];
@@ -72,7 +74,7 @@ export function renderCard(gist: GistRecord): string {
     </article>
   `;
 
-  cardCache.set(gist.id, { html, updatedAt: gist.updatedAt });
+  cardCache.set(gist.id, { html, updatedAt: gist.updatedAt, starred: gist.starred });
   return html;
 }
 
