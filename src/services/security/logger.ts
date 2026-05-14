@@ -10,7 +10,6 @@ import { getDB, isDBReady, type LogEntry } from '../db';
  * Redact a token, unconditionally returning '[REDACTED]'.
  * Never reveals partial token content.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function redactToken(_token: string): string {
   return '[REDACTED]';
 }
