@@ -47,7 +47,7 @@ describe('showConfirmDialog', () => {
 
     it('creates dialog with role and aria-modal attributes', () => {
       showConfirmDialog('Test message');
-      const dialog = document.querySelector('[role="dialog"]');
+      const dialog = document.querySelector('[role="alertdialog"]');
       expect(dialog).not.toBeNull();
       expect(dialog?.getAttribute('aria-modal')).toBe('true');
     });
