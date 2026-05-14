@@ -24,6 +24,18 @@ class CacheService {
 
     // Add listener on every instance creation
     appEvents.on('cache-invalidate', this.onInvalidate);
+
+    this.onUnload = () => {
+      this.clear();
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('unload', this.onUnload);
+    }
+  }
+
+  clear() {
+    this.cache.clear();
   }
   
   get(key) {
@@ -44,7 +56,10 @@ class CacheService {
 
   destroy() {
     appEvents.removeListener('cache-invalidate', this.onInvalidate);
-    this.cache.clear();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('unload', this.onUnload);
+    }
+    this.clear();
   }
   
   set(key, value) {

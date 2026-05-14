@@ -306,18 +306,16 @@ class GistStore {
     const originalGist = this.gists.find((g) => g.id === id);
 
     try {
-      if (networkMonitor.isOnline()) {
-        // Optimistic: remove from local state immediately
-        this.gists = this.gists.filter((g) => g.id !== id);
-        this.notifyListeners();
-
-        await GitHub.deleteGist(id);
-        await dbDeleteGist(id);
-        return true;
-      }
-      await syncQueue.queueOperation(id, 'delete', {});
+      // Optimistic: remove from local state immediately
       this.gists = this.gists.filter((g) => g.id !== id);
       this.notifyListeners();
+
+      if (networkMonitor.isOnline()) {
+        await GitHub.deleteGist(id);
+        await dbDeleteGist(id);
+      } else {
+        await syncQueue.queueOperation(id, 'delete', {});
+      }
       return true;
     } catch (err) {
       // Rollback: restore original gist
@@ -326,7 +324,7 @@ class GistStore {
         this.sortGists();
         this.notifyListeners();
       }
-      safeError('[GistStore] Delete failed', err);
+      safeError('[GistStore] Failed to delete gist', err);
       return false;
     }
   }
