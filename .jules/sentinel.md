@@ -16,3 +16,8 @@
 **Vulnerability:** The GitHub API client (`client.ts`) was directly reading the `github-pat` key from IndexedDB, bypassing the encryption/decryption logic and migration path in `auth.ts`.
 **Learning:** Decoupling authentication logic from the API client is critical. Direct database access for secrets bypasses security controls like encryption at rest and migration logic for legacy tokens.
 **Prevention:** Always use a centralized authentication service (`auth.ts`) to retrieve secrets. Components and other services must never access raw secret storage directly.
+
+## 2026-10-24 - [Auth: Secret Leakage via API Error Messages]
+**Vulnerability:** The GitHub API error handler (`error-handler.ts`) was passing raw error messages and technical details (like HTTP status codes or GitHub's internal error descriptions) directly to the application. If a PAT was present in the request context or GitHub's response message, it could be leaked into diagnostic logs or the UI.
+**Learning:** External API error messages are untrusted input. Even if the application redacts secrets before logging, the error handler itself must ensure that the `AppError` objects it produces are already scrubbed.
+**Prevention:** Implement a mandatory redaction wrapper in the centralized error handler (`handleGitHubError`) to sanitize all user-facing messages and technical details.
