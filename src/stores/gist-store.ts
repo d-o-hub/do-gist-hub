@@ -100,7 +100,10 @@ class GistStore {
 
       const processedRecords: GistRecord[] = [];
       const newConflicts: GistConflict[] = [];
-      const gistMap = new Map(this.gists.map((g) => [g.id, g]));
+
+      // BOLT: Avoid array-of-pairs allocation by using a simple loop to build the map
+      const gistMap = new Map<string, GistRecord>();
+      for (const g of this.gists) gistMap.set(g.id, g);
 
       // BOLT: Optimize by processing all gists in parallel and batching DB writes
       const processGist = (gist: GitHubGist, isStarred: boolean): void => {
@@ -131,8 +134,6 @@ class GistStore {
         }
       }
 
-      // Parallel processing complete
-
       // BOLT: Batch store conflicts to prevent race conditions
       if (newConflicts.length > 0) {
         await storeConflicts(newConflicts);
@@ -141,13 +142,11 @@ class GistStore {
       // BOLT: Use new batch save method
       await saveGists(processedRecords);
 
-      // BOLT: Only update in-memory state after successful DB write
-      // Use Map for O(1) lookups during merge to achieve O(N + M) complexity
-      const currentGistMap = new Map(this.gists.map((g) => [g.id, g]));
+      // BOLT: Reuse existing map to update in-memory state, avoiding second map reconstruction
       for (const record of processedRecords) {
-        currentGistMap.set(record.id, record);
+        gistMap.set(record.id, record);
       }
-      this.gists = Array.from(currentGistMap.values());
+      this.gists = Array.from(gistMap.values());
 
       this.sortGists();
     } catch (err) {
@@ -460,7 +459,7 @@ class GistStore {
 
   /**
    * Sort gists by updatedAt descending.
-   * BOLT: Optimize by pre-parsing timestamps to avoid O(N log N) Date.parse calls.
+   * BOLT: Implement Schwartzian Transform to reduce timestamp lookups from O(N log N) to O(N).
    */
   private sortGists(): void {
     const getTimestamp = (dateStr: string): number => {
@@ -472,11 +471,11 @@ class GistStore {
       return ts;
     };
 
-    this.gists.sort((a, b) => {
-      const tsB = getTimestamp(b.updatedAt);
-      const tsA = getTimestamp(a.updatedAt);
-      return tsB - tsA;
-    });
+    // Schwartzian Transform: map to temp objects with timestamps, sort, map back
+    this.gists = this.gists
+      .map((gist) => ({ gist, ts: getTimestamp(gist.updatedAt) }))
+      .sort((a, b) => b.ts - a.ts)
+      .map((item) => item.gist);
   }
 }
 

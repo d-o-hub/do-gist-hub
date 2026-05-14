@@ -72,26 +72,32 @@ export function render(container: HTMLElement, params?: Record<string, string>):
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      gists = gists.filter(
-        (g) =>
-          g.description?.toLowerCase().includes(q) ||
-          Object.values(g.files).some((f) => f.filename.toLowerCase().includes(q))
-      );
+      gists = gists.filter((g) => {
+        if (g.description?.toLowerCase().includes(q)) return true;
+        // BOLT: Efficient file search avoiding Object.values() array allocation
+        for (const filename in g.files) {
+          if (filename.toLowerCase().includes(q)) return true;
+        }
+        return false;
+      });
     }
 
-    // BOLT: Optimize sorting by pre-parsing timestamps with persistent cache
-    gists = [...gists].sort((a, b) => {
-      if (currentSort === 'created-desc') {
-        return getTs(b.createdAt) - getTs(a.createdAt);
-      }
-      if (currentSort === 'updated-desc') {
-        return getTs(b.updatedAt) - getTs(a.updatedAt);
-      }
-      if (currentSort === 'updated-asc') {
-        return getTs(a.updatedAt) - getTs(b.updatedAt);
-      }
-      return 0;
-    });
+    // BOLT: Optimize by skipping sorting when the order matches the store's natural order (updated-desc).
+    // The store already maintains gists sorted by updatedAt descending.
+    if (currentSort !== 'updated-desc' || searchQuery) {
+      gists = [...gists].sort((a, b) => {
+        if (currentSort === 'created-desc') {
+          return getTs(b.createdAt) - getTs(a.createdAt);
+        }
+        if (currentSort === 'updated-desc') {
+          return getTs(b.updatedAt) - getTs(a.updatedAt);
+        }
+        if (currentSort === 'updated-asc') {
+          return getTs(a.updatedAt) - getTs(b.updatedAt);
+        }
+        return 0;
+      });
+    }
 
     if (gists.length === 0) {
       if (searchQuery) {
