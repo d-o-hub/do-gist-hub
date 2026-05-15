@@ -26,8 +26,8 @@ describe('generateCSSVariables', () => {
     expect(css).toContain(':root');
   });
 
-  it('contains [data-theme="dark"] selector for dark theme', () => {
-    expect(css).toContain('[data-theme="dark"]');
+  it('contains [data-theme="light"] selector for light theme', () => {
+    expect(css).toContain('[data-theme="light"]');
   });
 
   it('contains prefers-reduced-motion media query for accessibility', () => {
@@ -125,19 +125,11 @@ describe('generateCSSVariables', () => {
   // ── Typography Tokens ────────────────────────
 
   it('generates font family tokens', () => {
-    expectTokens(css, [
-      '--font-family-sans',
-      '--font-family-serif',
-      '--font-family-mono',
-    ]);
+    expectTokens(css, ['--font-family-sans', '--font-family-serif', '--font-family-mono']);
   });
 
   it('generates semantic font aliases for self-hosted fonts', () => {
-    expectTokens(css, [
-      '--font-body',
-      '--font-display',
-      '--font-mono',
-    ]);
+    expectTokens(css, ['--font-body', '--font-display', '--font-mono']);
   });
 
   it('generates font size tokens', () => {
@@ -299,26 +291,17 @@ describe('generateCSSVariables', () => {
   // ── Skeleton Tokens ──────────────────────────
 
   it('generates skeleton shimmer tokens', () => {
-    expectTokens(css, [
-      '--skeleton-shimmer-start',
-      '--skeleton-shimmer-mid',
-    ]);
+    expectTokens(css, ['--skeleton-shimmer-start', '--skeleton-shimmer-mid']);
   });
 
-  // ── Dark Theme (beyond just the selector) ────
+  // ── Light Theme (beyond just the selector) ──
 
-  it('generates dark mode shadow overrides', () => {
-    expectSectionTokens(css, '[data-theme="dark"]', [
-      '--shadow-md',
-      '--shadow-lg',
-    ]);
+  it('generates light mode shadow overrides', () => {
+    expectSectionTokens(css, '[data-theme="light"]', ['--shadow-md', '--shadow-lg']);
   });
 
-  it('generates dark mode glass effect tokens', () => {
-    expectSectionTokens(css, '[data-theme="dark"]', [
-      '--ui-glass-bg',
-      '--ui-glass-border',
-    ]);
+  it('generates light mode glass effect tokens', () => {
+    expectSectionTokens(css, '[data-theme="light"]', ['--ui-glass-bg', '--ui-glass-border']);
   });
 
   // ── Responsive Container Spacing ─────────────
@@ -331,7 +314,9 @@ describe('generateCSSVariables', () => {
   // ── Reduced Motion ───────────────────────────
 
   it('reduced motion media query zeroes out animation durations', () => {
-    const reducedMotionSection = css.match(/@media \(prefers-reduced-motion: reduce\)[\s\S]*?(?=@media|$)/);
+    const reducedMotionSection = css.match(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*?(?=@media|$)/
+    );
     expect(reducedMotionSection).not.toBeNull();
     const section = reducedMotionSection![0] ?? '';
     expect(section).toContain('animation-duration: 0.01ms');

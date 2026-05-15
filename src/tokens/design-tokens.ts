@@ -74,7 +74,7 @@ export function resolveTheme(
     return 'dark';
   }
 
-  return 'light';
+  return 'dark';
 }
 
 /**

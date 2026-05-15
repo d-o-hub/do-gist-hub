@@ -21,12 +21,10 @@ describe('showConfirmDialog', () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     // Mock requestAnimationFrame to execute callback immediately
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(
-      (cb: FrameRequestCallback) => {
-        cb(0);
-        return 0;
-      },
-    );
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
   });
 
   afterEach(() => {
@@ -50,6 +48,14 @@ describe('showConfirmDialog', () => {
       const dialog = document.querySelector('[role="alertdialog"]');
       expect(dialog).not.toBeNull();
       expect(dialog?.getAttribute('aria-modal')).toBe('true');
+      const labelledBy = dialog?.getAttribute('aria-labelledby');
+      const describedBy = dialog?.getAttribute('aria-describedby');
+      expect(labelledBy).toBeTruthy();
+      expect(describedBy).toBeTruthy();
+      const titleEl = labelledBy ? document.getElementById(labelledBy) : null;
+      const descEl = describedBy ? document.getElementById(describedBy) : null;
+      expect(titleEl?.textContent).toBe('CONFIRM');
+      expect(descEl?.textContent).toBe('Test message');
     });
 
     it('renders title inside dialog', () => {
@@ -82,9 +88,7 @@ describe('showConfirmDialog', () => {
 
   it('sanitizes the message', () => {
     showConfirmDialog('<img onerror="alert(1)" src=x>');
-    expect(sanitizeHtml).toHaveBeenCalledWith(
-      '<img onerror="alert(1)" src=x>',
-    );
+    expect(sanitizeHtml).toHaveBeenCalledWith('<img onerror="alert(1)" src=x>');
   });
 
   // ── Confirmation ────────────────────────────────────────────────
@@ -92,9 +96,7 @@ describe('showConfirmDialog', () => {
   it('resolves true when CONFIRM button is clicked', async () => {
     const promise = showConfirmDialog('Proceed?');
 
-    const confirmBtn = document.querySelector(
-      '[data-action="confirm"]',
-    ) as HTMLElement;
+    const confirmBtn = document.querySelector('[data-action="confirm"]') as HTMLElement;
     confirmBtn?.click();
 
     // Advance past the 200ms removal timeout
@@ -107,9 +109,7 @@ describe('showConfirmDialog', () => {
   it('resolves false when CANCEL button is clicked', async () => {
     const promise = showConfirmDialog('Cancel?');
 
-    const cancelBtn = document.querySelector(
-      '[data-action="cancel"]',
-    ) as HTMLElement;
+    const cancelBtn = document.querySelector('[data-action="cancel"]') as HTMLElement;
     cancelBtn?.click();
 
     vi.advanceTimersByTime(200);
@@ -129,9 +129,7 @@ describe('showConfirmDialog', () => {
   it('removes visible class before removing overlay on confirm', async () => {
     const promise = showConfirmDialog('Remove me');
 
-    const confirmBtn = document.querySelector(
-      '[data-action="confirm"]',
-    ) as HTMLElement;
+    const confirmBtn = document.querySelector('[data-action="confirm"]') as HTMLElement;
     confirmBtn?.click();
 
     const overlay = document.querySelector('.confirm-overlay');
@@ -145,9 +143,7 @@ describe('showConfirmDialog', () => {
   it('removes visible class before removing overlay on cancel', async () => {
     const promise = showConfirmDialog('Cancel remove');
 
-    const cancelBtn = document.querySelector(
-      '[data-action="cancel"]',
-    ) as HTMLElement;
+    const cancelBtn = document.querySelector('[data-action="cancel"]') as HTMLElement;
     cancelBtn?.click();
 
     const overlay = document.querySelector('.confirm-overlay');
