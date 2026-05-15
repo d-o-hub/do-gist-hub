@@ -10,10 +10,29 @@ test.describe('Security & Coverage', () => {
     await page.waitForTimeout(1000);
   });
 
-  test('should verify strict CSP meta tag is present', async ({ page }) => {
+  test('should verify strict CSP meta tag is present and correct', async ({ page }) => {
     const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
     expect(csp).toBeTruthy();
     expect(csp).toContain("default-src 'self'");
+
+    // style-src checks
+    const styleSrc = csp?.split(';').find(part => part.trim().startsWith('style-src'));
+    expect(styleSrc).toBeTruthy();
+
+    // Check for development mode explicitly via URL or global state if possible.
+    // Here we check for 'blob:' and 'unsafe-inline' based on the environment.
+    // In CI/Production builds, we expect them to be absent.
+    const isCI = !!process.env.CI;
+
+    if (isCI) {
+      expect(styleSrc).not.toContain("'unsafe-inline'");
+      expect(styleSrc).not.toContain('blob:');
+      expect(csp).toContain('upgrade-insecure-requests');
+    } else {
+      // Local development (vite dev) usually has these
+      expect(styleSrc).toContain("'unsafe-inline'");
+      expect(styleSrc).toContain('blob:');
+    }
   });
 
   test('should verify that PAT is encrypted in IndexedDB storage', async ({ page, browserName }) => {

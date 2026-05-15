@@ -43,35 +43,49 @@ function appConfigHtmlPlugin(): Plugin {
  * Dev mode uses index.html CSP which includes unsafe-inline for Vite HMR.
  */
 function cspPlugin(): Plugin {
-  // Strict CSP policy for production (no unsafe-inline, no blob style-src —
-  // design tokens are a static CSS file built by designTokensBuildPlugin)
-  const csp = [
-    "default-src 'self'",
-    "script-src 'self'",
-    "style-src 'self'",
-    "img-src 'self' data: https: blob:",
-    "font-src 'self'",
-    "connect-src 'self' https://api.github.com",
-    "media-src 'self'",
-    "object-src 'none'",
-    "frame-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    'upgrade-insecure-requests',
-  ].join('; ');
-
   return {
     name: 'csp-inject',
     transformIndexHtml(html, ctx) {
-      // Only inject CSP in production build
+      // Only transform CSP in production build
       if (ctx.server) return html;
 
-      // Add CSP as meta tag in <head>
-      const metaTag = `<meta http-equiv="Content-Security-Policy" content="${csp}" />`;
-      // Remove any existing CSP meta tag from index.html to avoid duplicates
-      const cleanedHtml = html.replace(/<meta\s+http-equiv="Content-Security-Policy"[^>]*>/i, '');
-      return cleanedHtml.replace('<head>', `<head>\n    ${metaTag}`);
+      // Extract existing CSP from index.html (handles multi-line and attribute order)
+      const cspMatch =
+        html.match(/<meta[^>]*http-equiv="Content-Security-Policy"[^>]*content="([^"]+)"[^>]*>/i) ||
+        html.match(/<meta[^>]*content="([^"]+)"[^>]*http-equiv="Content-Security-Policy"[^>]*>/i);
+
+      let csp = cspMatch ? cspMatch[1].replace(/\s+/g, ' ').trim() : '';
+
+      if (!csp) {
+        throw new Error('[csp-inject] No Content-Security-Policy found in index.html');
+      }
+
+      // Production Hardening: Remove dev-only style-src requirements
+      // (Static design-tokens.css eliminates need for blob: and unsafe-inline)
+      csp = csp
+        .replace(/(style-src[^;]*)\s+blob:/g, '$1')
+        .replace(/(style-src[^;]*)\s+'unsafe-inline'/g, '$1');
+
+      // Add production-only hardening directives if not already present
+      const prodAdditions = [
+        "media-src 'self'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'none'",
+        'upgrade-insecure-requests',
+      ];
+
+      for (const directive of prodAdditions) {
+        const key = directive.split(' ')[0];
+        if (!csp.includes(key)) {
+          csp = `${csp.endsWith(';') ? csp : `${csp};`} ${directive}`;
+        }
+      }
+
+      const metaTag = `<meta http-equiv="Content-Security-Policy" content="${csp.trim()}" />`;
+
+      // Replace original meta tag with the transformed one
+      return html.replace(/<meta\s+http-equiv="Content-Security-Policy"[^>]*>/i, metaTag);
     },
   };
 }
