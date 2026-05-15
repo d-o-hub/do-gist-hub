@@ -29,10 +29,13 @@ export function showConfirmDialog(message: string, title = 'CONFIRM'): Promise<b
 
     const dialog = overlay.querySelector('.confirm-dialog') as HTMLElement;
 
+    const controller = new AbortController();
+    const { signal } = controller;
+
     const cleanup = (result: boolean): void => {
       focusTrap.deactivate();
       overlay.classList.remove('visible');
-      window.removeEventListener('keydown', handleEscape);
+      controller.abort();
       setTimeout(() => {
         overlay.remove();
         resolve(result);
@@ -45,14 +48,14 @@ export function showConfirmDialog(message: string, title = 'CONFIRM'): Promise<b
       }
     };
 
-    window.addEventListener('keydown', handleEscape);
+    window.addEventListener('keydown', handleEscape, { signal });
 
     overlay
       .querySelector('[data-action="cancel"]')
-      ?.addEventListener('click', () => cleanup(false));
+      ?.addEventListener('click', () => cleanup(false), { signal });
     overlay
       .querySelector('[data-action="confirm"]')
-      ?.addEventListener('click', () => cleanup(true));
+      ?.addEventListener('click', () => cleanup(true), { signal });
 
     requestAnimationFrame(() => {
       overlay.classList.add('visible');
