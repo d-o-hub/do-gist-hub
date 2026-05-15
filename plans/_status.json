@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "lastUpdated": "2026-07-18",
+  "lastUpdated": "2026-05-15",
   "description": "Machine-readable plan registry for agents and scripts. Mirrors plans/_index.md.",
   "plans": {
     "adr-001-reuse-do-gemini-token-system.md": {
@@ -148,11 +148,6 @@
       "status": "complete",
       "summary": "81.88% line coverage, 941 tests across 51 files; all vitest thresholds exceeded"
     },
-    "027-progress-update-2026-07-18.md": {
-      "type": "progress",
-      "status": "complete",
-      "summary": "P1-4 through P1-7: TS6 migration, RouteBoundary, Skeleton, Conflicts nav"
-    },
     "031-progress-update-coverage-pr156.md": {
       "type": "progress",
       "status": "complete",
@@ -173,20 +168,15 @@
       "status": "complete",
       "summary": "Plans audit, teardown fix, ADR-022 promoted from backlog to complete"
     },
-    "035-progress-update-2026-07-18.md": {
+    "038-progress-update-2026-05-15.md": {
       "type": "progress",
       "status": "complete",
-      "summary": "Swarm followups, ADR cross-check, AGENTS.md refresh, test audit"
+      "summary": "PR #166 merge: CI fix (EnvironmentTeardownError), ADR-027 rename, plans registration"
     },
-    "036-progress-update-2026-07-18.md": {
-      "type": "progress",
+    "analysis/triz-architecture-2026-07-18.md": {
+      "type": "analysis",
       "status": "complete",
-      "summary": "Swarm roundup — ADR compliance verified against codebase, compacted learnings, AGENTS.md refresh"
-    },
-    "037-progress-update-2026-07-18.md": {
-      "type": "progress",
-      "status": "complete",
-      "summary": "TRIZ contradiction audit (5 contradictions), skill registry documentation, AGENTS.md skill directory references"
+      "summary": "TRIZ contradiction audit — 5 architectural contradictions mapped to inventive principles"
     }
   },
   "archive": [
@@ -198,6 +188,11 @@
     "archive/023-progress-update-2026-05-06.md",
     "archive/024-progress-update-2026-05-07.md",
     "archive/025-progress-update-2026-05-07.md",
+    "archive/025-progress-update-2026-07-18.md",
+    "archive/027-progress-update-2026-07-18.md",
+    "archive/035-progress-update-2026-07-18.md",
+    "archive/036-progress-update-2026-07-18.md",
+    "archive/037-progress-update-2026-07-18.md",
     "archive/plan-ui-ux-modernization.md"
   ],
   "referenceDocs": [
@@ -220,7 +215,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-028",
-    "plan": "038",
-    "goap": "030"
+    "plan": "042",
+    "goap": "031"
   }
 }

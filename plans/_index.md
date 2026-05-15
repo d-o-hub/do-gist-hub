@@ -1,6 +1,6 @@
 # plans/\_index.md — Active Plan Registry
 
-> **Last updated**: 2026-07-18
+> **Last updated**: 2026-05-15
 > Agents: read this before starting any task. Update it when you change plan status.
 
 ---
@@ -15,6 +15,7 @@
 | `028-goap-phase-b-adr22-completion.md`        | GOAP Plan   | Complete ✅ | Time-based theming, container query expansion, ambient light blueprint, strict TS compliance                                 |
 | `029-goap-phase-c-future-work.md`             | GOAP Plan   | Complete ✅ | Ambient light sensor, Android release signing, ProGuard, build-time CSS tokens, self-hosted fonts, scroll parallax           |
 | `030-coverage-improvement-plan.md`            | Plan        | Complete ✅ | 81.88% line coverage, 941 tests across 51 files; all vitest thresholds exceeded                                              |
+| `adr-027-ci-node24-android-hardening.md`      | ADR         | Complete ✅ | CI Node 24 migration, Android SDK explicit setup, Gradle/JDK upgrades, Kotlin stdlib exclusions, monthly action audit        |
 
 ## Archived
 
@@ -31,6 +32,11 @@ See `plans/archive/` for completed or superseded files moved here on 2026-05-15.
 | `archive/023-progress-update-2026-05-06.md`   | Complete ✅    | Progress update                                                |
 | `archive/024-progress-update-2026-05-07.md`   | Complete ✅    | Progress update                                                |
 | `archive/025-progress-update-2026-05-07.md`   | Complete ✅    | Progress update                                                |
+| `archive/025-progress-update-2026-07-18.md`   | Complete ✅ | GOAP gap analysis, P0/P1 fixes (error boundary, AbortController, global error handling), UI modernization, cleanup |
+| `archive/027-progress-update-2026-07-18.md`   | Complete ✅ | P1-4 through P1-7: TS6 migration, RouteBoundary, Skeleton, Conflicts nav |
+| `archive/035-progress-update-2026-07-18.md`   | Complete ✅ | Swarm followups, ADR cross-check, AGENTS.md refresh, test audit |
+| `archive/036-progress-update-2026-07-18.md`   | Complete ✅ | Swarm roundup — ADR compliance verified, compacted learnings, AGENTS.md refresh |
+| `archive/037-progress-update-2026-07-18.md`   | Complete ✅ | TRIZ contradiction audit, skill registry docs, AGENTS.md skill directory refs |
 
 ## Active ADRs (accepted, not superseded)
 
@@ -90,18 +96,21 @@ These numbered plans document the project's foundation and are considered stable
 | File                                          | Type          | Status      | Summary                                                                          |
 | --------------------------------------------- | ------------- | ----------- | -------------------------------------------------------------------------------- |
 | `026-goap-analysis-current.md`                | Analysis      | Complete ✅ | ADR-vs-implementation gap audit; all P1 items resolved                           |
-| `027-progress-update-2026-07-18.md`           | Progress      | Complete ✅ | P1-4 through P1-7: TS6 migration, RouteBoundary, Skeleton, Conflicts nav         |
 | `031-progress-update-coverage-pr156.md`       | Progress      | Complete ✅ | PR #156 merged: 790 tests, 47 files, 81.88% line coverage                        |
 | `032-progress-update-swarm-merge-pr156.md`    | Progress      | Complete ✅ | Swarm coordination: merge PR #156, update plans, compact learnings               |
 | `033-progress-update-2026-05-15-plans-completion.md` | Progress | Complete ✅ | Dark mode first, noUnusedVariables, SHA-pinned actions, dialog AbortController   |
 | `034-progress-update-swarm-plans-audit.md`            | Progress | Complete ✅ | Plans audit, teardown fix, ADR-022 promoted from backlog to complete              |
-| `035-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm followups, ADR cross-check, AGENTS.md refresh, test audit                  |
-| `036-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm roundup — ADR compliance verified, compacted learnings, AGENTS.md refresh  |
-| `037-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | TRIZ contradiction audit, skill registry docs, AGENTS.md skill directory refs  |
+| `038-progress-update-2026-05-15.md`                   | Progress | Complete ✅ | PR #166 merge: CI fix (EnvironmentTeardownError), ADR-027 rename, plans registration |
+
+## Analysis artifacts (cross-referenced from plans)
+
+| File                                               | Source                | Summary                                                                       |
+| -------------------------------------------------- | --------------------- | ----------------------------------------------------------------------------- |
+| `analysis/triz-architecture-2026-07-18.md`          | 037-progress-update   | TRIZ contradiction audit — 5 architectural contradictions mapped to inventive principles |
 
 ## Quick reference: ADR numbers in use
 
 `adr-001` through `adr-027` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-028`
 
-**Next available plan number**: `038`
+**Next available plan number**: `042`
