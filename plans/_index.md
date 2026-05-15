@@ -102,6 +102,12 @@ These numbered plans document the project's foundation and are considered stable
 | `037-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | TRIZ contradiction audit, skill registry docs, AGENTS.md skill directory refs  |
 | `038-progress-update-2026-05-15.md`                   | Progress | Complete ✅ | PR #166 merge: CI fix (EnvironmentTeardownError), ADR-027 rename, plans registration |
 
+## Analysis artifacts (cross-referenced from plans)
+
+| File                                               | Source                | Summary                                                                       |
+| -------------------------------------------------- | --------------------- | ----------------------------------------------------------------------------- |
+| `analysis/triz-architecture-2026-07-18.md`          | 037-progress-update   | TRIZ contradiction audit — 5 architectural contradictions mapped to inventive principles |
+
 ## Quick reference: ADR numbers in use
 
 `adr-001` through `adr-027` (gaps: 017-019 reserved)

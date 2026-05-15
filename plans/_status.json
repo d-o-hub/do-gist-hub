@@ -197,6 +197,11 @@
       "type": "progress",
       "status": "complete",
       "summary": "PR #166 merge: CI fix (EnvironmentTeardownError), ADR-027 rename, plans registration"
+    },
+    "analysis/triz-architecture-2026-07-18.md": {
+      "type": "analysis",
+      "status": "complete",
+      "summary": "TRIZ contradiction audit — 5 architectural contradictions mapped to inventive principles"
     }
   },
   "archive": [
@@ -231,6 +236,6 @@
   "nextAvailable": {
     "adr": "adr-028",
     "plan": "039",
-    "goap": "030"
+    "goap": "031"
   }
 }
