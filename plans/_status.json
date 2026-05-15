@@ -128,11 +128,6 @@
       "status": "complete",
       "summary": "All CI/CD workflows, docs, security items implemented; SHA-pinned actions"
     },
-    "025-progress-update-2026-07-18.md": {
-      "type": "progress",
-      "status": "complete",
-      "summary": "GOAP gap analysis, P0/P1 fixes (error boundary, AbortController, global error handling), UI modernization batch, cleanup"
-    },
     "026-goap-analysis-current.md": {
       "type": "analysis",
       "status": "complete",
@@ -152,11 +147,6 @@
       "type": "plan",
       "status": "complete",
       "summary": "81.88% line coverage, 941 tests across 51 files; all vitest thresholds exceeded"
-    },
-    "027-progress-update-2026-07-18.md": {
-      "type": "progress",
-      "status": "complete",
-      "summary": "P1-4 through P1-7: TS6 migration, RouteBoundary, Skeleton, Conflicts nav"
     },
     "031-progress-update-coverage-pr156.md": {
       "type": "progress",
@@ -178,21 +168,6 @@
       "status": "complete",
       "summary": "Plans audit, teardown fix, ADR-022 promoted from backlog to complete"
     },
-    "035-progress-update-2026-07-18.md": {
-      "type": "progress",
-      "status": "complete",
-      "summary": "Swarm followups, ADR cross-check, AGENTS.md refresh, test audit"
-    },
-    "036-progress-update-2026-07-18.md": {
-      "type": "progress",
-      "status": "complete",
-      "summary": "Swarm roundup — ADR compliance verified against codebase, compacted learnings, AGENTS.md refresh"
-    },
-    "037-progress-update-2026-07-18.md": {
-      "type": "progress",
-      "status": "complete",
-      "summary": "TRIZ contradiction audit (5 contradictions), skill registry documentation, AGENTS.md skill directory references"
-    },
     "038-progress-update-2026-05-15.md": {
       "type": "progress",
       "status": "complete",
@@ -213,6 +188,11 @@
     "archive/023-progress-update-2026-05-06.md",
     "archive/024-progress-update-2026-05-07.md",
     "archive/025-progress-update-2026-05-07.md",
+    "archive/025-progress-update-2026-07-18.md",
+    "archive/027-progress-update-2026-07-18.md",
+    "archive/035-progress-update-2026-07-18.md",
+    "archive/036-progress-update-2026-07-18.md",
+    "archive/037-progress-update-2026-07-18.md",
     "archive/plan-ui-ux-modernization.md"
   ],
   "referenceDocs": [
@@ -235,7 +215,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-028",
-    "plan": "039",
+    "plan": "041",
     "goap": "031"
   }
 }
