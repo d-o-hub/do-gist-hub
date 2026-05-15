@@ -128,7 +128,11 @@ export function bindCardEvents(
   container.dataset.eventsBound = 'true';
 
   // Reset eventsBound when the signal aborts so future mounts can rebind
-  signal?.addEventListener('abort', () => {
-    delete container.dataset.eventsBound;
-  }, { once: true });
+  signal?.addEventListener(
+    'abort',
+    () => {
+      delete container.dataset.eventsBound;
+    },
+    { once: true }
+  );
 }

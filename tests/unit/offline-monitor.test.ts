@@ -144,10 +144,9 @@ describe('OfflineMonitor', () => {
 
   describe('destroy', () => {
     it('aborts controller and clears listeners', () => {
-      networkMonitor.init();
-      // Capture controller AFTER init() to ensure we're spying on the live instance
       const controller = (networkMonitor as any).abortController;
       const abortSpy = vi.spyOn(controller, 'abort');
+      networkMonitor.init();
       networkMonitor.destroy();
 
       expect(abortSpy).toHaveBeenCalled();

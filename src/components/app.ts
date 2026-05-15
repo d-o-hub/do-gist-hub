@@ -459,8 +459,6 @@ export class App {
   }
 
   public destroy(): void {
-    // Run all registered app-level teardown handlers before aborting
-    lifecycle.cleanupApp();
     this.abortController.abort();
   }
 }

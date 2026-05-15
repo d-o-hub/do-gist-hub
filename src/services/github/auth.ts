@@ -51,14 +51,6 @@ if (typeof window !== 'undefined') {
 }
 
 /**
- * Cleanup auth listeners (for tests/app destroy).
- * Mirrors NetworkMonitor/SyncQueue destroy() behavior.
- */
-export function destroyAuth(): void {
-  authAbortController.abort();
-}
-
-/**
  * Save GitHub PAT to secure storage
  */
 export async function saveToken(token: string): Promise<{ success: boolean; error?: string }> {
