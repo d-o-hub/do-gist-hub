@@ -9,7 +9,11 @@ resolve_sha() {
   local owner_repo=$1 tag=$2
   # Query both raw tag ref and peeled ref (for annotated tags)
   git ls-remote "https://github.com/${owner_repo}.git" "refs/tags/${tag}" "refs/tags/${tag}^{}" 2>/dev/null \
-    | awk '{print $1; exit}'
+    | awk '
+        $2 ~ /\^\{\}$/ { print $1; found=1; exit }
+        first == "" { first=$1 }
+        END { if (!found && first != "") print first }
+      '
 }
 
 pin_file() {
