@@ -19,17 +19,19 @@ test.describe('Security & Coverage', () => {
     const styleSrc = csp?.split(';').find(part => part.trim().startsWith('style-src'));
     expect(styleSrc).toBeTruthy();
 
-    // Check for development mode explicitly via URL or global state if possible.
-    // Here we check for 'blob:' and 'unsafe-inline' based on the environment.
-    // In CI/Production builds, we expect them to be absent.
-    const isCI = !!process.env.CI;
+    // Detect development mode by checking for the presence of the Vite client script
+    // or by inspecting the meta tag content.
+    const isDev = await page.evaluate(() => {
+      return !!document.querySelector('script[src^="/@vite/client"]');
+    });
 
-    if (isCI) {
+    if (!isDev) {
+      // Production expectations
       expect(styleSrc).not.toContain("'unsafe-inline'");
       expect(styleSrc).not.toContain('blob:');
       expect(csp).toContain('upgrade-insecure-requests');
     } else {
-      // Local development (vite dev) usually has these
+      // Development expectations
       expect(styleSrc).toContain("'unsafe-inline'");
       expect(styleSrc).toContain('blob:');
     }

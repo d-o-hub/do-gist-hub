@@ -84,8 +84,16 @@ function cspPlugin(): Plugin {
 
       const metaTag = `<meta http-equiv="Content-Security-Policy" content="${csp.trim()}" />`;
 
-      // Replace original meta tag with the transformed one
-      return html.replace(/<meta\s+http-equiv="Content-Security-Policy"[^>]*>/i, metaTag);
+      // Replace original meta tag with the transformed one (handles either attribute order)
+      const fullMatch =
+        html.match(/<meta[^>]*http-equiv="Content-Security-Policy"[^>]*>/i) ||
+        html.match(/<meta[^>]*content="[^"]+"[^>]*http-equiv="Content-Security-Policy"[^>]*>/i);
+
+      if (fullMatch) {
+        return html.replace(fullMatch[0], metaTag);
+      }
+
+      return html;
     },
   };
 }
