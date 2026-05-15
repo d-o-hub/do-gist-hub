@@ -1,10 +1,10 @@
-# AGENTS.md (2026 Edition)
+# AGENTS.md
 
 > Offline-first GitHub Gist management.
 > Stack: pnpm, Vite 8, TypeScript 6, Biome, Playwright, Vitest, Capacitor 8.
 
 ## Agent Workflow
-1. **Analyze**: Read `README.md`, `plans/` (ADRs + progress), and relevant `src/` files.
+1. **Analyze**: Read `plans/` (ADRs + progress), and relevant `src/` files.
 2. **GOAP First**: Compare ADR decisions vs implementation. Use `plans/adr-026-phase-a-modernization-goap.md` for gap template.
 3. **Execute**: Use `pnpm` exclusively. No `npm`. No `yarn`.
 4. **Verify**: Run tests and linting.
