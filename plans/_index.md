@@ -58,6 +58,7 @@ See `plans/archive/` for completed or superseded files moved here on 2026-05-15.
 | `adr-022-2026-ui-trends-recommendations.md`           | 2026 UI trends integration             |
 | `adr-022-ambient-light-extension.md`                  | Ambient light sensor theming — implemented in Phase C (029)  |
 | `adr-026-phase-a-modernization-goap.md`               | Phase A modernization GOAP             |
+| `adr-027-ci-node24-android-hardening.md`               | CI Node 24 migration, Android build hardening                 |
 
 ## Reference docs (foundational, stable)
 
@@ -96,10 +97,11 @@ These numbered plans document the project's foundation and are considered stable
 | `034-progress-update-swarm-plans-audit.md`            | Progress | Complete ✅ | Plans audit, teardown fix, ADR-022 promoted from backlog to complete              |
 | `035-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm followups, ADR cross-check, AGENTS.md refresh, test audit                  |
 | `036-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm roundup — ADR compliance verified, compacted learnings, AGENTS.md refresh  |
+| `037-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | TRIZ contradiction audit, skill registry docs, AGENTS.md skill directory refs  |
 
 ## Quick reference: ADR numbers in use
 
-`adr-001` through `adr-026` (gaps: 017-019 reserved)
-**Next available ADR**: `adr-027`
+`adr-001` through `adr-027` (gaps: 017-019 reserved)
+**Next available ADR**: `adr-028`
 
-**Next available plan number**: `037`
+**Next available plan number**: `038`

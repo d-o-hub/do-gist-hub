@@ -1,5 +1,5 @@
 <!-- Last Audit: 2026-07-17 -->
-# ADR-015: CI Node 24 Migration and Android Build Hardening
+# ADR-027: CI Node 24 Migration and Android Build Hardening
 
 **Status**: Implemented
 **Date**: 2026-07-17

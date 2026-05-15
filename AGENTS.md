@@ -56,7 +56,7 @@ pnpm run test:unit
 
 ## Skills & Capabilities
 
-Consult `.agents/skills/` for specific modular agentic workflows. Avoid large monolithic prompts; use standard file execution.
+Consult `.agents/skills/` or `agents-docs/available-skills.md` for the full skill registry. Each agent framework (`.agents/`, `.qwen/`, `.gemini/`) mirrors the same 25 skills. Avoid large monolithic prompts; use standard file execution.
 
 ## Reference Files
 
@@ -64,12 +64,15 @@ Consult `.agents/skills/` for specific modular agentic workflows. Avoid large mo
 | ---------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | `agents-docs/ci-maintenance.md`                            | CI/CD maintenance rules (Node runtime checks, Android SDK, Gradle flags)                |
 | `agents-docs/self-learning-rules.md`                       | CSS layout rules, testing patterns, code quality, detection patterns                    |
+| `agents-docs/available-skills.md`                          | Full skill registry with descriptions (25 skills)                                       |
 | `plans/adr-*-*.md`                                         | Architecture Decision Records with rationale and tradeoffs                              |
 | `plans/033-progress-update-2026-05-15-plans-completion.md` | Plans completion sprint — dark mode first, noUnusedVariables, SHA-pinned actions |
 | `plans/034-progress-update-swarm-plans-audit.md`            | Plans audit — teardown fix, ADR-022 promoted, plan registry updated |
 | `plans/035-progress-update-2026-07-18.md`                   | Swarm followups — ADR cross-check, test audit, AGENTS.md refresh |
 | `plans/036-progress-update-2026-07-18.md`                   | Swarm roundup — ADR compliance verified, compacted swarm learnings, agent selection guide |
+| `plans/037-progress-update-2026-07-18.md`                   | TRIZ audit, skill registry, compacted doc updates         |
 | `.agents/skills/codebase-optimizer/SKILL.md`               | Autonomous optimization and self-learning system                                        |
+| `.qwen/skills/` / `.gemini/skills/`                        | 25 skills mirrored across agent frameworks (Qwen, Gemini, Claude)                       |
 
 ## Verification Checklist
 
