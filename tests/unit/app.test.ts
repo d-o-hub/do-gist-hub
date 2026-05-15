@@ -444,7 +444,8 @@ describe('App Component', () => {
       const settingsBtn = container.querySelector('[data-testid="settings-btn"]');
       expect(settingsBtn).not.toBeNull();
 
-      settingsBtn?.dispatchEvent(new MouseEvent('click'));
+      // Use bubbles: true so the delegated click handler on container catches it
+      settingsBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       expect(announcer.announce).toHaveBeenCalledWith('Navigating to settings page');
     });
   });

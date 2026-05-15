@@ -5,6 +5,7 @@
  */
 
 import { getMetadata, setMetadata } from '../db';
+import { lifecycle } from '../lifecycle';
 import { decrypt, encrypt } from '../security/crypto';
 import { redactToken, safeError, safeLog } from '../security/logger';
 import { clearUsernameCache, validateToken } from './client';
@@ -48,6 +49,9 @@ if (typeof window !== 'undefined') {
     },
     { signal }
   );
+
+  // Hook cleanup into app lifecycle
+  lifecycle.onAppCleanup(() => authAbortController.abort());
 }
 
 /**

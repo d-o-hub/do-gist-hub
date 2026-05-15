@@ -23,6 +23,7 @@ export class App {
   private currentRoute: Route = 'home';
   private currentGistId: string | null = null;
   private abortController = new AbortController();
+  private networkUnsubscribe?: () => void;
 
   constructor() {
     this.initialize();
@@ -36,10 +37,9 @@ export class App {
 
     const signal = this.abortController.signal;
 
-    const unsubscribe = networkMonitor.subscribe(() => {
+    this.networkUnsubscribe = networkMonitor.subscribe(() => {
       void this.updateSyncIndicator();
     });
-    lifecycle.onAppCleanup(() => unsubscribe());
 
     window.addEventListener(
       'app:sync-change',
@@ -54,10 +54,7 @@ export class App {
       (e) => {
         const detail = (e as CustomEvent).detail;
         if (detail?.route) {
-          if (detail.params?.gistId) {
-            this.currentGistId = detail.params.gistId;
-          }
-          void this.navigate(detail.route as Route);
+          void this.navigate(detail.route as Route, detail.params?.gistId);
         }
       },
       { signal }
@@ -103,27 +100,21 @@ export class App {
       { signal }
     );
 
-    this.container?.querySelectorAll('[data-testid="settings-btn"]').forEach((btn) => {
-      btn.addEventListener(
-        'click',
-        () => {
-          void this.navigate('settings');
-        },
-        { signal }
-      );
-    });
-
     this.container.dataset.navBound = 'true';
   }
 
-  private async navigate(route: Route): Promise<void> {
-    const isSameRoute = this.currentRoute === route;
+  private async navigate(route: Route, gistId?: string): Promise<void> {
+    const isSameRoute =
+      this.currentRoute === route && (gistId === undefined || this.currentGistId === gistId);
 
     // Cancel in-flight requests from the previous route before navigating to a different route
     if (!isSameRoute) {
       lifecycle.cleanupRoute();
     }
     this.currentRoute = route;
+    if (gistId !== undefined) {
+      this.currentGistId = gistId;
+    }
     announcer.announce(`Navigating to ${route} page`);
 
     const savedSort = localStorage.getItem('sort-preference') || 'updated-desc';
@@ -460,5 +451,8 @@ export class App {
 
   public destroy(): void {
     this.abortController.abort();
+    this.networkUnsubscribe?.();
+    lifecycle.cleanupRoute();
+    lifecycle.cleanupApp();
   }
 }
