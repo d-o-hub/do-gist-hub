@@ -72,6 +72,9 @@ Consult `.agents/skills/` or `agents-docs/available-skills.md` for the full skil
 | `plans/034-progress-update-swarm-plans-audit.md`            | Plans audit — teardown fix, ADR-022 promoted, plan registry updated |
 | `plans/038-progress-update-2026-05-15.md`                   | PR #166 merge: CI fix (EnvironmentTeardownError), ADR-027 rename, plans registration |
 | `plans/039-progress-update-2026-05-15.md`                   | Plans audit followup — TRIZ registered, goap fixed, AGENTS.md refs added |
+| `plans/040-progress-update-2026-05-15.md`                   | Swarm roundup — ADR cross-ref audit, coverage report, archive 2026-07-18 progress updates |
+| `plans/041-progress-update-2026-05-15.md`                   | Coverage threshold enforcement (70%), ADR compliance script, audit conventions & archive policy |
+| `scripts/check-adr-compliance.sh`                            | Automated ADR compliance check — 4-phase: file inventory, registration, orphans, patterns |
 | `.agents/skills/codebase-optimizer/SKILL.md`               | Autonomous optimization and self-learning system                                        |
 | `.qwen/skills/` / `.gemini/skills/`                        | 25 skills mirrored across agent frameworks (Qwen, Gemini, Claude)                       |
 | `analysis/triz-architecture-2026-07-18.md`                   | TRIZ contradiction audit — 5 architectural contradictions mapped to inventive principles |
