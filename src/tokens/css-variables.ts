@@ -326,6 +326,12 @@ export function generateCSSVariables(): string {
   --ui-glass-border: rgba(0, 0, 0, 0.08);
 
   /* Light mode surface & overlay */
+  --color-surface-overlay: rgba(0, 0, 0, 0.15);
+  --color-surface-overlay-medium: rgba(0, 0, 0, 0.1);
+  --color-surface-overlay-heavy: rgba(0, 0, 0, 0.25);
+  --color-surface-overlay-light: rgba(0, 0, 0, 0.06);
+  --color-backdrop-medium: rgba(0, 0, 0, 0.3);
+  --color-backdrop-heavy: rgba(0, 0, 0, 0.35);
   --color-nav-bg: rgba(245, 245, 247, 0.95);
   --color-header-bg: rgba(255, 255, 255, 0.85);
   --color-modal-bg: rgba(245, 245, 247, 0.95);

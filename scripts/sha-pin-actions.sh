@@ -42,10 +42,16 @@ pin_file() {
   fi
 }
 
-if [[ $# -gt 0 ]]; then
-  pin_file "$1"
-else
+if [[ $# -eq 0 ]]; then
   for f in .github/workflows/*.yml; do
     pin_file "$f"
   done
+  exit 0
 fi
+
+file="$1"
+if [[ ! -f $file ]]; then
+  echo "Error: file not found: $file" >&2
+  exit 1
+fi
+pin_file "$file"
