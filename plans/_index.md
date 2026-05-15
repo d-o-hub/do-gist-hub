@@ -7,11 +7,11 @@
 
 ## Active plans
 
-| File                                          | Type        | Status      | Summary                                                 |
-| --------------------------------------------- | ----------- | ----------- | ------------------------------------------------------- |
-| `adr-022-2026-ui-trends-recommendations.md`   | ADR         | Proposed 🟡 | 2026 UI trends integration recommendations              |
-| `strict-unused-vars.md`                       | Enforcement | Active 🟢   | Enforce strict `@typescript-eslint/no-unused-vars` rule |
-| `019-swarm-analysis-codebase-improvements.md` | Analysis    | Active 🟢   | Full codebase audit via 5 coordinated swarm agents      |
+| File                                          | Type        | Status      | Summary                                                                                                                      |
+| --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `adr-022-2026-ui-trends-recommendations.md`   | ADR         | Complete ✅ | All P0-P2 items implemented; dark mode first, variable fonts, bento grid, glassmorphism, spring physics, performance budgets |
+| `strict-unused-vars.md`                       | Enforcement | Complete ✅ | `noUnusedVariables` enabled in biome.json, zero violations                                                                   |
+| `019-swarm-analysis-codebase-improvements.md` | Analysis    | Complete ✅ | All CI/CD workflows, docs, security items implemented; SHA-pinned actions                                                    |
 
 ## Archived
 
