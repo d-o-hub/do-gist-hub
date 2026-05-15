@@ -84,13 +84,10 @@ function cspPlugin(): Plugin {
 
       const metaTag = `<meta http-equiv="Content-Security-Policy" content="${csp.trim()}" />`;
 
-      // Replace original meta tag with the transformed one (handles either attribute order)
-      const fullMatch =
-        html.match(/<meta[^>]*http-equiv="Content-Security-Policy"[^>]*>/i) ||
-        html.match(/<meta[^>]*content="[^"]+"[^>]*http-equiv="Content-Security-Policy"[^>]*>/i);
-
-      if (fullMatch) {
-        return html.replace(fullMatch[0], metaTag);
+      // Replace original meta tag with the transformed one using the already-matched tag
+      // (cspMatch[0] handles either attribute order since the extraction regex already does)
+      if (cspMatch) {
+        return html.replace(cspMatch[0], metaTag);
       }
 
       return html;

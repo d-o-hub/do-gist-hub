@@ -15,8 +15,11 @@ test.describe('Security & Coverage', () => {
     expect(csp).toBeTruthy();
     expect(csp).toContain("default-src 'self'");
 
-    // style-src checks
-    const styleSrc = csp?.split(';').find(part => part.trim().startsWith('style-src'));
+    // style-src checks - use exact directive name matching to avoid matching style-src-elem/attr
+    const styleSrc = csp?.split(';').find(part => {
+      const directive = part.trim().split(/\s+/)[0];
+      return directive === 'style-src';
+    });
     expect(styleSrc).toBeTruthy();
 
     // Detect development mode by checking for the presence of the Vite client script
