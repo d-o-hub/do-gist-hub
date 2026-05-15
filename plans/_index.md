@@ -113,4 +113,4 @@ These numbered plans document the project's foundation and are considered stable
 `adr-001` through `adr-027` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-028`
 
-**Next available plan number**: `041`
+**Next available plan number**: `042`
