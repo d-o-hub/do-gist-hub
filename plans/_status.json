@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "lastUpdated": "2026-07-18",
+  "description": "Machine-readable plan registry for agents and scripts. Mirrors plans/_index.md.",
+  "plans": {
+    "adr-001-reuse-do-gemini-token-system.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Design token reuse from do-gemini"
+    },
+    "adr-002-web-first-pwa-capacitor.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Web-first PWA + Capacitor strategy"
+    },
+    "adr-003-indexeddb-v1.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "IndexedDB as source of truth (v1)"
+    },
+    "adr-004-fine-grained-pat-v1.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Fine-grained PAT auth (v1)"
+    },
+    "adr-005-no-backend-v1.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "No backend server (v1)"
+    },
+    "adr-006-global-error-boundary-and-error-taxonomy.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Global error boundary + error taxonomy"
+    },
+    "adr-007-csp-and-logging-redaction.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "CSP and logging redaction"
+    },
+    "adr-007-ui-ux-modernization.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "UI/UX modernization"
+    },
+    "adr-008-web-vitals-performance-budgets.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Web Vitals + performance budgets"
+    },
+    "adr-009-abortcontroller-and-lifecycle-cleanup.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "AbortController + lifecycle cleanup"
+    },
+    "adr-010-sw-cache-name-derivation.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Service Worker cache name derivation"
+    },
+    "adr-011-unit-testing-vitest.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Vitest unit testing strategy"
+    },
+    "adr-012-pre-commit-workflow.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Pre-commit workflow"
+    },
+    "adr-013-request-deduplication.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Request deduplication"
+    },
+    "adr-014-exponential-backoff-sync.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Exponential backoff sync"
+    },
+    "adr-015-upstream-template-adaptation.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Upstream template adaptation"
+    },
+    "adr-016-github-api-efficiency.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "GitHub API efficiency"
+    },
+    "adr-020-swarm-audit-phase-a.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Swarm audit Phase A"
+    },
+    "adr-021-merge-strategy.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Merge strategy"
+    },
+    "adr-022-2026-ui-trends-recommendations.md": {
+      "type": "adr",
+      "status": "complete",
+      "summary": "All P0-P2 items implemented; dark mode first, variable fonts, bento grid, glassmorphism, spring physics, performance budgets"
+    },
+    "adr-022-ambient-light-extension.md": {
+      "type": "adr",
+      "status": "complete",
+      "summary": "Ambient light sensor theming — implemented in Phase C (029); sensor, permission flow, lifecycle, settings UI, tests"
+    },
+    "adr-026-phase-a-modernization-goap.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Phase A modernization GOAP"
+    },
+    "strict-unused-vars.md": {
+      "type": "enforcement",
+      "status": "complete",
+      "summary": "noUnusedVariables enabled in biome.json, zero violations"
+    },
+    "019-swarm-analysis-codebase-improvements.md": {
+      "type": "analysis",
+      "status": "complete",
+      "summary": "All CI/CD workflows, docs, security items implemented; SHA-pinned actions"
+    },
+    "026-goap-analysis-current.md": {
+      "type": "analysis",
+      "status": "complete",
+      "summary": "ADR-vs-implementation gap audit; all P1 items resolved"
+    },
+    "028-goap-phase-b-adr22-completion.md": {
+      "type": "goap",
+      "status": "complete",
+      "summary": "Time-based theming, container query expansion, ambient light blueprint, strict TS compliance"
+    },
+    "029-goap-phase-c-future-work.md": {
+      "type": "goap",
+      "status": "complete",
+      "summary": "Ambient light sensor, Android release signing, ProGuard, build-time CSS tokens, self-hosted fonts, scroll parallax"
+    },
+    "030-coverage-improvement-plan.md": {
+      "type": "plan",
+      "status": "complete",
+      "summary": "81.88% line coverage, 941 tests across 51 files; all vitest thresholds exceeded"
+    },
+    "027-progress-update-2026-07-18.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "P1-4 through P1-7: TS6 migration, RouteBoundary, Skeleton, Conflicts nav"
+    },
+    "031-progress-update-coverage-pr156.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "PR #156 merged: 790 tests, 47 files, 81.88% line coverage"
+    },
+    "032-progress-update-swarm-merge-pr156.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "Swarm coordination: merge PR #156, update plans, compact learnings"
+    },
+    "033-progress-update-2026-05-15-plans-completion.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "Dark mode first, noUnusedVariables, SHA-pinned actions, dialog AbortController"
+    },
+    "034-progress-update-swarm-plans-audit.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "Plans audit, teardown fix, ADR-022 promoted from backlog to complete"
+    },
+    "035-progress-update-2026-07-18.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "Swarm followups, ADR cross-check, AGENTS.md refresh, test audit"
+    },
+    "036-progress-update-2026-07-18.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "Swarm roundup — ADR compliance verified against codebase, compacted learnings, AGENTS.md refresh"
+    }
+  },
+  "archive": [
+    "archive/017-ui-ux-navigation-overhaul.md",
+    "archive/018-ci-offline-test-fix.md",
+    "archive/020-upstream-template-adaptation.md",
+    "archive/021-progress-update-2026-05-01.md",
+    "archive/022-pr106-recreation-progress.md",
+    "archive/023-progress-update-2026-05-06.md",
+    "archive/024-progress-update-2026-05-07.md",
+    "archive/025-progress-update-2026-05-07.md",
+    "archive/plan-ui-ux-modernization.md"
+  ],
+  "referenceDocs": [
+    "000-project-charter.md",
+    "001-v1-scope.md",
+    "002-architecture.md",
+    "003-design-token-architecture.md",
+    "004-responsive-system.md",
+    "005-data-model.md",
+    "006-sync-model.md",
+    "007-global-error-handling.md",
+    "008-security.md",
+    "009-memory-safety.md",
+    "010-performance-strategy.md",
+    "011-testing-strategy.md",
+    "012-android-packaging.md",
+    "013-release-plan.md",
+    "015-community-workflow.md",
+    "016-pwa-offline-page.md"
+  ],
+  "nextAvailable": {
+    "adr": "adr-027",
+    "plan": "037",
+    "goap": "030"
+  }
+}

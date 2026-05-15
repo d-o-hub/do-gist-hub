@@ -1,6 +1,6 @@
 # plans/\_index.md — Active Plan Registry
 
-> **Last updated**: 2026-05-15
+> **Last updated**: 2026-07-18
 > Agents: read this before starting any task. Update it when you change plan status.
 
 ---
@@ -12,6 +12,9 @@
 | `adr-022-2026-ui-trends-recommendations.md`   | ADR         | Complete ✅ | All P0-P2 items implemented; dark mode first, variable fonts, bento grid, glassmorphism, spring physics, performance budgets |
 | `strict-unused-vars.md`                       | Enforcement | Complete ✅ | `noUnusedVariables` enabled in biome.json, zero violations                                                                   |
 | `019-swarm-analysis-codebase-improvements.md` | Analysis    | Complete ✅ | All CI/CD workflows, docs, security items implemented; SHA-pinned actions                                                    |
+| `028-goap-phase-b-adr22-completion.md`        | GOAP Plan   | Complete ✅ | Time-based theming, container query expansion, ambient light blueprint, strict TS compliance                                 |
+| `029-goap-phase-c-future-work.md`             | GOAP Plan   | Complete ✅ | Ambient light sensor, Android release signing, ProGuard, build-time CSS tokens, self-hosted fonts, scroll parallax           |
+| `030-coverage-improvement-plan.md`            | Plan        | Complete ✅ | 81.88% line coverage, 941 tests across 51 files; all vitest thresholds exceeded                                              |
 
 ## Archived
 
@@ -52,6 +55,9 @@ See `plans/archive/` for completed or superseded files moved here on 2026-05-15.
 | `adr-016-github-api-efficiency.md`                    | GitHub API efficiency                  |
 | `adr-020-swarm-audit-phase-a.md`                      | Swarm audit Phase A                    |
 | `adr-021-merge-strategy.md`                           | Merge strategy                         |
+| `adr-022-2026-ui-trends-recommendations.md`           | 2026 UI trends integration             |
+| `adr-022-ambient-light-extension.md`                  | Ambient light sensor theming — implemented in Phase C (029)  |
+| `adr-026-phase-a-modernization-goap.md`               | Phase A modernization GOAP             |
 
 ## Reference docs (foundational, stable)
 
@@ -78,9 +84,22 @@ These numbered plans document the project's foundation and are considered stable
 
 ---
 
+## GOAP & Analysis plans
+
+| File                                          | Type          | Status      | Summary                                                                          |
+| --------------------------------------------- | ------------- | ----------- | -------------------------------------------------------------------------------- |
+| `026-goap-analysis-current.md`                | Analysis      | Complete ✅ | ADR-vs-implementation gap audit; all P1 items resolved                           |
+| `027-progress-update-2026-07-18.md`           | Progress      | Complete ✅ | P1-4 through P1-7: TS6 migration, RouteBoundary, Skeleton, Conflicts nav         |
+| `031-progress-update-coverage-pr156.md`       | Progress      | Complete ✅ | PR #156 merged: 790 tests, 47 files, 81.88% line coverage                        |
+| `032-progress-update-swarm-merge-pr156.md`    | Progress      | Complete ✅ | Swarm coordination: merge PR #156, update plans, compact learnings               |
+| `033-progress-update-2026-05-15-plans-completion.md` | Progress | Complete ✅ | Dark mode first, noUnusedVariables, SHA-pinned actions, dialog AbortController   |
+| `034-progress-update-swarm-plans-audit.md`            | Progress | Complete ✅ | Plans audit, teardown fix, ADR-022 promoted from backlog to complete              |
+| `035-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm followups, ADR cross-check, AGENTS.md refresh, test audit                  |
+| `036-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm roundup — ADR compliance verified, compacted learnings, AGENTS.md refresh  |
+
 ## Quick reference: ADR numbers in use
 
-`adr-001` through `adr-022` (gaps: 017-019 reserved)
-**Next available ADR**: `adr-023`
+`adr-001` through `adr-026` (gaps: 017-019 reserved)
+**Next available ADR**: `adr-027`
 
-**Next available plan number**: `026`
+**Next available plan number**: `037`

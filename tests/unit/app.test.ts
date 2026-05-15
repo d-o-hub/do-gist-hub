@@ -1,7 +1,7 @@
 /**
  * Unit tests for Root App Component
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -138,6 +138,15 @@ vi.mock('../../src/components/conflict-resolution', () => ({
 }));
 
 // ── Imports (after mocks) ───────────────────────────────────────────
+
+// Force early resolution of conflict-resolution module (and its transitive
+// dependency conflict-detector) before any tests run. This prevents the
+// EnvironmentTeardownError that occurs when app.ts's dynamic
+// import('./conflict-resolution') inside the 'conflicts' route handler
+// resolves after the test environment is torn down.
+beforeAll(async () => {
+  await import('../../src/components/conflict-resolution').catch(() => {});
+});
 
 import { App } from '../../src/components/app';
 import { APP } from '../../src/config/app.config';

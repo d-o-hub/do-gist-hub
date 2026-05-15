@@ -65,7 +65,10 @@ Consult `.agents/skills/` for specific modular agentic workflows. Avoid large mo
 | `agents-docs/ci-maintenance.md`                            | CI/CD maintenance rules (Node runtime checks, Android SDK, Gradle flags)                |
 | `agents-docs/self-learning-rules.md`                       | CSS layout rules, testing patterns, code quality, detection patterns                    |
 | `plans/adr-*-*.md`                                         | Architecture Decision Records with rationale and tradeoffs                              |
-| `plans/033-progress-update-2026-05-15-plans-completion.md` | Latest plans completion sprint — dark mode first, noUnusedVariables, SHA-pinned actions |
+| `plans/033-progress-update-2026-05-15-plans-completion.md` | Plans completion sprint — dark mode first, noUnusedVariables, SHA-pinned actions |
+| `plans/034-progress-update-swarm-plans-audit.md`            | Plans audit — teardown fix, ADR-022 promoted, plan registry updated |
+| `plans/035-progress-update-2026-07-18.md`                   | Swarm followups — ADR cross-check, test audit, AGENTS.md refresh |
+| `plans/036-progress-update-2026-07-18.md`                   | Swarm roundup — ADR compliance verified, compacted swarm learnings, agent selection guide |
 | `.agents/skills/codebase-optimizer/SKILL.md`               | Autonomous optimization and self-learning system                                        |
 
 ## Verification Checklist
@@ -78,6 +81,24 @@ pnpm run lint                              # Biome zero errors (noUnusedVariable
 ```
 
 ---
+
+## Swarm Coordination Rules (Compacted from learnings, 2026-07-18)
+
+Compiled from 12 lessons across progress updates 032, 034, 035. Apply these when running multi-agent workflows.
+
+1. **Establish baseline first** — Run quality gate before making changes to detect pre-existing issues.
+2. **Fall back when agents fail** — If file-picker errors, use glob + manual mapping directly.
+3. **Root cause via code search** — Trace dependency chains (code-searcher) before applying fixes.
+4. **Pre-cache mocked modules** — `vi.mock` does not prevent transitive module resolution; use eager `await import()` in `beforeAll`.
+5. **ADR status at PR review** — Cross-check ADR status in `_status.json` when merging feature work.
+6. **Update AGENTS.md on progress** — Add new progress update entries to reference table immediately.
+7. **Local env ≠ CI** — Playwright failures may be local headless issues; check CI results.
+8. **`gh pr merge` auto-deletes** — No explicit branch delete needed after merge.
+
+### ADR Status Convention
+
+- **`accepted`**: Architectural decision defining an ongoing pattern (AbortController, IndexedDB, token system).
+- **`complete`**: Feature implementation with clear completion criteria (ambient light sensor, UI modernization).
 
 ## Self-Learning Rules (Auto-Generated)
 
