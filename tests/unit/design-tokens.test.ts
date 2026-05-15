@@ -155,9 +155,9 @@ describe('Design Tokens — Theme System', () => {
       expect(resolveTheme(null)).toBe('dark');
     });
 
-    it('falls back to system light preference', () => {
+    it('falls back to dark when no preference and system prefers light', () => {
       mockSystemPreference(false);
-      expect(resolveTheme(null)).toBe('light');
+      expect(resolveTheme(null)).toBe('dark');
     });
   });
 
@@ -255,10 +255,10 @@ describe('Design Tokens — Theme System', () => {
       expect(setIntervalSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('initializes with no preference and falls back to system', () => {
+    it('initializes with no preference and defaults to dark', () => {
       mockSystemPreference(false);
       initTheme();
-      expect(setAttributeSpy).toHaveBeenCalledWith('data-theme', 'light');
+      expect(setAttributeSpy).toHaveBeenCalledWith('data-theme', 'dark');
     });
 
     it('clears existing interval when re-initializing with non-time preference', () => {
@@ -296,8 +296,7 @@ describe('Design Tokens — Theme System', () => {
 
       const dispatched = dispatchEventSpy.mock.calls.some(
         (call) =>
-          call[0] instanceof CustomEvent &&
-          (call[0] as CustomEvent).detail?.theme === 'light'
+          call[0] instanceof CustomEvent && (call[0] as CustomEvent).detail?.theme === 'light'
       );
       expect(dispatched).toBe(true);
     });
@@ -311,9 +310,7 @@ describe('Design Tokens — Theme System', () => {
       vi.advanceTimersByTime(900_000);
 
       const themeChangeDispatched = dispatchEventSpy.mock.calls.some(
-        (call) =>
-          call[0] instanceof CustomEvent &&
-          call[0].type === 'app:theme-change'
+        (call) => call[0] instanceof CustomEvent && call[0].type === 'app:theme-change'
       );
       expect(themeChangeDispatched).toBe(false);
     });

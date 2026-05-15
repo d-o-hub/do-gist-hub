@@ -40,46 +40,46 @@ export function generateCSSVariables(): string {
   --color-gray-900: ${colors.gray[900]};
   --color-gray-950: ${colors.gray[950]};
 
-  /* ===== Semantic Colors (Light Mode) ===== */
-  --color-background-primary: ${colorSemantic.light.background.primary};
-  --color-background-secondary: ${colorSemantic.light.background.secondary};
-  --color-background-tertiary: ${colorSemantic.light.background.tertiary};
-  --color-background-elevated: ${colorSemantic.light.background.elevated};
+  /* ===== Semantic Colors (Dark Mode) ===== */
+  --color-background-primary: ${colorSemantic.dark.background.primary};
+  --color-background-secondary: ${colorSemantic.dark.background.secondary};
+  --color-background-tertiary: ${colorSemantic.dark.background.tertiary};
+  --color-background-elevated: ${colorSemantic.dark.background.elevated};
 
-  --color-foreground-primary: ${colorSemantic.light.foreground.primary};
-  --color-foreground-secondary: ${colorSemantic.light.foreground.secondary};
-  --color-foreground-muted: ${colorSemantic.light.foreground.muted};
-  --color-foreground-inverse: ${colorSemantic.light.foreground.inverse};
+  --color-foreground-primary: ${colorSemantic.dark.foreground.primary};
+  --color-foreground-secondary: ${colorSemantic.dark.foreground.secondary};
+  --color-foreground-muted: ${colorSemantic.dark.foreground.muted};
+  --color-foreground-inverse: ${colorSemantic.dark.foreground.inverse};
 
-  --color-accent-primary: ${colorSemantic.light.accent.primary};
-  --color-accent-hover: ${colorSemantic.light.accent.hover};
-  --color-accent-active: ${colorSemantic.light.accent.active};
-  --color-accent-subtle: ${colorSemantic.light.accent.subtle};
-  --color-accent-glow: ${colorSemantic.light.accent.glow};
+  --color-accent-primary: ${colorSemantic.dark.accent.primary};
+  --color-accent-hover: ${colorSemantic.dark.accent.hover};
+  --color-accent-active: ${colorSemantic.dark.accent.active};
+  --color-accent-subtle: ${colorSemantic.dark.accent.subtle};
+  --color-accent-glow: ${colorSemantic.dark.accent.glow};
 
-  --color-border-default: ${colorSemantic.light.border.default};
-  --color-border-emphasis: ${colorSemantic.light.border.emphasis};
-  --color-border-strong: ${colorSemantic.light.border.strong};
+  --color-border-default: ${colorSemantic.dark.border.default};
+  --color-border-emphasis: ${colorSemantic.dark.border.emphasis};
+  --color-border-strong: ${colorSemantic.dark.border.strong};
 
-  --color-status-success-bg: ${colorSemantic.light.status.success.bg};
-  --color-status-success-fg: ${colorSemantic.light.status.success.fg};
-  --color-status-success-border: ${colorSemantic.light.status.success.border};
+  --color-status-success-bg: ${colorSemantic.dark.status.success.bg};
+  --color-status-success-fg: ${colorSemantic.dark.status.success.fg};
+  --color-status-success-border: ${colorSemantic.dark.status.success.border};
 
-  --color-status-error-bg: ${colorSemantic.light.status.error.bg};
-  --color-status-error-fg: ${colorSemantic.light.status.error.fg};
-  --color-status-error-border: ${colorSemantic.light.status.error.border};
+  --color-status-error-bg: ${colorSemantic.dark.status.error.bg};
+  --color-status-error-fg: ${colorSemantic.dark.status.error.fg};
+  --color-status-error-border: ${colorSemantic.dark.status.error.border};
   
-  --color-status-warning-bg: ${colorSemantic.light.status.warning.bg};
-  --color-status-warning-fg: ${colorSemantic.light.status.warning.fg};
-  --color-status-warning-border: ${colorSemantic.light.status.warning.border};
+  --color-status-warning-bg: ${colorSemantic.dark.status.warning.bg};
+  --color-status-warning-fg: ${colorSemantic.dark.status.warning.fg};
+  --color-status-warning-border: ${colorSemantic.dark.status.warning.border};
   
-  --color-status-info-bg: ${colorSemantic.light.status.info.bg};
-  --color-status-info-fg: ${colorSemantic.light.status.info.fg};
-  --color-status-info-border: ${colorSemantic.light.status.info.border};
+  --color-status-info-bg: ${colorSemantic.dark.status.info.bg};
+  --color-status-info-fg: ${colorSemantic.dark.status.info.fg};
+  --color-status-info-border: ${colorSemantic.dark.status.info.border};
   
-  --color-interactive-hover: ${colorSemantic.light.interactive.hover};
-  --color-interactive-active: ${colorSemantic.light.interactive.active};
-  --color-interactive-focus: ${colorSemantic.light.interactive.focus};
+  --color-interactive-hover: ${colorSemantic.dark.interactive.hover};
+  --color-interactive-active: ${colorSemantic.dark.interactive.active};
+  --color-interactive-focus: ${colorSemantic.dark.interactive.focus};
   
   /* ===== Spacing Tokens ===== */
   --spacing-0: ${spacing[0]};
@@ -201,11 +201,11 @@ export function generateCSSVariables(): string {
   --motion-easing-ease-in: ${motionTokens.easing.in};
   --motion-duration-slower: ${motionTokens.duration.deliberate};
   
-  /* ===== Shadow Tokens ===== */
+  /* ===== Shadow Tokens (Dark Mode Defaults) ===== */
   --shadow-none: ${shadowTokens.none};
-  --shadow-sm: ${shadowTokens.sm};
-  --shadow-md: ${shadowTokens.md};
-  --shadow-lg: ${shadowTokens.lg};
+  --shadow-sm: ${shadowTokens['sm-dark']};
+  --shadow-md: ${shadowTokens['md-dark']};
+  --shadow-lg: ${shadowTokens['lg-dark']};
   --shadow-xl: ${shadowTokens.xl};
   --shadow-2xl: ${shadowTokens['2xl']};
   --shadow-inner: ${shadowTokens.inner};
@@ -224,8 +224,10 @@ export function generateCSSVariables(): string {
   /* ===== Component Tokens (2026) ===== */
   --nav-bottom-height: ${navTokens.bottomNav.height};
   --nav-sidebar-width: ${navTokens.sidebar.width};
-  --ui-backdrop-bg: ${uiTokens.backdrop.background};
+  --ui-backdrop-bg: rgba(0, 0, 0, 0.7);
   --ui-backdrop-blur: ${uiTokens.backdrop.blur};
+  --ui-glass-bg: ${uiTokens.glass.background};
+  --ui-glass-border: ${uiTokens.glass.border};
   --gist-card-bg: ${gistCard.background};
   --gist-card-shadow: ${gistCard.shadow};
 
@@ -271,57 +273,67 @@ export function generateCSSVariables(): string {
   --shadow-glass-hover: 0 0 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
-/* ===== Dark Theme Override ===== */
-[data-theme="dark"] {
-  --color-background-primary: ${colorSemantic.dark.background.primary};
-  --color-background-secondary: ${colorSemantic.dark.background.secondary};
-  --color-background-tertiary: ${colorSemantic.dark.background.tertiary};
-  --color-background-elevated: ${colorSemantic.dark.background.elevated};
+/* ===== Light Theme Override ===== */
+[data-theme="light"] {
+  --color-background-primary: ${colorSemantic.light.background.primary};
+  --color-background-secondary: ${colorSemantic.light.background.secondary};
+  --color-background-tertiary: ${colorSemantic.light.background.tertiary};
+  --color-background-elevated: ${colorSemantic.light.background.elevated};
 
-  --color-foreground-primary: ${colorSemantic.dark.foreground.primary};
-  --color-foreground-secondary: ${colorSemantic.dark.foreground.secondary};
-  --color-foreground-muted: ${colorSemantic.dark.foreground.muted};
-  --color-foreground-inverse: ${colorSemantic.dark.foreground.inverse};
+  --color-foreground-primary: ${colorSemantic.light.foreground.primary};
+  --color-foreground-secondary: ${colorSemantic.light.foreground.secondary};
+  --color-foreground-muted: ${colorSemantic.light.foreground.muted};
+  --color-foreground-inverse: ${colorSemantic.light.foreground.inverse};
 
-  --color-accent-primary: ${colorSemantic.dark.accent.primary};
-  --color-accent-hover: ${colorSemantic.dark.accent.hover};
-  --color-accent-active: ${colorSemantic.dark.accent.active};
-  --color-accent-subtle: ${colorSemantic.dark.accent.subtle};
-  --color-accent-glow: ${colorSemantic.dark.accent.glow};
+  --color-accent-primary: ${colorSemantic.light.accent.primary};
+  --color-accent-hover: ${colorSemantic.light.accent.hover};
+  --color-accent-active: ${colorSemantic.light.accent.active};
+  --color-accent-subtle: ${colorSemantic.light.accent.subtle};
+  --color-accent-glow: ${colorSemantic.light.accent.glow};
 
-  --color-border-default: ${colorSemantic.dark.border.default};
-  --color-border-emphasis: ${colorSemantic.dark.border.emphasis};
-  --color-border-strong: ${colorSemantic.dark.border.strong};
+  --color-border-default: ${colorSemantic.light.border.default};
+  --color-border-emphasis: ${colorSemantic.light.border.emphasis};
+  --color-border-strong: ${colorSemantic.light.border.strong};
 
-  --color-status-success-bg: ${colorSemantic.dark.status.success.bg};
-  --color-status-success-fg: ${colorSemantic.dark.status.success.fg};
-  --color-status-success-border: ${colorSemantic.dark.status.success.border};
+  --color-status-success-bg: ${colorSemantic.light.status.success.bg};
+  --color-status-success-fg: ${colorSemantic.light.status.success.fg};
+  --color-status-success-border: ${colorSemantic.light.status.success.border};
 
-  --color-status-error-bg: ${colorSemantic.dark.status.error.bg};
-  --color-status-error-fg: ${colorSemantic.dark.status.error.fg};
-  --color-status-error-border: ${colorSemantic.dark.status.error.border};
+  --color-status-error-bg: ${colorSemantic.light.status.error.bg};
+  --color-status-error-fg: ${colorSemantic.light.status.error.fg};
+  --color-status-error-border: ${colorSemantic.light.status.error.border};
 
-  --color-status-warning-bg: ${colorSemantic.dark.status.warning.bg};
-  --color-status-warning-fg: ${colorSemantic.dark.status.warning.fg};
-  --color-status-warning-border: ${colorSemantic.dark.status.warning.border};
+  --color-status-warning-bg: ${colorSemantic.light.status.warning.bg};
+  --color-status-warning-fg: ${colorSemantic.light.status.warning.fg};
+  --color-status-warning-border: ${colorSemantic.light.status.warning.border};
 
-  --color-status-info-bg: ${colorSemantic.dark.status.info.bg};
-  --color-status-info-fg: ${colorSemantic.dark.status.info.fg};
-  --color-status-info-border: ${colorSemantic.dark.status.info.border};
+  --color-status-info-bg: ${colorSemantic.light.status.info.bg};
+  --color-status-info-fg: ${colorSemantic.light.status.info.fg};
+  --color-status-info-border: ${colorSemantic.light.status.info.border};
 
-  --color-interactive-hover: ${colorSemantic.dark.interactive.hover};
-  --color-interactive-active: ${colorSemantic.dark.interactive.active};
-  --color-interactive-focus: ${colorSemantic.dark.interactive.focus};
+  --color-interactive-hover: ${colorSemantic.light.interactive.hover};
+  --color-interactive-active: ${colorSemantic.light.interactive.active};
+  --color-interactive-focus: ${colorSemantic.light.interactive.focus};
 
-  /* 2026: Tonal shadows for dark mode */
-  --shadow-sm: ${shadowTokens['sm-dark']};
-  --shadow-md: ${shadowTokens['md-dark']};
-  --shadow-lg: ${shadowTokens['lg-dark']};
+  /* Light mode shadows */
+  --shadow-sm: ${shadowTokens.sm};
+  --shadow-md: ${shadowTokens.md};
+  --shadow-lg: ${shadowTokens.lg};
 
-  /* Glass effects for dark mode */
-  --ui-backdrop-bg: rgba(0, 0, 0, 0.7);
-  --ui-glass-bg: ${uiTokens.glass.background};
-  --ui-glass-border: ${uiTokens.glass.border};
+  /* Light mode glass effects */
+  --ui-backdrop-bg: ${uiTokens.backdrop.background};
+  --ui-glass-bg: rgba(0, 0, 0, 0.03);
+  --ui-glass-border: rgba(0, 0, 0, 0.08);
+
+  /* Light mode surface & overlay */
+  --color-nav-bg: rgba(245, 245, 247, 0.95);
+  --color-header-bg: rgba(255, 255, 255, 0.85);
+  --color-modal-bg: rgba(245, 245, 247, 0.95);
+  --color-border-hover: rgba(0, 0, 0, 0.15);
+  --color-status-error-subtle: rgba(220, 38, 38, 0.1);
+  --color-status-success-subtle: rgba(22, 163, 74, 0.1);
+  --skeleton-shimmer-start: rgba(0, 0, 0, 0.04);
+  --skeleton-shimmer-mid: rgba(0, 0, 0, 0.08);
 }
 
 /* ===== Responsive Container Spacing ===== */
