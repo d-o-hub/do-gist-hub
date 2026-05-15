@@ -100,7 +100,7 @@ jobs:
               '4. Validate YAML syntax with python yaml.safe_load.',
               '5. Push and monitor CI.',
               '',
-              'See plans/adr-015-ci-node24-android-hardening.md and AGENTS.md CI/CD Maintenance Rules for the full remediation playbook.',
+              'See plans/adr-027-ci-node24-android-hardening.md and AGENTS.md CI/CD Maintenance Rules for the full remediation playbook.',
             ];
             const body = bodyLines.join('\n');
 

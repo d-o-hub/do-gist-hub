@@ -139,13 +139,20 @@ vi.mock('../../src/components/conflict-resolution', () => ({
 
 // ── Imports (after mocks) ───────────────────────────────────────────
 
-// Force early resolution of conflict-resolution module (and its transitive
-// dependency conflict-detector) before any tests run. This prevents the
-// EnvironmentTeardownError that occurs when app.ts's dynamic
-// import('./conflict-resolution') inside the 'conflicts' route handler
-// resolves after the test environment is torn down.
+// Force early resolution of modules with transitive dependencies that
+// can trigger EnvironmentTeardownError when resolved after the test
+// environment is torn down. This includes:
+// 1. conflict-resolution (dynamic import from app.ts 'conflicts' route)
+// 2. focus-trap (static import chain: app.ts -> home.ts -> gist-card.ts -> dialog.ts -> focus-trap.ts)
+// 3. gist-card (static import chain: home.ts -> gist-card.ts)
+// vi.mock does not prevent transitive module resolution; eager import()
+// in beforeAll pre-caches these modules so they resolve before env teardown.
 beforeAll(async () => {
-  await import('../../src/components/conflict-resolution').catch(() => {});
+  await Promise.all([
+    import('../../src/components/conflict-resolution'),
+    import('../../src/utils/focus-trap'),
+    import('../../src/components/gist-card'),
+  ]).catch(() => {});
 });
 
 import { App } from '../../src/components/app';

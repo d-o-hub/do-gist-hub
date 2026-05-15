@@ -113,6 +113,11 @@
       "status": "accepted",
       "summary": "Phase A modernization GOAP"
     },
+    "adr-027-ci-node24-android-hardening.md": {
+      "type": "adr",
+      "status": "complete",
+      "summary": "CI Node 24 migration, Android SDK explicit setup, Gradle/JDK upgrades, Kotlin stdlib exclusions, monthly action audit"
+    },
     "strict-unused-vars.md": {
       "type": "enforcement",
       "status": "complete",
@@ -177,6 +182,11 @@
       "type": "progress",
       "status": "complete",
       "summary": "Swarm roundup — ADR compliance verified against codebase, compacted learnings, AGENTS.md refresh"
+    },
+    "037-progress-update-2026-07-18.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "TRIZ contradiction audit (5 contradictions), skill registry documentation, AGENTS.md skill directory references"
     }
   },
   "archive": [
@@ -209,8 +219,8 @@
     "016-pwa-offline-page.md"
   ],
   "nextAvailable": {
-    "adr": "adr-027",
-    "plan": "037",
+    "adr": "adr-028",
+    "plan": "038",
     "goap": "030"
   }
 }

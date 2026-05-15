@@ -42,7 +42,7 @@ GitHub Actions deprecated Node.js 20, generating persistent warnings across all 
 - [x] Added exception rationale comments to `audit-actions.yml` documenting why each action is skipped
 
 ## Prevention
-- Created `plans/adr-015-ci-node24-android-hardening.md` capturing the decision, tradeoffs, and rollback triggers
+- Created `plans/adr-027-ci-node24-android-hardening.md` capturing the decision, tradeoffs, and rollback triggers
 - Updated `AGENTS.md` self-learning rules with CI/CD maintenance patterns
 - Updated `agents-docs/SUMMARY.md` with CI version-audit checklist
 - Documented Java 21 bytecode / Gradle ASM compatibility requirement
