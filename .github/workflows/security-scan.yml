@@ -15,7 +15,7 @@ jobs:
     name: ShellCheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # pinned from v6
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
         with:
@@ -25,7 +25,7 @@ jobs:
     name: GitLeaks Secret Detection
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # pinned from v6
         with:
           fetch-depth: 0
       - name: Run GitLeaks
@@ -37,11 +37,11 @@ jobs:
     name: pnpm Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: pnpm/action-setup@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # pinned from v6
+      - uses: pnpm/action-setup@ac6db6d3c1f721f886538a378a2d73e85697340a # pinned from v6
         with:
           version: 9
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # pinned from v6
         with:
           node-version: 24
           cache: 'pnpm'
