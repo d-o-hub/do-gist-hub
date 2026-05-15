@@ -3,11 +3,12 @@
  */
 
 import { toast } from '../components/ui/toast';
+import { lifecycle } from '../services/lifecycle';
 import gistStore from '../stores/gist-store';
 
 let nextFileId = 0;
 
-function createFileRow(id: number, container: HTMLElement): HTMLElement {
+function createFileRow(id: number, container: HTMLElement, signal: AbortSignal): HTMLElement {
   const div = document.createElement('div');
   div.className = 'file-entry';
   div.innerHTML = `
@@ -27,16 +28,20 @@ function createFileRow(id: number, container: HTMLElement): HTMLElement {
   `;
 
   const removeBtn = div.querySelector('.btn-remove-file');
-  removeBtn?.addEventListener('click', () => {
-    const filesContainer = container.querySelector('#files-container') as HTMLElement;
-    const entries = filesContainer.querySelectorAll('.file-entry');
-    if (entries.length > 1) {
-      div.remove();
-      updateRemoveButtons(filesContainer);
-    } else {
-      toast.error('AT LEAST ONE FILE REQUIRED');
-    }
-  });
+  removeBtn?.addEventListener(
+    'click',
+    () => {
+      const filesContainer = container.querySelector('#files-container') as HTMLElement;
+      const entries = filesContainer.querySelectorAll('.file-entry');
+      if (entries.length > 1) {
+        div.remove();
+        updateRemoveButtons(filesContainer);
+      } else {
+        toast.error('AT LEAST ONE FILE REQUIRED');
+      }
+    },
+    { signal }
+  );
 
   return div;
 }
@@ -52,6 +57,8 @@ function updateRemoveButtons(filesContainer: HTMLElement): void {
 }
 
 export function render(container: HTMLElement): void {
+  const signal = lifecycle.getRouteSignal();
+
   nextFileId = 0;
 
   container.innerHTML = `
@@ -91,66 +98,74 @@ export function render(container: HTMLElement): void {
 
   // Add initial file
   const initialId = nextFileId++;
-  filesContainer.appendChild(createFileRow(initialId, container));
+  filesContainer.appendChild(createFileRow(initialId, container, signal));
   updateRemoveButtons(filesContainer);
 
   // Add file button
-  container.querySelector('#add-file-btn')?.addEventListener('click', () => {
-    const id = nextFileId++;
-    filesContainer.appendChild(createFileRow(id, container));
-    updateRemoveButtons(filesContainer);
-    const newInput = filesContainer.querySelector(`#gist-filename-${id}`) as HTMLElement | null;
-    newInput?.focus();
-  });
+  container.querySelector('#add-file-btn')?.addEventListener(
+    'click',
+    () => {
+      const id = nextFileId++;
+      filesContainer.appendChild(createFileRow(id, container, signal));
+      updateRemoveButtons(filesContainer);
+      const newInput = filesContainer.querySelector(`#gist-filename-${id}`) as HTMLElement | null;
+      newInput?.focus();
+    },
+    { signal }
+  );
 
-  container.querySelector('#create-gist-form')?.addEventListener('submit', (e) => {
-    e.preventDefault();
+  container.querySelector('#create-gist-form')?.addEventListener(
+    'submit',
+    (e) => {
+      e.preventDefault();
 
-    const desc = (container.querySelector('#gist-description') as HTMLInputElement).value;
-    const isPublic = (container.querySelector('#gist-public') as HTMLInputElement).checked;
+      const desc = (container.querySelector('#gist-description') as HTMLInputElement).value;
+      const isPublic = (container.querySelector('#gist-public') as HTMLInputElement).checked;
 
-    const files: Record<string, string> = {};
-    const entries = filesContainer.querySelectorAll('.file-entry');
-    let hasError = false;
+      const files: Record<string, string> = {};
+      const entries = filesContainer.querySelectorAll('.file-entry');
+      let hasError = false;
 
-    entries.forEach((entry) => {
-      const filenameInput = entry.querySelector('.gist-filename') as HTMLInputElement;
-      const contentInput = entry.querySelector('.gist-content') as HTMLTextAreaElement;
-      const filename = filenameInput.value.trim();
-      const content = contentInput.value;
+      entries.forEach((entry) => {
+        const filenameInput = entry.querySelector('.gist-filename') as HTMLInputElement;
+        const contentInput = entry.querySelector('.gist-content') as HTMLTextAreaElement;
+        const filename = filenameInput.value.trim();
+        const content = contentInput.value;
 
-      if (!filename) {
-        toast.error('ALL FILES MUST HAVE A FILENAME');
-        filenameInput.focus();
-        hasError = true;
+        if (!filename) {
+          toast.error('ALL FILES MUST HAVE A FILENAME');
+          filenameInput.focus();
+          hasError = true;
+          return;
+        }
+
+        if (files[filename]) {
+          toast.error(`DUPLICATE FILENAME: ${filename}`);
+          filenameInput.focus();
+          hasError = true;
+          return;
+        }
+
+        files[filename] = content;
+      });
+
+      if (hasError) return;
+
+      if (Object.keys(files).length === 0) {
+        toast.error('AT LEAST ONE FILE REQUIRED');
         return;
       }
 
-      if (files[filename]) {
-        toast.error(`DUPLICATE FILENAME: ${filename}`);
-        filenameInput.focus();
-        hasError = true;
-        return;
-      }
-
-      files[filename] = content;
-    });
-
-    if (hasError) return;
-
-    if (Object.keys(files).length === 0) {
-      toast.error('AT LEAST ONE FILE REQUIRED');
-      return;
-    }
-
-    void (async () => {
-      const result = await gistStore.createGist(desc, isPublic, files);
-      if (result) {
-        toast.success('GIST CREATED');
-      } else {
-        toast.success('GIST QUEUED FOR SYNC');
-      }
-      window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'home' } }));
-    })();
-  });
+      void (async () => {
+        const result = await gistStore.createGist(desc, isPublic, files);
+        if (result) {
+          toast.success('GIST CREATED');
+        } else {
+          toast.success('GIST QUEUED FOR SYNC');
+        }
+        window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'home' } }));
+      })();
+    },
+    { signal }
+  );
 }

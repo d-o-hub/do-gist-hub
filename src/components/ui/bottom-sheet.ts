@@ -12,6 +12,7 @@ export class BottomSheet {
   private container: HTMLElement | null = null;
   private backdrop: HTMLElement | null = null;
   private isOpen = false;
+  private abortController = new AbortController();
 
   constructor() {
     this.createElements();
@@ -59,7 +60,10 @@ export class BottomSheet {
         void this.close();
       }
     };
-    this.container.addEventListener('keydown', handleKeydown, { once: true });
+    this.container.addEventListener('keydown', handleKeydown, {
+      once: true,
+      signal: this.abortController.signal,
+    });
 
     await withViewTransition(() => {
       this.backdrop!.classList.add('visible');
@@ -82,6 +86,12 @@ export class BottomSheet {
       this.container!.classList.remove('open');
       this.container!.setAttribute('aria-hidden', 'true');
     });
+  }
+
+  destroy(): void {
+    this.abortController.abort();
+    this.container?.remove();
+    this.backdrop?.remove();
   }
 }
 

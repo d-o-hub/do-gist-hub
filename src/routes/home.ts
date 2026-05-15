@@ -6,20 +6,27 @@
 import { bindCardEvents, renderCard } from '../components/gist-card';
 import { EmptyState } from '../components/ui/empty-state';
 import { Skeleton } from '../components/ui/skeleton';
+import { lifecycle } from '../services/lifecycle';
 import { sanitizeHtml } from '../services/security';
 import gistStore from '../stores/gist-store';
 
 export type Filter = 'all' | 'mine' | 'starred';
 export type Sort = 'created-desc' | 'updated-desc' | 'updated-asc';
 
-let storeUnsubscribe: (() => void) | undefined;
 let searchTimeout: number | undefined;
 
 // BOLT: Module-scope cache for parsed timestamps to improve sorting performance across renders
 const timestampCache = new Map<string, number>();
 
 export function render(container: HTMLElement, params?: Record<string, string>): void {
-  storeUnsubscribe?.();
+  const signal = lifecycle.getRouteSignal();
+
+  const unsubscribe = gistStore.subscribe(() => {
+    if (document.contains(container)) {
+      updateList();
+    }
+  });
+  lifecycle.onRouteCleanup(() => unsubscribe());
 
   let currentFilter = (params?.filter as Filter) || 'all';
   let currentSort = (params?.sort as Sort) || 'updated-desc';
@@ -28,13 +35,7 @@ export function render(container: HTMLElement, params?: Record<string, string>):
   container.innerHTML = getHomeHtml(currentFilter, currentSort, searchQuery);
   updateList();
 
-  storeUnsubscribe = gistStore.subscribe(() => {
-    if (document.contains(container)) {
-      updateList();
-    }
-  });
-
-  bindEvents();
+  bindEvents(signal);
 
   function getHomeHtml(filter: Filter, sort: Sort, query: string): string {
     return `
@@ -140,56 +141,78 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     const list = container.querySelector('#gist-list');
     if (list) {
       list.innerHTML = renderGistList();
-      bindCardEvents(list as HTMLElement, (id: string) => {
-        window.dispatchEvent(
-          new CustomEvent('app:navigate', {
-            detail: { route: 'detail', params: { gistId: id } },
-          })
-        );
-      });
+      bindCardEvents(
+        list as HTMLElement,
+        (id: string) => {
+          window.dispatchEvent(
+            new CustomEvent('app:navigate', {
+              detail: { route: 'detail', params: { gistId: id } },
+            })
+          );
+        },
+        signal
+      );
     }
   }
 
-  function bindEvents(): void {
+  function bindEvents(signal: AbortSignal): void {
     const searchInput = container.querySelector('#gist-search');
     if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        clearTimeout(searchTimeout);
-        const val = (e.target as HTMLInputElement).value;
-        searchTimeout = window.setTimeout(() => {
-          searchQuery = val;
-          updateList();
-        }, 300);
-      });
+      searchInput.addEventListener(
+        'input',
+        (e) => {
+          clearTimeout(searchTimeout);
+          const val = (e.target as HTMLInputElement).value;
+          searchTimeout = window.setTimeout(() => {
+            searchQuery = val;
+            updateList();
+          }, 300);
+        },
+        { signal }
+      );
     }
 
-    container.querySelector('.filter-chips')?.addEventListener('click', (e) => {
-      const chip = (e.target as HTMLElement).closest('.chip') as HTMLElement;
-      if (!chip) return;
+    container.querySelector('.filter-chips')?.addEventListener(
+      'click',
+      (e) => {
+        const chip = (e.target as HTMLElement).closest('.chip') as HTMLElement;
+        if (!chip) return;
 
-      for (const b of container.querySelectorAll('.chip')) {
-        b.classList.remove('active');
-      }
-      chip.classList.add('active');
-      currentFilter = (chip.dataset.filter as Filter) || 'all';
-      updateList();
-    });
-
-    container.querySelector('#sort-select')?.addEventListener('change', (e) => {
-      currentSort = (e.target as HTMLSelectElement).value as Sort;
-      window.dispatchEvent(new CustomEvent('app:sort-changed', { detail: { sort: currentSort } }));
-      updateList();
-    });
-
-    container.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      const actionBtn = target.closest('[data-action="clear-search"]') as HTMLElement;
-      if (actionBtn) {
-        searchQuery = '';
-        const input = container.querySelector('#gist-search') as HTMLInputElement;
-        if (input) input.value = '';
+        for (const b of container.querySelectorAll('.chip')) {
+          b.classList.remove('active');
+        }
+        chip.classList.add('active');
+        currentFilter = (chip.dataset.filter as Filter) || 'all';
         updateList();
-      }
-    });
+      },
+      { signal }
+    );
+
+    container.querySelector('#sort-select')?.addEventListener(
+      'change',
+      (e) => {
+        currentSort = (e.target as HTMLSelectElement).value as Sort;
+        window.dispatchEvent(
+          new CustomEvent('app:sort-changed', { detail: { sort: currentSort } })
+        );
+        updateList();
+      },
+      { signal }
+    );
+
+    container.addEventListener(
+      'click',
+      (e) => {
+        const target = e.target as HTMLElement;
+        const actionBtn = target.closest('[data-action="clear-search"]') as HTMLElement;
+        if (actionBtn) {
+          searchQuery = '';
+          const input = container.querySelector('#gist-search') as HTMLInputElement;
+          if (input) input.value = '';
+          updateList();
+        }
+      },
+      { signal }
+    );
   }
 }

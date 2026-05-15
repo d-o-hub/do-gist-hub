@@ -32,6 +32,7 @@ const NAV_ITEMS: NavItem[] = [
 
 export class NavRail {
   private container: HTMLElement | null = null;
+  private abortController = new AbortController();
 
   constructor() {
     this.initialize();
@@ -93,26 +94,34 @@ export class NavRail {
   private setupEventListeners(): void {
     if (!this.container) return;
 
-    this.container.addEventListener('keydown', (e) => {
-      const target = e.target as HTMLElement;
-      if (!target.classList.contains('rail-item')) return;
+    this.container.addEventListener(
+      'keydown',
+      (e) => {
+        const target = e.target as HTMLElement;
+        if (!target.classList.contains('rail-item')) return;
 
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        (target as HTMLButtonElement).click();
-      }
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          (target as HTMLButtonElement).click();
+        }
 
-      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-        e.preventDefault();
-        const buttons = Array.from(this.container!.querySelectorAll('.rail-item'));
-        const currentIndex = buttons.indexOf(target);
-        const nextIndex =
-          e.key === 'ArrowDown'
-            ? (currentIndex + 1) % buttons.length
-            : (currentIndex - 1 + buttons.length) % buttons.length;
-        (buttons[nextIndex] as HTMLButtonElement).focus();
-      }
-    });
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          const buttons = Array.from(this.container!.querySelectorAll('.rail-item'));
+          const currentIndex = buttons.indexOf(target);
+          const nextIndex =
+            e.key === 'ArrowDown'
+              ? (currentIndex + 1) % buttons.length
+              : (currentIndex - 1 + buttons.length) % buttons.length;
+          (buttons[nextIndex] as HTMLButtonElement).focus();
+        }
+      },
+      { signal: this.abortController.signal }
+    );
+  }
+
+  public destroy(): void {
+    this.abortController.abort();
   }
 }
 

@@ -23,6 +23,7 @@ export class CommandPalette {
   private commands: Command[] = [];
   private filteredCommands: Command[] = [];
   private selectedIndex = 0;
+  private abortController = new AbortController();
 
   constructor() {
     this.createElements();
@@ -47,28 +48,36 @@ export class CommandPalette {
     document.body.appendChild(this.container);
 
     // Click listener for results (event delegation)
-    this.container.addEventListener('click', (e) => {
-      const item = (e.target as HTMLElement).closest('.command-item');
-      if (item) {
-        const index = Number.parseInt(item.getAttribute('data-index') || '-1', 10);
-        if (index >= 0 && this.filteredCommands[index]) {
-          void this.filteredCommands[index].action();
-          void this.close();
+    this.container.addEventListener(
+      'click',
+      (e) => {
+        const item = (e.target as HTMLElement).closest('.command-item');
+        if (item) {
+          const index = Number.parseInt(item.getAttribute('data-index') || '-1', 10);
+          if (index >= 0 && this.filteredCommands[index]) {
+            void this.filteredCommands[index].action();
+            void this.close();
+          }
         }
-      }
-    });
+      },
+      { signal: this.abortController.signal }
+    );
   }
 
   private setupGlobalShortcut(): void {
-    window.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        void this.open();
-      }
-      if (e.key === 'Escape' && this.isOpen) {
-        void this.close();
-      }
-    });
+    window.addEventListener(
+      'keydown',
+      (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+          e.preventDefault();
+          void this.open();
+        }
+        if (e.key === 'Escape' && this.isOpen) {
+          void this.close();
+        }
+      },
+      { signal: this.abortController.signal }
+    );
   }
 
   setCommands(commands: Command[]): void {
@@ -126,10 +135,14 @@ export class CommandPalette {
     `;
 
     const input = this.container.querySelector('input');
-    input?.addEventListener('input', (e) =>
-      this.handleSearch((e.target as HTMLInputElement).value)
+    input?.addEventListener(
+      'input',
+      (e) => this.handleSearch((e.target as HTMLInputElement).value),
+      { signal: this.abortController.signal }
     );
-    input?.addEventListener('keydown', (e) => this.handleKeyDown(e));
+    input?.addEventListener('keydown', (e) => this.handleKeyDown(e), {
+      signal: this.abortController.signal,
+    });
   }
 
   private renderResults(): string {
@@ -199,6 +212,12 @@ export class CommandPalette {
     if (resultsContainer) {
       resultsContainer.innerHTML = this.renderResults();
     }
+  }
+
+  destroy(): void {
+    this.abortController.abort();
+    this.container?.remove();
+    this.backdrop?.remove();
   }
 }
 

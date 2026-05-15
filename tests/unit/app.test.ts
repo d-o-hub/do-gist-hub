@@ -15,6 +15,7 @@ vi.mock('../../src/services/lifecycle', () => ({
     onRouteCleanup: vi.fn(),
     onAppCleanup: vi.fn(),
     cleanupApp: vi.fn(),
+    getRouteSignal: vi.fn(() => new AbortController().signal),
   },
 }));
 
@@ -84,9 +85,16 @@ vi.mock('../../src/components/ui/nav-rail', () => ({
 
 vi.mock('../../src/components/ui/route-boundary', () => ({
   RouteBoundary: {
-    wrap: vi.fn(async (_main: HTMLElement, _route: string, fn: () => void | Promise<void>) => {
-      await fn();
-    }),
+    wrap: vi.fn(
+      async (
+        _main: HTMLElement,
+        _route: string,
+        fn: () => void | Promise<void>,
+        _signal?: AbortSignal
+      ) => {
+        await fn();
+      }
+    ),
   },
 }));
 
@@ -134,7 +142,10 @@ vi.mock('../../src/services/db', () => ({
 }));
 
 vi.mock('../../src/components/conflict-resolution', () => ({
-  loadConflictResolution: vi.fn().mockResolvedValue(undefined),
+  loadConflictResolution: vi.fn(
+    async (_container: HTMLElement, _onResolve: () => void, _signal?: AbortSignal) =>
+      undefined
+  ),
 }));
 
 // ── Imports (after mocks) ───────────────────────────────────────────

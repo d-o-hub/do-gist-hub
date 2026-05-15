@@ -22,6 +22,7 @@ export class App {
   private container: HTMLElement | null = null;
   private currentRoute: Route = 'home';
   private currentGistId: string | null = null;
+  private abortController = new AbortController();
 
   constructor() {
     this.initialize();
@@ -33,30 +34,45 @@ export class App {
     if (!appElement) return;
     this.container = appElement;
 
-    networkMonitor.subscribe(() => {
+    const signal = this.abortController.signal;
+
+    const unsubscribe = networkMonitor.subscribe(() => {
       void this.updateSyncIndicator();
     });
+    lifecycle.onAppCleanup(() => unsubscribe());
 
-    window.addEventListener('app:sync-change', () => {
-      void this.updateSyncIndicator();
-    });
+    window.addEventListener(
+      'app:sync-change',
+      () => {
+        void this.updateSyncIndicator();
+      },
+      { signal }
+    );
 
-    window.addEventListener('app:navigate', (e) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail?.route) {
-        if (detail.params?.gistId) {
-          this.currentGistId = detail.params.gistId;
+    window.addEventListener(
+      'app:navigate',
+      (e) => {
+        const detail = (e as CustomEvent).detail;
+        if (detail?.route) {
+          if (detail.params?.gistId) {
+            this.currentGistId = detail.params.gistId;
+          }
+          void this.navigate(detail.route as Route);
         }
-        void this.navigate(detail.route as Route);
-      }
-    });
+      },
+      { signal }
+    );
 
-    window.addEventListener('app:sort-changed', (e) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail?.sort) {
-        localStorage.setItem('sort-preference', detail.sort);
-      }
-    });
+    window.addEventListener(
+      'app:sort-changed',
+      (e) => {
+        const detail = (e as CustomEvent).detail;
+        if (detail?.sort) {
+          localStorage.setItem('sort-preference', detail.sort);
+        }
+      },
+      { signal }
+    );
 
     this.initializeCommandPalette();
   }
@@ -65,26 +81,36 @@ export class App {
     // skipcq: JS-0010
     if (!this.container || this.container.dataset.navBound) return;
 
-    this.container.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
+    const signal = this.abortController.signal;
 
-      const routeBtn = target.closest('[data-route]') as HTMLElement;
-      if (routeBtn) {
-        e.preventDefault();
-        const route = routeBtn.dataset.route as Route;
-        if (route) void this.navigate(route);
-        return;
-      }
+    this.container.addEventListener(
+      'click',
+      (e) => {
+        const target = e.target as HTMLElement;
 
-      if (target.closest('#mobile-menu-btn')) {
-        void this.showMobileMenu();
-      }
-    });
+        const routeBtn = target.closest('[data-route]') as HTMLElement;
+        if (routeBtn) {
+          e.preventDefault();
+          const route = routeBtn.dataset.route as Route;
+          if (route) void this.navigate(route);
+          return;
+        }
+
+        if (target.closest('#mobile-menu-btn')) {
+          void this.showMobileMenu();
+        }
+      },
+      { signal }
+    );
 
     this.container?.querySelectorAll('[data-testid="settings-btn"]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        void this.navigate('settings');
-      });
+      btn.addEventListener(
+        'click',
+        () => {
+          void this.navigate('settings');
+        },
+        { signal }
+      );
     });
 
     this.container.dataset.navBound = 'true';
@@ -118,68 +144,107 @@ export class App {
 
       switch (route) {
         case 'home': {
-          await RouteBoundary.wrap(main as HTMLElement, 'home', async () => {
-            const { render } = await import('../routes/home');
-            render(main as HTMLElement, {
-              filter: 'all',
-              sort: savedSort,
-              searchQuery: '',
-            });
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'home',
+            async () => {
+              const { render } = await import('../routes/home');
+              render(main as HTMLElement, {
+                filter: 'all',
+                sort: savedSort,
+                searchQuery: '',
+              });
+            },
+            lifecycle.getRouteSignal()
+          );
           break;
         }
         case 'starred': {
-          await RouteBoundary.wrap(main as HTMLElement, 'starred', async () => {
-            const { render } = await import('../routes/home');
-            render(main as HTMLElement, {
-              filter: 'starred',
-              sort: savedSort,
-              searchQuery: '',
-            });
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'starred',
+            async () => {
+              const { render } = await import('../routes/home');
+              render(main as HTMLElement, {
+                filter: 'starred',
+                sort: savedSort,
+                searchQuery: '',
+              });
+            },
+            lifecycle.getRouteSignal()
+          );
           break;
         }
         case 'create': {
-          await RouteBoundary.wrap(main as HTMLElement, 'create', () => {
-            createRoute.render(main as HTMLElement);
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'create',
+            () => {
+              createRoute.render(main as HTMLElement);
+            },
+            lifecycle.getRouteSignal()
+          );
           break;
         }
         case 'settings': {
-          await RouteBoundary.wrap(main as HTMLElement, 'settings', async () => {
-            const { render } = await import('../routes/settings');
-            await render(main as HTMLElement, {
-              currentTheme: getThemePreference() || 'auto',
-            });
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'settings',
+            async () => {
+              const { render } = await import('../routes/settings');
+              await render(main as HTMLElement, {
+                currentTheme: getThemePreference() || 'auto',
+              });
+            },
+            lifecycle.getRouteSignal()
+          );
           break;
         }
         case 'offline': {
-          await RouteBoundary.wrap(main as HTMLElement, 'offline', async () => {
-            await offlineRoute.render(main as HTMLElement);
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'offline',
+            async () => {
+              await offlineRoute.render(main as HTMLElement);
+            },
+            lifecycle.getRouteSignal()
+          );
           break;
         }
         case 'detail': {
-          await RouteBoundary.wrap(main as HTMLElement, 'detail', async () => {
-            const { render } = await import('../routes/gist-detail');
-            render(main as HTMLElement, { gistId: this.currentGistId || '' });
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'detail',
+            async () => {
+              const { render } = await import('../routes/gist-detail');
+              render(main as HTMLElement, { gistId: this.currentGistId || '' });
+            },
+            lifecycle.getRouteSignal()
+          );
           break;
         }
         case 'conflicts': {
-          await RouteBoundary.wrap(main as HTMLElement, 'conflicts', async () => {
-            (main as HTMLElement).innerHTML = '<div id="conflict-resolution-container"></div>';
-            const conflictContainer = (main as HTMLElement).querySelector(
-              '#conflict-resolution-container'
-            );
-            if (conflictContainer instanceof HTMLElement) {
-              const { loadConflictResolution } = await import('./conflict-resolution');
-              await loadConflictResolution(conflictContainer, () => {
-                window.dispatchEvent(new CustomEvent('app:sync-change'));
-              });
-            }
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'conflicts',
+            async () => {
+              (main as HTMLElement).innerHTML = '<div id="conflict-resolution-container"></div>';
+              const conflictContainer = (main as HTMLElement).querySelector(
+                '#conflict-resolution-container'
+              );
+              if (conflictContainer instanceof HTMLElement) {
+                const { loadConflictResolution } = await import('./conflict-resolution');
+                await loadConflictResolution(
+                  conflictContainer,
+                  () => {
+                    window.dispatchEvent(new CustomEvent('app:sync-change'));
+                  },
+                  lifecycle.getRouteSignal()
+                );
+              }
+            },
+            lifecycle.getRouteSignal()
+          );
           break;
         }
       }
@@ -329,15 +394,20 @@ export class App {
     await bottomSheet.open(content, 'MENU');
 
     const menu = document.querySelector('.mobile-menu');
-    menu?.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      const btn = target.closest('[data-route]') as HTMLElement | null;
-      if (btn) {
-        const route = btn.getAttribute('data-route') as Route;
-        void bottomSheet.close();
-        void this.navigate(route);
-      }
-    });
+    // Mobile menu is transient, but using signal is safer
+    menu?.addEventListener(
+      'click',
+      (e) => {
+        const target = e.target as HTMLElement;
+        const btn = target.closest('[data-route]') as HTMLElement | null;
+        if (btn) {
+          const route = btn.getAttribute('data-route') as Route;
+          void bottomSheet.close();
+          void this.navigate(route);
+        }
+      },
+      { signal: this.abortController.signal }
+    );
   }
 
   private initializeCommandPalette(): void {
@@ -386,5 +456,9 @@ export class App {
     this.setupNavigation();
     this.mountNavComponents();
     void this.navigate('home');
+  }
+
+  public destroy(): void {
+    this.abortController.abort();
   }
 }

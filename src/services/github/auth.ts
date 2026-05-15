@@ -35,13 +35,19 @@ function clearTokenCache(): void {
 }
 
 // Clear cache on page unload and visibility change
+const authAbortController = new AbortController();
 if (typeof window !== 'undefined') {
-  window.addEventListener('beforeunload', clearTokenCache);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-      clearTokenCache();
-    }
-  });
+  const signal = authAbortController.signal;
+  window.addEventListener('beforeunload', clearTokenCache, { signal });
+  document.addEventListener(
+    'visibilitychange',
+    () => {
+      if (document.visibilityState === 'hidden') {
+        clearTokenCache();
+      }
+    },
+    { signal }
+  );
 }
 
 /**

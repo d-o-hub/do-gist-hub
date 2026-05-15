@@ -3,16 +3,13 @@
  */
 
 import { EmptyState } from '../components/ui/empty-state';
+import { lifecycle } from '../services/lifecycle';
 import { sanitizeHtml } from '../services/security/dom';
 import { getConflicts } from '../services/sync/conflict-detector';
 import syncQueue from '../services/sync/queue';
 
-let syncChangeHandler: (() => void) | undefined;
-
 export async function render(container: HTMLElement): Promise<void> {
-  if (syncChangeHandler) {
-    window.removeEventListener('app:sync-change', syncChangeHandler);
-  }
+  const signal = lifecycle.getRouteSignal();
 
   container.innerHTML = `
     <div class="route-offline">
@@ -35,16 +32,23 @@ export async function render(container: HTMLElement): Promise<void> {
 
   await updateOfflineStatus(container);
 
-  syncChangeHandler = () => {
-    if (document.contains(container)) {
-      void updateOfflineStatus(container);
-    }
-  };
-  window.addEventListener('app:sync-change', syncChangeHandler);
+  window.addEventListener(
+    'app:sync-change',
+    () => {
+      if (document.contains(container)) {
+        void updateOfflineStatus(container);
+      }
+    },
+    { signal }
+  );
 
-  container.querySelector('#conflicts-stat-card')?.addEventListener('click', () => {
-    window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'conflicts' } }));
-  });
+  container.querySelector('#conflicts-stat-card')?.addEventListener(
+    'click',
+    () => {
+      window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'conflicts' } }));
+    },
+    { signal }
+  );
 }
 
 async function updateOfflineStatus(container: HTMLElement): Promise<void> {
