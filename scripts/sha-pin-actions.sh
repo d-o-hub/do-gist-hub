@@ -7,7 +7,8 @@ set -euo pipefail
 
 resolve_sha() {
   local owner_repo=$1 tag=$2
-  git ls-remote "https://github.com/${owner_repo}.git" "refs/tags/${tag}" 2>/dev/null \
+  # Query both raw tag ref and peeled ref (for annotated tags)
+  git ls-remote "https://github.com/${owner_repo}.git" "refs/tags/${tag}" "refs/tags/${tag}^{}" 2>/dev/null \
     | awk '{print $1; exit}'
 }
 
@@ -21,11 +22,11 @@ pin_file() {
       tag="${BASH_REMATCH[2]}"
       if [[ ! $tag =~ ^[0-9a-f]{40}$ ]]; then
         sha=$(resolve_sha "$action" "$tag")
-        if [[ -n $sha && $sha =~ ^[0-9a-f]{40}$ ]]; then
-          echo "${line//@$tag/@$sha  # pinned from $tag}"
-        else
-          echo "$line  # WARNING: could not resolve $action@$tag"
+        if [[ -z $sha || ! $sha =~ ^[0-9a-f]{40}$ ]]; then
+          echo "Error: could not resolve $action@$tag" >&2
+          exit 1
         fi
+        echo "${line//@$tag/@$sha  # pinned from $tag}"
       else
         echo "$line"
       fi

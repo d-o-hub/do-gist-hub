@@ -15,19 +15,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # pinned from v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # pinned from v6
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@ac6db6d3c1f721f886538a378a2d73e85697340a # pinned from v6
+      - uses: pnpm/action-setup@ac6db6d3c1f721f886538a378a2d73e85697340a  # pinned from v6
         with:
           version: 9
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # pinned from v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # pinned from v6
         with:
           node-version: 24
           cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
       - name: Validate commits
-        uses: wagoid/commitlint-github-action@b948419dd99f3fd78a6548d48f94e3df7f6bf3ed # v6.2.1
+        uses: wagoid/commitlint-github-action@b948419dd99f3fd78a6548d48f94e3df7f6bf3ed  # v6.2.1
         with:
           configFile: commitlint.config.mjs
