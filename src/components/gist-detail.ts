@@ -309,6 +309,11 @@ export function bindDetailEvents(
       { signal }
     );
     container.dataset.copyBound = 'true';
+
+    // Reset copyBound when the signal aborts so revisiting the route will re-bind
+    signal?.addEventListener('abort', () => {
+      delete container.dataset.copyBound;
+    }, { once: true });
   }
 }
 

@@ -170,6 +170,12 @@ export function render(container: HTMLElement, params?: Record<string, string>):
         },
         { signal }
       );
+
+      // Clear debounce timer when the signal aborts to prevent stale updates
+      signal.addEventListener('abort', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = undefined;
+      }, { once: true });
     }
 
     container.querySelector('.filter-chips')?.addEventListener(
