@@ -90,6 +90,7 @@ These numbered plans document the project's foundation and are considered stable
 
 | File                                          | Type          | Status      | Summary                                                                          |
 | --------------------------------------------- | ------------- | ----------- | -------------------------------------------------------------------------------- |
+| `025-progress-update-2026-07-18.md`           | Progress      | Complete ✅ | GOAP gap analysis, P0/P1 fixes (error boundary, AbortController, global error handling), UI modernization batch, cleanup |
 | `026-goap-analysis-current.md`                | Analysis      | Complete ✅ | ADR-vs-implementation gap audit; all P1 items resolved                           |
 | `027-progress-update-2026-07-18.md`           | Progress      | Complete ✅ | P1-4 through P1-7: TS6 migration, RouteBoundary, Skeleton, Conflicts nav         |
 | `031-progress-update-coverage-pr156.md`       | Progress      | Complete ✅ | PR #156 merged: 790 tests, 47 files, 81.88% line coverage                        |

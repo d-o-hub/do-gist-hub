@@ -128,6 +128,11 @@
       "status": "complete",
       "summary": "All CI/CD workflows, docs, security items implemented; SHA-pinned actions"
     },
+    "025-progress-update-2026-07-18.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "GOAP gap analysis, P0/P1 fixes (error boundary, AbortController, global error handling), UI modernization batch, cleanup"
+    },
     "026-goap-analysis-current.md": {
       "type": "analysis",
       "status": "complete",
