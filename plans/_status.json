@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "lastUpdated": "2026-07-18",
+  "lastUpdated": "2026-05-15",
   "description": "Machine-readable plan registry for agents and scripts. Mirrors plans/_index.md.",
   "plans": {
     "adr-001-reuse-do-gemini-token-system.md": {
@@ -187,6 +187,11 @@
       "type": "progress",
       "status": "complete",
       "summary": "TRIZ contradiction audit (5 contradictions), skill registry documentation, AGENTS.md skill directory references"
+    },
+    "038-progress-update-2026-05-15.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "PR #166 merge: CI fix (EnvironmentTeardownError), ADR-027 rename, plans registration"
     }
   },
   "archive": [
@@ -220,7 +225,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-028",
-    "plan": "038",
+    "plan": "039",
     "goap": "030"
   }
 }

@@ -1,6 +1,6 @@
 # plans/\_index.md — Active Plan Registry
 
-> **Last updated**: 2026-07-18
+> **Last updated**: 2026-05-15
 > Agents: read this before starting any task. Update it when you change plan status.
 
 ---
@@ -15,6 +15,7 @@
 | `028-goap-phase-b-adr22-completion.md`        | GOAP Plan   | Complete ✅ | Time-based theming, container query expansion, ambient light blueprint, strict TS compliance                                 |
 | `029-goap-phase-c-future-work.md`             | GOAP Plan   | Complete ✅ | Ambient light sensor, Android release signing, ProGuard, build-time CSS tokens, self-hosted fonts, scroll parallax           |
 | `030-coverage-improvement-plan.md`            | Plan        | Complete ✅ | 81.88% line coverage, 941 tests across 51 files; all vitest thresholds exceeded                                              |
+| `adr-027-ci-node24-android-hardening.md`      | ADR         | Complete ✅ | CI Node 24 migration, Android SDK explicit setup, Gradle/JDK upgrades, Kotlin stdlib exclusions, monthly action audit        |
 
 ## Archived
 
@@ -98,10 +99,11 @@ These numbered plans document the project's foundation and are considered stable
 | `035-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm followups, ADR cross-check, AGENTS.md refresh, test audit                  |
 | `036-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm roundup — ADR compliance verified, compacted learnings, AGENTS.md refresh  |
 | `037-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | TRIZ contradiction audit, skill registry docs, AGENTS.md skill directory refs  |
+| `038-progress-update-2026-05-15.md`                   | Progress | Complete ✅ | PR #166 merge: CI fix (EnvironmentTeardownError), ADR-027 rename, plans registration |
 
 ## Quick reference: ADR numbers in use
 
 `adr-001` through `adr-027` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-028`
 
-**Next available plan number**: `038`
+**Next available plan number**: `039`
