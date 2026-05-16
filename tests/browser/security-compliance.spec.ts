@@ -10,10 +10,34 @@ test.describe('Security & Coverage', () => {
     await page.waitForTimeout(1000);
   });
 
-  test('should verify strict CSP meta tag is present', async ({ page }) => {
+  test('should verify strict CSP meta tag is present and correct', async ({ page }) => {
     const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
     expect(csp).toBeTruthy();
     expect(csp).toContain("default-src 'self'");
+
+    // style-src checks - use exact directive name matching to avoid matching style-src-elem/attr
+    const styleSrc = csp?.split(';').find(part => {
+      const directive = part.trim().split(/\s+/)[0];
+      return directive === 'style-src';
+    });
+    expect(styleSrc).toBeTruthy();
+
+    // Detect development mode by checking for the presence of the Vite client script
+    // or by inspecting the meta tag content.
+    const isDev = await page.evaluate(() => {
+      return !!document.querySelector('script[src^="/@vite/client"]');
+    });
+
+    if (!isDev) {
+      // Production expectations
+      expect(styleSrc).not.toContain("'unsafe-inline'");
+      expect(styleSrc).not.toContain('blob:');
+      expect(csp).toContain('upgrade-insecure-requests');
+    } else {
+      // Development expectations
+      expect(styleSrc).toContain("'unsafe-inline'");
+      expect(styleSrc).toContain('blob:');
+    }
   });
 
   test('should verify that PAT is encrypted in IndexedDB storage', async ({ page, browserName }) => {

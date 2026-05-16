@@ -16,46 +16,46 @@
   --color-gray-900: #111827;
   --color-gray-950: #030712;
 
-  /* ===== Semantic Colors (Light Mode) ===== */
-  --color-background-primary: #FAFAFA;
-  --color-background-secondary: #F3F4F6;
-  --color-background-tertiary: #E5E7EB;
-  --color-background-elevated: #FFFFFF;
+  /* ===== Semantic Colors (Dark Mode) ===== */
+  --color-background-primary: #030712;
+  --color-background-secondary: #0A0F1A;
+  --color-background-tertiary: #111827;
+  --color-background-elevated: #1A2332;
 
-  --color-foreground-primary: #0F172A;
-  --color-foreground-secondary: #475569;
-  --color-foreground-muted: #94A3B8;
-  --color-foreground-inverse: #FFFFFF;
+  --color-foreground-primary: #F8FAFC;
+  --color-foreground-secondary: #CBD5E1;
+  --color-foreground-muted: #64748B;
+  --color-foreground-inverse: #030712;
 
-  --color-accent-primary: #3B82F6;
-  --color-accent-hover: #2563EB;
-  --color-accent-active: #1D4ED8;
-  --color-accent-subtle: rgba(59, 130, 246, 0.08);
-  --color-accent-glow: rgba(59, 130, 246, 0.25);
+  --color-accent-primary: #60A5FA;
+  --color-accent-hover: #93C5FD;
+  --color-accent-active: #BFDBFE;
+  --color-accent-subtle: rgba(96, 165, 250, 0.10);
+  --color-accent-glow: rgba(96, 165, 250, 0.35);
 
-  --color-border-default: #E2E8F0;
-  --color-border-emphasis: #CBD5E1;
-  --color-border-strong: #94A3B8;
+  --color-border-default: #1E293B;
+  --color-border-emphasis: #334155;
+  --color-border-strong: #475569;
 
-  --color-status-success-bg: #F0FDF4;
-  --color-status-success-fg: #15803D;
-  --color-status-success-border: #86EFAC;
+  --color-status-success-bg: rgba(34, 197, 94, 0.10);
+  --color-status-success-fg: #4ADE80;
+  --color-status-success-border: #22C55E;
 
-  --color-status-error-bg: #FEF2F2;
-  --color-status-error-fg: #B91C1C;
-  --color-status-error-border: #FCA5A5;
+  --color-status-error-bg: rgba(239, 68, 68, 0.10);
+  --color-status-error-fg: #F87171;
+  --color-status-error-border: #EF4444;
   
-  --color-status-warning-bg: #FFFBEB;
-  --color-status-warning-fg: #B45309;
-  --color-status-warning-border: #FDE047;
+  --color-status-warning-bg: rgba(234, 179, 8, 0.10);
+  --color-status-warning-fg: #FACC15;
+  --color-status-warning-border: #EAB308;
   
-  --color-status-info-bg: #EFF6FF;
-  --color-status-info-fg: #1D4ED8;
-  --color-status-info-border: #93C5FD;
+  --color-status-info-bg: rgba(59, 130, 246, 0.10);
+  --color-status-info-fg: #60A5FA;
+  --color-status-info-border: #3B82F6;
   
-  --color-interactive-hover: #F1F5F9;
-  --color-interactive-active: #E2E8F0;
-  --color-interactive-focus: rgba(59, 130, 246, 0.15);
+  --color-interactive-hover: rgba(255, 255, 255, 0.05);
+  --color-interactive-active: rgba(255, 255, 255, 0.08);
+  --color-interactive-focus: rgba(96, 165, 250, 0.25);
   
   /* ===== Spacing Tokens ===== */
   --spacing-0: 0;
@@ -177,11 +177,11 @@
   --motion-easing-ease-in: cubic-bezier(0.4, 0, 1, 1);
   --motion-duration-slower: 400ms;
   
-  /* ===== Shadow Tokens ===== */
+  /* ===== Shadow Tokens (Dark Mode Defaults) ===== */
   --shadow-none: none;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 2px rgba(255, 255, 255, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(255, 255, 255, 0.06), 0 2px 4px -1px rgba(255, 255, 255, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(255, 255, 255, 0.08), 0 4px 6px -2px rgba(255, 255, 255, 0.04);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
@@ -200,8 +200,10 @@
   /* ===== Component Tokens (2026) ===== */
   --nav-bottom-height: 64px;
   --nav-sidebar-width: 240px;
-  --ui-backdrop-bg: rgba(0, 0, 0, 0.5);
+  --ui-backdrop-bg: rgba(0, 0, 0, 0.7);
   --ui-backdrop-blur: 8px;
+  --ui-glass-bg: rgba(255, 255, 255, 0.05);
+  --ui-glass-border: rgba(255, 255, 255, 0.1);
   --gist-card-bg: var(--color-background-primary);
   --gist-card-shadow: var(--shadow-sm);
 
@@ -247,57 +249,73 @@
   --shadow-glass-hover: 0 0 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
-/* ===== Dark Theme Override ===== */
-[data-theme="dark"] {
-  --color-background-primary: #030712;
-  --color-background-secondary: #0A0F1A;
-  --color-background-tertiary: #111827;
-  --color-background-elevated: #1A2332;
+/* ===== Light Theme Override ===== */
+[data-theme="light"] {
+  --color-background-primary: #FAFAFA;
+  --color-background-secondary: #F3F4F6;
+  --color-background-tertiary: #E5E7EB;
+  --color-background-elevated: #FFFFFF;
 
-  --color-foreground-primary: #F8FAFC;
-  --color-foreground-secondary: #CBD5E1;
-  --color-foreground-muted: #64748B;
-  --color-foreground-inverse: #030712;
+  --color-foreground-primary: #0F172A;
+  --color-foreground-secondary: #475569;
+  --color-foreground-muted: #94A3B8;
+  --color-foreground-inverse: #FFFFFF;
 
-  --color-accent-primary: #60A5FA;
-  --color-accent-hover: #93C5FD;
-  --color-accent-active: #BFDBFE;
-  --color-accent-subtle: rgba(96, 165, 250, 0.10);
-  --color-accent-glow: rgba(96, 165, 250, 0.35);
+  --color-accent-primary: #3B82F6;
+  --color-accent-hover: #2563EB;
+  --color-accent-active: #1D4ED8;
+  --color-accent-subtle: rgba(59, 130, 246, 0.08);
+  --color-accent-glow: rgba(59, 130, 246, 0.25);
 
-  --color-border-default: #1E293B;
-  --color-border-emphasis: #334155;
-  --color-border-strong: #475569;
+  --color-border-default: #E2E8F0;
+  --color-border-emphasis: #CBD5E1;
+  --color-border-strong: #94A3B8;
 
-  --color-status-success-bg: rgba(34, 197, 94, 0.10);
-  --color-status-success-fg: #4ADE80;
-  --color-status-success-border: #22C55E;
+  --color-status-success-bg: #F0FDF4;
+  --color-status-success-fg: #15803D;
+  --color-status-success-border: #86EFAC;
 
-  --color-status-error-bg: rgba(239, 68, 68, 0.10);
-  --color-status-error-fg: #F87171;
-  --color-status-error-border: #EF4444;
+  --color-status-error-bg: #FEF2F2;
+  --color-status-error-fg: #B91C1C;
+  --color-status-error-border: #FCA5A5;
 
-  --color-status-warning-bg: rgba(234, 179, 8, 0.10);
-  --color-status-warning-fg: #FACC15;
-  --color-status-warning-border: #EAB308;
+  --color-status-warning-bg: #FFFBEB;
+  --color-status-warning-fg: #B45309;
+  --color-status-warning-border: #FDE047;
 
-  --color-status-info-bg: rgba(59, 130, 246, 0.10);
-  --color-status-info-fg: #60A5FA;
-  --color-status-info-border: #3B82F6;
+  --color-status-info-bg: #EFF6FF;
+  --color-status-info-fg: #1D4ED8;
+  --color-status-info-border: #93C5FD;
 
-  --color-interactive-hover: rgba(255, 255, 255, 0.05);
-  --color-interactive-active: rgba(255, 255, 255, 0.08);
-  --color-interactive-focus: rgba(96, 165, 250, 0.25);
+  --color-interactive-hover: #F1F5F9;
+  --color-interactive-active: #E2E8F0;
+  --color-interactive-focus: rgba(59, 130, 246, 0.15);
 
-  /* 2026: Tonal shadows for dark mode */
-  --shadow-sm: 0 1px 2px rgba(255, 255, 255, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(255, 255, 255, 0.06), 0 2px 4px -1px rgba(255, 255, 255, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(255, 255, 255, 0.08), 0 4px 6px -2px rgba(255, 255, 255, 0.04);
+  /* Light mode shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
-  /* Glass effects for dark mode */
-  --ui-backdrop-bg: rgba(0, 0, 0, 0.7);
-  --ui-glass-bg: rgba(255, 255, 255, 0.05);
-  --ui-glass-border: rgba(255, 255, 255, 0.1);
+  /* Light mode glass effects */
+  --ui-backdrop-bg: rgba(0, 0, 0, 0.5);
+  --ui-glass-bg: rgba(0, 0, 0, 0.03);
+  --ui-glass-border: rgba(0, 0, 0, 0.08);
+
+  /* Light mode surface & overlay */
+  --color-surface-overlay: rgba(0, 0, 0, 0.15);
+  --color-surface-overlay-medium: rgba(0, 0, 0, 0.1);
+  --color-surface-overlay-heavy: rgba(0, 0, 0, 0.25);
+  --color-surface-overlay-light: rgba(0, 0, 0, 0.06);
+  --color-backdrop-medium: rgba(0, 0, 0, 0.3);
+  --color-backdrop-heavy: rgba(0, 0, 0, 0.35);
+  --color-nav-bg: rgba(245, 245, 247, 0.95);
+  --color-header-bg: rgba(255, 255, 255, 0.85);
+  --color-modal-bg: rgba(245, 245, 247, 0.95);
+  --color-border-hover: rgba(0, 0, 0, 0.15);
+  --color-status-error-subtle: rgba(220, 38, 38, 0.1);
+  --color-status-success-subtle: rgba(22, 163, 74, 0.1);
+  --skeleton-shimmer-start: rgba(0, 0, 0, 0.04);
+  --skeleton-shimmer-mid: rgba(0, 0, 0, 0.08);
 }
 
 /* ===== Responsive Container Spacing ===== */
