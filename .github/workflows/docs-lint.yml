@@ -26,4 +26,4 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # pinned from v6
       - name: Run markdownlint
-        run: npx --package markdownlint-cli markdownlint -c markdownlint.toml --ignore AGENTS.md --ignore SECURITY.md --ignore CLAUDE.md --ignore CHANGELOG.md --ignore docs/ "plans/**/*.md" "*.md"
+        run: npx --package markdownlint-cli markdownlint -c markdownlint.toml --ignore AGENTS.md --ignore SECURITY.md --ignore CLAUDE.md --ignore GEMINI.md --ignore CHANGELOG.md --ignore docs/ "plans/**/*.md" "*.md"
