@@ -15,8 +15,8 @@
 | `028-goap-phase-b-adr22-completion.md`        | GOAP Plan   | Complete ✅ | Time-based theming, container query expansion, ambient light blueprint, strict TS compliance                                 |
 | `029-goap-phase-c-future-work.md`             | GOAP Plan   | Complete ✅ | Ambient light sensor, Android release signing, ProGuard, build-time CSS tokens, self-hosted fonts, scroll parallax           |
 | `030-coverage-improvement-plan.md`            | Plan        | Complete ✅ | 81.88% line coverage, 941 tests across 51 files; all vitest thresholds exceeded                                              |
-| `038-codebase-audit-recommendations-2026-05-16.md` | Audit       | Proposed 🟡 | 24-item backlog covering lost-work recovery, build/CI hardening, lint strictness, test gaps, workflow polish, feature TRIZ followups |
-| `039-ui-ux-2026-modernization.md`             | Feature plan | In Progress 🟡 | 2026 UI/UX upgrades — cross-document view transitions, OKLCH/color-mix, content-visibility, scroll-driven header, text-wrap, field-sizing; Phase A landed |
+| `038-codebase-audit-recommendations-2026-05-16.md` | Audit       | Complete ✅ | All 4 sprints done. Sprint 4: coverage barrel exclusions, SW install tests, bento a11y tests, stale plan archiver, quick-tests CI, cross-browser CI, staleness indicators |
+| `039-ui-ux-2026-modernization.md`             | Feature plan | Complete ✅ | Phase A: view transitions, OKLCH/color-mix, content-visibility, scroll-driven header, text-wrap, field-sizing. Phase B: speculation rules, accent hue knob |
 | `adr-028-github-app-vs-pat-2026.md`           | ADR          | Accepted ✅  | Auth re-evaluation: keep fine-grained PAT; add opt-in OAuth Device Flow via thin Cloudflare Worker; defer GitHub App installation tokens |
 
 ## Archived
