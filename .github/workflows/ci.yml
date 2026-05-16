@@ -24,9 +24,9 @@ jobs:
           node-version: 24
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Run pnpm audit
-        run: pnpm audit --audit-level critical
+        run: pnpm audit --audit-level high
       - name: Run Quality Gate
         run: pnpm run quality
 
@@ -48,7 +48,7 @@ jobs:
           node-version: 24
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Cache Playwright browsers
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # pinned from v5
         id: playwright-cache
@@ -90,7 +90,7 @@ jobs:
         with:
           packages: 'tools platform-tools platforms;android-35 build-tools;35.0.0'
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Build Web App and Sync Android
         run: pnpm run build:android
       - name: Build Android Debug APK
@@ -118,11 +118,13 @@ jobs:
           node-version: 24
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Ensure analysis directory exists
         run: mkdir -p analysis
       - name: Build with bundle analyzer and performance budgets
         run: ANALYZE=true pnpm run build
+      - name: Check bundle size against budget
+        run: bash scripts/check-bundle-size.sh --skip-build
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # pinned from v7
         with:
           name: bundle-analysis
@@ -144,7 +146,7 @@ jobs:
           node-version: 24
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
       - name: Run Visual Tests
