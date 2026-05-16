@@ -49,5 +49,12 @@ if [[ -f "$ROOT_DIR/scripts/check-adr-compliance.sh" ]]; then
   echo "✓ ADR compliance check passed"
 fi
 
+# Plan numbering consistency (from plan 038 E4)
+if [[ -f "$ROOT_DIR/scripts/check-plan-numbering.sh" ]]; then
+  echo "→ Plan numbering check..."
+  bash "$ROOT_DIR/scripts/check-plan-numbering.sh" || { echo "✗ Plan numbering check failed"; exit 1; }
+  echo "✓ Plan numbering check passed"
+fi
+
 echo ""
 echo "✓ All quality gates passed"
