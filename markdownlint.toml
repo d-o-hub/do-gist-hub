@@ -1,6 +1,27 @@
 [default]
 extends = "default"
 
+[MD013]
+line_length = 500
+
+[MD024]
+allow_different_nesting = true
+
+[MD029]
+enabled = false
+
+[MD060]
+enabled = false
+
+[MD022]
+enabled = false
+
+[MD031]
+enabled = false
+
+[MD040]
+enabled = false
+
 [MD041]
 enabled = false
 

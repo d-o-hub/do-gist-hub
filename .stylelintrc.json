@@ -1,0 +1,25 @@
+{
+  "extends": "stylelint-config-recommended",
+  "ignoreFiles": [
+    "dist/**",
+    "node_modules/**",
+    "src/styles/tokens/**"
+  ],
+  "rules": {
+    "color-no-hex": [
+      true,
+      {
+        "severity": "warning"
+      }
+    ],
+    "property-no-unknown": [
+      true,
+      {
+        "ignoreProperties": [
+          "composes",
+          "compose-with"
+        ]
+      }
+    ]
+  }
+}

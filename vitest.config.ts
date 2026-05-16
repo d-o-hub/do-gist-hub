@@ -14,7 +14,9 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['tests/unit/**/*.test.ts'],
     coverage: {
-      include: ['src/**/*.ts'],thresholds: {
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.d.ts'],
+      thresholds: {
         lines: 85,
         functions: 85,
         branches: 70,

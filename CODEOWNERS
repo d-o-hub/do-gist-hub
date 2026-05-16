@@ -10,6 +10,9 @@ src/components/ @ui-lead
 src/styles/ @ui-lead
 src/tokens/ @ui-lead
 
+# Plans / ADR — require architect review for new ADRs
+plans/adr-*.md @d-o-hub/architects
+
 # Infrastructure
 .github/ @devops-lead
 scripts/ @devops-lead

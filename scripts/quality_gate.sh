@@ -34,7 +34,7 @@ echo "✓ No .js/.jsx files in src/"
 # Coverage check
 if command -v pnpm &> /dev/null; then
   echo "→ Running coverage check..."
-  pnpm run test:coverage 2>&1 || { echo "✗ Coverage check failed — thresholds not met"; exit 1; }
+  pnpm exec vitest run --coverage 2>&1 || { echo "✗ Coverage check failed — thresholds not met"; exit 1; }
   echo "✓ Coverage check passed"
 fi
 
@@ -47,6 +47,13 @@ if [[ -f "$ROOT_DIR/scripts/check-adr-compliance.sh" ]]; then
   echo "→ ADR compliance check..."
   bash "$ROOT_DIR/scripts/check-adr-compliance.sh" || { echo "✗ ADR compliance check failed"; exit 1; }
   echo "✓ ADR compliance check passed"
+fi
+
+# Plan numbering consistency (from plan 038 E4)
+if [[ -f "$ROOT_DIR/scripts/check-plan-numbering.sh" ]]; then
+  echo "→ Plan numbering check..."
+  bash "$ROOT_DIR/scripts/check-plan-numbering.sh" || { echo "✗ Plan numbering check failed"; exit 1; }
+  echo "✓ Plan numbering check passed"
 fi
 
 echo ""

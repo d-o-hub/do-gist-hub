@@ -1,0 +1,31 @@
+---
+name: Docs Lint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "plans/**"
+      - "docs/**"
+      - "*.md"
+  pull_request:
+    branches: [main]
+    paths:
+      - "plans/**"
+      - "docs/**"
+      - "*.md"
+
+permissions:
+  contents: read
+
+jobs:
+  markdown-lint:
+    name: Lint Markdown Files
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # pinned from v6
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli@0.48.0
+      - name: Run markdownlint
+        run: markdownlint -c markdownlint.toml --ignore AGENTS.md --ignore SECURITY.md --ignore CLAUDE.md --ignore GEMINI.md --ignore CHANGELOG.md --ignore docs/ --ignore plans/ "*.md"

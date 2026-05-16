@@ -127,3 +127,4 @@ test-results/
 playwright-report/
 analysis/
 opencode.json
+actionlint

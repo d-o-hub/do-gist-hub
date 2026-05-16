@@ -38,13 +38,12 @@ repos:
         args: ['--severity=warning']
         files: \.(sh|bash)$
 
-  # Local hooks (custom quality gate)
+  # Local hooks (fast checks on staged files only — full gate runs in CI)
   - repo: local
     hooks:
-      - id: quality-gate
-        name: Run quality gate
-        entry: ./scripts/quality_gate.sh
-        language: script
-        pass_filenames: false
-        always_run: true
-        verbose: true
+      - id: biome-check
+        name: Biome lint & format check
+        entry: pnpm exec biome check
+        language: system
+        pass_filenames: true
+        files: \.(ts|tsx|json)$

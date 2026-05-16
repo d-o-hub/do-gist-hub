@@ -239,8 +239,8 @@
     "016-pwa-offline-page.md"
   ],
   "nextAvailable": {
-    "adr": "adr-028",
-    "plan": "038",
+    "adr": "adr-029",
+    "plan": "040",
     "goap": "030"
   }
 }
