@@ -78,44 +78,61 @@ export function renderCard(gist: GistRecord): string {
   return html;
 }
 
-export function bindCardEvents(container: HTMLElement, onCardClick?: (id: string) => void): void {
+export function bindCardEvents(
+  container: HTMLElement,
+  onCardClick?: (id: string) => void,
+  signal?: AbortSignal
+): void {
   if (container.dataset.eventsBound === 'true') return;
 
-  container.addEventListener('click', (e) => {
-    void (async () => {
-      const target = e.target as HTMLElement;
+  container.addEventListener(
+    'click',
+    (e) => {
+      void (async () => {
+        const target = e.target as HTMLElement;
 
-      const starBtn = target.closest('.star-btn') as HTMLElement;
-      if (starBtn) {
-        e.preventDefault();
-        e.stopPropagation();
-        const id = starBtn.dataset.id;
-        if (!id) return;
-        await gistStore.toggleStar(id);
-        return;
-      }
+        const starBtn = target.closest('.star-btn') as HTMLElement;
+        if (starBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          const id = starBtn.dataset.id;
+          if (!id) return;
+          await gistStore.toggleStar(id);
+          return;
+        }
 
-      const deleteBtn = target.closest('.delete-btn') as HTMLElement;
-      if (deleteBtn) {
-        e.preventDefault();
-        e.stopPropagation();
-        const id = deleteBtn.dataset.id;
-        if (!id) return;
-        const confirmed = await showConfirmDialog('DELETE THIS GIST?');
-        if (!confirmed) return;
-        const ok = await gistStore.deleteGist(id);
-        if (ok) toast.success('GIST DELETED');
-        return;
-      }
+        const deleteBtn = target.closest('.delete-btn') as HTMLElement;
+        if (deleteBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          const id = deleteBtn.dataset.id;
+          if (!id) return;
+          const confirmed = await showConfirmDialog('DELETE THIS GIST?');
+          if (!confirmed) return;
+          const ok = await gistStore.deleteGist(id);
+          if (ok) toast.success('GIST DELETED');
+          return;
+        }
 
-      const card = target.closest('.gist-card') as HTMLElement;
-      if (card && onCardClick) {
-        if (target.closest('.gist-card-actions')) return;
-        const id = card.getAttribute('data-gist-id');
-        if (id) onCardClick(id);
-      }
-    })();
-  });
+        const card = target.closest('.gist-card') as HTMLElement;
+        if (card && onCardClick) {
+          if (target.closest('.gist-card-actions')) return;
+          const id = card.getAttribute('data-gist-id');
+          if (id) onCardClick(id);
+        }
+      })();
+    },
+    { signal }
+  );
 
   container.dataset.eventsBound = 'true';
+
+  // Reset eventsBound when the signal aborts so future mounts can rebind
+  signal?.addEventListener(
+    'abort',
+    () => {
+      delete container.dataset.eventsBound;
+    },
+    { once: true }
+  );
 }

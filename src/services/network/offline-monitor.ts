@@ -12,13 +12,7 @@ class NetworkMonitor {
   private status: NetworkStatus = navigator.onLine ? 'online' : 'offline';
   private listeners: Set<NetworkChangeHandler> = new Set();
   private initialized = false;
-  private boundOnline: () => void;
-  private boundOffline: () => void;
-
-  constructor() {
-    this.boundOnline = () => this.handleOnline();
-    this.boundOffline = () => this.handleOffline();
-  }
+  private abortController = new AbortController();
 
   /**
    * Initialize network monitoring
@@ -28,9 +22,11 @@ class NetworkMonitor {
       return;
     }
 
-    // Listen for online/offline events (use bound references for proper cleanup)
-    window.addEventListener('online', this.boundOnline);
-    window.addEventListener('offline', this.boundOffline);
+    const signal = this.abortController.signal;
+
+    // Listen for online/offline events
+    window.addEventListener('online', () => this.handleOnline(), { signal });
+    window.addEventListener('offline', () => this.handleOffline(), { signal });
 
     this.initialized = true;
     safeLog('[NetworkMonitor] Initialized, current status:', this.status);
@@ -113,8 +109,7 @@ class NetworkMonitor {
    * Cleanup - remove event listeners
    */
   destroy(): void {
-    window.removeEventListener('online', this.boundOnline);
-    window.removeEventListener('offline', this.boundOffline);
+    this.abortController.abort();
     this.listeners.clear();
     this.initialized = false;
     safeLog('[NetworkMonitor] Destroyed');

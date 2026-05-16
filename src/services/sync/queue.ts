@@ -44,6 +44,7 @@ const RETRY_MAX_DELAY_MS = 30000;
 export class SyncQueue {
   private isSyncing = false;
   private unsubscribeNetwork?: () => void;
+  private abortController = new AbortController();
 
   init(): void {
     this.unsubscribeNetwork = networkMonitor.subscribe((status) => {
@@ -52,9 +53,13 @@ export class SyncQueue {
         void this.processQueue();
       }
     });
-    window.addEventListener('app:online', () => {
-      void this.processQueue();
-    });
+    window.addEventListener(
+      'app:online',
+      () => {
+        void this.processQueue();
+      },
+      { signal: this.abortController.signal }
+    );
     safeLog('[SyncQueue] Initialized');
   }
 
@@ -278,6 +283,7 @@ export class SyncQueue {
   }
 
   destroy(): void {
+    this.abortController.abort();
     if (this.unsubscribeNetwork) this.unsubscribeNetwork();
     safeLog('[SyncQueue] Destroyed');
   }

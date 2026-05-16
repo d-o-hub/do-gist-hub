@@ -111,15 +111,17 @@ export async function loadGistDetail(
   container: HTMLElement,
   onBack: () => void,
   onEdit: (id: string) => void,
-  onViewRevision: (id: string, version: string) => void
+  onViewRevision: (id: string, version: string) => void,
+  signal?: AbortSignal
 ): Promise<void> {
   try {
     const gist = await gistStore.hydrateGist(id);
+    if (signal?.aborted) return;
     if (!gist) {
       throw new Error('Gist not found');
     }
     container.innerHTML = renderGistDetail(gist);
-    bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+    bindDetailEvents(container, { onBack, onEdit, onViewRevision }, signal);
   } catch (err) {
     safeError('[GistDetail] Failed to load gist', err);
     toast.error('Failed to load gist details');
@@ -163,71 +165,94 @@ export function bindDetailEvents(
     onBack: () => void;
     onEdit: (id: string) => void;
     onViewRevision: (id: string, version: string) => void;
-  }
+  },
+  signal?: AbortSignal
 ): void {
   const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id');
-  container.querySelector('#gist-back-btn')?.addEventListener('click', onBack);
-  container.querySelector('[data-action="edit"]')?.addEventListener('click', () => {
-    if (gistId) onEdit(gistId);
-  });
+  container.querySelector('#gist-back-btn')?.addEventListener('click', onBack, { signal });
+  container.querySelector('[data-action="edit"]')?.addEventListener(
+    'click',
+    () => {
+      if (gistId) onEdit(gistId);
+    },
+    { signal }
+  );
 
-  container.querySelector('[data-action="revisions"]')?.addEventListener('click', () => {
-    void (async () => {
-      if (!gistId) return;
-      try {
-        const revisions = await GitHub.listGistRevisions(gistId);
-        container.innerHTML = renderRevisions(gistId, revisions);
-        bindRevisionEvents(container, {
-          onBack: () => void loadGistDetail(gistId, container, onBack, onEdit, onViewRevision),
-          onViewRevision,
-        });
-      } catch {
-        toast.error('Failed to load revisions');
-      }
-    })();
-  });
+  container.querySelector('[data-action="revisions"]')?.addEventListener(
+    'click',
+    () => {
+      void (async () => {
+        if (!gistId) return;
+        try {
+          const revisions = await GitHub.listGistRevisions(gistId);
+          if (signal?.aborted) return;
+          container.innerHTML = renderRevisions(gistId, revisions);
+          bindRevisionEvents(
+            container,
+            {
+              onBack: () =>
+                void loadGistDetail(gistId, container, onBack, onEdit, onViewRevision, signal),
+              onViewRevision,
+            },
+            signal
+          );
+        } catch {
+          toast.error('Failed to load revisions');
+        }
+      })();
+    },
+    { signal }
+  );
 
   // Star button
-  container.querySelector('[data-action="star"]')?.addEventListener('click', () => {
-    void (async () => {
-      if (!gistId) return;
-      const ok = await (await import('../stores/gist-store')).default.toggleStar(gistId);
-      if (ok) void loadGistDetail(gistId, container, onBack, onEdit, onViewRevision);
-    })();
-  });
+  container.querySelector('[data-action="star"]')?.addEventListener(
+    'click',
+    () => {
+      void (async () => {
+        if (!gistId) return;
+        const ok = await (await import('../stores/gist-store')).default.toggleStar(gistId);
+        if (signal?.aborted) return;
+        if (ok) void loadGistDetail(gistId, container, onBack, onEdit, onViewRevision, signal);
+      })();
+    },
+    { signal }
+  );
 
   // File Tabs
   const tabs = container.querySelectorAll('.file-tab');
   tabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
-      const fileKey = (tab as HTMLElement).dataset.fileKey;
-      if (!fileKey) return;
+    tab.addEventListener(
+      'click',
+      () => {
+        const fileKey = (tab as HTMLElement).dataset.fileKey;
+        if (!fileKey) return;
 
-      // Update active tab UI
-      tabs.forEach((t) => {
-        t.classList.remove('active');
-        t.setAttribute('aria-selected', 'false');
-      });
-      tab.classList.add('active');
-      tab.setAttribute('aria-selected', 'true');
+        // Update active tab UI
+        tabs.forEach((t) => {
+          t.classList.remove('active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
 
-      // Update content
-      void (async () => {
-        if (!gistId) return;
-        const gist = await (await import('../stores/gist-store')).default.getGist(gistId);
-        if (!gist) return;
-        const file = gist.files[fileKey];
-        if (!file) return;
+        // Update content
+        void (async () => {
+          if (!gistId) return;
+          const gist = await (await import('../stores/gist-store')).default.getGist(gistId);
+          if (signal?.aborted) return;
+          if (!gist) return;
+          const file = gist.files[fileKey];
+          if (!file) return;
 
-        const contentArea = container.querySelector('#file-content-area');
-        if (contentArea) {
-          contentArea.innerHTML = renderFileContent(file.content || '', file.language);
-          contentArea.setAttribute('aria-labelledby', tab.id);
-        }
+          const contentArea = container.querySelector('#file-content-area');
+          if (contentArea) {
+            contentArea.innerHTML = renderFileContent(file.content || '', file.language);
+            contentArea.setAttribute('aria-labelledby', tab.id);
+          }
 
-        const infoArea = container.querySelector('#file-info');
-        if (infoArea) {
-          infoArea.innerHTML = `
+          const infoArea = container.querySelector('#file-info');
+          if (infoArea) {
+            infoArea.innerHTML = `
             <div class="file-info-left">
               <span class="micro-label">Language: ${sanitizeHtml(file.language || 'Unknown')}</span>
               <span class="micro-label">Raw URL: <a href="${sanitizeHtml(file.rawUrl || '')}" target="_blank" rel="noopener noreferrer">Link</a></span>
@@ -236,46 +261,63 @@ export function bindDetailEvents(
               <span class="micro-label">COPY</span>
             </button>
           `;
-        }
-      })();
-    });
+          }
+        })();
+      },
+      { signal }
+    );
   });
 
   // Copy Content
   if (container.dataset.copyBound !== 'true') {
-    container.addEventListener('click', (e) => {
-      const copyBtn = (e.target as HTMLElement).closest(
-        '[data-action="copy-content"]'
-      ) as HTMLElement;
-      if (!copyBtn || copyBtn.classList.contains('btn-success')) return;
+    container.addEventListener(
+      'click',
+      (e) => {
+        const copyBtn = (e.target as HTMLElement).closest(
+          '[data-action="copy-content"]'
+        ) as HTMLElement;
+        if (!copyBtn || copyBtn.classList.contains('btn-success')) return;
 
-      void (async () => {
-        const contentArea = container.querySelector('#file-content-area code');
-        if (!contentArea) return;
+        void (async () => {
+          const contentArea = container.querySelector('#file-content-area code');
+          if (!contentArea) return;
 
-        const text = contentArea.textContent || '';
-        try {
-          if (!navigator.clipboard) {
-            throw new Error('Clipboard API not available');
+          const text = contentArea.textContent || '';
+          try {
+            if (!navigator.clipboard) {
+              throw new Error('Clipboard API not available');
+            }
+            await navigator.clipboard.writeText(text);
+            if (signal?.aborted) return;
+
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<span class="micro-label">✅ COPIED!</span>';
+            copyBtn.classList.add('btn-success');
+            toast.success('COPIED TO CLIPBOARD');
+
+            setTimeout(() => {
+              if (signal?.aborted) return;
+              copyBtn.innerHTML = originalText;
+              copyBtn.classList.remove('btn-success');
+            }, 2000);
+          } catch (err) {
+            safeError('Failed to copy', err);
+            toast.error('COPY FAILED');
           }
-          await navigator.clipboard.writeText(text);
-
-          const originalText = copyBtn.innerHTML;
-          copyBtn.innerHTML = '<span class="micro-label">✅ COPIED!</span>';
-          copyBtn.classList.add('btn-success');
-          toast.success('COPIED TO CLIPBOARD');
-
-          setTimeout(() => {
-            copyBtn.innerHTML = originalText;
-            copyBtn.classList.remove('btn-success');
-          }, 2000);
-        } catch (err) {
-          safeError('Failed to copy', err);
-          toast.error('COPY FAILED');
-        }
-      })();
-    });
+        })();
+      },
+      { signal }
+    );
     container.dataset.copyBound = 'true';
+
+    // Reset copyBound when the signal aborts so revisiting the route will re-bind
+    signal?.addEventListener(
+      'abort',
+      () => {
+        delete container.dataset.copyBound;
+      },
+      { once: true }
+    );
   }
 }
 
@@ -284,14 +326,19 @@ function bindRevisionEvents(
   {
     onBack,
     onViewRevision,
-  }: { onBack: () => void; onViewRevision: (id: string, version: string) => void }
+  }: { onBack: () => void; onViewRevision: (id: string, version: string) => void },
+  signal?: AbortSignal
 ): void {
   const gistId = container.querySelector('.revisions-list')?.getAttribute('data-gist-id');
-  container.querySelector('#gist-back-btn')?.addEventListener('click', () => onBack());
+  container.querySelector('#gist-back-btn')?.addEventListener('click', () => onBack(), { signal });
   container.querySelectorAll('[data-action="view-revision"]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      const version = (e.currentTarget as HTMLElement).getAttribute('data-version');
-      if (gistId && version) onViewRevision(gistId, version);
-    });
+    btn.addEventListener(
+      'click',
+      (e) => {
+        const version = (e.currentTarget as HTMLElement).getAttribute('data-version');
+        if (gistId && version) onViewRevision(gistId, version);
+      },
+      { signal }
+    );
   });
 }
