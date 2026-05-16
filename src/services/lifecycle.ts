@@ -11,6 +11,7 @@ export type CleanupFunction = () => void;
 class LifecycleManager {
   private routeCleanups: CleanupFunction[] = [];
   private appCleanups: CleanupFunction[] = [];
+  private routeAbortController = new AbortController();
 
   /**
    * Register a cleanup function for the current route scope
@@ -27,10 +28,21 @@ class LifecycleManager {
   }
 
   /**
+   * Get the AbortSignal for the current route
+   */
+  getRouteSignal(): AbortSignal {
+    return this.routeAbortController.signal;
+  }
+
+  /**
    * Execute all route-scoped cleanups
    */
   cleanupRoute(): void {
     safeLog('[Lifecycle] Cleaning up route resources...');
+
+    // Abort current route listeners/requests
+    this.routeAbortController.abort();
+    this.routeAbortController = new AbortController();
 
     // Cancel in-flight requests
     cancelAllRequests();

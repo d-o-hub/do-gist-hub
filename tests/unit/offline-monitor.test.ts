@@ -27,8 +27,16 @@ describe('OfflineMonitor', () => {
     it('initializes and sets up event listeners', () => {
       const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
       networkMonitor.init();
-      expect(addEventListenerSpy).toHaveBeenCalledWith('online', expect.any(Function));
-      expect(addEventListenerSpy).toHaveBeenCalledWith('offline', expect.any(Function));
+      expect(addEventListenerSpy).toHaveBeenCalledWith(
+        'online',
+        expect.any(Function),
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      );
+      expect(addEventListenerSpy).toHaveBeenCalledWith(
+        'offline',
+        expect.any(Function),
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      );
     });
 
     it('does not register duplicate listeners on second call', () => {
@@ -135,13 +143,13 @@ describe('OfflineMonitor', () => {
   });
 
   describe('destroy', () => {
-    it('removes event listeners and clears listeners', () => {
-      const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
+    it('aborts controller and clears listeners', () => {
+      const controller = (networkMonitor as any).abortController;
+      const abortSpy = vi.spyOn(controller, 'abort');
       networkMonitor.init();
       networkMonitor.destroy();
 
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('online', expect.any(Function));
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('offline', expect.any(Function));
+      expect(abortSpy).toHaveBeenCalled();
     });
   });
 });

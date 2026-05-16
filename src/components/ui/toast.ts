@@ -16,6 +16,7 @@ export class ToastManager {
   private container: HTMLElement | null = null;
   private toasts: Map<string, HTMLElement> = new Map();
   private idCounter = 0;
+  private abortController = new AbortController();
 
   private getContainer(): HTMLElement {
     if (!this.container) {
@@ -72,15 +73,21 @@ export class ToastManager {
     // Action handler
     if (action) {
       const actionBtn = toast.querySelector('.toast-action');
-      actionBtn?.addEventListener('click', () => {
-        action.onClick();
-        this.dismiss(id);
-      });
+      actionBtn?.addEventListener(
+        'click',
+        () => {
+          action.onClick();
+          this.dismiss(id);
+        },
+        { signal: this.abortController.signal }
+      );
     }
 
     // Close handler
     const closeBtn = toast.querySelector('.toast-close');
-    closeBtn?.addEventListener('click', () => this.dismiss(id));
+    closeBtn?.addEventListener('click', () => this.dismiss(id), {
+      signal: this.abortController.signal,
+    });
 
     // Auto-dismiss
     if (durationMs > 0) {
@@ -122,7 +129,7 @@ export class ToastManager {
         toast.remove();
         this.toasts.delete(id);
       },
-      { once: true }
+      { once: true, signal: this.abortController.signal }
     );
 
     // Fallback removal
@@ -139,6 +146,11 @@ export class ToastManager {
     for (const id of ids) {
       this.dismiss(id);
     }
+  }
+
+  destroy(): void {
+    this.abortController.abort();
+    this.container?.remove();
   }
 }
 

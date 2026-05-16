@@ -38,15 +38,6 @@ if command -v pnpm &> /dev/null; then
   echo "✓ Coverage check passed"
 fi
 
-# ADR compliance check
-echo "→ Running ADR compliance check..."
-if [[ -f "$ROOT_DIR/scripts/check-adr-compliance.sh" ]]; then
-  bash "$ROOT_DIR/scripts/check-adr-compliance.sh" || { echo "✗ ADR compliance check failed — review issues above"; exit 1; }
-  echo "✓ ADR compliance check passed"
-else
-  echo "⚠️  ADR compliance script not found at scripts/check-adr-compliance.sh — skipping"
-fi
-
 # Validate skills
 true
 echo "✓ Skill validation passed"

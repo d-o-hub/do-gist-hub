@@ -4,7 +4,6 @@
 
 import { APP } from '../config/app.config';
 import * as createRoute from '../routes/create';
-import * as offlineRoute from '../routes/offline';
 import { lifecycle } from '../services/lifecycle';
 import networkMonitor from '../services/network/offline-monitor';
 import syncQueue from '../services/sync/queue';
@@ -22,6 +21,8 @@ export class App {
   private container: HTMLElement | null = null;
   private currentRoute: Route = 'home';
   private currentGistId: string | null = null;
+  private abortController = new AbortController();
+  private networkUnsubscribe?: () => void;
 
   constructor() {
     this.initialize();
@@ -33,30 +34,41 @@ export class App {
     if (!appElement) return;
     this.container = appElement;
 
-    networkMonitor.subscribe(() => {
+    const signal = this.abortController.signal;
+
+    this.networkUnsubscribe = networkMonitor.subscribe(() => {
       void this.updateSyncIndicator();
     });
 
-    window.addEventListener('app:sync-change', () => {
-      void this.updateSyncIndicator();
-    });
+    window.addEventListener(
+      'app:sync-change',
+      () => {
+        void this.updateSyncIndicator();
+      },
+      { signal }
+    );
 
-    window.addEventListener('app:navigate', (e) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail?.route) {
-        if (detail.params?.gistId) {
-          this.currentGistId = detail.params.gistId;
+    window.addEventListener(
+      'app:navigate',
+      (e) => {
+        const detail = (e as CustomEvent).detail;
+        if (detail?.route) {
+          void this.navigate(detail.route as Route, detail.params?.gistId);
         }
-        void this.navigate(detail.route as Route);
-      }
-    });
+      },
+      { signal }
+    );
 
-    window.addEventListener('app:sort-changed', (e) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail?.sort) {
-        localStorage.setItem('sort-preference', detail.sort);
-      }
-    });
+    window.addEventListener(
+      'app:sort-changed',
+      (e) => {
+        const detail = (e as CustomEvent).detail;
+        if (detail?.sort) {
+          localStorage.setItem('sort-preference', detail.sort);
+        }
+      },
+      { signal }
+    );
 
     this.initializeCommandPalette();
   }
@@ -65,47 +77,59 @@ export class App {
     // skipcq: JS-0010
     if (!this.container || this.container.dataset.navBound) return;
 
-    this.container.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
+    const signal = this.abortController.signal;
 
-      const routeBtn = target.closest('[data-route]') as HTMLElement;
-      if (routeBtn) {
-        e.preventDefault();
-        const route = routeBtn.dataset.route as Route;
-        if (route) void this.navigate(route);
-        return;
-      }
+    this.container.addEventListener(
+      'click',
+      (e) => {
+        const target = e.target as HTMLElement;
 
-      if (target.closest('#mobile-menu-btn')) {
-        void this.showMobileMenu();
-      }
-    });
+        const routeBtn = target.closest('[data-route]') as HTMLElement;
+        if (routeBtn) {
+          e.preventDefault();
+          const route = routeBtn.dataset.route as Route;
+          if (route) void this.navigate(route);
+          return;
+        }
 
-    this.container?.querySelectorAll('[data-testid="settings-btn"]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        void this.navigate('settings');
-      });
-    });
+        if (target.closest('#mobile-menu-btn')) {
+          void this.showMobileMenu();
+        }
+      },
+      { signal }
+    );
 
     this.container.dataset.navBound = 'true';
   }
 
-  private async navigate(route: Route): Promise<void> {
-    const isSameRoute = this.currentRoute === route;
+  private async navigate(route: Route, gistId?: string): Promise<void> {
+    const isInitialRender = !this.container?.querySelector('.app-shell');
+    const isSameRoute =
+      !isInitialRender &&
+      this.currentRoute === route &&
+      (gistId === undefined || this.currentGistId === gistId);
 
-    // Cancel in-flight requests from the previous route before navigating to a different route
-    if (!isSameRoute) {
-      lifecycle.cleanupRoute();
-    }
+    if (isSameRoute) return;
+
+    // Dispose of the previous route's resources
+    lifecycle.cleanupRoute();
+
+    // Capture the signal for this specific navigation scope
+    const routeSignal = lifecycle.getRouteSignal();
+
     this.currentRoute = route;
+    if (gistId !== undefined) {
+      this.currentGistId = gistId;
+    }
     announcer.announce(`Navigating to ${route} page`);
 
     const savedSort = localStorage.getItem('sort-preference') || 'updated-desc';
 
     await withViewTransition(async () => {
+      if (routeSignal.aborted) return;
+
       // Only re-render the shell if the route changed or the shell isn't present yet.
-      // This avoids destroying and recreating the entire app shell on initial mount.
-      if (!isSameRoute || !this.container?.querySelector('.app-shell')) {
+      if (isInitialRender) {
         this.render();
         this.setupNavigation();
         this.mountNavComponents();
@@ -118,68 +142,114 @@ export class App {
 
       switch (route) {
         case 'home': {
-          await RouteBoundary.wrap(main as HTMLElement, 'home', async () => {
-            const { render } = await import('../routes/home');
-            render(main as HTMLElement, {
-              filter: 'all',
-              sort: savedSort,
-              searchQuery: '',
-            });
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'home',
+            async () => {
+              const { render } = await import('../routes/home');
+              if (routeSignal.aborted) return;
+              render(main as HTMLElement, {
+                filter: 'all',
+                sort: savedSort,
+                searchQuery: '',
+              });
+            },
+            routeSignal
+          );
           break;
         }
         case 'starred': {
-          await RouteBoundary.wrap(main as HTMLElement, 'starred', async () => {
-            const { render } = await import('../routes/home');
-            render(main as HTMLElement, {
-              filter: 'starred',
-              sort: savedSort,
-              searchQuery: '',
-            });
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'starred',
+            async () => {
+              const { render } = await import('../routes/home');
+              if (routeSignal.aborted) return;
+              render(main as HTMLElement, {
+                filter: 'starred',
+                sort: savedSort,
+                searchQuery: '',
+              });
+            },
+            routeSignal
+          );
           break;
         }
         case 'create': {
-          await RouteBoundary.wrap(main as HTMLElement, 'create', () => {
-            createRoute.render(main as HTMLElement);
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'create',
+            () => {
+              createRoute.render(main as HTMLElement);
+            },
+            routeSignal
+          );
           break;
         }
         case 'settings': {
-          await RouteBoundary.wrap(main as HTMLElement, 'settings', async () => {
-            const { render } = await import('../routes/settings');
-            await render(main as HTMLElement, {
-              currentTheme: getThemePreference() || 'auto',
-            });
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'settings',
+            async () => {
+              const { render } = await import('../routes/settings');
+              if (routeSignal.aborted) return;
+              await render(main as HTMLElement, {
+                currentTheme: getThemePreference() || 'auto',
+              });
+            },
+            routeSignal
+          );
           break;
         }
         case 'offline': {
-          await RouteBoundary.wrap(main as HTMLElement, 'offline', async () => {
-            await offlineRoute.render(main as HTMLElement);
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'offline',
+            async () => {
+              const { render } = await import('../routes/offline');
+              if (routeSignal.aborted) return;
+              await render(main as HTMLElement);
+            },
+            routeSignal
+          );
           break;
         }
         case 'detail': {
-          await RouteBoundary.wrap(main as HTMLElement, 'detail', async () => {
-            const { render } = await import('../routes/gist-detail');
-            render(main as HTMLElement, { gistId: this.currentGistId || '' });
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'detail',
+            async () => {
+              const { render } = await import('../routes/gist-detail');
+              if (routeSignal.aborted) return;
+              render(main as HTMLElement, { gistId: this.currentGistId || '' });
+            },
+            routeSignal
+          );
           break;
         }
         case 'conflicts': {
-          await RouteBoundary.wrap(main as HTMLElement, 'conflicts', async () => {
-            (main as HTMLElement).innerHTML = '<div id="conflict-resolution-container"></div>';
-            const conflictContainer = (main as HTMLElement).querySelector(
-              '#conflict-resolution-container'
-            );
-            if (conflictContainer instanceof HTMLElement) {
-              const { loadConflictResolution } = await import('./conflict-resolution');
-              await loadConflictResolution(conflictContainer, () => {
-                window.dispatchEvent(new CustomEvent('app:sync-change'));
-              });
-            }
-          });
+          await RouteBoundary.wrap(
+            main as HTMLElement,
+            'conflicts',
+            async () => {
+              (main as HTMLElement).innerHTML = '<div id="conflict-resolution-container"></div>';
+              const conflictContainer = (main as HTMLElement).querySelector(
+                '#conflict-resolution-container'
+              );
+              if (conflictContainer instanceof HTMLElement) {
+                const { loadConflictResolution } = await import('./conflict-resolution');
+                if (routeSignal.aborted) return;
+                await loadConflictResolution(
+                  conflictContainer,
+                  () => {
+                    window.dispatchEvent(new CustomEvent('app:sync-change'));
+                  },
+                  routeSignal
+                );
+              }
+            },
+            routeSignal
+          );
           break;
         }
       }
@@ -329,15 +399,20 @@ export class App {
     await bottomSheet.open(content, 'MENU');
 
     const menu = document.querySelector('.mobile-menu');
-    menu?.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      const btn = target.closest('[data-route]') as HTMLElement | null;
-      if (btn) {
-        const route = btn.getAttribute('data-route') as Route;
-        void bottomSheet.close();
-        void this.navigate(route);
-      }
-    });
+    // Mobile menu is transient, but using signal is safer
+    menu?.addEventListener(
+      'click',
+      (e) => {
+        const target = e.target as HTMLElement;
+        const btn = target.closest('[data-route]') as HTMLElement | null;
+        if (btn) {
+          const route = btn.getAttribute('data-route') as Route;
+          void bottomSheet.close();
+          void this.navigate(route);
+        }
+      },
+      { signal: this.abortController.signal }
+    );
   }
 
   private initializeCommandPalette(): void {
@@ -382,9 +457,16 @@ export class App {
 
   public mount(element: HTMLElement): void {
     this.container = element;
-    this.render();
-    this.setupNavigation();
-    this.mountNavComponents();
     void this.navigate('home');
+  }
+
+  public destroy(): void {
+    this.abortController.abort();
+    this.networkUnsubscribe?.();
+    navRail.destroy();
+    commandPalette.destroy();
+    bottomSheet.destroy();
+    lifecycle.cleanupRoute();
+    lifecycle.cleanupApp();
   }
 }

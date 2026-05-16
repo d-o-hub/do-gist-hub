@@ -19,15 +19,17 @@ export const RouteBoundary = {
   async wrap(
     container: HTMLElement,
     route: string,
-    renderFn: () => void | Promise<void>
+    renderFn: () => void | Promise<void>,
+    signal?: AbortSignal
   ): Promise<void> {
     try {
       await renderFn();
     } catch (error) {
+      if (signal?.aborted) return;
       const err = normalizeError(error);
       safeError(`[RouteBoundary] Route "${route}" failed to render`, err);
       container.innerHTML = RouteBoundary.renderFallback(route, err);
-      RouteBoundary.bindRetry(container, route);
+      RouteBoundary.bindRetry(container, route, signal);
     }
   },
 
@@ -50,21 +52,29 @@ export const RouteBoundary = {
     `;
   },
 
-  bindRetry(container: HTMLElement, route: string): void {
-    container.querySelector('[data-action="route-retry"]')?.addEventListener('click', () => {
-      window.dispatchEvent(
-        new CustomEvent('app:navigate', {
-          detail: { route },
-        })
-      );
-    });
+  bindRetry(container: HTMLElement, route: string, signal?: AbortSignal): void {
+    container.querySelector('[data-action="route-retry"]')?.addEventListener(
+      'click',
+      () => {
+        window.dispatchEvent(
+          new CustomEvent('app:navigate', {
+            detail: { route },
+          })
+        );
+      },
+      { signal }
+    );
 
-    container.querySelector('[data-action="route-home"]')?.addEventListener('click', () => {
-      window.dispatchEvent(
-        new CustomEvent('app:navigate', {
-          detail: { route: 'home' },
-        })
-      );
-    });
+    container.querySelector('[data-action="route-home"]')?.addEventListener(
+      'click',
+      () => {
+        window.dispatchEvent(
+          new CustomEvent('app:navigate', {
+            detail: { route: 'home' },
+          })
+        );
+      },
+      { signal }
+    );
   },
 };

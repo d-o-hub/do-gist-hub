@@ -79,6 +79,7 @@ describe('GistDetail Route', () => {
         expect.any(Function),
         expect.any(Function),
         expect.any(Function),
+        expect.any(AbortSignal),
       );
     });
 
@@ -144,12 +145,15 @@ describe('GistDetail Route', () => {
       expect(progressBar?.getAttribute('aria-hidden')).toBe('true');
     });
 
-    it('removes scroll-progress bar on app:navigate event', () => {
+    it('removes scroll-progress bar on app:navigate event', async () => {
       render(container, { gistId: 'gist-1' });
 
       expect(document.querySelector('.scroll-progress')).not.toBeNull();
 
-      window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'home' } }));
+      // In real app, lifecycle.cleanupRoute() is called by App during navigation,
+      // which in turn executes the cleanup functions.
+      const { lifecycle } = await import('../../src/services/lifecycle');
+      lifecycle.cleanupRoute();
 
       expect(document.querySelector('.scroll-progress')).toBeNull();
     });

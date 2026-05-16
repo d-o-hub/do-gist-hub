@@ -15,6 +15,7 @@ vi.mock('../../src/services/lifecycle', () => ({
     onRouteCleanup: vi.fn(),
     onAppCleanup: vi.fn(),
     cleanupApp: vi.fn(),
+    getRouteSignal: vi.fn(() => new AbortController().signal),
   },
 }));
 
@@ -84,9 +85,16 @@ vi.mock('../../src/components/ui/nav-rail', () => ({
 
 vi.mock('../../src/components/ui/route-boundary', () => ({
   RouteBoundary: {
-    wrap: vi.fn(async (_main: HTMLElement, _route: string, fn: () => void | Promise<void>) => {
-      await fn();
-    }),
+    wrap: vi.fn(
+      async (
+        _main: HTMLElement,
+        _route: string,
+        fn: () => void | Promise<void>,
+        _signal?: AbortSignal
+      ) => {
+        await fn();
+      }
+    ),
   },
 }));
 
@@ -134,7 +142,10 @@ vi.mock('../../src/services/db', () => ({
 }));
 
 vi.mock('../../src/components/conflict-resolution', () => ({
-  loadConflictResolution: vi.fn().mockResolvedValue(undefined),
+  loadConflictResolution: vi.fn(
+    async (_container: HTMLElement, _onResolve: () => void, _signal?: AbortSignal) =>
+      undefined
+  ),
 }));
 
 // ── Imports (after mocks) ───────────────────────────────────────────
@@ -215,12 +226,14 @@ describe('App Component', () => {
       expect(commandPalette.setCommands).toHaveBeenCalled();
     });
 
-    it('navigates to home route on mount', () => {
+    it('navigates to home route on mount', async () => {
       const app = new App();
       const mountContainer = document.createElement('div');
       app.mount(mountContainer);
 
-      expect(announcer.announce).toHaveBeenCalledWith('Navigating to home page');
+      await vi.waitFor(() => {
+        expect(announcer.announce).toHaveBeenCalledWith('Navigating to home page');
+      });
     });
   });
 
@@ -426,15 +439,19 @@ describe('App Component', () => {
   // ── Settings Navigation ───────────────────────────────────────────────
 
   describe('settings navigation', () => {
-    it('navigates to settings when settings-btn is clicked', () => {
+    it('navigates to settings when settings-btn is clicked', async () => {
       const app = new App();
       app.mount(container);
 
       const settingsBtn = container.querySelector('[data-testid="settings-btn"]');
       expect(settingsBtn).not.toBeNull();
 
-      settingsBtn?.dispatchEvent(new MouseEvent('click'));
-      expect(announcer.announce).toHaveBeenCalledWith('Navigating to settings page');
+      // Use bubbles: true so the delegated click handler on container catches it
+      settingsBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+      await vi.waitFor(() => {
+        expect(announcer.announce).toHaveBeenCalledWith('Navigating to settings page');
+      });
     });
   });
 

@@ -59,18 +59,24 @@ export function renderEditForm(gist: GistRecord): string {
   `;
 }
 
-export function bindEditEvents(container: HTMLElement, onBack: () => void): void {
+export function bindEditEvents(
+  container: HTMLElement,
+  onBack: () => void,
+  signal?: AbortSignal
+): void {
   const gistId = (container.querySelector('.route-edit') as HTMLElement | null)?.dataset.gistId;
 
-  container.querySelector('#edit-back-btn')?.addEventListener('click', onBack);
-  container.querySelector('#edit-cancel-btn')?.addEventListener('click', onBack);
+  container.querySelector('#edit-back-btn')?.addEventListener('click', onBack, { signal });
+  container.querySelector('#edit-cancel-btn')?.addEventListener('click', onBack, { signal });
 
-  container.querySelector('#edit-add-file-btn')?.addEventListener('click', () => {
-    const section = container.querySelector('#edit-files-section');
-    if (!section) return;
-    const editor = document.createElement('div');
-    editor.className = 'file-editor glass-card file-editor-p file-editor-mb';
-    editor.innerHTML = `
+  container.querySelector('#edit-add-file-btn')?.addEventListener(
+    'click',
+    () => {
+      const section = container.querySelector('#edit-files-section');
+      if (!section) return;
+      const editor = document.createElement('div');
+      editor.className = 'file-editor glass-card file-editor-p file-editor-mb';
+      editor.innerHTML = `
       <div class="form-group">
         <label class="form-label">FILENAME</label>
         <div class="flex-row gap-2">
@@ -83,82 +89,99 @@ export function bindEditEvents(container: HTMLElement, onBack: () => void): void
         <textarea class="form-textarea content-editor" placeholder="Enter content..."></textarea>
       </div>
     `;
-    editor.querySelector('.remove-file-btn')?.addEventListener('click', () => {
-      if (section.querySelectorAll('.file-editor').length > 1) editor.remove();
-      else toast.error('AT LEAST ONE FILE IS REQUIRED');
-    });
-    section.appendChild(editor);
-  });
+      editor.querySelector('.remove-file-btn')?.addEventListener(
+        'click',
+        () => {
+          if (section.querySelectorAll('.file-editor').length > 1) editor.remove();
+          else toast.error('AT LEAST ONE FILE IS REQUIRED');
+        },
+        { signal }
+      );
+      section.appendChild(editor);
+    },
+    { signal }
+  );
 
   container.querySelectorAll('.remove-file-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const section = container.querySelector('#edit-files-section');
-      if (section && section.querySelectorAll('.file-editor').length > 1) {
-        (btn as HTMLElement).closest('.file-editor')?.remove();
-      } else {
-        toast.error('AT LEAST ONE FILE IS REQUIRED');
-      }
-    });
+    btn.addEventListener(
+      'click',
+      () => {
+        const section = container.querySelector('#edit-files-section');
+        if (section && section.querySelectorAll('.file-editor').length > 1) {
+          (btn as HTMLElement).closest('.file-editor')?.remove();
+        } else {
+          toast.error('AT LEAST ONE FILE IS REQUIRED');
+        }
+      },
+      { signal }
+    );
   });
 
-  container.querySelector('#edit-gist-form')?.addEventListener('submit', (e) => {
-    void (async () => {
-      e.preventDefault();
-      if (!gistId) return;
+  container.querySelector('#edit-gist-form')?.addEventListener(
+    'submit',
+    (e) => {
+      void (async () => {
+        e.preventDefault();
+        if (!gistId) return;
 
-      const files: Record<string, string> = {};
-      let valid = true;
-      container.querySelectorAll('.file-editor').forEach((editor) => {
-        const existingKey = (editor as HTMLElement).dataset.fileKey;
-        const filename = (
-          editor.querySelector('.filename-input') as HTMLInputElement
-        )?.value.trim();
-        const content =
-          (editor.querySelector('.content-editor') as HTMLTextAreaElement)?.value || '';
-        if (!filename) {
-          valid = false;
+        const files: Record<string, string> = {};
+        let valid = true;
+        container.querySelectorAll('.file-editor').forEach((editor) => {
+          const existingKey = (editor as HTMLElement).dataset.fileKey;
+          const filename = (
+            editor.querySelector('.filename-input') as HTMLInputElement
+          )?.value.trim();
+          const content =
+            (editor.querySelector('.content-editor') as HTMLTextAreaElement)?.value || '';
+          if (!filename) {
+            valid = false;
+            return;
+          }
+          files[existingKey || filename] = content;
+        });
+
+        if (!valid || Object.keys(files).length === 0) {
+          toast.error('ALL FILES MUST HAVE FILENAMES');
           return;
         }
-        files[existingKey || filename] = content;
-      });
 
-      if (!valid || Object.keys(files).length === 0) {
-        toast.error('ALL FILES MUST HAVE FILENAMES');
-        return;
-      }
+        const description = (
+          container.querySelector('#edit-description') as HTMLInputElement
+        )?.value.trim();
 
-      const description = (
-        container.querySelector('#edit-description') as HTMLInputElement
-      )?.value.trim();
-
-      try {
-        const result = await gistStore.updateGist(gistId, { description, files });
-        if (result) {
-          toast.success('GIST UPDATED');
-          onBack();
+        try {
+          const result = await gistStore.updateGist(gistId, { description, files });
+          if (signal?.aborted) return;
+          if (result) {
+            toast.success('GIST UPDATED');
+            onBack();
+          }
+        } catch {
+          toast.error('FAILED TO UPDATE GIST');
         }
-      } catch {
-        toast.error('FAILED TO UPDATE GIST');
-      }
-    })();
-  });
+      })();
+    },
+    { signal }
+  );
 }
 
 export async function loadEditForm(
   gistId: string,
   container: HTMLElement,
-  onBack: () => void
+  onBack: () => void,
+  signal?: AbortSignal
 ): Promise<void> {
   try {
     const gist = await getGist(gistId);
+    if (signal?.aborted) return;
     if (!gist) {
       container.innerHTML =
         '<div class="error-state"><p>GIST NOT FOUND</p><button class="btn btn-ghost" id="edit-back-btn">← BACK</button></div>';
-      container.querySelector('#edit-back-btn')?.addEventListener('click', onBack);
+      container.querySelector('#edit-back-btn')?.addEventListener('click', onBack, { signal });
       return;
     }
     container.innerHTML = renderEditForm(gist);
-    bindEditEvents(container, onBack);
+    bindEditEvents(container, onBack, signal);
   } catch {
     toast.error('FAILED TO LOAD GIST');
     onBack();

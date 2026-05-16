@@ -4,8 +4,11 @@
 
 import { loadGistDetail } from '../components/gist-detail';
 import { Skeleton } from '../components/ui/skeleton';
+import { lifecycle } from '../services/lifecycle';
 
 export function render(container: HTMLElement, params?: Record<string, string>): void {
+  const signal = lifecycle.getRouteSignal();
+
   const gistId = params?.gistId;
   if (!gistId) {
     container.innerHTML =
@@ -22,7 +25,8 @@ export function render(container: HTMLElement, params?: Record<string, string>):
       window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'home' } }));
     },
     () => {},
-    () => {}
+    () => {},
+    signal
   );
 
   // Progressive enhancement: add scroll-progress bar if supported
@@ -37,10 +41,6 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     progressBar.setAttribute('aria-hidden', 'true');
     document.body.appendChild(progressBar);
     // Remove on navigation away
-    const removeBar = () => {
-      progressBar.remove();
-      window.removeEventListener('app:navigate', removeBar);
-    };
-    window.addEventListener('app:navigate', removeBar);
+    lifecycle.onRouteCleanup(() => progressBar.remove());
   }
 }

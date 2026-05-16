@@ -106,7 +106,11 @@ describe('SyncQueue', () => {
     it('should subscribe to network monitor and register window listener', () => {
       queue.init();
       expect(networkMonitor.subscribe).toHaveBeenCalledWith(expect.any(Function));
-      expect(window.addEventListener).toHaveBeenCalledWith('app:online', expect.any(Function));
+      expect(window.addEventListener).toHaveBeenCalledWith(
+        'app:online',
+        expect.any(Function),
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      );
     });
   });
 

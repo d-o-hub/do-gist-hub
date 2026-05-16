@@ -140,48 +140,65 @@ export function renderConflictDetail(conflict: GistConflict): string {
 /**
  * Bind event listeners for conflict resolution UI.
  */
-export function bindConflictEvents(container: HTMLElement, onResolve: () => void): void {
+export function bindConflictEvents(
+  container: HTMLElement,
+  onResolve: () => void,
+  signal?: AbortSignal
+): void {
   // Resolve buttons in list
   container.querySelectorAll('.resolve-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      currentConflictId = (btn as HTMLElement).dataset.id || null;
-      void withViewTransition(async () => {
-        await loadConflictResolution(container, onResolve);
-      });
-    });
+    btn.addEventListener(
+      'click',
+      () => {
+        currentConflictId = (btn as HTMLElement).dataset.id || null;
+        void withViewTransition(async () => {
+          await loadConflictResolution(container, onResolve, signal);
+        });
+      },
+      { signal }
+    );
   });
 
   // Back to list button
-  container.querySelector('.back-to-list')?.addEventListener('click', () => {
-    currentConflictId = null;
-    void withViewTransition(async () => {
-      await loadConflictResolution(container, onResolve);
-    });
-  });
+  container.querySelector('.back-to-list')?.addEventListener(
+    'click',
+    () => {
+      currentConflictId = null;
+      void withViewTransition(async () => {
+        await loadConflictResolution(container, onResolve, signal);
+      });
+    },
+    { signal }
+  );
 
   // Strategy selection buttons
   container.querySelectorAll('.resolve-choice-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      void (async () => {
-        if (!currentConflictId) return;
-        const strategy = (btn as HTMLElement).dataset.strategy as 'local-wins' | 'remote-wins';
+    btn.addEventListener(
+      'click',
+      () => {
+        void (async () => {
+          if (!currentConflictId) return;
+          const strategy = (btn as HTMLElement).dataset.strategy as 'local-wins' | 'remote-wins';
 
-        try {
-          await gistStore.resolveGistConflict(currentConflictId, strategy);
-          const message = `CONFLICT RESOLVED: ${strategy.toUpperCase()}`;
-          toast.success(message);
-          announcer.success(message);
-          currentConflictId = null;
-          onResolve();
-          await withViewTransition(async () => {
-            await loadConflictResolution(container, onResolve);
-          });
-        } catch (err) {
-          toast.error('FAILED TO RESOLVE CONFLICT');
-          safeError('[ConflictResolution] Failed to resolve:', err);
-        }
-      })();
-    });
+          try {
+            await gistStore.resolveGistConflict(currentConflictId, strategy);
+            if (signal?.aborted) return;
+            const message = `CONFLICT RESOLVED: ${strategy.toUpperCase()}`;
+            toast.success(message);
+            announcer.success(message);
+            currentConflictId = null;
+            onResolve();
+            await withViewTransition(async () => {
+              await loadConflictResolution(container, onResolve, signal);
+            });
+          } catch (err) {
+            toast.error('FAILED TO RESOLVE CONFLICT');
+            safeError('[ConflictResolution] Failed to resolve:', err);
+          }
+        })();
+      },
+      { signal }
+    );
   });
 }
 
@@ -190,9 +207,11 @@ export function bindConflictEvents(container: HTMLElement, onResolve: () => void
  */
 export async function loadConflictResolution(
   container: HTMLElement,
-  onResolve: () => void = () => {}
+  onResolve: () => void = () => {},
+  signal?: AbortSignal
 ): Promise<void> {
   const conflicts = await getConflicts();
+  if (signal?.aborted) return;
 
   if (currentConflictId) {
     const conflict = conflicts.find((c) => c.gistId === currentConflictId);
@@ -218,5 +237,5 @@ export async function loadConflictResolution(
     `;
   }
 
-  bindConflictEvents(container, onResolve);
+  bindConflictEvents(container, onResolve, signal);
 }

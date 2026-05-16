@@ -8,6 +8,7 @@ import {
 } from '../components/ui/ambient-light';
 import { toast } from '../components/ui/toast';
 import { getToken, removeToken, saveToken } from '../services/github/auth';
+import { lifecycle } from '../services/lifecycle';
 import networkMonitor from '../services/network/offline-monitor';
 import { redactToken, sanitizeHtml } from '../services/security';
 import { safeError } from '../services/security/logger';
@@ -21,15 +22,7 @@ export async function render(
 ): Promise<void> {
   const currentTheme = params?.currentTheme || 'auto';
 
-  // Abort any previous route-level listeners before re-rendering
-  const previousController = (container as unknown as Record<string, unknown>)[
-    '_settingsAbortController'
-  ] as AbortController | undefined;
-  previousController?.abort();
-
-  const controller = new AbortController();
-  (container as unknown as Record<string, unknown>)['_settingsAbortController'] = controller;
-  const signal = controller.signal;
+  const signal = lifecycle.getRouteSignal();
 
   container.innerHTML = `
     <div class="route-settings">
@@ -150,27 +143,35 @@ function loadDiagnostics(container: HTMLElement): void {
  * Bind all event listeners for the settings route (auth, import/export, theme, cache).
  */
 function bindEvents(container: HTMLElement, signal: AbortSignal): void {
-  container.querySelector('#save-token-btn')?.addEventListener('click', () => {
-    const input = container.querySelector('#pat-input') as HTMLInputElement;
-    if (input.value) {
-      void (async () => {
-        await saveToken(input.value);
-        toast.success('TOKEN SAVED');
-        await loadTokenInfo(container);
-        input.value = '';
-      })();
-    } else {
-      toast.error('ENTER A TOKEN');
-    }
-  });
+  container.querySelector('#save-token-btn')?.addEventListener(
+    'click',
+    () => {
+      const input = container.querySelector('#pat-input') as HTMLInputElement;
+      if (input.value) {
+        void (async () => {
+          await saveToken(input.value);
+          toast.success('TOKEN SAVED');
+          await loadTokenInfo(container);
+          input.value = '';
+        })();
+      } else {
+        toast.error('ENTER A TOKEN');
+      }
+    },
+    { signal }
+  );
 
-  container.querySelector('#remove-token-btn')?.addEventListener('click', () => {
-    void (async () => {
-      await removeToken();
-      toast.success('TOKEN REMOVED');
-      await loadTokenInfo(container);
-    })();
-  });
+  container.querySelector('#remove-token-btn')?.addEventListener(
+    'click',
+    () => {
+      void (async () => {
+        await removeToken();
+        toast.success('TOKEN REMOVED');
+        await loadTokenInfo(container);
+      })();
+    },
+    { signal }
+  );
 
   container.querySelector('#theme-select')?.addEventListener(
     'change',
@@ -210,73 +211,93 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
     { signal }
   );
 
-  container.querySelector('#export-all-btn')?.addEventListener('click', () => {
-    void (async () => {
-      const { exportAllGists } = await import('../services/export-import');
-      const blob = await exportAllGists();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `gists-export-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success('EXPORT COMPLETE');
-    })();
-  });
-
-  container.querySelector('#import-btn')?.addEventListener('click', () => {
-    (container.querySelector('#import-file-input') as HTMLInputElement)?.click();
-  });
-
-  container.querySelector('#import-file-input')?.addEventListener('change', (e) => {
-    void (async () => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-
-      try {
-        const { importGists } = await import('../services/export-import');
-        const result = await importGists(file);
-        await gistStore.reloadFromDb();
-        toast.success(
-          `IMPORT COMPLETE: ${result.imported} NEW, ${result.updated} UPDATED, ${result.conflicts} CONFLICTS`
-        );
-      } catch (err) {
-        toast.error('IMPORT FAILED');
-        safeError('Import failed', err);
-      } finally {
-        (e.target as HTMLInputElement).value = '';
-      }
-    })();
-  });
-
-  container.querySelector('#clear-cache-btn')?.addEventListener('click', () => {
-    void (async () => {
-      if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
-        const { clearAllData } = await import('../services/db');
-        await clearAllData();
-        window.location.reload();
-      }
-    })();
-  });
-
-  container.querySelector('#export-data-btn')?.addEventListener('click', () => {
-    void (async () => {
-      try {
-        const { exportData } = await import('../services/db');
-        const data = await exportData();
-        const blob = new Blob([data], { type: 'application/json' });
+  container.querySelector('#export-all-btn')?.addEventListener(
+    'click',
+    () => {
+      void (async () => {
+        const { exportAllGists } = await import('../services/export-import');
+        const blob = await exportAllGists();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
+        a.download = `gists-export-${new Date().toISOString().split('T')[0]}.json`;
         a.click();
-        document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        toast.success('DATA EXPORTED');
-      } catch {
-        toast.error('EXPORT FAILED');
-      }
-    })();
-  });
+        toast.success('EXPORT COMPLETE');
+      })();
+    },
+    { signal }
+  );
+
+  container.querySelector('#import-btn')?.addEventListener(
+    'click',
+    () => {
+      (container.querySelector('#import-file-input') as HTMLInputElement)?.click();
+    },
+    { signal }
+  );
+
+  container.querySelector('#import-file-input')?.addEventListener(
+    'change',
+    (e) => {
+      void (async () => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+
+        try {
+          const { importGists } = await import('../services/export-import');
+          const result = await importGists(file);
+          await gistStore.reloadFromDb();
+          toast.success(
+            `IMPORT COMPLETE: ${result.imported} NEW, ${result.updated} UPDATED, ${result.conflicts} CONFLICTS`
+          );
+        } catch (err) {
+          toast.error('IMPORT FAILED');
+          safeError('Import failed', err);
+        } finally {
+          (e.target as HTMLInputElement).value = '';
+        }
+      })();
+    },
+    { signal }
+  );
+
+  container.querySelector('#clear-cache-btn')?.addEventListener(
+    'click',
+    () => {
+      void (async () => {
+        if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
+          const { clearAllData } = await import('../services/db');
+          await clearAllData();
+          window.location.reload();
+        }
+      })();
+    },
+    { signal }
+  );
+
+  container.querySelector('#export-data-btn')?.addEventListener(
+    'click',
+    () => {
+      void (async () => {
+        try {
+          const { exportData } = await import('../services/db');
+          const data = await exportData();
+          const blob = new Blob([data], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `gist-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          toast.success('DATA EXPORTED');
+        } catch {
+          toast.error('EXPORT FAILED');
+        }
+      })();
+    },
+    { signal }
+  );
 }
