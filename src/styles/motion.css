@@ -268,6 +268,103 @@
   }
 }
 
+/* ============================================================
+   Plan 039 — Phase A: 2026 UI/UX upgrades (additive, gracefully
+   degrading). All new motion is gated behind @supports and
+   @media (prefers-reduced-motion) blocks.
+   ============================================================ */
+
+/* Opt the document in to cross-document view transitions so SPA
+   route swaps animate by default in Chromium 126+ / Safari 18+.
+   Older engines simply ignore the @view-transition rule. */
+@view-transition {
+  navigation: auto;
+}
+
+/* Give each gist card a unique view-transition-name when it
+   participates in a morph. The actual identifier is applied
+   inline by the route at hand-off; this block defines the
+   default capture container shape and contains paint so the
+   browser can isolate the snapshot. */
+@supports (view-transition-name: none) {
+  .gist-card {
+    contain: paint;
+  }
+
+  /* Detail-page hero matches the card's transition-name so the
+     card morphs into the hero. The hero element opts in by
+     setting view-transition-name: var(--gist-vt-name) inline. */
+  .gist-detail-hero {
+    contain: paint;
+  }
+
+  ::view-transition-group(*) {
+    animation-duration: 300ms;
+    animation-timing-function: var(--motion-easing-out-expo);
+  }
+}
+
+/* Long lists paint only what's near the viewport. content-visibility:
+   auto requires contain-intrinsic-size so the scrollbar stays stable. */
+@supports (content-visibility: auto) {
+  .gist-list .gist-card,
+  .gist-list-item {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 180px;
+  }
+}
+
+/* Scroll-driven app-header collapse — transform/opacity only so it
+   never affects layout (CLS-safe). */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .app-header {
+      animation: app-header-collapse linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 200px;
+      will-change: transform, backdrop-filter;
+    }
+  }
+}
+
+@keyframes app-header-collapse {
+  from {
+    transform: translateY(0);
+    backdrop-filter: blur(0);
+  }
+  to {
+    transform: translateY(-2px);
+    backdrop-filter: blur(20px);
+  }
+}
+
+/* Typography polish — single-property progressive enhancements. */
+@supports (text-wrap: balance) {
+  h1,
+  h2,
+  h3,
+  .gist-card-title {
+    text-wrap: balance;
+  }
+}
+
+@supports (text-wrap: pretty) {
+  p,
+  .gist-card-description {
+    text-wrap: pretty;
+  }
+}
+
+/* Native form-control auto-resize for the token paste textarea
+   and any rich filename inputs. Falls back to fixed height. */
+@supports (field-sizing: content) {
+  textarea.token-input,
+  textarea.content-editor,
+  input.filename-input {
+    field-sizing: content;
+  }
+}
+
 /* ===== Reduced Motion ===== */
 @media (prefers-reduced-motion: reduce) {
   *,

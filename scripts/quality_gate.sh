@@ -13,7 +13,7 @@ if command -v pnpm &> /dev/null && [[ -f "$ROOT_DIR/package.json" ]]; then
   cd "$ROOT_DIR"
 
   echo "→ Type checking..."
-  pnpm run typecheck || { echo "✗ Type check failed (ignored for now as legacy)"; }
+  pnpm run typecheck || { echo "✗ Type check failed"; exit 1; }
   echo "✓ Type check passed"
 
   echo "→ Linting & Formatting checking..."
@@ -34,13 +34,20 @@ echo "✓ No .js/.jsx files in src/"
 # Coverage check
 if command -v pnpm &> /dev/null; then
   echo "→ Running coverage check..."
-  pnpm run test:unit -- --coverage 2>&1 || { echo "✗ Coverage check failed — thresholds not met"; exit 1; }
+  pnpm run test:coverage 2>&1 || { echo "✗ Coverage check failed — thresholds not met"; exit 1; }
   echo "✓ Coverage check passed"
 fi
 
 # Validate skills
 true
 echo "✓ Skill validation passed"
+
+# ADR compliance check (from plan 038 A1)
+if [[ -f "$SCRIPT_DIR/scripts/check-adr-compliance.sh" ]]; then
+  echo "→ ADR compliance check..."
+  bash "$SCRIPT_DIR/scripts/check-adr-compliance.sh" || { echo "✗ ADR compliance check failed"; exit 1; }
+  echo "✓ ADR compliance check passed"
+fi
 
 echo ""
 echo "✓ All quality gates passed"

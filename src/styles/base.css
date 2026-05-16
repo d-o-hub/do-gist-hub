@@ -33,6 +33,28 @@
   --radius-chip: var(--radius-full);
 
   --motion-easing: var(--motion-easing-smooth);
+
+  /* ============================================================
+     Plan 039 — OKLCH accent ramp (perceptually uniform).
+     User-tunable hue via --accent-h (settings stores override).
+     Hex fallbacks live above for engines without OKLCH support.
+     ============================================================ */
+  --accent-h: 220; /* default brand blue */
+  --accent-c: 0.18; /* chroma */
+  --accent: #3b82f6;
+  --accent-soft: #93c5fd;
+  --accent-strong: #1d4ed8;
+}
+
+@supports (color: oklch(0 0 0)) {
+  :root {
+    --accent: oklch(0.62 var(--accent-c) var(--accent-h));
+    --accent-soft: oklch(0.82 calc(var(--accent-c) * 0.55) var(--accent-h));
+    --accent-strong: oklch(0.42 var(--accent-c) var(--accent-h));
+    /* Mix-based surface tints — single source of truth */
+    --accent-tint-12: color-mix(in oklch, var(--accent) 12%, transparent);
+    --accent-tint-24: color-mix(in oklch, var(--accent) 24%, transparent);
+  }
 }
 
 /* ===== App Shell ===== */

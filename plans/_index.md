@@ -15,6 +15,9 @@
 | `028-goap-phase-b-adr22-completion.md`        | GOAP Plan   | Complete ✅ | Time-based theming, container query expansion, ambient light blueprint, strict TS compliance                                 |
 | `029-goap-phase-c-future-work.md`             | GOAP Plan   | Complete ✅ | Ambient light sensor, Android release signing, ProGuard, build-time CSS tokens, self-hosted fonts, scroll parallax           |
 | `030-coverage-improvement-plan.md`            | Plan        | Complete ✅ | 81.88% line coverage, 941 tests across 51 files; all vitest thresholds exceeded                                              |
+| `038-codebase-audit-recommendations-2026-05-16.md` | Audit       | Proposed 🟡 | 24-item backlog covering lost-work recovery, build/CI hardening, lint strictness, test gaps, workflow polish, feature TRIZ followups |
+| `039-ui-ux-2026-modernization.md`             | Feature plan | In Progress 🟡 | 2026 UI/UX upgrades — cross-document view transitions, OKLCH/color-mix, content-visibility, scroll-driven header, text-wrap, field-sizing; Phase A landed |
+| `adr-028-github-app-vs-pat-2026.md`           | ADR          | Accepted ✅  | Auth re-evaluation: keep fine-grained PAT; add opt-in OAuth Device Flow via thin Cloudflare Worker; defer GitHub App installation tokens |
 
 ## Archived
 
@@ -101,7 +104,6 @@ These numbered plans document the project's foundation and are considered stable
 
 ## Quick reference: ADR numbers in use
 
-`adr-001` through `adr-027` (gaps: 017-019 reserved)
-**Next available ADR**: `adr-028`
-
-**Next available plan number**: `038`
+`adr-001` through `adr-028` (gaps: 017-019 reserved)
+**Next available ADR**: `adr-029`
+**Next available plan number**: `040`

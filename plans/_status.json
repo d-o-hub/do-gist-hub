@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "lastUpdated": "2026-07-18",
+  "lastUpdated": "2026-05-16",
   "description": "Machine-readable plan registry for agents and scripts. Mirrors plans/_index.md.",
   "plans": {
     "adr-001-reuse-do-gemini-token-system.md": {
@@ -187,6 +187,21 @@
       "type": "progress",
       "status": "complete",
       "summary": "TRIZ contradiction audit (5 contradictions), skill registry documentation, AGENTS.md skill directory references"
+    },
+    "038-codebase-audit-recommendations-2026-05-16.md": {
+      "type": "audit",
+      "status": "proposed",
+      "summary": "24-item backlog covering lost-work recovery, build/CI hardening, lint strictness, test gaps, workflow polish, feature TRIZ followups"
+    },
+    "039-ui-ux-2026-modernization.md": {
+      "type": "plan",
+      "status": "in-progress",
+      "summary": "2026 UI/UX modernization — cross-doc view transitions, OKLCH/color-mix accent ramp, content-visibility, scroll-driven header, text-wrap, field-sizing; Phase A shipped"
+    },
+    "adr-028-github-app-vs-pat-2026.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Keep fine-grained PAT as default; add opt-in OAuth Device Flow via thin stateless Cloudflare Worker; defer GitHub App installation tokens"
     }
   },
   "archive": [

@@ -15,10 +15,10 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.ts'],
     coverage: {
       include: ['src/**/*.ts'],thresholds: {
-        lines: 45,
-        functions: 45,
-        branches: 35,
-        statements: 45,
+        lines: 85,
+        functions: 85,
+        branches: 70,
+        statements: 85,
       },
     },
   },
