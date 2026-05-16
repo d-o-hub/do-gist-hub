@@ -131,6 +131,25 @@ jobs:
           path: analysis/bundle-stats.html
           retention-days: 7
 
+  quick-tests:
+    name: Quick Unit Tests
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # pinned from v6
+      - uses: pnpm/action-setup@ac6db6d3c1f721f886538a378a2d73e85697340a  # pinned from v6
+        with:
+          version: 9
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # pinned from v6
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run unit tests
+        run: pnpm exec vitest run --reporter=verbose
+
   visual-tests:
     name: Visual Regression Tests
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
