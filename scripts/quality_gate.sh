@@ -43,9 +43,9 @@ true
 echo "✓ Skill validation passed"
 
 # ADR compliance check (from plan 038 A1)
-if [[ -f "$SCRIPT_DIR/scripts/check-adr-compliance.sh" ]]; then
+if [[ -f "$ROOT_DIR/scripts/check-adr-compliance.sh" ]]; then
   echo "→ ADR compliance check..."
-  bash "$SCRIPT_DIR/scripts/check-adr-compliance.sh" || { echo "✗ ADR compliance check failed"; exit 1; }
+  bash "$ROOT_DIR/scripts/check-adr-compliance.sh" || { echo "✗ ADR compliance check failed"; exit 1; }
   echo "✓ ADR compliance check passed"
 fi
 
