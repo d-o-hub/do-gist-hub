@@ -14,8 +14,8 @@ test.describe('Offline SW Install', () => {
     const registered = await page.evaluate(async () => {
       if (!('serviceWorker' in navigator)) return false;
       try {
-        const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-        return !!registration;
+        const registration = await navigator.serviceWorker.getRegistration('/');
+        return registration !== undefined;
       } catch {
         return false;
       }

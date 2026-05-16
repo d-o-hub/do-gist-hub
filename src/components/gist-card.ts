@@ -42,7 +42,7 @@ function renderSyncBadge(
   if (syncStatus === 'error') {
     return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #ef4444;">ERROR</div>';
   }
-  if (syncStatus === 'synced' && lastSyncedAt && updatedAt > lastSyncedAt) {
+  if (syncStatus === 'synced' && lastSyncedAt && Date.parse(updatedAt) > Date.parse(lastSyncedAt)) {
     return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #f97316;">STALE</div>';
   }
   return '';

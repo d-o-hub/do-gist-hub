@@ -151,7 +151,9 @@ function loadDiagnostics(container: HTMLElement): void {
 function loadAccentHue(container: HTMLElement): void {
   const input = container.querySelector('#accent-hue-input') as HTMLInputElement | null;
   if (!input) return;
-  const saved = localStorage.getItem('accent-hue') || '220';
+  const raw = localStorage.getItem('accent-hue') || '220';
+  const parsed = Number.parseInt(raw, 10);
+  const saved = Number.isNaN(parsed) || parsed < 0 || parsed > 360 ? '220' : String(parsed);
   input.value = saved;
   const display = container.querySelector('#accent-hue-value');
   if (display) {
