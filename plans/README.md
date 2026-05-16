@@ -43,6 +43,10 @@ plans/
 
 ---
 
+## Rules
+
+- **One progress update per sprint**: Append to an existing progress update instead of creating a new file on the same day. This prevents clutter from multiple same-day updates (see also E5 in plan 038).
+
 ## Lifecycle
 
 ```
