@@ -15,6 +15,7 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.ts'],
     coverage: {
       include: ['src/**/*.ts'],
+      exclude: ['src/**/*.d.ts'],
       thresholds: {
         lines: 85,
         functions: 85,

@@ -31,8 +31,18 @@ echo "→ Checking plan numbering..."
 echo "  _status.json: next plan=$NEXT_PLAN, next ADR=$NEXT_ADR"
 
 # Check README (format: `**Next available plan number**: `040``)
-README_NEXT_PLAN=$(grep -oP 'Next available plan number.*?`\K\d+' "$README_FILE" || echo "")
-README_NEXT_ADR=$(grep -oP 'Next available ADR number.*?`\Kadr-\d+' "$README_FILE" || echo "")
+README_NEXT_PLAN=$(python3 -c "
+import re, sys
+with open(sys.argv[1]) as f:
+    m = re.search(r'Next available plan number.*?\`(\d+)\`', f.read())
+    print(m.group(1) if m else '')
+" "$README_FILE" 2>/dev/null || echo "")
+README_NEXT_ADR=$(python3 -c "
+import re, sys
+with open(sys.argv[1]) as f:
+    m = re.search(r'Next available ADR number.*?\`(adr-\d+)\`', f.read())
+    print(m.group(1) if m else '')
+" "$README_FILE" 2>/dev/null || echo "")
 
 echo "  README.md:    next plan=$README_NEXT_PLAN, next ADR=$README_NEXT_ADR"
 
