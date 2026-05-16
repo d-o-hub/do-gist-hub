@@ -2,10 +2,13 @@
 extends = "default"
 
 [MD013]
-line_length = 220
+line_length = 240
 
 [MD024]
 allow_different_nesting = true
+
+[MD060]
+enabled = false
 
 [MD031]
 enabled = false
