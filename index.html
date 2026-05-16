@@ -31,6 +31,28 @@
                frame-src 'none'; 
                object-src 'none';"
     />
+
+    <!-- Speculation Rules for instant navigation (039 B2) -->
+    <script type="speculationrules">
+      {
+        "prerender": [
+          {
+            "where": {
+              "href_matches": "/*"
+            },
+            "eagerness": "moderate"
+          }
+        ],
+        "prefetch": [
+          {
+            "where": {
+              "href_matches": "/*"
+            },
+            "eagerness": "conservative"
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <a href="#app" class="skip-link">Skip to main content</a>

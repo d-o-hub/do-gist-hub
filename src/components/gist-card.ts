@@ -23,12 +23,40 @@ function formatRelativeTime(dateStr: string): string {
   return `${diffDay}D AGO`;
 }
 
-const cardCache = new Map<string, { html: string; updatedAt: string; starred: boolean }>();
+const cardCache = new Map<
+  string,
+  { html: string; updatedAt: string; starred: boolean; syncStatus: string; lastSyncedAt?: string }
+>();
+
+function renderSyncBadge(
+  syncStatus: string | undefined,
+  updatedAt: string,
+  lastSyncedAt?: string
+): string {
+  if (syncStatus === 'pending') {
+    return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #3b82f6;">PENDING</div>';
+  }
+  if (syncStatus === 'conflict') {
+    return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #f97316;">CONFLICT</div>';
+  }
+  if (syncStatus === 'error') {
+    return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #ef4444;">ERROR</div>';
+  }
+  if (syncStatus === 'synced' && lastSyncedAt && Date.parse(updatedAt) > Date.parse(lastSyncedAt)) {
+    return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #f97316;">STALE</div>';
+  }
+  return '';
+}
 
 export function renderCard(gist: GistRecord): string {
   const cached = cardCache.get(gist.id);
-  // BOLT: Fix stale cache bug by including starred status in the check
-  if (cached && cached.updatedAt === gist.updatedAt && cached.starred === gist.starred)
+  if (
+    cached &&
+    cached.updatedAt === gist.updatedAt &&
+    cached.starred === gist.starred &&
+    cached.syncStatus === gist.syncStatus &&
+    cached.lastSyncedAt === gist.lastSyncedAt
+  )
     return cached.html;
 
   const fileCount = Object.keys(gist.files).length;
@@ -67,6 +95,7 @@ export function renderCard(gist: GistRecord): string {
             <span class="micro-label">DELETE</span>
           </button>
         </div>
+        ${renderSyncBadge(gist.syncStatus, gist.updatedAt, gist.lastSyncedAt)}
         <time class="micro-label" datetime="${gist.updatedAt}">
           ${formatRelativeTime(gist.updatedAt)}
         </time>
@@ -74,7 +103,13 @@ export function renderCard(gist: GistRecord): string {
     </article>
   `;
 
-  cardCache.set(gist.id, { html, updatedAt: gist.updatedAt, starred: gist.starred });
+  cardCache.set(gist.id, {
+    html,
+    updatedAt: gist.updatedAt,
+    starred: gist.starred,
+    syncStatus: gist.syncStatus ?? 'synced',
+    lastSyncedAt: gist.lastSyncedAt,
+  });
   return html;
 }
 

@@ -59,7 +59,7 @@ export async function render(
                       <button id="import-btn" class="btn btn-secondary flex-1">IMPORT GISTS</button>
                       <input type="file" id="import-file-input" accept=".json" class="hidden" />
                   </div>
-              </div>
+            </div>
           </div>
         </details>
 
@@ -77,6 +77,11 @@ export async function render(
                 <option value="time" ${currentTheme === 'time' ? 'selected' : ''}>Time-based (Dark 7PM–7AM)</option>
                 <option value="ambient" ${currentTheme === 'ambient' ? 'selected' : ''}>Ambient Light (Opt-in)</option>
               </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="accent-hue-input">Accent Color <span id="accent-hue-value" class="micro-label"></span></label>
+              <input type="range" id="accent-hue-input" class="form-input" min="0" max="360" value="220" aria-label="Accent hue">
+              <p class="micro-label hint-text">Adjust the accent color hue (0-360). Default: 220 (blue).</p>
             </div>
           </div>
         </details>
@@ -99,6 +104,7 @@ export async function render(
 
   await loadTokenInfo(container);
   loadDiagnostics(container);
+  loadAccentHue(container);
   bindEvents(container, signal);
 }
 
@@ -137,6 +143,23 @@ function loadDiagnostics(container: HTMLElement): void {
       <p>Theme: ${sanitizeHtml(info.theme || 'auto')}</p>
     </div>
   `;
+}
+
+/**
+ * Load the saved accent hue from localStorage and apply it to the range input and display span.
+ */
+function loadAccentHue(container: HTMLElement): void {
+  const input = container.querySelector('#accent-hue-input') as HTMLInputElement | null;
+  if (!input) return;
+  const raw = localStorage.getItem('accent-hue') || '220';
+  const parsed = Number.parseInt(raw, 10);
+  const saved = Number.isNaN(parsed) || parsed < 0 || parsed > 360 ? '220' : String(parsed);
+  input.value = saved;
+  const display = container.querySelector('#accent-hue-value');
+  if (display) {
+    display.textContent = saved;
+  }
+  document.documentElement.style.setProperty('--accent-h', saved);
 }
 
 /**
@@ -297,6 +320,20 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
           toast.error('EXPORT FAILED');
         }
       })();
+    },
+    { signal }
+  );
+
+  container.querySelector('#accent-hue-input')?.addEventListener(
+    'input',
+    (e) => {
+      const value = (e.target as HTMLInputElement).value;
+      localStorage.setItem('accent-hue', value);
+      document.documentElement.style.setProperty('--accent-h', value);
+      const display = container.querySelector('#accent-hue-value');
+      if (display) {
+        display.textContent = value;
+      }
     },
     { signal }
   );

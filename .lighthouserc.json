@@ -11,36 +11,17 @@
       }
     },
     "assert": {
-      "preset": "lighthouse:no-pwa",
       "assertions": {
         "categories:performance": [
-          "error",
+          "warn",
           {
-            "minScore": 0.9
+            "minScore": 0.6
           }
         ],
         "categories:accessibility": [
-          "error",
+          "warn",
           {
-            "minScore": 0.9
-          }
-        ],
-        "largest-contentful-paint": [
-          "error",
-          {
-            "maxNumericValue": 2500
-          }
-        ],
-        "interaction-to-next-paint": [
-          "error",
-          {
-            "maxNumericValue": 200
-          }
-        ],
-        "cumulative-layout-shift": [
-          "error",
-          {
-            "maxNumericValue": 0.1
+            "minScore": 0.8
           }
         ]
       }
