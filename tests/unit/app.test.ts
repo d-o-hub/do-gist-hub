@@ -226,12 +226,14 @@ describe('App Component', () => {
       expect(commandPalette.setCommands).toHaveBeenCalled();
     });
 
-    it('navigates to home route on mount', () => {
+    it('navigates to home route on mount', async () => {
       const app = new App();
       const mountContainer = document.createElement('div');
       app.mount(mountContainer);
 
-      expect(announcer.announce).toHaveBeenCalledWith('Navigating to home page');
+      await vi.waitFor(() => {
+        expect(announcer.announce).toHaveBeenCalledWith('Navigating to home page');
+      });
     });
   });
 
@@ -437,7 +439,7 @@ describe('App Component', () => {
   // ── Settings Navigation ───────────────────────────────────────────────
 
   describe('settings navigation', () => {
-    it('navigates to settings when settings-btn is clicked', () => {
+    it('navigates to settings when settings-btn is clicked', async () => {
       const app = new App();
       app.mount(container);
 
@@ -446,7 +448,10 @@ describe('App Component', () => {
 
       // Use bubbles: true so the delegated click handler on container catches it
       settingsBtn?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      expect(announcer.announce).toHaveBeenCalledWith('Navigating to settings page');
+
+      await vi.waitFor(() => {
+        expect(announcer.announce).toHaveBeenCalledWith('Navigating to settings page');
+      });
     });
   });
 

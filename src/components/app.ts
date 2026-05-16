@@ -4,7 +4,6 @@
 
 import { APP } from '../config/app.config';
 import * as createRoute from '../routes/create';
-import * as offlineRoute from '../routes/offline';
 import { lifecycle } from '../services/lifecycle';
 import networkMonitor from '../services/network/offline-monitor';
 import syncQueue from '../services/sync/queue';
@@ -104,13 +103,20 @@ export class App {
   }
 
   private async navigate(route: Route, gistId?: string): Promise<void> {
+    const isInitialRender = !this.container?.querySelector('.app-shell');
     const isSameRoute =
-      this.currentRoute === route && (gistId === undefined || this.currentGistId === gistId);
+      !isInitialRender &&
+      this.currentRoute === route &&
+      (gistId === undefined || this.currentGistId === gistId);
 
-    // Cancel in-flight requests from the previous route before navigating to a different route
-    if (!isSameRoute) {
-      lifecycle.cleanupRoute();
-    }
+    if (isSameRoute) return;
+
+    // Dispose of the previous route's resources
+    lifecycle.cleanupRoute();
+
+    // Capture the signal for this specific navigation scope
+    const routeSignal = lifecycle.getRouteSignal();
+
     this.currentRoute = route;
     if (gistId !== undefined) {
       this.currentGistId = gistId;
@@ -120,9 +126,10 @@ export class App {
     const savedSort = localStorage.getItem('sort-preference') || 'updated-desc';
 
     await withViewTransition(async () => {
+      if (routeSignal.aborted) return;
+
       // Only re-render the shell if the route changed or the shell isn't present yet.
-      // This avoids destroying and recreating the entire app shell on initial mount.
-      if (!isSameRoute || !this.container?.querySelector('.app-shell')) {
+      if (isInitialRender) {
         this.render();
         this.setupNavigation();
         this.mountNavComponents();
@@ -140,13 +147,14 @@ export class App {
             'home',
             async () => {
               const { render } = await import('../routes/home');
+              if (routeSignal.aborted) return;
               render(main as HTMLElement, {
                 filter: 'all',
                 sort: savedSort,
                 searchQuery: '',
               });
             },
-            lifecycle.getRouteSignal()
+            routeSignal
           );
           break;
         }
@@ -156,13 +164,14 @@ export class App {
             'starred',
             async () => {
               const { render } = await import('../routes/home');
+              if (routeSignal.aborted) return;
               render(main as HTMLElement, {
                 filter: 'starred',
                 sort: savedSort,
                 searchQuery: '',
               });
             },
-            lifecycle.getRouteSignal()
+            routeSignal
           );
           break;
         }
@@ -173,7 +182,7 @@ export class App {
             () => {
               createRoute.render(main as HTMLElement);
             },
-            lifecycle.getRouteSignal()
+            routeSignal
           );
           break;
         }
@@ -183,11 +192,12 @@ export class App {
             'settings',
             async () => {
               const { render } = await import('../routes/settings');
+              if (routeSignal.aborted) return;
               await render(main as HTMLElement, {
                 currentTheme: getThemePreference() || 'auto',
               });
             },
-            lifecycle.getRouteSignal()
+            routeSignal
           );
           break;
         }
@@ -196,9 +206,11 @@ export class App {
             main as HTMLElement,
             'offline',
             async () => {
-              await offlineRoute.render(main as HTMLElement);
+              const { render } = await import('../routes/offline');
+              if (routeSignal.aborted) return;
+              await render(main as HTMLElement);
             },
-            lifecycle.getRouteSignal()
+            routeSignal
           );
           break;
         }
@@ -208,9 +220,10 @@ export class App {
             'detail',
             async () => {
               const { render } = await import('../routes/gist-detail');
+              if (routeSignal.aborted) return;
               render(main as HTMLElement, { gistId: this.currentGistId || '' });
             },
-            lifecycle.getRouteSignal()
+            routeSignal
           );
           break;
         }
@@ -225,16 +238,17 @@ export class App {
               );
               if (conflictContainer instanceof HTMLElement) {
                 const { loadConflictResolution } = await import('./conflict-resolution');
+                if (routeSignal.aborted) return;
                 await loadConflictResolution(
                   conflictContainer,
                   () => {
                     window.dispatchEvent(new CustomEvent('app:sync-change'));
                   },
-                  lifecycle.getRouteSignal()
+                  routeSignal
                 );
               }
             },
-            lifecycle.getRouteSignal()
+            routeSignal
           );
           break;
         }
@@ -443,15 +457,15 @@ export class App {
 
   public mount(element: HTMLElement): void {
     this.container = element;
-    this.render();
-    this.setupNavigation();
-    this.mountNavComponents();
     void this.navigate('home');
   }
 
   public destroy(): void {
     this.abortController.abort();
     this.networkUnsubscribe?.();
+    navRail.destroy();
+    commandPalette.destroy();
+    bottomSheet.destroy();
     lifecycle.cleanupRoute();
     lifecycle.cleanupApp();
   }
