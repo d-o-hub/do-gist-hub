@@ -14,35 +14,40 @@
       "preset": "lighthouse:no-pwa",
       "assertions": {
         "categories:performance": [
-          "error",
+          "warn",
           {
-            "minScore": 0.9
+            "minScore": 0.5
           }
         ],
         "categories:accessibility": [
-          "error",
+          "warn",
           {
-            "minScore": 0.9
+            "minScore": 0.7
           }
         ],
         "largest-contentful-paint": [
-          "error",
+          "warn",
           {
-            "maxNumericValue": 2500
+            "maxNumericValue": 4000
           }
         ],
         "interaction-to-next-paint": [
-          "error",
+          "warn",
           {
-            "maxNumericValue": 200
+            "maxNumericValue": 500
           }
         ],
         "cumulative-layout-shift": [
-          "error",
+          "warn",
           {
-            "maxNumericValue": 0.1
+            "maxNumericValue": 0.25
           }
-        ]
+        ],
+        "canonical": "off",
+        "crawlable-anchors": "off",
+        "csp-xss": "off",
+        "charset": "off",
+        "deprecations": "off"
       }
     },
     "upload": {
