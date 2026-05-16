@@ -34,7 +34,7 @@ echo "✓ No .js/.jsx files in src/"
 # Coverage check
 if command -v pnpm &> /dev/null; then
   echo "→ Running coverage check..."
-  pnpm run test:coverage 2>&1 || { echo "✗ Coverage check failed — thresholds not met"; exit 1; }
+  pnpm exec vitest run --coverage 2>&1 || { echo "✗ Coverage check failed — thresholds not met"; exit 1; }
   echo "✓ Coverage check passed"
 fi
 
