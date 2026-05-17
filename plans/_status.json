@@ -233,6 +233,16 @@
       "type": "goap",
       "status": "complete",
       "summary": "Close P0 plan-audit gaps: rebuild stale design-tokens.css, fix plan status headers, promote ADR-015, add SW cache TTL, wire LH CI"
+    },
+    "043-progress-update-2026-05-17-plan042-completion.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "Plan 042 execution: updated statuses, regenerated CSS, SW TTL added, LH CI wired"
+    },
+    "044-progress-update-2026-05-17.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "UI/UX token refinement, eliminated hardcoded colors, Android release investigation"
     }
   },
   "archive": [
@@ -266,7 +276,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-030",
-    "plan": "043",
+    "plan": "045",
     "goap": "032"
   }
 }
