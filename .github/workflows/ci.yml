@@ -141,6 +141,8 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      pull-requests: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # pinned from v6
       - uses: dorny/paths-filter@de22dfa110e52df00ee35449e9006c7739da589b # pinned from v3
@@ -149,8 +151,13 @@ jobs:
           filters: |
             unit:
               - 'src/**/*.ts'
+              - 'src/**/*.tsx'
               - 'tests/unit/**/*.ts'
+              - 'tests/unit/**/*.tsx'
               - 'vitest.config.ts'
+              - 'tsconfig*.json'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
       - uses: pnpm/action-setup@ac6db6d3c1f721f886538a378a2d73e85697340a  # pinned from v6
         if: steps.filter.outputs.unit == 'true'
         with:

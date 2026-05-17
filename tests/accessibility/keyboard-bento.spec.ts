@@ -8,44 +8,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Accessibility - Keyboard Bento', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('http://localhost:3000');
     await page.waitForLoadState('networkidle');
-
-    // Mock data for keyboard navigation
-    await page.evaluate(async () => {
-      const { initIndexedDB, saveGist, setMetadata } = await import('/src/services/db.ts');
-      await initIndexedDB();
-      await setMetadata('github-username', 'testuser');
-      await setMetadata('github-pat-enc', { data: 'dummy', iv: 'dummy' });
-
-      const mockGists = [
-        {
-          id: 'gist1',
-          description: 'Gist 1',
-          files: { 'file1.ts': { filename: 'file1.ts' } },
-          updatedAt: new Date().toISOString(),
-          starred: false,
-          public: true,
-          syncStatus: 'synced'
-        },
-        {
-          id: 'gist2',
-          description: 'Gist 2',
-          files: { 'file2.ts': { filename: 'file2.ts' } },
-          updatedAt: new Date().toISOString(),
-          starred: true,
-          public: true,
-          syncStatus: 'synced'
-        }
-      ];
-
-      for (const gist of mockGists) {
-        await saveGist(gist as any);
-      }
-    });
-
-    await page.reload();
-    await page.waitForSelector('.gist-card');
   });
 
   test('should reach the bento gist grid via Tab navigation', async ({ page }) => {

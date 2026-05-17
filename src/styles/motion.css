@@ -45,7 +45,6 @@
     opacity: 0;
     transform: translateY(12px) scale(0.98);
   }
-
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -59,23 +58,18 @@
 .gist-card:nth-child(1) {
   animation-delay: 0ms;
 }
-
 .gist-card:nth-child(2) {
   animation-delay: 40ms;
 }
-
 .gist-card:nth-child(3) {
   animation-delay: 80ms;
 }
-
 .gist-card:nth-child(4) {
   animation-delay: 120ms;
 }
-
 .gist-card:nth-child(5) {
   animation-delay: 160ms;
 }
-
 .gist-card:nth-child(n + 6) {
   animation-delay: 200ms;
 }
@@ -86,7 +80,6 @@
   100% {
     box-shadow: 0 2px 8px var(--color-accent-glow);
   }
-
   50% {
     box-shadow:
       0 4px 16px var(--color-accent-glow),
@@ -108,7 +101,6 @@
     opacity: 0;
     transform: translateY(4px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -142,7 +134,6 @@
     opacity: 1;
     transform: scale(1);
   }
-
   50% {
     opacity: 0.6;
     transform: scale(1.15);
@@ -159,7 +150,6 @@
     opacity: 0;
     transform: translateX(100%) scale(0.95);
   }
-
   to {
     opacity: 1;
     transform: translateX(0) scale(1);
@@ -171,7 +161,6 @@
     opacity: 1;
     transform: translateX(0) scale(1);
   }
-
   to {
     opacity: 0;
     transform: translateX(100%) scale(0.95);
@@ -210,14 +199,12 @@
   0% {
     background-position: 200% 0;
   }
-
   100% {
     background-position: -200% 0;
   }
 }
 
 /* ===== Scroll-Driven Animations (ADR-022) ===== */
-
 /* Progressive enhancement: cards reveal as they scroll into view */
 @supports (animation-timeline: view()) {
   .gist-card {
@@ -231,7 +218,6 @@
       opacity: 0;
       transform: translateY(20px);
     }
-
     to {
       opacity: 1;
       transform: translateY(0);
@@ -276,7 +262,6 @@
     transform: translateY(0);
     opacity: 1;
   }
-
   to {
     transform: translateY(-16px);
     opacity: 0.8;
@@ -347,7 +332,6 @@
     transform: translateY(0);
     backdrop-filter: blur(0);
   }
-
   to {
     transform: translateY(-2px);
     backdrop-filter: blur(20px);
@@ -396,13 +380,10 @@
   *::after {
     /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     animation-duration: 0.01ms !important;
-
     /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     animation-iteration-count: 1 !important;
-
     /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     transition-duration: 0.01ms !important;
-
     /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     scroll-behavior: auto !important;
   }

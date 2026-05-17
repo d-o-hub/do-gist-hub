@@ -31,6 +31,12 @@ if (!fs.existsSync(hooksDir)) {
 }
 
 for (const hook of hooks) {
+  // Check if source file exists before attempting to read it
+  if (!fs.existsSync(hook.source)) {
+    console.warn(`[install-git-hooks] source file not found for ${hook.name} hook: ${hook.source}`);
+    continue;
+  }
+
   // Check if hook already exists and is up to date
   if (fs.existsSync(hook.target)) {
     const existing = fs.readFileSync(hook.target, 'utf8');
