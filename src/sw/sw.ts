@@ -11,6 +11,38 @@ import { APP } from '../config/app.config';
 
 const STATIC_CACHE = `${APP.staticCacheName}-__BUILD_TIMESTAMP__`;
 
+// Cache entry TTL: 30 days in milliseconds
+const CACHE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
+function addTimestampToResponse(response: Response): Response {
+  const headers = new Headers(response.headers);
+  headers.set('x-cache-timestamp', Date.now().toString());
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
+function isResponseExpired(response: Response): boolean {
+  const timestamp = response.headers.get('x-cache-timestamp');
+  if (!timestamp) return true;
+  return Date.now() - Number(timestamp) > CACHE_MAX_AGE_MS;
+}
+
+async function cleanExpiredEntries(cacheName: string): Promise<void> {
+  const cache = await caches.open(cacheName);
+  const requests = await cache.keys();
+  const deletePromises: Promise<boolean>[] = [];
+  for (const request of requests) {
+    const response = await cache.match(request);
+    if (response && isResponseExpired(response)) {
+      deletePromises.push(cache.delete(request));
+    }
+  }
+  await Promise.all(deletePromises);
+}
+
 // Assets to precache (app shell)
 const PRECACHE_ASSETS = [
   '/',
@@ -41,18 +73,20 @@ swSelf.addEventListener('install', (event: ExtendableEvent) => {
 });
 
 /**
- * Activate event - clean up old caches
+ * Activate event - clean up old caches and expired entries
  * - Deletes entire caches not matching the current STATIC_CACHE name
  * - Uses build-timestamp cache naming for version-based eviction
+ * - Evicts individual entries older than 30 days (TTL-based cleanup)
  */
 swSelf.addEventListener('activate', (event: ExtendableEvent) => {
   event.waitUntil(
     caches
       .keys()
       .then((cacheNames) => {
-        return Promise.all(
-          cacheNames.filter((name) => name !== STATIC_CACHE).map((name) => caches.delete(name))
-        );
+        const deleteOldCaches = cacheNames
+          .filter((name) => name !== STATIC_CACHE)
+          .map((name) => caches.delete(name));
+        return Promise.all([...deleteOldCaches, cleanExpiredEntries(STATIC_CACHE)]);
       })
       .then(() => swSelf.clients.claim())
   );
@@ -92,10 +126,11 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
       fetch(request)
         .then((response) => {
           const responseClone = response.clone();
+          const timestampedResponse = addTimestampToResponse(responseClone);
           caches
             .open(STATIC_CACHE)
             .then((cache) => {
-              cache.put(request, responseClone).catch(() => {});
+              cache.put(request, timestampedResponse).catch(() => {});
             })
             .catch(() => {});
           return response;
@@ -137,10 +172,11 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
           if (!response.ok) return response;
 
           const responseClone = response.clone();
+          const timestampedResponse = addTimestampToResponse(responseClone);
           caches
             .open(STATIC_CACHE)
             .then((cache) => {
-              cache.put(request, responseClone).catch(() => {});
+              cache.put(request, timestampedResponse).catch(() => {});
             })
             .catch(() => {});
           return response;
