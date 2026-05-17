@@ -119,11 +119,20 @@ describe('SyncQueue retry exhaustion and dedup', () => {
     it('unsubscribes and aborts on destroy', () => {
       const unsubscribe = vi.fn();
       vi.mocked(networkMonitor.subscribe).mockReturnValue(unsubscribe);
-      queue.init();
 
+      let capturedSignal: AbortSignal | undefined;
+      vi.mocked(window.addEventListener).mockImplementation((event, _cb, options) => {
+        if (event === 'app:online' && typeof options === 'object') {
+          capturedSignal = options.signal;
+        }
+      });
+
+      queue.init();
       queue.destroy();
 
       expect(unsubscribe).toHaveBeenCalled();
+      expect(capturedSignal).toBeDefined();
+      expect(capturedSignal?.aborted).toBe(true);
     });
 
     it('processes queue when network status changes to online', () => {

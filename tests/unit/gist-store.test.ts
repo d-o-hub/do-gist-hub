@@ -8,7 +8,7 @@
  * Also: gistStore is a singleton, so we call init() in the outer
  * beforeEach to reset its internal state between tests.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---- Mocks (hoisted) ----
 
@@ -46,7 +46,7 @@ vi.mock('../../src/services/sync/queue', () => ({
 
 vi.mock('../../src/services/sync/conflict-detector', () => ({
   detectConflict: vi.fn(),
-  resolveConflict: vi.fn((_: unknown, strategy: string) => ({
+  resolveConflict: vi.fn((_: unknown, _strategy: string) => ({
     id: 'resolved-gist',
     description: 'Resolved',
     files: {},
@@ -70,17 +70,16 @@ vi.mock('../../src/services/github/auth', () => ({
 // ---- Imports (after mocks) ----
 
 import {
+  deleteGist as dbDeleteGist,
   getAllGists as dbGetAllGists,
   saveGist as dbSaveGist,
-  deleteGist as dbDeleteGist,
   saveGists,
 } from '../../src/services/db';
-
+import { isAuthenticated } from '../../src/services/github/auth';
 import * as GitHub from '../../src/services/github/client';
 import networkMonitor from '../../src/services/network/offline-monitor';
-import syncQueue from '../../src/services/sync/queue';
-import { isAuthenticated } from '../../src/services/github/auth';
 import { safeError } from '../../src/services/security/logger';
+import syncQueue from '../../src/services/sync/queue';
 
 import gistStore from '../../src/stores/gist-store';
 
@@ -314,7 +313,7 @@ describe('GistStore', () => {
       expect(syncQueue.queueOperation).toHaveBeenCalledWith(
         expect.any(String),
         'create',
-        expect.objectContaining({ description: 'Test' }),
+        expect.objectContaining({ description: 'Test' })
       );
     });
 
@@ -325,7 +324,7 @@ describe('GistStore', () => {
       const result = await gistStore.createGist('API Created', true, { 'test.txt': 'content' });
 
       expect(GitHub.createGist).toHaveBeenCalledWith(
-        expect.objectContaining({ description: 'API Created' }),
+        expect.objectContaining({ description: 'API Created' })
       );
       expect(dbSaveGist).toHaveBeenCalled();
       expect(result?.description).toBe('API Created');
@@ -368,7 +367,7 @@ describe('GistStore', () => {
       expect(syncQueue.queueOperation).toHaveBeenCalledWith(
         'gist-1',
         'update',
-        expect.objectContaining({ description: 'Offline update' }),
+        expect.objectContaining({ description: 'Offline update' })
       );
     });
 
@@ -380,7 +379,7 @@ describe('GistStore', () => {
 
       expect(GitHub.updateGist).toHaveBeenCalledWith(
         'gist-1',
-        expect.objectContaining({ description: 'Updated via API' }),
+        expect.objectContaining({ description: 'Updated via API' })
       );
       expect(dbSaveGist).toHaveBeenCalled();
       expect(result).toBe(true);
@@ -429,23 +428,27 @@ describe('GistStore', () => {
 
     it('updates existing file content and adds new file in optimistic update', async () => {
       const existing = makeGistRecord('gist-1', {
-        files: { 'old.txt': { filename: 'old.txt', content: 'old' } }
+        files: { 'old.txt': { filename: 'old.txt', content: 'old' } },
       });
       vi.mocked(dbGetAllGists).mockResolvedValue([existing] as never[]);
       await gistStore.init();
 
-      vi.mocked(GitHub.updateGist).mockReturnValue(new Promise(() => {})); // Never resolves to keep it optimistic
+      // Mock it to resolve to make the test deterministic
+      vi.mocked(GitHub.updateGist).mockResolvedValue(makeGitHubGist('gist-1'));
 
-      gistStore.updateGist('gist-1', {
+      const updatePromise = gistStore.updateGist('gist-1', {
         files: {
           'old.txt': 'new content',
-          'new.txt': 'brand new'
-        }
+          'new.txt': 'brand new',
+        },
       });
 
+      // Optimistic check: state changes before promise resolves
       const updated = gistStore.getGist('gist-1');
       expect(updated?.files['old.txt'].content).toBe('new content');
       expect(updated?.files['new.txt'].content).toBe('brand new');
+
+      await updatePromise;
     });
   });
 
@@ -536,11 +539,7 @@ describe('GistStore', () => {
 
       await gistStore.toggleStar('gist-1');
 
-      expect(syncQueue.queueOperation).toHaveBeenCalledWith(
-        'gist-1',
-        'star',
-        expect.any(Object),
-      );
+      expect(syncQueue.queueOperation).toHaveBeenCalledWith('gist-1', 'star', expect.any(Object));
     });
 
     it('toggles star on via API when online', async () => {
