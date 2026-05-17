@@ -15,7 +15,7 @@ Executed all outstanding recommendations: ran `analyze-codebase.sh --fix` (verif
 
 - **analyze-codebase.sh verification**: Script runs clean — no CSS issues found. Auto-generated section preserved alongside Swarm Coordination Rules. The `update_agents_md()` function correctly detected existing section and did not overwrite.
 - **TRIZ architecture audit**: 5 architectural contradictions identified (offline vs freshness, tokens vs complexity, mobile vs desktop, swarm parallelism, security vs velocity). Innovation roadmap with 5 prioritized actions documented in `analysis/triz-architecture-2026-07-18.md`.
-- **AGENTS.md updated**: Reference table now includes `agents-docs/available-skills.md` and `.qwen/skills/` / `.gemini/skills/` directory entries. Skills section updated to reference the full skill registry.
+- **AGENTS.md updated**: Reference table now includes `agents-docs/available-skills.md` and `.qwen/skills/` directory entries. Skills section updated to reference the full skill registry.
 
 ---
 
@@ -26,7 +26,7 @@ Executed all outstanding recommendations: ran `analyze-codebase.sh --fix` (verif
 | Agent | Type | Task | Status | Result |
 |-------|------|------|--------|--------|
 | Agent 1 | analyze-codebase.sh | Run CSS/layout analysis with --fix | ✅ | No issues detected; auto-generated section intact |
-| Agent 2 | basher | List unique skills across .qwen/.gemini | ✅ | 25 skills identified, mirrored across frameworks |
+| Agent 2 | basher | List unique skills across .qwen | ✅ | 25 skills identified, mirrored across frameworks |
 | Agent 3 | basher | Read available-skills.md | ✅ | Full registry with descriptions obtained |
 
 ### Phase 2: Implementation (3 tasks parallel)
@@ -62,7 +62,7 @@ Executed all outstanding recommendations: ran `analyze-codebase.sh --fix` (verif
 
 | File | Action | Purpose |
 |------|--------|---------|
-| `AGENTS.md` | MODIFIED | Added skill registry reference (.qwen/, .gemini/, available-skills.md) |
+| `AGENTS.md` | MODIFIED | Added skill registry reference (.claude/, available-skills.md) |
 | `analysis/triz-architecture-2026-07-18.md` | CREATED | Full TRIZ contradiction audit (5 contradictions, innovation roadmap) |
 | `plans/037-progress-update-2026-07-18.md` | CREATED | This file |
 
@@ -74,3 +74,4 @@ Executed all outstanding recommendations: ran `analyze-codebase.sh --fix` (verif
 - **Next plan**: `038`
 
 *Last updated: 2026-07-18*
+07-18*

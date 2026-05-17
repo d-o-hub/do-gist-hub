@@ -101,9 +101,6 @@ After running `scripts/setup-skills.sh`:
 └── skill-b/
 
 .claude/skills -> ../.agents/skills    ← Symlink (read-only reference)
-.gemini/skills -> ../.agents/skills    ← Symlink
-.qwen/skills   -> ../.agents/skills    ← Symlink
-.cursor/skills -> ../.agents/skills    ← Symlink
 ```
 
 **Agent-specific overrides**: If an agent needs a modified version, create `.claude/skills-local/skill-a/` (real directory, not symlink) with the override. The harness should check local first, then fallback to canonical.

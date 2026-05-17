@@ -219,7 +219,6 @@ echo "✓ All skills valid"
 ```bash
 # Verify symlinks
 ls -la .claude/skills
-ls -la .gemini/skills
 
 # Validate skills
 ./scripts/validate-skills.sh

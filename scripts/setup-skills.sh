@@ -6,7 +6,7 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 SKILLS_DIR="$ROOT_DIR/.agents/skills"
 
 # Agent directories to create symlinks in
-AGENT_DIRS=(".claude" ".gemini" ".qwen" ".cursor")
+AGENT_DIRS=(".claude")
 
 for agent_dir in "${AGENT_DIRS[@]}"; do
   target="$ROOT_DIR/$agent_dir/skills"

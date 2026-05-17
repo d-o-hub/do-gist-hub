@@ -3,13 +3,46 @@
 > Offline-first GitHub Gist management.
 > Stack: pnpm, Vite 8, TypeScript 6, Biome, Playwright, Vitest, Capacitor 8.
 
+## Named Constants
+
+```bash
+# File size limits (lines)
+readonly MAX_LINES_PER_SOURCE_FILE=500
+readonly MAX_LINES_PER_SKILL_MD=250
+readonly MAX_LINES_AGENTS_MD=200
+
+# Retry and polling configuration
+readonly DEFAULT_MAX_RETRIES=3
+readonly DEFAULT_RETRY_DELAY_SECONDS=5
+readonly DEFAULT_POLL_INTERVAL_SECONDS=5
+readonly DEFAULT_MAX_POLL_ATTEMPTS=12
+readonly DEFAULT_TIMEOUT_SECONDS=1800
+
+# Git/PR configuration
+readonly MAX_COMMIT_SUBJECT_LENGTH=72
+readonly MAX_PR_TITLE_LENGTH=72
+```
+
+## Development Phases
+
+We use a GOAP (Goal-Oriented Action Planning) approach combined with ADRs (Architecture Decision Records) and TRIZ for structured development.
+
+1. **ANALYZE & STRATEGIZE (Phase 1)**
+   - **Action**: Use `triz-analysis` or `triz-solver` to evaluate the problem and write an **ADR** detailing the context, decision, and consequences.
+2. **DECOMPOSE & PLAN (Phase 2)**
+   - **Action**: Break down the problem into atomic, testable tasks in `plans/GOAP_STATE.md` or a specific plan file.
+3. **EXECUTE & COORDINATE (Phase 3)**
+   - **Action**: Systematically execute tasks using the atomic commit workflow. Run `./scripts/quality_gate.sh` before each commit.
+4. **SYNTHESIZE (Phase 4)**
+   - **Action**: Extract discoveries and update project-specific `AGENTS.md` contexts or personal memory.
+
 ## Agent Workflow
 
 1. **Analyze**: Read `plans/` (ADRs + progress), and relevant `src/` files.
 2. **GOAP First**: Compare ADR decisions vs implementation. Use `plans/adr-026-phase-a-modernization-goap.md` for gap template.
 3. **Execute**: Use `pnpm` exclusively. No `npm`. No `yarn`.
-4. **Verify**: Run tests and linting.
-5. **Commit**: Pass `./scripts/quality_gate.sh`. Conventional Commits only.
+4. **Verify**: Run tests and linting via `./scripts/quality_gate.sh`.
+5. **Commit**: Pass `./scripts/quality_gate.sh`. Conventional Commits only. Use `./scripts/ai-commit.sh` for complex messages.
 
 ## Setup
 
@@ -56,7 +89,8 @@ pnpm run test:unit
 
 ## Skills & Capabilities
 
-Consult `.agents/skills/` or `agents-docs/available-skills.md` for the full skill registry. Each agent framework (`.agents/`, `.qwen/`, `.gemini/`) mirrors the same 25 skills. Avoid large monolithic prompts; use standard file execution.
+Consult .agents/skills/ or agents-docs/available-skills.md for the full skill registry. Each agent framework (.agents/, .qwen/, .claude/) mirrors the same 25 skills. Avoid large monolithic prompts; use standard file execution.
+
 
 ## Reference Files
 
@@ -73,8 +107,8 @@ Consult `.agents/skills/` or `agents-docs/available-skills.md` for the full skil
 | `plans/037-progress-update-2026-07-18.md`                   | TRIZ audit, skill registry, compacted doc updates         |
 | `plans/040-goap-phase-d-039-phase-bc-completion.md` | Plan 039 Phase B/C completion — @scope, shadow tokens, Popover API, interpolate-size, accent-color |
 | `plans/040-progress-update-2026-05-17-plan-039-phase-bc-completion.md` | Progress update — plan 040 execution |
-| `.agents/skills/codebase-optimizer/SKILL.md`               | Autonomous optimization and self-learning system                                        |
-| `.qwen/skills/` / `.gemini/skills/`                        | 25 skills mirrored across agent frameworks (Qwen, Gemini, Claude)                       |
+| `.agents/skills/`                                  | 25 canonical skills for AI coding agents                |
+| `.claude/skills/`                                  | Symlinks to canonical skills for Claude Code            |
 
 ## Release Process
 
@@ -127,3 +161,4 @@ This section is automatically updated by `./scripts/analyze-codebase.sh`.
 ### Issue History
 
 See `agents-docs/issues/` for documented issues and fixes.
+or documented issues and fixes.

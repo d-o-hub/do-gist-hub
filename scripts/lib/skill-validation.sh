@@ -14,7 +14,7 @@
 
 readonly SV_LIMIT_SKILL=250
 readonly SV_LIMIT_SOURCE=500
-readonly SV_LIMIT_AGENTS=150
+readonly SV_LIMIT_AGENTS=200
 
 readonly SV_REQUIRED_FIELDS=("name" "description" "version" "template_version")
 

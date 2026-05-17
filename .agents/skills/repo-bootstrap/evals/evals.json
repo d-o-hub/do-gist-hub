@@ -3,15 +3,15 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Initialize a new repository with the standard AI agent workflow structure. Need .agents/skills, plans/, agents-docs/, and proper symlinks for Claude, Gemini, and Qwen.",
-      "expected_output": "Created complete directory structure (.agents/skills, plans, agents-docs, scripts, src/ subdirectories), setup-skills.sh script for creating symlinks, quality_gate.sh for pre-commit validation, and working symlinks in .claude/skills, .gemini/skills, .qwen/skills.",
+      "prompt": "Initialize a new repository with the standard AI agent workflow structure. Need .agents/skills, plans/, agents-docs/, and proper symlinks for Claude.",
+      "expected_output": "Created complete directory structure (.agents/skills, plans, agents-docs, scripts, src/ subdirectories), setup-skills.sh script for creating symlinks, quality_gate.sh for pre-commit validation, and working symlinks in .claude/skills.",
       "files": [],
       "assertions": [
         ".agents/skills/ directory is created",
         "plans/ directory is created",
         "setup-skills.sh script is created and executable",
         "quality_gate.sh script is created",
-        "Symlinks exist in .claude/skills, .gemini/skills, and .qwen/skills"
+        "Symlinks exist in .claude/skills"
       ]
     },
     {
