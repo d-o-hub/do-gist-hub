@@ -71,8 +71,18 @@ Consult `.agents/skills/` or `agents-docs/available-skills.md` for the full skil
 | `plans/035-progress-update-2026-07-18.md`                   | Swarm followups — ADR cross-check, test audit, AGENTS.md refresh |
 | `plans/036-progress-update-2026-07-18.md`                   | Swarm roundup — ADR compliance verified, compacted swarm learnings, agent selection guide |
 | `plans/037-progress-update-2026-07-18.md`                   | TRIZ audit, skill registry, compacted doc updates         |
+| `plans/040-goap-phase-d-039-phase-bc-completion.md` | Plan 039 Phase B/C completion — @scope, shadow tokens, Popover API, interpolate-size, accent-color |
+| `plans/040-progress-update-2026-05-17-plan-039-phase-bc-completion.md` | Progress update — plan 040 execution |
 | `.agents/skills/codebase-optimizer/SKILL.md`               | Autonomous optimization and self-learning system                                        |
 | `.qwen/skills/` / `.gemini/skills/`                        | 25 skills mirrored across agent frameworks (Qwen, Gemini, Claude)                       |
+
+## Release Process
+
+- **Trigger**: Push a `v*` tag (e.g. `git tag v0.1.1 && git push origin v0.1.1`).
+- **Workflow**: `.github/workflows/release.yml` builds the web app + Android APK and creates a GitHub Release.
+- **Changelog**: Auto-generated from conventional commits since the last tag, grouped by type (feat, fix, chore, docs). Uses `git log --oneline --grep` with the previous tag as boundary.
+- **Version source**: `VERSION` file is canonical. Update it before tagging. The `version-propagation.yml` workflow auto-updates `README.md` badge and `CHANGELOG.md` header.
+- Prerelease: set `prerelease: true` in release.yml if the version is a release candidate. Update `VERSION`, commit, tag, push.
 
 ## Verification Checklist
 
