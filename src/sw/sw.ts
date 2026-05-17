@@ -26,7 +26,7 @@ function addTimestampToResponse(response: Response): Response {
 
 function isResponseExpired(response: Response): boolean {
   const timestamp = response.headers.get('x-cache-timestamp');
-  if (!timestamp) return true;
+  if (!timestamp) return false;
   return Date.now() - Number(timestamp) > CACHE_MAX_AGE_MS;
 }
 
@@ -166,7 +166,16 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
   ) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
-        if (cachedResponse) return cachedResponse;
+        if (cachedResponse) {
+          if (isResponseExpired(cachedResponse)) {
+            caches
+              .open(STATIC_CACHE)
+              .then((cache) => cache.delete(request))
+              .catch(() => {});
+          } else {
+            return cachedResponse;
+          }
+        }
 
         return fetch(request).then((response) => {
           if (!response.ok) return response;
