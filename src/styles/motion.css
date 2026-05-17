@@ -365,6 +365,14 @@
   }
 }
 
+/* Interpolate size for natural height animations on accordions/details */
+@supports (interpolate-size: allow-keywords) {
+  .accordion-panel,
+  details {
+    interpolate-size: allow-keywords;
+  }
+}
+
 /* ===== Reduced Motion ===== */
 @media (prefers-reduced-motion: reduce) {
   *,

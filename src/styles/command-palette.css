@@ -1,46 +1,34 @@
 /**
  * Command Palette Styles
+ * Converted to Popover API (Plan 039 Phase B).
+ * Uses the popover attribute + ::backdrop instead of JS classes.
  */
-
-.command-palette-backdrop {
-  position: fixed;
-  inset: 0;
-  background: var(--color-backdrop-heavy);
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--motion-duration-base) var(--motion-easing);
-}
-
-.command-palette-backdrop.visible {
-  opacity: 1;
-  pointer-events: auto;
-}
 
 .command-palette {
   position: fixed;
-  top: 20%;
-  left: 50%;
+  inset: 20% auto auto 50%;
   transform: translate(-50%, -20%) scale(0.95);
   width: min(600px, 90vw);
   background: var(--color-surface);
   border: var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--glass-shadow);
-  z-index: 1001;
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transition: all var(--motion-duration-base) var(--motion-easing);
+  transition:
+    transform var(--motion-duration-base) var(--motion-easing),
+    opacity var(--motion-duration-base) var(--motion-easing);
 }
 
-.command-palette.open {
+.command-palette:popover-open {
   opacity: 1;
-  pointer-events: auto;
   transform: translate(-50%, -20%) scale(1);
+}
+
+.command-palette::backdrop {
+  background: var(--color-backdrop-heavy);
+  backdrop-filter: blur(8px);
 }
 
 .command-palette-search {
