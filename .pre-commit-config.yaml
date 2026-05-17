@@ -41,9 +41,9 @@ repos:
   # Local hooks (fast checks on staged files only — full gate runs in CI)
   - repo: local
     hooks:
-      - id: biome-check
-        name: Biome lint & format check
-        entry: pnpm exec biome check
+      - id: pnpm-check
+        name: Full quality gate check
+        entry: pnpm run check
         language: system
-        pass_filenames: true
-        files: \.(ts|tsx|json)$
+        pass_filenames: false
+        always_run: true

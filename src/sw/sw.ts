@@ -142,16 +142,7 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
 
           // Fallback to cached response if offline.html not available
           const cachedResponse = await caches.match(request);
-          if (cachedResponse) {
-            if (isResponseExpired(cachedResponse)) {
-              caches
-                .open(STATIC_CACHE)
-                .then((cache) => cache.delete(request))
-                .catch(() => {});
-            } else {
-              return cachedResponse;
-            }
-          }
+          if (cachedResponse) return cachedResponse;
 
           // Ultimate fallback
           return new Response('You are offline', { headers: { 'Content-Type': 'text/plain' } });
@@ -208,17 +199,7 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
   event.respondWith(
     fetch(request).catch(async () => {
       const cached = await caches.match(request);
-      if (cached) {
-        if (isResponseExpired(cached)) {
-          caches
-            .open(STATIC_CACHE)
-            .then((cache) => cache.delete(request))
-            .catch(() => {});
-        } else {
-          return cached;
-        }
-      }
-      return new Response('Not found', { status: 404 });
+      return cached || new Response('Not found', { status: 404 });
     })
   );
 });
