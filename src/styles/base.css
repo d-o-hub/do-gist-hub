@@ -1,6 +1,7 @@
 /* App Mode Design System — Token-Driven, Mobile-First */
 
 /* ===== CSS Custom Property Aliases ===== */
+
 /* Bridge legacy --space-* and --text-* tokens to generated --spacing-* and --font-size-* */
 :root {
   --space-1: var(--spacing-1);
@@ -12,7 +13,6 @@
   --space-8: var(--spacing-8);
   --space-10: var(--spacing-10);
   --space-12: var(--spacing-12);
-
   --text-micro: var(--font-size-xs);
   --text-xs: var(--font-size-sm);
   --text-sm: var(--font-size-base);
@@ -23,12 +23,12 @@
   --text-display: var(--font-size-5xl);
 
   /* Shadow token ramp with hex fallbacks (OKLCH in @supports below) */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.12), 0 4px 6px rgba(0, 0, 0, 0.08);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.14), 0 8px 10px rgba(0, 0, 0, 0.1);
-  --shadow-2xl: 0 30px 40px rgba(0, 0, 0, 0.16);
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 6%);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 8%), 0 1px 2px rgb(0 0 0 / 4%);
+  --shadow-md: 0 4px 6px rgb(0 0 0 / 10%), 0 2px 4px rgb(0 0 0 / 6%);
+  --shadow-lg: 0 10px 15px rgb(0 0 0 / 12%), 0 4px 6px rgb(0 0 0 / 8%);
+  --shadow-xl: 0 20px 25px rgb(0 0 0 / 14%), 0 8px 10px rgb(0 0 0 / 10%);
+  --shadow-2xl: 0 30px 40px rgb(0 0 0 / 16%);
 
   /* Container query breakpoints (reference tokens — @container size queries
      cannot use var() per CSS spec; these document the magic numbers below) */
@@ -37,9 +37,7 @@
   --cq-lg: 600px;
   --cq-xl: 700px;
   --cq-2xl: 800px;
-
   --radius-chip: var(--radius-full);
-
   --motion-easing: var(--motion-easing-smooth);
 
   /* ============================================================
@@ -56,31 +54,32 @@
 
 @supports (color: oklch(0 0 0)) {
   :root {
-    --accent: oklch(0.62 var(--accent-c) var(--accent-h));
-    --accent-soft: oklch(0.82 calc(var(--accent-c) * 0.55) var(--accent-h));
-    --accent-strong: oklch(0.42 var(--accent-c) var(--accent-h));
+    --accent: oklch(62% var(--accent-c) var(--accent-h));
+    --accent-soft: oklch(82% calc(var(--accent-c) * 0.55) var(--accent-h));
+    --accent-strong: oklch(42% var(--accent-c) var(--accent-h));
+
     /* Mix-based surface tints — single source of truth */
     --accent-tint-12: color-mix(in oklch, var(--accent) 12%, transparent);
     --accent-tint-24: color-mix(in oklch, var(--accent) 24%, transparent);
 
     /* OKLCH shadow ramp (Plan 039 Phase B) — no hex, themable via --accent-h */
-    --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.06);
-    --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);
-    --shadow-md: 0 4px 6px oklch(0 0 0 / 0.1), 0 2px 4px oklch(0 0 0 / 0.06);
-    --shadow-lg: 0 10px 15px oklch(0 0 0 / 0.12), 0 4px 6px oklch(0 0 0 / 0.08);
-    --shadow-xl: 0 20px 25px oklch(0 0 0 / 0.14), 0 8px 10px oklch(0 0 0 / 0.1);
-    --shadow-2xl: 0 30px 40px oklch(0 0 0 / 0.16);
+    --shadow-xs: 0 1px 2px oklch(0% 0 0deg / 6%);
+    --shadow-sm: 0 1px 3px oklch(0% 0 0deg / 8%), 0 1px 2px oklch(0% 0 0deg / 4%);
+    --shadow-md: 0 4px 6px oklch(0% 0 0deg / 10%), 0 2px 4px oklch(0% 0 0deg / 6%);
+    --shadow-lg: 0 10px 15px oklch(0% 0 0deg / 12%), 0 4px 6px oklch(0% 0 0deg / 8%);
+    --shadow-xl: 0 20px 25px oklch(0% 0 0deg / 14%), 0 8px 10px oklch(0% 0 0deg / 10%);
+    --shadow-2xl: 0 30px 40px oklch(0% 0 0deg / 16%);
   }
 }
 
 /* Dark-mode shadow overrides — lighter shadows on dark surfaces */
 [data-theme="light"] {
-  --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.04);
-  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.03);
-  --shadow-md: 0 4px 6px oklch(0 0 0 / 0.08), 0 2px 4px oklch(0 0 0 / 0.04);
-  --shadow-lg: 0 10px 15px oklch(0 0 0 / 0.08), 0 4px 6px oklch(0 0 0 / 0.04);
-  --shadow-xl: 0 20px 25px oklch(0 0 0 / 0.1), 0 8px 10px oklch(0 0 0 / 0.06);
-  --shadow-2xl: 0 30px 40px oklch(0 0 0 / 0.12);
+  --shadow-xs: 0 1px 2px oklch(0% 0 0deg / 4%);
+  --shadow-sm: 0 1px 3px oklch(0% 0 0deg / 6%), 0 1px 2px oklch(0% 0 0deg / 3%);
+  --shadow-md: 0 4px 6px oklch(0% 0 0deg / 8%), 0 2px 4px oklch(0% 0 0deg / 4%);
+  --shadow-lg: 0 10px 15px oklch(0% 0 0deg / 8%), 0 4px 6px oklch(0% 0 0deg / 4%);
+  --shadow-xl: 0 20px 25px oklch(0% 0 0deg / 10%), 0 8px 10px oklch(0% 0 0deg / 6%);
+  --shadow-2xl: 0 30px 40px oklch(0% 0 0deg / 12%);
 }
 
 /* Color-scheme-aware accent color for native form controls (Plan 039 Phase C) */
@@ -150,7 +149,7 @@ body {
    grid-column/grid-row, preventing selector collisions across layouts. */
 
 /* Phone (390px): slightly larger typography, relaxed spacing, 2-column cards */
-@media (min-width: 390px) {
+@media (width >= 390px) {
   .app-main {
     padding: var(--space-5);
     padding-bottom: calc(
@@ -175,7 +174,7 @@ body {
 }
 
 /* Phone large (480px): comfortable padding, wider cards, larger buttons */
-@media (min-width: 480px) {
+@media (width >= 480px) {
   .btn {
     padding: var(--space-3) var(--space-6);
   }
@@ -190,16 +189,15 @@ body {
 }
 
 /* Tablet and up: remove bottom nav padding, add side padding */
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .app-main {
     padding: var(--space-6);
-    padding-bottom: var(--space-6);
     max-width: 100%;
   }
 }
 
 /* Desktop: larger padding and max-width */
-@media (min-width: 1024px) {
+@media (width >= 1024px) {
   .app-main {
     padding: var(--space-8);
     max-width: 1200px;
@@ -207,7 +205,7 @@ body {
 }
 
 /* Desktop (1280px): larger headings, more grid columns */
-@media (min-width: 1280px) {
+@media (width >= 1280px) {
   .detail-title {
     font-size: clamp(2.8rem, 1.8rem + 3vw, 4.8rem);
   }
@@ -223,7 +221,7 @@ body {
 }
 
 /* Large desktop: spacious layout */
-@media (min-width: 1536px) {
+@media (width >= 1536px) {
   .app-main {
     padding: var(--space-10);
     max-width: 1440px;
@@ -533,7 +531,6 @@ body {
   white-space: pre-wrap;
   line-height: 1.4;
   max-height: var(--spacing-20);
-  -webkit-mask-image: linear-gradient(to bottom, var(--color-black) 60%, transparent 100%);
   mask-image: linear-gradient(to bottom, var(--color-black) 60%, transparent 100%);
 }
 
@@ -720,6 +717,7 @@ body {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.4;
     transform: scale(1.5);
@@ -731,6 +729,7 @@ body {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -1116,6 +1115,7 @@ textarea.form-textarea {
 }
 
 /* ===== Layout Utilities (Token-Driven) ===== */
+
 /* Replaces hardcoded inline styles across route components */
 .flex-row {
   display: flex;
@@ -1233,13 +1233,13 @@ textarea.form-textarea {
       grid-column: span 1;
     }
 
-    @media (min-width: 768px) {
+    @media (width >= 768px) {
       .gist-card.featured {
         grid-column: span 2;
       }
     }
 
-    @media (min-width: 1280px) {
+    @media (width >= 1280px) {
       .gist-card.featured {
         grid-column: span 2;
         grid-row: span 2;
@@ -1271,6 +1271,7 @@ textarea.form-textarea {
   from {
     transform: scaleX(0);
   }
+
   to {
     transform: scaleX(1);
   }
@@ -1314,6 +1315,7 @@ textarea.form-textarea {
     opacity: 0;
     transform: translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

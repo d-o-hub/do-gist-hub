@@ -1,0 +1,10 @@
+{
+  "packages": {
+    ".": {
+      "component": "node"
+    }
+  },
+  "plugins": [
+    "release-please"
+  ]
+}

@@ -1,9 +1,8 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
 
 permissions:
   contents: write
@@ -96,15 +95,10 @@ jobs:
           ANDROID_KEY_ALIAS="$ANDROID_KEY_ALIAS" \
           ANDROID_KEY_PASSWORD="$ANDROID_KEY_PASSWORD" \
           ./gradlew assembleRelease --stacktrace
-      - name: Create Release
+      - name: Upload Release Assets
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # pinned from v3
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ steps.version.outputs.VERSION }}
-          body: ${{ steps.changelog.outputs.changelog }}
-          draft: false
-          prerelease: false
-          fail_on_unmatched_files: false
+          tag_name: ${{ github.event.release.tag_name }}
           files: |
             web-app.zip
             bom.json

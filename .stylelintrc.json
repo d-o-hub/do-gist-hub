@@ -1,5 +1,5 @@
 {
-  "extends": "stylelint-config-recommended",
+  "extends": "stylelint-config-standard",
   "ignoreFiles": [
     "dist/**",
     "node_modules/**",
@@ -35,7 +35,8 @@
     "no-descending-specificity": null,
     "no-duplicate-selectors": null,
     "media-feature-name-value-no-unknown": null,
-    "property-no-deprecated": null
+    "property-no-deprecated": null,
+    "declaration-block-no-duplicate-properties": null
   },
   "overrides": [
     {

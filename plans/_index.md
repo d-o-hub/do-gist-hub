@@ -108,11 +108,9 @@ These numbered plans document the project's foundation and are considered stable
 | `037-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | TRIZ contradiction audit, skill registry docs, AGENTS.md skill directory refs  |
 | `041-goap-release-signing-and-plan040-completion.md`  | GOAP     | Complete ✅ | Close Plan 040 gaps + wire release APK signing into CI       |
 | `042-goap-plans-completion-sprint.md`                  | GOAP     | Complete ✅   | Close P0 plan-audit gaps: rebuild stale design-tokens.css, fix plan status headers, promote ADR-015, add SW cache TTL, wire LH CI |
-| `043-progress-update-2026-05-17-plan042-completion.md` | Progress | Complete ✅   | Plan 042 execution: updated statuses, regenerated CSS, SW TTL added, LH CI wired |
-| `044-progress-update-2026-05-17.md`                    | Progress | Complete ✅   | UI/UX token refinement, eliminated hardcoded colors, Android release investigation |
 
 ## Quick reference: ADR numbers in use
 
 `adr-001` through `adr-029` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-030`
-**Next available plan number**: `045`
+**Next available plan number**: `043`
