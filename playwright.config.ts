@@ -1,9 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const baseURL = process.env.BASE_URL ?? 'http://localhost:3000';
-const useLocalWebServer =
-  !process.env.BASE_URL || /^https?:\/\/localhost(?::\d+)?$/.test(baseURL);
-
 /**
  * Playwright Configuration for d.o. Gist Hub (2026 Best Practices)
  * Reference: https://playwright.dev/docs/best-practices
@@ -48,7 +44,7 @@ export default defineConfig({
 
   // Global test settings
   use: {
-    baseURL,
+    baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
@@ -131,12 +127,10 @@ export default defineConfig({
   ],
 
   // Web server for dev mode
-  webServer: useLocalWebServer
-    ? {
-        command: 'pnpm run dev',
-        url: 'http://localhost:3000',
-        reuseExistingServer: !process.env.CI,
-        timeout: 300 * 1000,
-      }
-    : undefined,
+  webServer: {
+    command: 'pnpm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+    timeout: 300 * 1000,
+  },
 });

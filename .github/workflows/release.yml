@@ -1,8 +1,9 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
@@ -67,11 +68,6 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       - name: Build Web App
         run: pnpm run build
-      - name: Generate SBOM
-        uses: CycloneDX/gh-pnpm-generate-sbom@d0943969966158a2d3989fc1529124be3f8730b0  # pinned from v2
-        with:
-          project-path: ./
-          out-file: bom.json
       - name: Build Web ZIP
         run: zip -r web-app.zip dist/
       - name: Build Android Debug APK
@@ -95,12 +91,16 @@ jobs:
           ANDROID_KEY_ALIAS="$ANDROID_KEY_ALIAS" \
           ANDROID_KEY_PASSWORD="$ANDROID_KEY_PASSWORD" \
           ./gradlew assembleRelease --stacktrace
-      - name: Upload Release Assets
+      - name: Create Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # pinned from v3
         with:
-          tag_name: ${{ github.event.release.tag_name }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ steps.version.outputs.VERSION }}
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
           files: |
             web-app.zip
-            bom.json
             android/app/build/outputs/apk/debug/app-debug.apk
             android/app/build/outputs/apk/release/app-release.apk

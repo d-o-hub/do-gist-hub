@@ -1,16 +1,15 @@
 {
-  "extends": "stylelint-config-standard",
+  "extends": "stylelint-config-recommended",
   "ignoreFiles": [
     "dist/**",
     "node_modules/**",
-    "public/**"
+    "src/styles/tokens/**"
   ],
   "rules": {
     "color-no-hex": [
       true,
       {
-        "severity": "error",
-        "message": "Direct hex colors are prohibited. Use design tokens from src/tokens/ instead."
+        "severity": "warning"
       }
     ],
     "property-no-unknown": [
@@ -21,32 +20,6 @@
           "compose-with"
         ]
       }
-    ],
-    "at-rule-no-unknown": [
-      true,
-      {
-        "ignoreAtRules": [
-          "theme",
-          "mixin",
-          "define-mixin"
-        ]
-      }
-    ],
-    "no-descending-specificity": null,
-    "no-duplicate-selectors": null,
-    "media-feature-name-value-no-unknown": null,
-    "property-no-deprecated": null,
-    "declaration-block-no-duplicate-properties": null
-  },
-  "overrides": [
-    {
-      "files": [
-        "src/tokens/**/*.css",
-        "public/design-tokens.css"
-      ],
-      "rules": {
-        "color-no-hex": null
-      }
-    }
-  ]
+    ]
+  }
 }

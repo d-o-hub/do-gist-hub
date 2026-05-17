@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Offline SW Install', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('http://localhost:3000');
     await page.waitForLoadState('networkidle');
   });
 
@@ -52,9 +52,6 @@ test.describe('Offline SW Install', () => {
 
     test.skip(!isSwActive, 'Service worker not active — skipping offline test');
 
-    // Give SW more time to cache assets
-    await page.waitForTimeout(2000);
-
     // Go offline
     await context.setOffline(true);
     await page.waitForTimeout(1000);
@@ -62,11 +59,10 @@ test.describe('Offline SW Install', () => {
     // Reload page
     await page.reload();
     await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
 
     // App should still render (served from cache)
-    // Wait for the app-shell specifically since it might take a moment to bootstrap from cache
-    await expect(page.locator('.app-shell').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.app-shell')).toBeVisible();
 
     // Verify we're offline
     const isOnline = await page.evaluate(() => navigator.onLine);

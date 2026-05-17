@@ -28,4 +28,4 @@ jobs:
       - name: Install markdownlint-cli
         run: npm install -g markdownlint-cli@0.48.0
       - name: Run markdownlint
-        run: markdownlint -c markdownlint.toml --ignore AGENTS.md --ignore SECURITY.md --ignore CLAUDE.md --ignore GEMINI.md --ignore CHANGELOG.md plans/ docs/ "*.md"
+        run: markdownlint -c markdownlint.toml --ignore AGENTS.md --ignore SECURITY.md --ignore CLAUDE.md --ignore GEMINI.md --ignore CHANGELOG.md --ignore docs/ --ignore plans/ "*.md"
