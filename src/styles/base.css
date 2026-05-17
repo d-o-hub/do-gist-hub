@@ -49,9 +49,9 @@
      ============================================================ */
   --accent-h: 220; /* default brand blue */
   --accent-c: 0.18; /* chroma */
-  --accent: #3b82f6;
-  --accent-soft: #93c5fd;
-  --accent-strong: #1d4ed8;
+  --accent: var(--color-blue-500);
+  --accent-soft: var(--color-blue-300);
+  --accent-strong: var(--color-blue-700);
 }
 
 @supports (color: oklch(0 0 0)) {
