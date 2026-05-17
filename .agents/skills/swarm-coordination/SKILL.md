@@ -145,6 +145,8 @@ plans/
 
     Agent 1 (general) ──> Research findings ──> Agent 2 (general) ──> Implementation
 
+    **Handoff Schema**: All sequential handoffs must use the structured JSON format defined in `agents-docs/handoff-schema.json`.
+
     ---
 
     ## Implementation Details

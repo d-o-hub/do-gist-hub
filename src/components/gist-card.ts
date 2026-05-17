@@ -43,7 +43,7 @@ function renderSyncBadge(
     return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #ef4444;">ERROR</div>';
   }
   if (syncStatus === 'synced' && lastSyncedAt && Date.parse(updatedAt) > Date.parse(lastSyncedAt)) {
-    return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #f97316;">STALE</div>';
+    return `<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #f97316;" title="Local changes not yet pushed to GitHub">UPDATED ${formatRelativeTime(updatedAt)} — SYNCED ${formatRelativeTime(lastSyncedAt)}</div>`;
   }
   return '';
 }

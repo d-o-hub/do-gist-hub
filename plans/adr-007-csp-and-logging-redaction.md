@@ -25,7 +25,15 @@ script-src 'self'
 style-src 'self' 'unsafe-inline'
 img-src 'self' data: https:
 connect-src 'self' https://api.github.com
+report-uri /csp-report
 ```
+
+### CSP Violation Reporting (Plan 038 F2)
+The application implements a stub endpoint for CSP violation reporting handled by the Service Worker:
+- **Endpoint**: `/csp-report`
+- **Method**: `POST`
+- **Redaction**: The Service Worker intercepts these requests, redacts the `document-uri` and `blocked-uri` to the first 40 characters to prevent leaking sensitive tokens that might be in the URL, and logs the violation to the console as a warning.
+- **Response**: Always returns `204 No Content`.
 
 ## Tradeoffs
 

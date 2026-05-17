@@ -1,14 +1,12 @@
 {
   "$schema": "node_modules/@stryker-mutator/core/schema/stryker-schema.json",
-  "comment": "Implements plan 038 item D6 — mutation testing",
+  "plan038_comment": "Implements plan 038 item D6 — mutation testing",
   "mutate": [
     "src/services/sync/**/*.ts",
     "src/services/security/**/*.ts"
   ],
   "testRunner": "vitest",
-  "vitest": {
-    "configFile": "vitest.config.ts"
-  },
+  "plugins": ["@stryker-mutator/vitest-runner"],
   "concurrency": 4,
   "timeoutMS": 30000,
   "thresholds": {
@@ -20,11 +18,18 @@
     "progress"
   ],
   "htmlReporter": {
-    "baseDir": "reports/mutation"
+    "fileName": "reports/mutation/index.html"
   },
-  "clearTextReporter": {
-    "allowColor": true
-  },
-  "tsconfig": "tsconfig.json",
-  "tempDir": ".stryker-tmp"
+  "cleanTempDir": "always",
+  "ignorePatterns": [
+    ".claude/",
+    ".gemini/",
+    ".qwen/",
+    ".cursor/",
+    ".agents/skills/skills",
+    "android/",
+    "plans/archive/",
+    "reports/",
+    ".stryker-tmp/"
+  ]
 }

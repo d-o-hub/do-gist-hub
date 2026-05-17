@@ -53,6 +53,7 @@ htmlcov/
 *.temp
 *.bak
 *.backup
+.stryker-tmp/
 
 # Compressed files
 *.zip

@@ -54,12 +54,18 @@
     "overrides": {
       "@xmldom/xmldom": "^0.8.13"
     },
-    "onlyBuiltDependencies": ["canvas", "esbuild"]
+    "onlyBuiltDependencies": [
+      "canvas",
+      "esbuild"
+    ]
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
     "@commitlint/config-conventional": "^21.0.1",
     "@playwright/test": "^1.60.0",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/typescript-checker": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
     "@types/node": "^25.7.0",
     "@vitest/coverage-v8": "^4.1.6",
     "canvas": "^3.0.1",
