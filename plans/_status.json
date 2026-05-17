@@ -9,7 +9,8 @@
     "039-phase-a": "2026-05-16",
     "039-phase-b": "2026-05-16",
     "040-phase-d": "2026-05-17",
-    "041-release-signing": "2026-05-17"
+    "041-release-signing": "2026-05-17",
+    "042-plans-completion": "2026-05-17"
   },
   "description": "Machine-readable plan registry for agents and scripts. Mirrors plans/_index.md.",
   "plans": {
@@ -225,8 +226,13 @@
     },
     "041-goap-release-signing-and-plan040-completion.md": {
       "type": "goap",
-      "status": "active",
+      "status": "complete",
       "summary": "Close Plan 040 gaps (@scope dedup, OKLCH shadow tokens) + wire release APK signing into CI"
+    },
+    "042-goap-plans-completion-sprint.md": {
+      "type": "goap",
+      "status": "active",
+      "summary": "Close P0 plan-audit gaps: rebuild stale design-tokens.css, fix plan status headers, promote ADR-015, add SW cache TTL, wire LH CI"
     }
   },
   "archive": [
@@ -260,7 +266,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-030",
-    "plan": "041",
-    "goap": "031"
+    "plan": "042",
+    "goap": "032"
   }
 }

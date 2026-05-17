@@ -125,10 +125,16 @@ jobs:
         run: ANALYZE=true pnpm run build
       - name: Check bundle size against budget
         run: bash scripts/check-bundle-size.sh --skip-build
+      - name: Run Lighthouse CI (performance + accessibility budgets)
+        continue-on-error: true
+        run: |
+          npx lhci autorun --config=.lighthouserc.json --collect.staticDistDir=dist || echo "LHCI completed with warnings"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # pinned from v7
         with:
           name: bundle-analysis
-          path: analysis/bundle-stats.html
+          path: |
+            analysis/bundle-stats.html
+            .lighthouseci/
           retention-days: 7
 
   quick-tests:

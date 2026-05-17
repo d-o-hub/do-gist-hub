@@ -245,8 +245,8 @@
   --skeleton-shimmer-mid: rgba(255, 255, 255, 0.08);
 
   /* ===== Component Shadow Tokens ===== */
-  --shadow-command-palette: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  --shadow-glass-hover: 0 0 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-command-palette: 0 24px 48px oklch(0 0 0 / 0.5), 0 0 0 1px oklch(1 0 0 / 0.05);
+  --shadow-glass-hover: 0 0 60px oklch(0 0 0 / 0.6), 0 0 0 1px oklch(1 0 0 / 0.1);
 }
 
 /* ===== Light Theme Override ===== */
@@ -295,6 +295,10 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Light mode component shadows (OKLCH fallbacks for light bg) */
+  --shadow-command-palette: 0 24px 48px oklch(0 0 0 / 0.15), 0 0 0 1px oklch(0 0 0 / 0.06);
+  --shadow-glass-hover: 0 0 60px oklch(0 0 0 / 0.15), 0 0 0 1px oklch(0 0 0 / 0.08);
 
   /* Light mode glass effects */
   --ui-backdrop-bg: rgba(0, 0, 0, 0.5);
