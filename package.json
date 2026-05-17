@@ -9,9 +9,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "lint": "biome check src && pnpm run lint:css",
-    "lint:css": "stylelint \"src/**/*.css\"",
-    "lint:fix": "biome check --write src && stylelint \"src/**/*.css\" --fix",
+    "lint": "biome check src",
+    "lint:fix": "biome check --write src",
     "format": "biome format --write src",
     "format:check": "biome format src",
     "check": "pnpm run typecheck && pnpm run lint && pnpm run format:check",
@@ -56,10 +55,7 @@
     "overrides": {
       "@xmldom/xmldom": "^0.8.13"
     },
-    "onlyBuiltDependencies": [
-      "canvas",
-      "esbuild"
-    ]
+    "onlyBuiltDependencies": ["canvas", "esbuild"]
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
@@ -74,9 +70,6 @@
     "jsdom": "^29.1.1",
     "lint-staged": "^17.0.4",
     "rollup-plugin-visualizer": "^7.0.1",
-    "stylelint": "^17.11.1",
-    "stylelint-config-recommended": "^18.0.0",
-    "stylelint-config-standard": "^40.0.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.12",
