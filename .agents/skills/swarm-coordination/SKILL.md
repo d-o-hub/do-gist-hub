@@ -145,6 +145,8 @@ plans/
 
     Agent 1 (general) ──> Research findings ──> Agent 2 (general) ──> Implementation
 
+    All handoffs must adhere to the structured [Swarm Handoff Schema](../../../agents-docs/handoff-schema.json).
+
     ---
 
     ## Implementation Details

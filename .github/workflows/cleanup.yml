@@ -34,3 +34,29 @@ jobs:
             fi
           done
           echo "Review the list above; some scripts may be used indirectly." >> "$GITHUB_STEP_SUMMARY"
+
+  archive-stale-plans:
+    name: Archive Stale Plans (E7)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # pinned from v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run stale plan archiver
+        run: |
+          chmod +x scripts/archive-stale-plans.sh
+          ./scripts/archive-stale-plans.sh
+      - name: Commit and push changes
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git add plans/
+            git commit -m "chore: archive stale plans [skip ci]"
+            git push
+          else
+            echo "No changes to commit"
+          fi

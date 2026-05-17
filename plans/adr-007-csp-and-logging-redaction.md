@@ -44,6 +44,13 @@ connect-src 'self' https://api.github.com
 Must test CSP thoroughly before deployment.
 Must audit all logging statements for sensitive data.
 
+### CSP Violation Reporting (Plan 038 F2)
+
+The application implements a `/csp-report` endpoint handled by the Service Worker (`src/sw/sw.ts`).
+- **Endpoint**: `POST /csp-report`
+- **Redaction**: `document-uri` and `blocked-uri` are truncated to the first 40 characters to prevent sensitive token leakage in logs.
+- **Behavior**: The Service Worker logs the redacted report as a `console.warn` and returns a `204 No Content` response.
+
 ## Rollback Triggers
 
 If CSP blocks critical functionality or redaction impacts debugging significantly.
