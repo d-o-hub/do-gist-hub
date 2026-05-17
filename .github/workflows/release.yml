@@ -37,6 +37,35 @@ jobs:
       - name: Read VERSION
         id: version
         run: echo "VERSION=$(< VERSION)" >> "$GITHUB_OUTPUT"
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            RANGE="HEAD"
+          else
+            RANGE="$PREV_TAG..HEAD"
+          fi
+          {
+            echo 'changelog<<EOFCHANGELOG'
+            echo "## What's Changed"
+            echo ""
+            echo '### Features'
+            git log $RANGE --oneline --grep='^feat' --format='- %s' 2>/dev/null || true
+            echo ""
+            echo '### Fixes'
+            git log $RANGE --oneline --grep='^fix' --format='- %s' 2>/dev/null || true
+            echo ""
+            echo '### Chores & Maintenance'
+            git log $RANGE --oneline --grep='^chore' --format='- %s' 2>/dev/null || true
+            echo ""
+            echo '### Documentation'
+            git log $RANGE --oneline --grep='^docs' --format='- %s' 2>/dev/null || true
+            echo ""
+            echo '### Other'
+            git log $RANGE --oneline --grep -v '^feat\|^fix\|^chore\|^docs' --format='- %s' 2>/dev/null || true
+            echo 'EOFCHANGELOG'
+          } >> "$GITHUB_OUTPUT"
       - name: Build Web App
         run: pnpm run build
       - name: Build Web ZIP
@@ -48,14 +77,13 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
       - name: Create Release
-        id: create_release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # pinned from v3
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ steps.version.outputs.VERSION }}
+          body: ${{ steps.changelog.outputs.changelog }}
           draft: false
           prerelease: false
-          generate_release_notes: true
           files: |
             web-app.zip
             android/app/build/outputs/apk/debug/app-debug.apk
