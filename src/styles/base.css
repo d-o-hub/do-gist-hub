@@ -144,16 +144,10 @@ body {
   grid-auto-flow: dense;
 }
 
-/* Featured card (starred) - spans 2 columns on larger screens */
-.gist-card.featured {
-  @media (min-width: 768px) {
-    grid-column: span 2;
-  }
-  @media (min-width: 1280px) {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
-}
+/* Featured card (starred) — @scope block at EOF handles grid placement.
+   This block is intentionally empty — the @scope (.gist-grid) block at
+   the end of this file is the single source of truth for featured card
+   grid-column/grid-row, preventing selector collisions across layouts. */
 
 /* Phone (390px): slightly larger typography, relaxed spacing, 2-column cards */
 @media (min-width: 390px) {
@@ -1230,7 +1224,9 @@ textarea.form-textarea {
   grid-auto-flow: dense;
 }
 
-/* @scope eliminates selector bleed from generic child classes */
+/* @scope eliminates selector bleed from generic child classes.
+   Single source of truth for .gist-card.featured grid placement — the
+   unscoped duplicate was removed to prevent override collisions. */
 @supports (container-type: inline-size) {
   @scope (.gist-grid) {
     .gist-card.featured {

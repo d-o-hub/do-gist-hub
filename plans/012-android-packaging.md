@@ -30,9 +30,9 @@ cd android && ./gradlew assembleDebug  # Build debug APK
 - [x] Splash screen configured
 - [x] Service Worker generates at build time (`src/sw/sw.ts` → `dist/sw.js`)
 - [x] App config derived from single source (`src/config/app.config.ts`)
-- [ ] Release signing configuration (for production APK/AAB)
+- [x] Release signing configuration (for production APK/AAB) — ADR-029
 - [ ] Google Play Store metadata preparation
-- [ ] ProGuard/R8 obfuscation (optional, recommend for production)
+- [x] ProGuard/R8 obfuscation — enabled in release buildType
 
 ## Known Limitations
 
@@ -41,4 +41,4 @@ cd android && ./gradlew assembleDebug  # Build debug APK
 
 ---
 
-_Created: 2026. Last Updated: 2026-05-07. Status: Production ready (debug builds), release signing pending for store deployment._
+_Created: 2026. Last Updated: 2026-05-17. Status: Release signing configured via CI (ADR-029); signed release APK published to GitHub Releases._

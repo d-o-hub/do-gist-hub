@@ -8,7 +8,8 @@
     "038-sprint4": "2026-05-16",
     "039-phase-a": "2026-05-16",
     "039-phase-b": "2026-05-16",
-    "040-phase-d": "2026-05-17"
+    "040-phase-d": "2026-05-17",
+    "041-release-signing": "2026-05-17"
   },
   "description": "Machine-readable plan registry for agents and scripts. Mirrors plans/_index.md.",
   "plans": {
@@ -216,6 +217,16 @@
       "type": "adr",
       "status": "accepted",
       "summary": "Keep fine-grained PAT as default; add opt-in OAuth Device Flow via thin stateless Cloudflare Worker; defer GitHub App installation tokens"
+    },
+    "adr-029-android-release-signing.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Android release signing via CI — keystore from GitHub secrets, versionCode from GITHUB_RUN_NUMBER, versionName from VERSION file"
+    },
+    "041-goap-release-signing-and-plan040-completion.md": {
+      "type": "goap",
+      "status": "active",
+      "summary": "Close Plan 040 gaps (@scope dedup, OKLCH shadow tokens) + wire release APK signing into CI"
     }
   },
   "archive": [
@@ -248,8 +259,8 @@
     "016-pwa-offline-page.md"
   ],
   "nextAvailable": {
-    "adr": "adr-029",
-    "plan": "040",
-    "goap": "030"
+    "adr": "adr-030",
+    "plan": "041",
+    "goap": "031"
   }
 }

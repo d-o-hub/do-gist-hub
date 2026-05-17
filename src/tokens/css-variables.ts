@@ -269,8 +269,8 @@ export function generateCSSVariables(): string {
   --skeleton-shimmer-mid: rgba(255, 255, 255, 0.08);
 
   /* ===== Component Shadow Tokens ===== */
-  --shadow-command-palette: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  --shadow-glass-hover: 0 0 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-command-palette: 0 24px 48px oklch(0 0 0 / 0.5), 0 0 0 1px oklch(1 0 0 / 0.05);
+  --shadow-glass-hover: 0 0 60px oklch(0 0 0 / 0.6), 0 0 0 1px oklch(1 0 0 / 0.1);
 }
 
 /* ===== Light Theme Override ===== */
@@ -319,6 +319,10 @@ export function generateCSSVariables(): string {
   --shadow-sm: ${shadowTokens.sm};
   --shadow-md: ${shadowTokens.md};
   --shadow-lg: ${shadowTokens.lg};
+
+  /* Light mode component shadows (OKLCH fallbacks for light bg) */
+  --shadow-command-palette: 0 24px 48px oklch(0 0 0 / 0.15), 0 0 0 1px oklch(0 0 0 / 0.06);
+  --shadow-glass-hover: 0 0 60px oklch(0 0 0 / 0.15), 0 0 0 1px oklch(0 0 0 / 0.08);
 
   /* Light mode glass effects */
   --ui-backdrop-bg: ${uiTokens.backdrop.background};
