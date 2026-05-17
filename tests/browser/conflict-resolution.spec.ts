@@ -12,79 +12,85 @@ test.describe('Conflict Resolution UI Walkthrough', () => {
         dbRequest.onerror = () => reject(new Error('Failed to open DB'));
         dbRequest.onblocked = () => reject(new Error('DB blocked'));
         dbRequest.onsuccess = (event: Event) => {
-          const db = (event.target as IDBOpenDBRequest).result;
+          try {
+            const db = (event.target as IDBOpenDBRequest).result;
 
-          const gistTx = db.transaction('gists', 'readwrite');
-          gistTx.objectStore('gists').put({
-            id: 'conflict-test-1',
-            description: 'Conflicted Gist',
-            files: {
-              'test.js': { filename: 'test.js', content: 'local content', size: 14 },
-            },
-            htmlUrl: 'https://gist.github.com/test/conflict-test-1',
-            gitPullUrl: 'https://gist.github.com/test/conflict-test-1.git',
-            gitPushUrl: 'https://gist.github.com/test/conflict-test-1.git',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            starred: false,
-            public: true,
-            syncStatus: 'conflict',
-            lastSyncedAt: new Date().toISOString(),
-          });
-
-          const metaTx = db.transaction('metadata', 'readwrite');
-          metaTx.objectStore('metadata').put({
-            key: 'sync-conflicts',
-            value: [
-              {
-                gistId: 'conflict-test-1',
-                localVersion: {
-                  id: 'conflict-test-1',
-                  description: 'Conflicted Gist',
-                  files: {
-                    'test.js': { filename: 'test.js', content: 'local content', size: 14 },
-                  },
-                  htmlUrl: 'https://gist.github.com/test/conflict-test-1',
-                  gitPullUrl: 'https://gist.github.com/test/conflict-test-1.git',
-                  gitPushUrl: 'https://gist.github.com/test/conflict-test-1.git',
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                  starred: false,
-                  public: true,
-                  syncStatus: 'conflict',
-                },
-                remoteVersion: {
-                  id: 'conflict-test-1',
-                  description: 'Conflicted Gist (Remote)',
-                  files: {
-                    'test.js': { filename: 'test.js', content: 'remote content', size: 15 },
-                  },
-                  html_url: 'https://gist.github.com/test/conflict-test-1',
-                  git_pull_url: 'https://gist.github.com/test/conflict-test-1.git',
-                  git_push_url: 'https://gist.github.com/test/conflict-test-1.git',
-                  created_at: new Date().toISOString(),
-                  updated_at: new Date().toISOString(),
-                  public: true,
-                  comments: 0,
-                  comments_url: '',
-                  user: null,
-                },
-                detectedAt: new Date().toISOString(),
-                conflictingFields: ['description', 'content'],
+            const gistTx = db.transaction('gists', 'readwrite');
+            gistTx.objectStore('gists').put({
+              id: 'conflict-test-1',
+              description: 'Conflicted Gist',
+              files: {
+                'test.js': { filename: 'test.js', content: 'local content', size: 14 },
               },
-            ],
-            updatedAt: Date.now(),
-          });
+              htmlUrl: 'https://gist.github.com/test/conflict-test-1',
+              gitPullUrl: 'https://gist.github.com/test/conflict-test-1.git',
+              gitPushUrl: 'https://gist.github.com/test/conflict-test-1.git',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              starred: false,
+              public: true,
+              syncStatus: 'conflict',
+              lastSyncedAt: new Date().toISOString(),
+            });
 
-          let completed = 0;
-          const checkDone = () => {
-            completed++;
-            if (completed === 2) resolve();
-          };
-          gistTx.onerror = () => reject(new Error('Gist transaction failed'));
-          gistTx.oncomplete = checkDone;
-          metaTx.onerror = () => reject(new Error('Metadata transaction failed'));
-          metaTx.oncomplete = checkDone;
+            const metaTx = db.transaction('metadata', 'readwrite');
+            metaTx.objectStore('metadata').put({
+              key: 'sync-conflicts',
+              value: [
+                {
+                  gistId: 'conflict-test-1',
+                  localVersion: {
+                    id: 'conflict-test-1',
+                    description: 'Conflicted Gist',
+                    files: {
+                      'test.js': { filename: 'test.js', content: 'local content', size: 14 },
+                    },
+                    htmlUrl: 'https://gist.github.com/test/conflict-test-1',
+                    gitPullUrl: 'https://gist.github.com/test/conflict-test-1.git',
+                    gitPushUrl: 'https://gist.github.com/test/conflict-test-1.git',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    starred: false,
+                    public: true,
+                    syncStatus: 'conflict',
+                  },
+                  remoteVersion: {
+                    id: 'conflict-test-1',
+                    description: 'Conflicted Gist (Remote)',
+                    files: {
+                      'test.js': { filename: 'test.js', content: 'remote content', size: 15 },
+                    },
+                    html_url: 'https://gist.github.com/test/conflict-test-1',
+                    git_pull_url: 'https://gist.github.com/test/conflict-test-1.git',
+                    git_push_url: 'https://gist.github.com/test/conflict-test-1.git',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    public: true,
+                    comments: 0,
+                    comments_url: '',
+                    user: null,
+                  },
+                  detectedAt: new Date().toISOString(),
+                  conflictingFields: ['description', 'content'],
+                },
+              ],
+              updatedAt: Date.now(),
+            });
+
+            let completed = 0;
+            const checkDone = () => {
+              completed++;
+              if (completed === 2) resolve();
+            };
+            gistTx.onerror = () => reject(new Error('Gist transaction failed'));
+            gistTx.onabort = () => reject(new Error('Gist transaction aborted'));
+            gistTx.oncomplete = checkDone;
+            metaTx.onerror = () => reject(new Error('Metadata transaction failed'));
+            metaTx.onabort = () => reject(new Error('Metadata transaction aborted'));
+            metaTx.oncomplete = checkDone;
+          } catch (err) {
+            reject(err instanceof Error ? err : new Error(String(err)));
+          }
         };
       });
     });
