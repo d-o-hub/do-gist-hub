@@ -44,26 +44,26 @@ jobs:
           if [ -z "$PREV_TAG" ]; then
             RANGE="HEAD"
           else
-            RANGE="$PREV_TAG..HEAD"
+            RANGE="${PREV_TAG}..HEAD"
           fi
           {
             echo 'changelog<<EOFCHANGELOG'
             echo "## What's Changed"
             echo ""
             echo '### Features'
-            git log $RANGE --oneline --grep='^feat' --format='- %s' 2>/dev/null || true
+            git log "$RANGE" --oneline --grep='^feat' --format='- %s' 2>/dev/null || true
             echo ""
             echo '### Fixes'
-            git log $RANGE --oneline --grep='^fix' --format='- %s' 2>/dev/null || true
+            git log "$RANGE" --oneline --grep='^fix' --format='- %s' 2>/dev/null || true
             echo ""
             echo '### Chores & Maintenance'
-            git log $RANGE --oneline --grep='^chore' --format='- %s' 2>/dev/null || true
+            git log "$RANGE" --oneline --grep='^chore' --format='- %s' 2>/dev/null || true
             echo ""
             echo '### Documentation'
-            git log $RANGE --oneline --grep='^docs' --format='- %s' 2>/dev/null || true
+            git log "$RANGE" --oneline --grep='^docs' --format='- %s' 2>/dev/null || true
             echo ""
             echo '### Other'
-            git log $RANGE --oneline --grep -v '^feat\|^fix\|^chore\|^docs' --format='- %s' 2>/dev/null || true
+            git log "$RANGE" --oneline --grep -v '^feat\|^fix\|^chore\|^docs' --format='- %s' 2>/dev/null || true
             echo 'EOFCHANGELOG'
           } >> "$GITHUB_OUTPUT"
       - name: Build Web App
