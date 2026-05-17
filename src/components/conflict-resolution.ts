@@ -41,7 +41,7 @@ export function renderConflictList(conflicts: GistConflict[]): string {
             <span class="detail-chip">CONFLICTING: ${c.conflictingFields.map(sanitizeHtml).join(', ')}</span>
             <span class="micro-label">DETECTED: ${new Date(c.detectedAt).toLocaleString()}</span>
           </div>
-          <button class="btn btn-primary resolve-btn" data-testid="resolve-btn" data-id="${c.gistId}">RESOLVE</button>
+          <button class="btn btn-primary resolve-btn" data-testid="resolve-btn" data-id="${sanitizeHtml(c.gistId)}">RESOLVE</button>
         </div>
       `
         )

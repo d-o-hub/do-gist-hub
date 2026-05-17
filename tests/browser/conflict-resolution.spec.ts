@@ -8,9 +8,11 @@ test.describe('Conflict Resolution UI Walkthrough', () => {
     // Seed IndexedDB with a conflict gist and its metadata
     await page.evaluate(async () => {
       const dbRequest = indexedDB.open('d-o-gist-hub-db', 3);
-      await new Promise((resolve) => {
-        dbRequest.onsuccess = (e: any) => {
-          const db = e.target.result;
+      await new Promise<void>((resolve, reject) => {
+        dbRequest.onerror = () => reject(new Error('Failed to open DB'));
+        dbRequest.onblocked = () => reject(new Error('DB blocked'));
+        dbRequest.onsuccess = (event: Event) => {
+          const db = (event.target as IDBOpenDBRequest).result;
 
           const gistTx = db.transaction('gists', 'readwrite');
           gistTx.objectStore('gists').put({
@@ -77,9 +79,11 @@ test.describe('Conflict Resolution UI Walkthrough', () => {
           let completed = 0;
           const checkDone = () => {
             completed++;
-            if (completed === 2) resolve(undefined);
+            if (completed === 2) resolve();
           };
+          gistTx.onerror = () => reject(new Error('Gist transaction failed'));
           gistTx.oncomplete = checkDone;
+          metaTx.onerror = () => reject(new Error('Metadata transaction failed'));
           metaTx.oncomplete = checkDone;
         };
       });
@@ -97,7 +101,7 @@ test.describe('Conflict Resolution UI Walkthrough', () => {
     await expect(page.locator('[data-testid="conflict-count"]')).toHaveText('1');
 
     // Click the conflict stat card to navigate to conflicts view
-    await page.locator('#conflicts-stat-card').click();
+    await page.locator('[data-testid="conflicts-stat-card"]').click();
 
     // Wait for conflict list to render
     await expect(page.locator('[data-testid="conflict-list"]')).toBeVisible({ timeout: 10000 });
@@ -134,7 +138,7 @@ test.describe('Conflict Resolution UI Walkthrough', () => {
     await expect(page.locator('[data-testid="conflict-count"]')).toHaveText('1');
 
     // Navigate to conflicts view via stat card
-    await page.locator('#conflicts-stat-card').click();
+    await page.locator('[data-testid="conflicts-stat-card"]').click();
 
     // Wait for conflict list
     await expect(page.locator('[data-testid="conflict-list"]')).toBeVisible({ timeout: 10000 });
