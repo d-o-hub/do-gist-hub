@@ -8,7 +8,7 @@
  * Also: gistStore is a singleton, so we call init() in the outer
  * beforeEach to reset its internal state between tests.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---- Mocks (hoisted) ----
 
@@ -46,7 +46,7 @@ vi.mock('../../src/services/sync/queue', () => ({
 
 vi.mock('../../src/services/sync/conflict-detector', () => ({
   detectConflict: vi.fn(),
-  resolveConflict: vi.fn((_: unknown, strategy: string) => ({
+  resolveConflict: vi.fn((_: unknown, _strategy: string) => ({
     id: 'resolved-gist',
     description: 'Resolved',
     files: {},
@@ -70,17 +70,16 @@ vi.mock('../../src/services/github/auth', () => ({
 // ---- Imports (after mocks) ----
 
 import {
+  deleteGist as dbDeleteGist,
   getAllGists as dbGetAllGists,
   saveGist as dbSaveGist,
-  deleteGist as dbDeleteGist,
   saveGists,
 } from '../../src/services/db';
-
+import { isAuthenticated } from '../../src/services/github/auth';
 import * as GitHub from '../../src/services/github/client';
 import networkMonitor from '../../src/services/network/offline-monitor';
-import syncQueue from '../../src/services/sync/queue';
-import { isAuthenticated } from '../../src/services/github/auth';
 import { safeError } from '../../src/services/security/logger';
+import syncQueue from '../../src/services/sync/queue';
 
 import gistStore from '../../src/stores/gist-store';
 
@@ -196,6 +195,14 @@ describe('GistStore', () => {
       expect(GitHub.listGists).toHaveBeenCalled();
       expect(GitHub.listStarredGists).toHaveBeenCalled();
     });
+
+    it('logs error when init fails', async () => {
+      vi.mocked(dbGetAllGists).mockRejectedValue(new Error('DB failure'));
+
+      await gistStore.init();
+
+      expect(safeError).toHaveBeenCalledWith('[GistStore] Init failed');
+    });
   });
 
   describe('getLoading / getError', () => {
@@ -306,7 +313,7 @@ describe('GistStore', () => {
       expect(syncQueue.queueOperation).toHaveBeenCalledWith(
         expect.any(String),
         'create',
-        expect.objectContaining({ description: 'Test' }),
+        expect.objectContaining({ description: 'Test' })
       );
     });
 
@@ -317,7 +324,7 @@ describe('GistStore', () => {
       const result = await gistStore.createGist('API Created', true, { 'test.txt': 'content' });
 
       expect(GitHub.createGist).toHaveBeenCalledWith(
-        expect.objectContaining({ description: 'API Created' }),
+        expect.objectContaining({ description: 'API Created' })
       );
       expect(dbSaveGist).toHaveBeenCalled();
       expect(result?.description).toBe('API Created');
@@ -360,7 +367,7 @@ describe('GistStore', () => {
       expect(syncQueue.queueOperation).toHaveBeenCalledWith(
         'gist-1',
         'update',
-        expect.objectContaining({ description: 'Offline update' }),
+        expect.objectContaining({ description: 'Offline update' })
       );
     });
 
@@ -372,7 +379,7 @@ describe('GistStore', () => {
 
       expect(GitHub.updateGist).toHaveBeenCalledWith(
         'gist-1',
-        expect.objectContaining({ description: 'Updated via API' }),
+        expect.objectContaining({ description: 'Updated via API' })
       );
       expect(dbSaveGist).toHaveBeenCalled();
       expect(result).toBe(true);
@@ -388,6 +395,60 @@ describe('GistStore', () => {
 
       expect(result).toBe(false);
       expect(gistStore.getGist('gist-1')?.description).toBe(originalDescription);
+      expect(safeError).toHaveBeenCalledWith('[GistStore] Update failed', expect.any(Error));
+    });
+
+    it('rolls back and pushes original record if missing during failure', async () => {
+      const existing = makeGistRecord('gist-1');
+      vi.mocked(dbGetAllGists).mockResolvedValue([existing] as never[]);
+      await gistStore.init();
+
+      // Start update but it will fail
+      vi.mocked(GitHub.updateGist).mockRejectedValue(new Error('Update failed'));
+
+      // We need to make sure originalRecord is set, but the gist is missing from this.gists when catch runs.
+      // We can achieve this by having another operation remove it meanwhile?
+      // Or just test the branch by calling updateGist on a gist that IS in the store but getting removed?
+
+      // Actually, if updateGist is called and the gist is NOT in this.gists initially, originalRecord will be null.
+      // If it IS in this.gists, originalRecord is a clone.
+
+      // Let's try to trigger the 'else' in catch (this.gists.push(originalRecord))
+      // This happens if the gist was in this.gists at the start of updateGist, but not when catch block runs.
+
+      const updatePromise = gistStore.updateGist('gist-1', { description: 'changed' });
+      // Optimistically it's still there.
+      // Now remove it:
+      await gistStore.deleteGist('gist-1');
+      // Now wait for update to fail
+      await updatePromise;
+
+      expect(gistStore.getGist('gist-1')).toBeDefined();
+    });
+
+    it('updates existing file content and adds new file in optimistic update', async () => {
+      const existing = makeGistRecord('gist-1', {
+        files: { 'old.txt': { filename: 'old.txt', content: 'old' } },
+      });
+      vi.mocked(dbGetAllGists).mockResolvedValue([existing] as never[]);
+      await gistStore.init();
+
+      // Mock it to resolve to make the test deterministic
+      vi.mocked(GitHub.updateGist).mockResolvedValue(makeGitHubGist('gist-1'));
+
+      const updatePromise = gistStore.updateGist('gist-1', {
+        files: {
+          'old.txt': 'new content',
+          'new.txt': 'brand new',
+        },
+      });
+
+      // Optimistic check: state changes before promise resolves
+      const updated = gistStore.getGist('gist-1');
+      expect(updated?.files['old.txt'].content).toBe('new content');
+      expect(updated?.files['new.txt'].content).toBe('brand new');
+
+      await updatePromise;
     });
   });
 
@@ -478,11 +539,7 @@ describe('GistStore', () => {
 
       await gistStore.toggleStar('gist-1');
 
-      expect(syncQueue.queueOperation).toHaveBeenCalledWith(
-        'gist-1',
-        'star',
-        expect.any(Object),
-      );
+      expect(syncQueue.queueOperation).toHaveBeenCalledWith('gist-1', 'star', expect.any(Object));
     });
 
     it('toggles star on via API when online', async () => {
@@ -524,6 +581,18 @@ describe('GistStore', () => {
     it('returns false for non-existent gist', async () => {
       const result = await gistStore.toggleStar('non-existent');
       expect(result).toBe(false);
+    });
+
+    it('rolls back and logs error on failure', async () => {
+      const gist = gistStore.getGist('gist-1');
+      if (gist) gist.starred = false;
+      vi.mocked(GitHub.starGist).mockRejectedValue(new Error('Star error'));
+
+      const result = await gistStore.toggleStar('gist-1');
+
+      expect(result).toBe(false);
+      expect(gistStore.getGist('gist-1')?.starred).toBe(false);
+      expect(safeError).toHaveBeenCalledWith('[GistStore] Toggle star failed', expect.any(Error));
     });
   });
 
@@ -629,6 +698,12 @@ describe('GistStore', () => {
       expect(saveGists).toHaveBeenCalled();
     });
 
+    it('logs error when loadGists fails', async () => {
+      vi.mocked(GitHub.listGists).mockRejectedValue(new Error('API failure'));
+      await gistStore.loadGists();
+      expect(safeError).toHaveBeenCalledWith('[GistStore] Load failed', expect.any(Error));
+    });
+
     it('marks gists as starred when they appear in starred gists', async () => {
       const ownGist = makeGitHubGist('starred-gist');
       vi.mocked(GitHub.listGists).mockResolvedValue({ data: [ownGist] });
@@ -695,6 +770,7 @@ describe('GistStore', () => {
 
       const result = await gistStore.hydrateGist('gist-1');
       expect(result?.id).toBe('gist-1');
+      expect(safeError).toHaveBeenCalledWith('[GistStore] Hydration failed', expect.any(Error));
     });
 
     it('returns null for non-existent gist when offline', async () => {

@@ -104,8 +104,8 @@ jobs:
           name: app-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
-  bundle-analysis:
-    name: Bundle Analysis
+  bundle-budget:
+    name: Bundle Budget
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -124,10 +124,9 @@ jobs:
       - name: Build with bundle analyzer and performance budgets
         run: ANALYZE=true pnpm run build
       - name: Check bundle size against budget
-        run: bash scripts/check-bundle-size.sh --skip-build
+        run: pnpm run bundle-budget
       - name: Run Lighthouse CI (performance + accessibility budgets)
         if: github.event_name == 'pull_request'
-        continue-on-error: true
         run: npx --yes lhci autorun --config=.lighthouserc.json --collect.staticDistDir=dist
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # pinned from v7
         with:
