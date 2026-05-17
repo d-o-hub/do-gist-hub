@@ -1,6 +1,6 @@
 # d.o. Gist Hub
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](./VERSION)
+[![Version](https://img.shields.io/badge/version-0.2.0-rc.1-blue.svg)](./VERSION)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
