@@ -36,7 +36,7 @@ plans/
 ## Naming conventions
 
 - Numbers zero-padded to 3 digits: `000`, `001`, `002`
-- **Next available plan number**: `042`
+- **Next available plan number**: `043`
 - **Next available ADR number**: `adr-030`
 - Dates: ISO 8601 `YYYY-MM-DD`
 - Slugs: lowercase kebab-case, max 40 chars
