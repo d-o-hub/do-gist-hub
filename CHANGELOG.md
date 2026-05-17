@@ -94,5 +94,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Performance budgets with runtime monitoring and build-time enforcement
 - Accessibility: skip links, ARIA landmarks, reduced motion, high contrast
 
-[Unreleased]: https://github.com/d-o-hub/do-gist-hub/compare/v0.1.0...HEAD
+[0.1.1]: https://github.com/d-o-hub/do-gist-hub/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/d-o-hub/do-gist-hub/releases/tag/v0.1.0
