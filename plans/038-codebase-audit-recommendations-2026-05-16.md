@@ -2,7 +2,7 @@
 
 > **Date**: 2026-05-16
 > **Type**: Audit / Recommendations
-> **Status**: 🟡 Proposed — actionable backlog
+> **Status**: 🟢 Complete — all 4 sprints done
 > **Scope**: Missing tasks, lint gaps, build hardening, test coverage, coding workflow, lost plans recovery
 > **Related**: `037-progress-update-2026-07-18.md`, `030-coverage-improvement-plan.md`, `adr-026-phase-a-modernization-goap.md`, `adr-027-ci-node24-android-hardening.md`
 

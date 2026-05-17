@@ -1,13 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "lastUpdated": "2026-05-16",
+  "lastUpdated": "2026-05-17",
   "sprintComplete": {
     "038-sprint1": "2026-05-16",
     "038-sprint2": "2026-05-16",
     "038-sprint3": "2026-05-16",
     "038-sprint4": "2026-05-16",
     "039-phase-a": "2026-05-16",
-    "039-phase-b": "2026-05-16"
+    "039-phase-b": "2026-05-16",
+    "040-phase-d": "2026-05-17"
   },
   "description": "Machine-readable plan registry for agents and scripts. Mirrors plans/_index.md.",
   "plans": {
@@ -204,7 +205,12 @@
     "039-ui-ux-2026-modernization.md": {
       "type": "plan",
       "status": "complete",
-      "summary": "Phase A shipped: cross-doc view transitions, OKLCH/color-mix accent ramp, content-visibility auto, scroll-driven header, text-wrap balance/pretty, field-sizing. Phase B: speculation rules, accent hue knob"
+      "summary": "Phase A shipped: cross-doc view transitions, OKLCH/color-mix accent ramp, content-visibility auto, scroll-driven header, text-wrap balance/pretty, field-sizing. Phase B: speculation rules, accent hue knob, @scope, shadow tokens. Phase C: interpolate-size, accent-color"
+    },
+    "040-goap-phase-d-039-phase-bc-completion.md": {
+      "type": "goap",
+      "status": "complete",
+      "summary": "Phase B @scope blocks, OKLCH shadow tokens, Popover API command-palette. Phase C interpolate-size, accent-color. Plan status headers fixed."
     },
     "adr-028-github-app-vs-pat-2026.md": {
       "type": "adr",

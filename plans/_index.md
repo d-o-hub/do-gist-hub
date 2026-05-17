@@ -18,6 +18,7 @@
 | `038-codebase-audit-recommendations-2026-05-16.md` | Audit       | Complete ✅ | All 4 sprints done. Sprint 4: coverage barrel exclusions, SW install tests, bento a11y tests, stale plan archiver, quick-tests CI, cross-browser CI, staleness indicators |
 | `039-ui-ux-2026-modernization.md`             | Feature plan | Complete ✅ | Phase A: view transitions, OKLCH/color-mix, content-visibility, scroll-driven header, text-wrap, field-sizing. Phase B: speculation rules, accent hue knob |
 | `adr-028-github-app-vs-pat-2026.md`           | ADR          | Accepted ✅  | Auth re-evaluation: keep fine-grained PAT; add opt-in OAuth Device Flow via thin Cloudflare Worker; defer GitHub App installation tokens |
+| `040-goap-phase-d-039-phase-bc-completion.md` | GOAP Plan    | Complete ✅ | @scope blocks, OKLCH shadow tokens, Popover API command-palette, interpolate-size, accent-color, plan status hygiene |
 
 ## Archived
 

@@ -4,7 +4,7 @@
 
 ## Status
 
-Accepted → Implemented (Phase A complete) | Phase B-C pending
+Accepted → Implemented (Phase A complete) | Phase B-C resolved via plan 038/040
 
 ## Context
 
