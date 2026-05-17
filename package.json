@@ -53,7 +53,8 @@
   "pnpm": {
     "overrides": {
       "@xmldom/xmldom": "^0.8.13"
-    }
+    },
+    "onlyBuiltDependencies": ["canvas", "esbuild"]
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
