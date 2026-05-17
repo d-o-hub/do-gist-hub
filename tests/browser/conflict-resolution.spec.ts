@@ -124,7 +124,7 @@ test.describe('Conflict Resolution UI Walkthrough', () => {
 
     // After resolving the only conflict, the empty state is shown (no conflict-list)
     // Verify the view returns to the conflicts route showing empty state
-    await expect(page.locator('.empty-state')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.empty-state-container')).toBeVisible({ timeout: 10000 });
   });
 
   test('should resolve conflict with USE REMOTE VERSION and return to list', async ({ page }) => {
@@ -154,7 +154,7 @@ test.describe('Conflict Resolution UI Walkthrough', () => {
     ).toContainText('CONFLICT RESOLVED', { timeout: 15000 });
 
     // After resolving the only conflict, the empty state is shown
-    await expect(page.locator('.empty-state')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.empty-state-container')).toBeVisible({ timeout: 10000 });
   });
 
   test('should show conflict count badge and navigate via sidebar', async ({ page }) => {
