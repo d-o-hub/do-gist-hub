@@ -44,6 +44,10 @@ export async function render(
                   <button id="remove-token-btn" class="btn btn-ghost">REMOVE</button>
               </div>
               <div id="token-status" class="token-status-mt"></div>
+              <div class="flex-row gap-2 mt-4">
+                <button id="device-flow-login-btn" class="btn btn-primary">SIGN IN WITH GITHUB</button>
+              </div>
+              <div id="device-flow-status" class="micro-label mt-2" style="white-space: pre-line;"></div>
             </div>
           </div>
         </details>
@@ -191,6 +195,45 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
         await removeToken();
         toast.success('TOKEN REMOVED');
         await loadTokenInfo(container);
+      })();
+    },
+    { signal }
+  );
+
+  container.querySelector('#device-flow-login-btn')?.addEventListener(
+    'click',
+    () => {
+      void (async () => {
+        const statusEl = container.querySelector('#device-flow-status');
+        const loginBtn = container.querySelector('#device-flow-login-btn') as HTMLButtonElement;
+        if (!statusEl || !loginBtn) return;
+
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'CONNECTING...';
+        statusEl.textContent = 'Initializing...';
+
+        try {
+          const { authenticateWithDeviceFlow } = await import('../services/github/device-flow');
+          const success = await authenticateWithDeviceFlow((status) => {
+            statusEl.textContent = status;
+          });
+
+          if (success) {
+            toast.success('AUTHENTICATED VIA GITHUB');
+            statusEl.textContent = 'Authentication successful!';
+            await loadTokenInfo(container);
+          } else {
+            toast.error('AUTHENTICATION FAILED');
+            statusEl.textContent =
+              'Authentication failed. The device code may have expired or you may have denied the request.';
+          }
+        } catch {
+          toast.error('AUTHENTICATION FAILED');
+          statusEl.textContent = 'An unexpected error occurred. Please try again.';
+        } finally {
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'SIGN IN WITH GITHUB';
+        }
       })();
     },
     { signal }

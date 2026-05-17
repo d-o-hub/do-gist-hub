@@ -5,7 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0]
+## [0.2.0-rc.1] - 2026-05-17
+
+### Added
+
+- OAuth Device Flow authentication (opt-in alternative to PAT)
+- Auth-proxy Cloudflare Worker for stateless CORS relay
+- Staleness indicators on gist cards ("Updated X ago")
+- Conflict-resolution UI E2E tests
+- ProGuard CI smoke check for Android release builds
+
+### Changed
+
+- **BREAKING**: VERSION bumped from 0.1.0 to 0.2.0-rc.1
+
+## What's new?
 
 ### Added
 

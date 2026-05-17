@@ -10,7 +10,8 @@
     "039-phase-b": "2026-05-16",
     "040-phase-d": "2026-05-17",
     "041-release-signing": "2026-05-17",
-    "042-plans-completion": "2026-05-17"
+    "042-plans-completion": "2026-05-17",
+    "045-v0.2.0-release": "2026-05-17"
   },
   "description": "Machine-readable plan registry for agents and scripts. Mirrors plans/_index.md.",
   "plans": {
@@ -218,6 +219,11 @@
       "type": "goap",
       "status": "complete",
       "summary": "Close P0 plan-audit gaps: rebuild stale design-tokens.css, fix plan status headers, promote ADR-015, add SW cache TTL, wire LH CI"
+    },
+    "045-v0.2.0-release-and-auth-modernization.md": {
+      "type": "goap",
+      "status": "active",
+      "summary": "v0.2.0 release, OAuth Device Flow implementation, remaining audit gaps"
     }
   },
   "archive": [
@@ -251,7 +257,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-030",
-    "plan": "043",
+    "plan": "046",
     "goap": "032"
   }
 }

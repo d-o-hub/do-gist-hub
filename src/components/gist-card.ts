@@ -9,9 +9,15 @@ import gistStore from '../stores/gist-store';
 import { showConfirmDialog } from '../utils/dialog';
 import { toast } from './ui/toast';
 
+const cardCache = new Map<
+  string,
+  { html: string; updatedAt: string; starred: boolean; syncStatus: string; lastSyncedAt?: string }
+>();
+
 function formatRelativeTime(dateStr: string): string {
   const now = Date.now();
   const dateTs = Date.parse(dateStr);
+  if (Number.isNaN(dateTs)) return '';
   const diffMs = now - dateTs;
   const diffSec = Math.floor(diffMs / 1000);
   if (diffSec < 60) return 'JUST NOW';
@@ -22,11 +28,6 @@ function formatRelativeTime(dateStr: string): string {
   const diffDay = Math.floor(diffHr / 24);
   return `${diffDay}D AGO`;
 }
-
-const cardCache = new Map<
-  string,
-  { html: string; updatedAt: string; starred: boolean; syncStatus: string; lastSyncedAt?: string }
->();
 
 function renderSyncBadge(
   syncStatus: string | undefined,
@@ -48,6 +49,27 @@ function renderSyncBadge(
   return '';
 }
 
+function renderStalenessTooltip(updatedAt: string, lastSyncedAt?: string): string {
+  if (!lastSyncedAt) return '';
+  const updatedTs = Date.parse(updatedAt);
+  const syncedTs = Date.parse(lastSyncedAt);
+  if (Number.isNaN(updatedTs) || Number.isNaN(syncedTs)) return '';
+
+  const staleMs = updatedTs - syncedTs;
+  if (staleMs <= 0) return '';
+
+  const staleMin = Math.floor(staleMs / 60000);
+  const staleHr = Math.floor(staleMs / 3600000);
+  const staleDay = Math.floor(staleMs / 86400000);
+
+  let staleLabel: string;
+  if (staleMin < 60) staleLabel = `${staleMin} MIN`;
+  else if (staleHr < 24) staleLabel = `${staleHr} HOUR`;
+  else staleLabel = `${staleDay} DAY`;
+
+  return `<span class="staleness-indicator" title="Updated ${staleLabel} before last sync. Synced ${formatRelativeTime(lastSyncedAt)}">STALE: ${staleLabel}</span>`;
+}
+
 export function renderCard(gist: GistRecord): string {
   const cached = cardCache.get(gist.id);
   if (
@@ -67,6 +89,11 @@ export function renderCard(gist: GistRecord): string {
   // Get snippet of content if available
   const content = firstFile?.content || '';
   const snippet = content.slice(0, 120);
+
+  const staleHtml = renderStalenessTooltip(gist.updatedAt, gist.lastSyncedAt);
+  const timeHtml = staleHtml
+    ? ''
+    : `<time class="micro-label" datetime="${gist.updatedAt}">${formatRelativeTime(gist.updatedAt)}</time>`;
 
   const html = `
     <article class="glass-card gist-card${gist.starred ? ' featured' : ''}" data-gist-id="${sanitizeHtml(gist.id)}" data-testid="gist-item" tabindex="0" role="button"
@@ -96,9 +123,8 @@ export function renderCard(gist: GistRecord): string {
           </button>
         </div>
         ${renderSyncBadge(gist.syncStatus, gist.updatedAt, gist.lastSyncedAt)}
-        <time class="micro-label" datetime="${gist.updatedAt}">
-          ${formatRelativeTime(gist.updatedAt)}
-        </time>
+        ${staleHtml}
+        ${timeHtml}
       </footer>
     </article>
   `;
