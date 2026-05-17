@@ -1,6 +1,6 @@
 {
   "name": "d-o-gist-hub",
-  "version": "0.1.0",
+  "version": "0.2.0-rc.1",
   "description": "d.o. Gist Hub — offline-first GitHub Gist management app with token-driven design and Android support",
   "private": true,
   "type": "module",
@@ -34,7 +34,8 @@
     "build:android": "pnpm run build && pnpm run cap:sync",
     "analyze": "ANALYZE=true pnpm run build",
     "commitlint:last": "commitlint --from=HEAD~1 --to=HEAD --verbose",
-    "quality": "./scripts/quality_gate.sh"
+    "quality": "./scripts/quality_gate.sh",
+    "postinstall": "node scripts/install-commit-hook.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",

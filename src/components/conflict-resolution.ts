@@ -28,7 +28,7 @@ export function renderConflictList(conflicts: GistConflict[]): string {
   }
 
   return `
-    <div class="conflict-list">
+    <div class="conflict-list" data-testid="conflict-list">
       ${conflicts
         .map(
           (c) => `
@@ -41,7 +41,7 @@ export function renderConflictList(conflicts: GistConflict[]): string {
             <span class="detail-chip">CONFLICTING: ${c.conflictingFields.map(sanitizeHtml).join(', ')}</span>
             <span class="micro-label">DETECTED: ${new Date(c.detectedAt).toLocaleString()}</span>
           </div>
-          <button class="btn btn-primary resolve-btn" data-id="${c.gistId}">RESOLVE</button>
+          <button class="btn btn-primary resolve-btn" data-testid="resolve-btn" data-id="${c.gistId}">RESOLVE</button>
         </div>
       `
         )
@@ -96,7 +96,7 @@ export function renderConflictDetail(conflict: GistConflict): string {
               </div>
             </div>
           </div>
-          <button class="btn btn-primary resolve-choice-btn" data-strategy="local-wins">KEEP LOCAL VERSION</button>
+          <button class="btn btn-primary resolve-choice-btn" data-strategy="local-wins" data-testid="resolve-local">KEEP LOCAL VERSION</button>
         </div>
 
         <!-- Remote Version -->
@@ -130,7 +130,7 @@ export function renderConflictDetail(conflict: GistConflict): string {
               </div>
             </div>
           </div>
-          <button class="btn btn-ghost resolve-choice-btn" data-strategy="remote-wins">USE REMOTE VERSION</button>
+          <button class="btn btn-ghost resolve-choice-btn" data-strategy="remote-wins" data-testid="resolve-remote">USE REMOTE VERSION</button>
         </div>
       </div>
     </div>

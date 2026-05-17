@@ -23,7 +23,7 @@ export async function render(container: HTMLElement): Promise<void> {
             </div>
             <div class="stat-card clickable" id="conflicts-stat-card">
                 <div class="stat-label">SYNC CONFLICTS</div>
-                <div class="stat-value" id="conflict-count">0</div>
+                <div class="stat-value" id="conflict-count" data-testid="conflict-count">0</div>
             </div>
         </div>
       <div class="pending-operations pending-ops-mt" id="pending-ops"></div>

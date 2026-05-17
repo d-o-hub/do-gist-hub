@@ -1,0 +1,58 @@
+# Implements plan 038 item F6: Android ProGuard CI smoke check
+# Runs assembleRelease with --dry-run to validate ProGuard config without signing
+
+name: Android ProGuard Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  proguard-check:
+    name: ProGuard Smoke Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # pinned from v6
+
+      - uses: pnpm/action-setup@ac6db6d3c1f721f886538a378a2d73e85697340a  # pinned from v9
+        with:
+          version: 9
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # pinned from v6
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Web App and Sync Android
+        run: pnpm run build:android
+
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654  # pinned from v5
+        with:
+          java-version: '21'
+          distribution: 'zulu'
+
+      - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699  # pinned from v4
+        with:
+          packages: 'tools platform-tools platforms;android-35 build-tools;35.0.0'
+
+      - name: Dry-run ProGuard Release Build
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleRelease --dry-run 2>&1 | tee ../proguard-dry-run.log
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # pinned from v7
+        if: always()
+        with:
+          name: proguard-dry-run-output
+          path: proguard-dry-run.log
+          retention-days: 7

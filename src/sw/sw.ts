@@ -63,6 +63,17 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // CSP violation reports (plan 038 F2) — log and return 204
+  if (url.pathname === '/csp-report' && request.method === 'POST') {
+    event.respondWith(
+      request.text().then((body) => {
+        console.warn('[CSP Violation]', body);
+        return new Response(null, { status: 204 });
+      })
+    );
+    return;
+  }
+
   // Navigation requests - Network first with cache fallback
   if (request.mode === 'navigate') {
     event.respondWith(

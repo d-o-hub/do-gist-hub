@@ -1,0 +1,21 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "d-o-gist-hub",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true,
+      "version-file": "VERSION",
+      "extra-files": [
+        "AGENTS.md",
+        "package.json"
+      ]
+    }
+  },
+  "plugins": [
+    {
+      "type": "sentence-case",
+      "prerelease": true
+    }
+  ]
+}
