@@ -19,6 +19,10 @@ if command -v pnpm &> /dev/null && [[ -f "$ROOT_DIR/package.json" ]]; then
   echo "→ Linting & Formatting checking..."
   pnpm run check || { echo "✗ Lint or Format check failed"; exit 1; }
   echo "✓ Lint & Format check passed"
+
+  echo "→ Running security audit (level high)..."
+  pnpm audit --audit-level high || { echo "✗ Security audit failed"; exit 1; }
+  echo "✓ Security audit passed"
 fi
 
 # Enforce TypeScript-only source: no .js/.jsx files in src/

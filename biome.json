@@ -58,6 +58,7 @@
         "useExhaustiveDependencies": "warn"
       },
       "suspicious": {
+        "useAwait": "warn",
         "noAsyncPromiseExecutor": "error",
         "noCatchAssign": "error",
         "noClassAssign": "error",
@@ -83,6 +84,9 @@
         "noUnsafeDeclarationMerging": "error",
         "noUnsafeNegation": "error",
         "useGetterReturn": "error"
+      },
+      "nursery": {
+        "noFloatingPromises": "error"
       }
     }
   },
