@@ -42,7 +42,7 @@
   padding: var(--space-6);
 }
 
-@media (min-width: 1024px) {
+@media (width >= 1024px) {
   .comparison-grid {
     grid-template-columns: 1fr 1fr;
   }
