@@ -1,6 +1,6 @@
 # plans/\_index.md — Active Plan Registry
 
-> **Last updated**: 2026-07-18
+> **Last updated**: 2026-05-17
 > Agents: read this before starting any task. Update it when you change plan status.
 
 ---
@@ -17,8 +17,10 @@
 | `030-coverage-improvement-plan.md`            | Plan        | Complete ✅ | 81.88% line coverage, 941 tests across 51 files; all vitest thresholds exceeded                                              |
 | `038-codebase-audit-recommendations-2026-05-16.md` | Audit       | Complete ✅ | All 4 sprints done. Sprint 4: coverage barrel exclusions, SW install tests, bento a11y tests, stale plan archiver, quick-tests CI, cross-browser CI, staleness indicators |
 | `039-ui-ux-2026-modernization.md`             | Feature plan | Complete ✅ | Phase A: view transitions, OKLCH/color-mix, content-visibility, scroll-driven header, text-wrap, field-sizing. Phase B: speculation rules, accent hue knob |
-| `adr-028-github-app-vs-pat-2026.md`           | ADR          | Accepted ✅  | Auth re-evaluation: keep fine-grained PAT; add opt-in OAuth Device Flow via thin Cloudflare Worker; defer GitHub App installation tokens |
-| `040-goap-phase-d-039-phase-bc-completion.md` | GOAP Plan    | Complete ✅ | @scope blocks, OKLCH shadow tokens, Popover API command-palette, interpolate-size, accent-color, plan status hygiene |
+| `adr-028-github-app-vs-pat-2026.md`           | ADR           | Accepted ✅  | Auth re-evaluation: keep fine-grained PAT; add opt-in OAuth Device Flow via thin Cloudflare Worker; defer GitHub App installation tokens |
+| `040-goap-phase-d-039-phase-bc-completion.md` | GOAP Plan     | Complete ✅  | @scope blocks, OKLCH shadow tokens, Popover API command-palette, interpolate-size, accent-color, plan status hygiene |
+| `adr-029-android-release-signing.md`           | ADR           | Accepted ✅  | Android release signing via CI — keystore from GitHub secrets, versionCode from GITHUB_RUN_NUMBER, versionName from VERSION |
+| `041-goap-release-signing-and-plan040-completion.md` | GOAP Plan | Active 🔄 | Close Plan 040 gaps (@scope dedup, OKLCH shadow tokens) + wire release APK signing into CI |
 
 ## Archived
 
@@ -63,6 +65,7 @@ See `plans/archive/` for completed or superseded files moved here on 2026-05-15.
 | `adr-022-ambient-light-extension.md`                  | Ambient light sensor theming — implemented in Phase C (029)  |
 | `adr-026-phase-a-modernization-goap.md`               | Phase A modernization GOAP             |
 | `adr-027-ci-node24-android-hardening.md`               | CI Node 24 migration, Android build hardening                 |
+| `adr-029-android-release-signing.md`                    | Android release signing via CI — ADR-029                      |
 
 ## Reference docs (foundational, stable)
 
@@ -102,9 +105,10 @@ These numbered plans document the project's foundation and are considered stable
 | `035-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm followups, ADR cross-check, AGENTS.md refresh, test audit                  |
 | `036-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm roundup — ADR compliance verified, compacted learnings, AGENTS.md refresh  |
 | `037-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | TRIZ contradiction audit, skill registry docs, AGENTS.md skill directory refs  |
+| `041-goap-release-signing-and-plan040-completion.md`  | GOAP     | Active 🔄   | Close Plan 040 gaps + wire release APK signing into CI       |
 
 ## Quick reference: ADR numbers in use
 
-`adr-001` through `adr-028` (gaps: 017-019 reserved)
-**Next available ADR**: `adr-029`
-**Next available plan number**: `040`
+`adr-001` through `adr-029` (gaps: 017-019 reserved)
+**Next available ADR**: `adr-030`
+**Next available plan number**: `041`

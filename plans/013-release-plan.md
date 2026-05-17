@@ -14,7 +14,7 @@
 - [x] All P0 CI/CD items complete
 - [x] All P0 documentation items complete
 - [x] CI green on all test projects
-- [ ] Android release signing (pending for store deployment)
+- [x] Android release signing — ADR-029 (CI signs & publishes release APK to GitHub Releases)
 
 ---
 
