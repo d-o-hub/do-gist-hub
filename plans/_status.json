@@ -159,10 +159,10 @@
       "status": "complete",
       "summary": "81.88% line coverage, 941 tests across 51 files; all vitest thresholds exceeded"
     },
-    "027-progress-update-2026-07-18.md": {
+    "025-progress-update-2026-07-18.md": {
       "type": "progress",
       "status": "complete",
-      "summary": "P1-4 through P1-7: TS6 migration, RouteBoundary, Skeleton, Conflicts nav"
+      "summary": "Consolidated update: ADR compliance, infrastructure, UI modernization, TRIZ audit"
     },
     "031-progress-update-coverage-pr156.md": {
       "type": "progress",
@@ -183,21 +183,6 @@
       "type": "progress",
       "status": "complete",
       "summary": "Plans audit, teardown fix, ADR-022 promoted from backlog to complete"
-    },
-    "035-progress-update-2026-07-18.md": {
-      "type": "progress",
-      "status": "complete",
-      "summary": "Swarm followups, ADR cross-check, AGENTS.md refresh, test audit"
-    },
-    "036-progress-update-2026-07-18.md": {
-      "type": "progress",
-      "status": "complete",
-      "summary": "Swarm roundup — ADR compliance verified against codebase, compacted learnings, AGENTS.md refresh"
-    },
-    "037-progress-update-2026-07-18.md": {
-      "type": "progress",
-      "status": "complete",
-      "summary": "TRIZ contradiction audit (5 contradictions), skill registry documentation, AGENTS.md skill directory references"
     },
     "038-codebase-audit-recommendations-2026-05-16.md": {
       "type": "audit",

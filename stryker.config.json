@@ -9,6 +9,7 @@
   "vitest": {
     "configFile": "vitest.config.ts"
   },
+  "checkers": ["typescript"],
   "concurrency": 4,
   "timeoutMS": 30000,
   "thresholds": {

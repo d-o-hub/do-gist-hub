@@ -98,14 +98,11 @@ These numbered plans document the project's foundation and are considered stable
 | File                                          | Type          | Status      | Summary                                                                          |
 | --------------------------------------------- | ------------- | ----------- | -------------------------------------------------------------------------------- |
 | `026-goap-analysis-current.md`                | Analysis      | Complete ✅ | ADR-vs-implementation gap audit; all P1 items resolved                           |
-| `027-progress-update-2026-07-18.md`           | Progress      | Complete ✅ | P1-4 through P1-7: TS6 migration, RouteBoundary, Skeleton, Conflicts nav         |
+| `025-progress-update-2026-07-18.md`           | Progress      | Complete ✅ | Consolidated update: ADR compliance, infrastructure, UI modernization, TRIZ audit |
 | `031-progress-update-coverage-pr156.md`       | Progress      | Complete ✅ | PR #156 merged: 790 tests, 47 files, 81.88% line coverage                        |
 | `032-progress-update-swarm-merge-pr156.md`    | Progress      | Complete ✅ | Swarm coordination: merge PR #156, update plans, compact learnings               |
 | `033-progress-update-2026-05-15-plans-completion.md` | Progress | Complete ✅ | Dark mode first, noUnusedVariables, SHA-pinned actions, dialog AbortController   |
 | `034-progress-update-swarm-plans-audit.md`            | Progress | Complete ✅ | Plans audit, teardown fix, ADR-022 promoted from backlog to complete              |
-| `035-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm followups, ADR cross-check, AGENTS.md refresh, test audit                  |
-| `036-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm roundup — ADR compliance verified, compacted learnings, AGENTS.md refresh  |
-| `037-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | TRIZ contradiction audit, skill registry docs, AGENTS.md skill directory refs  |
 | `041-goap-release-signing-and-plan040-completion.md`  | GOAP     | Complete ✅ | Close Plan 040 gaps + wire release APK signing into CI       |
 | `042-goap-plans-completion-sprint.md`                  | GOAP     | Complete ✅   | Close P0 plan-audit gaps: rebuild stale design-tokens.css, fix plan status headers, promote ADR-015, add SW cache TTL, wire LH CI |
 
