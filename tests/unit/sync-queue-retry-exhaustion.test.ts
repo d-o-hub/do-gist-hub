@@ -99,6 +99,70 @@ describe('SyncQueue retry exhaustion and dedup', () => {
     queue.destroy();
   });
 
+  // ── init / destroy ───────────────────────────────────────────────────
+
+  describe('init and destroy', () => {
+    it('subscribes to network monitor on init', () => {
+      queue.init();
+      expect(networkMonitor.subscribe).toHaveBeenCalled();
+    });
+
+    it('adds app:online listener on init', () => {
+      queue.init();
+      expect(window.addEventListener).toHaveBeenCalledWith(
+        'app:online',
+        expect.any(Function),
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      );
+    });
+
+    it('unsubscribes and aborts on destroy', () => {
+      const unsubscribe = vi.fn();
+      vi.mocked(networkMonitor.subscribe).mockReturnValue(unsubscribe);
+
+      let capturedSignal: AbortSignal | undefined;
+      vi.mocked(window.addEventListener).mockImplementation((event, _cb, options) => {
+        if (event === 'app:online' && typeof options === 'object') {
+          capturedSignal = options.signal;
+        }
+      });
+
+      queue.init();
+      queue.destroy();
+
+      expect(unsubscribe).toHaveBeenCalled();
+      expect(capturedSignal).toBeDefined();
+      expect(capturedSignal?.aborted).toBe(true);
+    });
+
+    it('processes queue when network status changes to online', () => {
+      let networkCallback: (status: string) => void = () => {};
+      vi.mocked(networkMonitor.subscribe).mockImplementation((cb) => {
+        networkCallback = cb;
+        return vi.fn();
+      });
+      const processSpy = vi.spyOn(queue, 'processQueue').mockResolvedValue(undefined);
+
+      queue.init();
+      networkCallback('online');
+
+      expect(processSpy).toHaveBeenCalled();
+    });
+
+    it('processes queue when app:online event is dispatched', () => {
+      let eventCallback: () => void = () => {};
+      vi.mocked(window.addEventListener).mockImplementation((event, cb) => {
+        if (event === 'app:online') eventCallback = cb as () => void;
+      });
+      const processSpy = vi.spyOn(queue, 'processQueue').mockResolvedValue(undefined);
+
+      queue.init();
+      eventCallback();
+
+      expect(processSpy).toHaveBeenCalled();
+    });
+  });
+
   // ── processQueue catch block (line 120) ─────────────────────────────────
 
   describe('processQueue error catch', () => {

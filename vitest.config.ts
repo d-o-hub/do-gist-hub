@@ -15,8 +15,9 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.ts'],
     setupFiles: ['tests/setup.ts'],
     coverage: {
+      all: true,
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.d.ts', 'src/**/index.ts'],
+      exclude: ['src/**/*.d.ts', 'src/**/index.ts', 'src/types/api.ts', 'src/vite-env.d.ts'],
       thresholds: {
         lines: 85,
         functions: 85,

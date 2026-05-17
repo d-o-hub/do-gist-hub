@@ -33,7 +33,7 @@ const inFlightRequests = new Map<string, Promise<unknown>>();
  * Deduplicate concurrent identical requests.
  * If a request with the same key is already in flight, return its promise.
  */
-async function deduplicatedFetch<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+function deduplicatedFetch<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
   const existing = inFlightRequests.get(key);
   if (existing) {
     return existing as Promise<T>;
@@ -188,7 +188,7 @@ export async function validateToken(token: string): Promise<TokenInfo> {
 /**
  * Generic fetch with ETag support and deduplication
  */
-async function fetchWithEtag<T>(url: string, context: string): Promise<T> {
+function fetchWithEtag<T>(url: string, context: string): Promise<T> {
   const key = `GET:${context}:${url}`;
 
   return deduplicatedFetch(key, async () => {
@@ -407,7 +407,7 @@ export async function forkGist(id: string): Promise<GitHubGist> {
 /**
  * List gist revisions
  */
-export async function listGistRevisions(id: string): Promise<GistRevision[]> {
+export function listGistRevisions(id: string): Promise<GistRevision[]> {
   const key = `GET:listGistRevisions:${id}`;
 
   return deduplicatedFetch(key, async () => {
