@@ -40,6 +40,67 @@ export function generateCSSVariables(): string {
   --color-gray-900: ${colors.gray[900]};
   --color-gray-950: ${colors.gray[950]};
 
+  /* Blue scale */
+  --color-blue-50: ${colors.blue[50]};
+  --color-blue-100: ${colors.blue[100]};
+  --color-blue-200: ${colors.blue[200]};
+  --color-blue-300: ${colors.blue[300]};
+  --color-blue-400: ${colors.blue[400]};
+  --color-blue-500: ${colors.blue[500]};
+  --color-blue-600: ${colors.blue[600]};
+  --color-blue-700: ${colors.blue[700]};
+  --color-blue-800: ${colors.blue[800]};
+  --color-blue-900: ${colors.blue[900]};
+  --color-blue-950: ${colors.blue[950]};
+
+  /* Green scale */
+  --color-green-50: ${colors.green[50]};
+  --color-green-100: ${colors.green[100]};
+  --color-green-200: ${colors.green[200]};
+  --color-green-300: ${colors.green[300]};
+  --color-green-400: ${colors.green[400]};
+  --color-green-500: ${colors.green[500]};
+  --color-green-600: ${colors.green[600]};
+  --color-green-700: ${colors.green[700]};
+  --color-green-800: ${colors.green[800]};
+  --color-green-900: ${colors.green[900]};
+
+  /* Red scale */
+  --color-red-50: ${colors.red[50]};
+  --color-red-100: ${colors.red[100]};
+  --color-red-200: ${colors.red[200]};
+  --color-red-300: ${colors.red[300]};
+  --color-red-400: ${colors.red[400]};
+  --color-red-500: ${colors.red[500]};
+  --color-red-600: ${colors.red[600]};
+  --color-red-700: ${colors.red[700]};
+  --color-red-800: ${colors.red[800]};
+  --color-red-900: ${colors.red[900]};
+
+  /* Yellow scale */
+  --color-yellow-50: ${colors.yellow[50]};
+  --color-yellow-100: ${colors.yellow[100]};
+  --color-yellow-200: ${colors.yellow[200]};
+  --color-yellow-300: ${colors.yellow[300]};
+  --color-yellow-400: ${colors.yellow[400]};
+  --color-yellow-500: ${colors.yellow[500]};
+  --color-yellow-600: ${colors.yellow[600]};
+  --color-yellow-700: ${colors.yellow[700]};
+  --color-yellow-800: ${colors.yellow[800]};
+  --color-yellow-900: ${colors.yellow[900]};
+
+  /* Orange scale */
+  --color-orange-50: ${colors.orange[50]};
+  --color-orange-100: ${colors.orange[100]};
+  --color-orange-200: ${colors.orange[200]};
+  --color-orange-300: ${colors.orange[300]};
+  --color-orange-400: ${colors.orange[400]};
+  --color-orange-500: ${colors.orange[500]};
+  --color-orange-600: ${colors.orange[600]};
+  --color-orange-700: ${colors.orange[700]};
+  --color-orange-800: ${colors.orange[800]};
+  --color-orange-900: ${colors.orange[900]};
+
   /* ===== Semantic Colors (Dark Mode) ===== */
   --color-background-primary: ${colorSemantic.dark.background.primary};
   --color-background-secondary: ${colorSemantic.dark.background.secondary};
