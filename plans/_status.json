@@ -231,7 +231,7 @@
     },
     "042-goap-plans-completion-sprint.md": {
       "type": "goap",
-      "status": "active",
+      "status": "complete",
       "summary": "Close P0 plan-audit gaps: rebuild stale design-tokens.css, fix plan status headers, promote ADR-015, add SW cache TTL, wire LH CI"
     }
   },
@@ -266,7 +266,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-030",
-    "plan": "042",
+    "plan": "043",
     "goap": "032"
   }
 }
