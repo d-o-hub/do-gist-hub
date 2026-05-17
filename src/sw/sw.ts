@@ -42,6 +42,8 @@ swSelf.addEventListener('install', (event: ExtendableEvent) => {
 
 /**
  * Activate event - clean up old caches
+ * - Deletes entire caches not matching the current STATIC_CACHE name
+ * - Uses build-timestamp cache naming for version-based eviction
  */
 swSelf.addEventListener('activate', (event: ExtendableEvent) => {
   event.waitUntil(

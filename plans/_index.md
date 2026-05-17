@@ -20,7 +20,8 @@
 | `adr-028-github-app-vs-pat-2026.md`           | ADR           | Accepted ✅  | Auth re-evaluation: keep fine-grained PAT; add opt-in OAuth Device Flow via thin Cloudflare Worker; defer GitHub App installation tokens |
 | `040-goap-phase-d-039-phase-bc-completion.md` | GOAP Plan     | Complete ✅  | @scope blocks, OKLCH shadow tokens, Popover API command-palette, interpolate-size, accent-color, plan status hygiene |
 | `adr-029-android-release-signing.md`           | ADR           | Accepted ✅  | Android release signing via CI — keystore from GitHub secrets, versionCode from GITHUB_RUN_NUMBER, versionName from VERSION |
-| `041-goap-release-signing-and-plan040-completion.md` | GOAP Plan | Active 🔄 | Close Plan 040 gaps (@scope dedup, OKLCH shadow tokens) + wire release APK signing into CI |
+| `041-goap-release-signing-and-plan040-completion.md` | GOAP Plan | Complete ✅ | Close Plan 040 gaps (@scope dedup, OKLCH shadow tokens) + wire release APK signing into CI |
+| `042-goap-plans-completion-sprint.md` | GOAP Plan | Active 🔄 | Close P0 plan-audit gaps: rebuild stale design-tokens.css, fix plan status headers, promote ADR-015, add SW cache TTL, wire LH CI |
 
 ## Archived
 
@@ -105,10 +106,11 @@ These numbered plans document the project's foundation and are considered stable
 | `035-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm followups, ADR cross-check, AGENTS.md refresh, test audit                  |
 | `036-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | Swarm roundup — ADR compliance verified, compacted learnings, AGENTS.md refresh  |
 | `037-progress-update-2026-07-18.md`                   | Progress | Complete ✅ | TRIZ contradiction audit, skill registry docs, AGENTS.md skill directory refs  |
-| `041-goap-release-signing-and-plan040-completion.md`  | GOAP     | Active 🔄   | Close Plan 040 gaps + wire release APK signing into CI       |
+| `041-goap-release-signing-and-plan040-completion.md`  | GOAP     | Complete ✅ | Close Plan 040 gaps + wire release APK signing into CI       |
+| `042-goap-plans-completion-sprint.md`                  | GOAP     | Active 🔄   | Close P0 plan-audit gaps: rebuild stale design-tokens.css, fix plan status headers, promote ADR-015, add SW cache TTL, wire LH CI |
 
 ## Quick reference: ADR numbers in use
 
 `adr-001` through `adr-029` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-030`
-**Next available plan number**: `041`
+**Next available plan number**: `042`

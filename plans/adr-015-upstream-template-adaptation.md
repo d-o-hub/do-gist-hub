@@ -2,7 +2,9 @@
 
 ## Status
 
-**Proposed** — Awaiting review
+**Accepted** — Phases 1-6 substantially implemented via plans 019 and 038. See implementation notes below.
+
+> **Implementation note (2026-05-17)**: All Phase 1 security items completed (gitleaks, pre-commit, SECURITY.md, SHA-pinned actions, permissions blocks, timeout-minutes). Phase 2 documentation items completed (QUICKSTART.md, CHANGELOG.md, README.md rewrite, CONTRIBUTING.md expansion). Phase 3 CI/CD workflows completed (security-scan.yml, commitlint.yml, yaml-lint, dependabot-auto-merge). Phase 4 scripts completed (validate-skills.sh, skill-validation.sh, run_act_local.sh). Phase 5 agents-docs/ items completed across multiple sprints. Phase 6 automation completed (stale.yml, labeler.yml, cleanup.yml, version-propagation.yml). See plans/019 and plans/038 for detailed tracking.
 
 ## Context
 
