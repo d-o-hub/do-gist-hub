@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- CSP violation reporting endpoint (plan 038 F2)
+- Stryker mutation testing configuration (plan 038 D6)
+- Dependency review CI workflow (plan 038 B6)
+- ProGuard CI smoke check workflow (plan 038 F6)
+- Conflict-resolution UI E2E walkthrough tests (plan 038 F1)
+- Release Please automated release workflow (plan 038 E3)
+- Postinstall hook for automatic commit-msg installation (plan 038 E2)
 - Self-hosted variable fonts (Inter Variable, JetBrains Mono Variable) per ADR-022
 - Scroll-driven animations with CSS `animation-timeline: view()`
 - Copy-to-clipboard feature in gist detail view

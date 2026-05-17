@@ -1,0 +1,21 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: Create Release PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: google-github-actions/release-please-action@e4dc86ba4b4c13e92e73b22f04b18e6a2d1ee3f9  # pinned from v4.1.1
+        with:
+          release-type: node
+          package-name: d-o-gist-hub
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -128,3 +128,4 @@ playwright-report/
 analysis/
 opencode.json
 actionlint
+pnpm-workspace.yaml

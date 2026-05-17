@@ -63,6 +63,27 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // CSP violation reports (plan 038 F2) — redact and return 204
+  if (url.pathname === '/csp-report' && request.method === 'POST') {
+    event.respondWith(
+      request.text().then((body) => {
+        try {
+          const report = JSON.parse(body);
+          const redacted = {
+            'document-uri': report['csp-report']?.['document-uri']?.substring(0, 40),
+            'violated-directive': report['csp-report']?.['violated-directive'],
+            'blocked-uri': report['csp-report']?.['blocked-uri']?.substring(0, 40),
+          };
+          console.warn('[CSP Violation]', redacted);
+        } catch {
+          console.warn('[CSP Violation] <unparseable report>');
+        }
+        return new Response(null, { status: 204 });
+      })
+    );
+    return;
+  }
+
   // Navigation requests - Network first with cache fallback
   if (request.mode === 'navigate') {
     event.respondWith(
