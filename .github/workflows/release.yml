@@ -81,6 +81,18 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew compileReleaseSources --stacktrace
+      - name: Firebase Test Lab — Robo Test (smoke)
+        if: env.FIREBASE_TESTLAB_JSON != ''
+        env:
+          FIREBASE_TESTLAB_JSON: ${{ secrets.FIREBASE_TESTLAB_JSON }}
+        uses: vacxe/firebase-test-lab-action@586e99ca160590b6c77ef0d49676f6e9a8e32f56  # pinned from v1
+        with:
+          service-account: ${{ secrets.FIREBASE_TESTLAB_JSON }}
+          apk: android/app/build/outputs/apk/debug/app-debug.apk
+          test: ''
+          device-id: 'Pixel7'
+          os-version-id: '34'
+          robo-directives: ''
       - name: Decode Keystore and Build Release APK + AAB
         if: env.ANDROID_KEYSTORE_BASE64 != ''
         env:
