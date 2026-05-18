@@ -68,11 +68,6 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       - name: Build Web App
         run: pnpm run build
-      - name: ProGuard Compilation Smoke Check
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew compileReleaseSources --stacktrace
       - name: Build Web ZIP
         run: zip -r web-app.zip dist/
       - name: Build Android Debug APK
@@ -81,6 +76,11 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
+      - name: ProGuard Compilation Smoke Check
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew compileReleaseSources --stacktrace
       - name: Decode Keystore and Build Release APK
         if: env.ANDROID_KEYSTORE_BASE64 != ''
         env:
