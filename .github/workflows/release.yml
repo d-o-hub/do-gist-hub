@@ -103,7 +103,7 @@ jobs:
           name: Release ${{ steps.version.outputs.VERSION }}
           body: ${{ steps.changelog.outputs.changelog }}
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, '-rc.') || contains(github.ref_name, '-beta.') || contains(github.ref_name, '-alpha.') }}
           fail_on_unmatched_files: false
           files: |
             web-app.zip
