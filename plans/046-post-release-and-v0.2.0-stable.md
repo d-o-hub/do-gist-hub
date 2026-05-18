@@ -2,7 +2,7 @@
 
 > **Date**: 2026-05-17
 > **Type**: GOAP Plan
-> **Status**: Draft
+> **Status**: Active
 > **Related**: `045-v0.2.0-release-and-auth-modernization.md`, `013-release-plan.md`, `adr-028-github-app-vs-pat-2026.md`
 
 ---

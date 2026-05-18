@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "lastUpdated": "2026-05-17",
+  "lastUpdated": "2026-05-18",
   "sprintComplete": {
     "038-sprint1": "2026-05-16",
     "038-sprint2": "2026-05-16",
@@ -224,6 +224,11 @@
       "type": "goap",
       "status": "complete",
       "summary": "v0.2.0-rc.1 release (VERSION bumped, CHANGELOG updated), OAuth Device Flow (proxy worker + client + settings UI + CSP), audit gaps (staleness indicators, conflict-resolution E2E tests, ProGuard CI, bundle budget CI)"
+    },
+    "046-post-release-and-v0.2.0-stable.md": {
+      "type": "goap",
+      "status": "active",
+      "summary": "Post-v0.2.0-rc.1 release monitoring, stable promotion, v0.3.0 planning"
     }
   },
   "archive": [

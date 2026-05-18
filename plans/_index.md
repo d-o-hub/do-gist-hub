@@ -9,7 +9,7 @@
 
 | File                                          | Type        | Status      | Summary                                                                                                                      |
 | --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `046-post-release-and-v0.2.0-stable.md`       | GOAP Plan   | Draft 🟡    | Post-v0.2.0-rc.1 release monitoring, stable promotion, v0.3.0 planning |
+| `046-post-release-and-v0.2.0-stable.md`       | GOAP Plan   | Active 🟢   | Post-v0.2.0-rc.1 release monitoring, v0.2.0 stable promotion, v0.3.0 planning |
 | File                                          | Type        | Status      | Summary                                                                                                                      |
 | --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `045-v0.2.0-release-and-auth-modernization.md` | GOAP Plan   | Complete ✅ | v0.2.0-rc.1 release, OAuth Device Flow, audit gaps completed |
