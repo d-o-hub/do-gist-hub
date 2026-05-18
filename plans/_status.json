@@ -222,8 +222,8 @@
     },
     "045-v0.2.0-release-and-auth-modernization.md": {
       "type": "goap",
-      "status": "active",
-      "summary": "v0.2.0 release, OAuth Device Flow implementation, remaining audit gaps"
+      "status": "complete",
+      "summary": "v0.2.0-rc.1 release (VERSION bumped, CHANGELOG updated), OAuth Device Flow (proxy worker + client + settings UI + CSP), audit gaps (staleness indicators, conflict-resolution E2E tests, ProGuard CI, bundle budget CI)"
     }
   },
   "archive": [
