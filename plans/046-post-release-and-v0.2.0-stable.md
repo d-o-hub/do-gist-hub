@@ -63,6 +63,7 @@ The release workflow has been triggered by the tag push. This plan covers post-r
 | Risk | Mitigation |
 |------|-----------|
 | Release CI fails on tag push | Monitor immediately; fix workflow issues in a followup commit |
+| ProGuard compile step runs before Android platform sync in release workflow | Reorder release.yml — move `compileReleaseSources` after `pnpm run build:android` |
 | RC reveals regressions | Roll back to PAT-only if OAuth flow has issues; address in patch |
 | v0.2.0 stable delayed by issues | Iterate on patches as v0.2.0-rc.2, rc.3, etc. before promoting |
 
