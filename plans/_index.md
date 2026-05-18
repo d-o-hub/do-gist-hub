@@ -9,7 +9,10 @@
 
 | File                                          | Type        | Status      | Summary                                                                                                                      |
 | --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `045-v0.2.0-release-and-auth-modernization.md` | GOAP Plan   | Active 🟢   | v0.2.0 release, OAuth Device Flow implementation, remaining audit gaps |
+| `046-post-release-and-v0.2.0-stable.md`       | GOAP Plan   | Draft 🟡    | Post-v0.2.0-rc.1 release monitoring, stable promotion, v0.3.0 planning |
+| File                                          | Type        | Status      | Summary                                                                                                                      |
+| --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `045-v0.2.0-release-and-auth-modernization.md` | GOAP Plan   | Complete ✅ | v0.2.0-rc.1 release, OAuth Device Flow, audit gaps completed |
 | `adr-022-2026-ui-trends-recommendations.md`   | ADR         | Complete ✅ | All P0-P2 items implemented; dark mode first, variable fonts, bento grid, glassmorphism, spring physics, performance budgets |
 | `strict-unused-vars.md`                       | Enforcement | Complete ✅ | `noUnusedVariables` enabled in biome.json, zero violations                                                                   |
 | `019-swarm-analysis-codebase-improvements.md` | Analysis    | Complete ✅ | All CI/CD workflows, docs, security items implemented; SHA-pinned actions                                                    |
