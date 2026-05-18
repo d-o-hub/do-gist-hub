@@ -81,7 +81,7 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew compileReleaseSources --stacktrace
-      - name: Decode Keystore and Build Release APK
+      - name: Decode Keystore and Build Release APK + AAB
         if: env.ANDROID_KEYSTORE_BASE64 != ''
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -95,7 +95,8 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD="$ANDROID_KEYSTORE_PASSWORD" \
           ANDROID_KEY_ALIAS="$ANDROID_KEY_ALIAS" \
           ANDROID_KEY_PASSWORD="$ANDROID_KEY_PASSWORD" \
-          ./gradlew assembleRelease --stacktrace
+          ./gradlew assembleRelease --stacktrace && \
+          ./gradlew bundleRelease --stacktrace
       - name: Create Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # pinned from v3
         with:
@@ -109,3 +110,4 @@ jobs:
             web-app.zip
             android/app/build/outputs/apk/debug/app-debug.apk
             android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/bundle/release/app-release.aab
