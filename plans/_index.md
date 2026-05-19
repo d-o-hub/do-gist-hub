@@ -1,6 +1,6 @@
 # plans/\_index.md — Active Plan Registry
 
-> **Last updated**: 2026-05-18
+> **Last updated**: 2026-05-19
 > Agents: read this before starting any task. Update it when you change plan status.
 
 ---
@@ -10,6 +10,8 @@
 | File                                          | Type        | Status      | Summary                                                                                                                      |
 | --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `046-post-release-and-v0.2.0-stable.md`       | GOAP Plan   | Active 🟢   | Post-v0.2.0-rc.1 release monitoring, v0.2.0 stable promotion, v0.3.0 planning |
+| `047-v0.3.0-scope.md`                         | Plan        | Draft 📝    | v0.3.0 scope: F-Droid publication, auth telemetry, UX polish, DevEx/CI improvements |
+| `048-codebase-audit-implementation-gaps-ci-docs.md` | GOAP Plan | Active 🟢 | Codebase audit: P0 CI broken SHAs, release gate; P1 auth gaps, untested device-flow; P2 CI hardening, doc hygiene |
 | File                                          | Type        | Status      | Summary                                                                                                                      |
 | --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `045-v0.2.0-release-and-auth-modernization.md` | GOAP Plan   | Complete ✅ | v0.2.0-rc.1 release, OAuth Device Flow, audit gaps completed |
@@ -114,4 +116,4 @@ These numbered plans document the project's foundation and are considered stable
 
 `adr-001` through `adr-029` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-030`
-**Next available plan number**: `046`
+**Next available plan number**: `048`

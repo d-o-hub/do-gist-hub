@@ -17,6 +17,7 @@ import type {
 } from '../../types/api';
 import { getEtag, setEtag } from '../db';
 import { safeError } from '../security/logger';
+import { recordFirstApiCall } from '../telemetry/auth-telemetry';
 import { handleGitHubError } from './error-handler';
 import { trackRateLimit } from './rate-limiter';
 
@@ -186,6 +187,28 @@ export async function validateToken(token: string): Promise<TokenInfo> {
 }
 
 /**
+ * Fetch wrapper with transparent 401 → revalidateToken() → retry.
+ * Retries the request once if a 401 response is received and token revalidation succeeds.
+ */
+async function fetchWithAuthRetry(
+  url: string,
+  getOptions: () => Promise<RequestInit>,
+  _context: string
+): Promise<Response> {
+  let response = await fetch(url, await getOptions());
+
+  if (response.status === 401) {
+    const { revalidateToken } = await import('./auth');
+    const result = await revalidateToken();
+    if (result.valid) {
+      response = await fetch(url, await getOptions());
+    }
+  }
+
+  return response;
+}
+
+/**
  * Generic fetch with ETag support and deduplication
  */
 function fetchWithEtag<T>(url: string, context: string): Promise<T> {
@@ -193,13 +216,18 @@ function fetchWithEtag<T>(url: string, context: string): Promise<T> {
 
   return deduplicatedFetch(key, async () => {
     try {
+      await recordFirstApiCall();
       const cached = await getEtag(url);
       const headers: Record<string, string> = {};
       if (cached?.etag) {
         headers['If-None-Match'] = cached.etag;
       }
 
-      const response = await fetch(url, await buildOptions('GET', undefined, headers));
+      const response = await fetchWithAuthRetry(
+        url,
+        () => buildOptions('GET', undefined, headers),
+        context
+      );
 
       if (response.status === 304 && cached) {
         trackRateLimit(response);
@@ -279,9 +307,10 @@ export function getGist(id: string): Promise<GitHubGist> {
  */
 export async function createGist(payload: CreateGistRequest): Promise<GitHubGist> {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuthRetry(
       `${BASE_URL}/gists`,
-      await buildOptions('POST', JSON.stringify(payload))
+      () => buildOptions('POST', JSON.stringify(payload)),
+      'createGist'
     );
 
     if (!response.ok) {
@@ -300,9 +329,10 @@ export async function createGist(payload: CreateGistRequest): Promise<GitHubGist
  */
 export async function updateGist(id: string, payload: UpdateGistRequest): Promise<GitHubGist> {
   try {
-    const response = await fetch(
+    const response = await fetchWithAuthRetry(
       `${BASE_URL}/gists/${id}`,
-      await buildOptions('PATCH', JSON.stringify(payload))
+      () => buildOptions('PATCH', JSON.stringify(payload)),
+      'updateGist'
     );
 
     if (!response.ok) {
@@ -321,7 +351,11 @@ export async function updateGist(id: string, payload: UpdateGistRequest): Promis
  */
 export async function deleteGist(id: string): Promise<void> {
   try {
-    const response = await fetch(`${BASE_URL}/gists/${id}`, await buildOptions('DELETE'));
+    const response = await fetchWithAuthRetry(
+      `${BASE_URL}/gists/${id}`,
+      () => buildOptions('DELETE'),
+      'deleteGist'
+    );
 
     if (!response.ok) {
       handleApiError(response, 'deleteGist');
@@ -338,7 +372,11 @@ export async function deleteGist(id: string): Promise<void> {
  */
 export async function starGist(id: string): Promise<void> {
   try {
-    const response = await fetch(`${BASE_URL}/gists/${id}/star`, await buildOptions('PUT'));
+    const response = await fetchWithAuthRetry(
+      `${BASE_URL}/gists/${id}/star`,
+      () => buildOptions('PUT'),
+      'starGist'
+    );
 
     if (!response.ok) {
       handleApiError(response, 'starGist');
@@ -355,7 +393,11 @@ export async function starGist(id: string): Promise<void> {
  */
 export async function unstarGist(id: string): Promise<void> {
   try {
-    const response = await fetch(`${BASE_URL}/gists/${id}/star`, await buildOptions('DELETE'));
+    const response = await fetchWithAuthRetry(
+      `${BASE_URL}/gists/${id}/star`,
+      () => buildOptions('DELETE'),
+      'unstarGist'
+    );
 
     if (!response.ok) {
       handleApiError(response, 'unstarGist');
@@ -375,7 +417,11 @@ export function checkIfStarred(id: string): Promise<boolean> {
 
   return deduplicatedFetch(key, async () => {
     try {
-      const response = await fetch(`${BASE_URL}/gists/${id}/star`, await buildOptions());
+      const response = await fetchWithAuthRetry(
+        `${BASE_URL}/gists/${id}/star`,
+        () => buildOptions(),
+        'checkIfStarred'
+      );
 
       trackRateLimit(response);
       return response.status === 204;
@@ -391,7 +437,11 @@ export function checkIfStarred(id: string): Promise<boolean> {
  */
 export async function forkGist(id: string): Promise<GitHubGist> {
   try {
-    const response = await fetch(`${BASE_URL}/gists/${id}/forks`, await buildOptions('POST'));
+    const response = await fetchWithAuthRetry(
+      `${BASE_URL}/gists/${id}/forks`,
+      () => buildOptions('POST'),
+      'forkGist'
+    );
 
     if (!response.ok) {
       return handleApiError(response, 'forkGist');
@@ -412,7 +462,11 @@ export function listGistRevisions(id: string): Promise<GistRevision[]> {
 
   return deduplicatedFetch(key, async () => {
     try {
-      const response = await fetch(`${BASE_URL}/gists/${id}/revisions`, await buildOptions());
+      const response = await fetchWithAuthRetry(
+        `${BASE_URL}/gists/${id}/revisions`,
+        () => buildOptions(),
+        'listGistRevisions'
+      );
 
       if (!response.ok) {
         return handleApiError(response, 'listGistRevisions');
@@ -445,13 +499,19 @@ async function getCurrentUsername(): Promise<string> {
 
   return deduplicatedFetch(key, async () => {
     try {
-      const response = await fetch(`${BASE_URL}/user`, {
-        headers: {
-          Accept: 'application/vnd.github+json',
-          'X-GitHub-Api-Version': '2022-11-28',
-          Authorization: `token ${token}`,
-        },
-      });
+      const response = await fetchWithAuthRetry(
+        `${BASE_URL}/user`,
+        async () => ({
+          method: 'GET',
+          headers: {
+            Accept: 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            Authorization: `token ${await getAuthToken()}`,
+          },
+          signal: globalAbortController.signal,
+        }),
+        'getCurrentUsername'
+      );
 
       if (!response.ok) {
         return handleApiError(response, 'getCurrentUsername');

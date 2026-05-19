@@ -36,6 +36,8 @@ vi.mock('../../src/services/export-import', () => ({
 vi.mock('../../src/services/db', () => ({
   clearAllData: vi.fn(),
   exportData: vi.fn().mockResolvedValue(JSON.stringify({ version: '3.0.0' })),
+  getMetadata: vi.fn().mockResolvedValue(null),
+  setMetadata: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../../src/stores/gist-store', () => ({

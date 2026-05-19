@@ -37,6 +37,19 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        /**
+         * F-Droid build variant.
+         *
+         * Identical to release (minification, resource shrinking, ProGuard)
+         * but produces an UNSIGNED APK. F-Droid signs APKs with its own key.
+         *
+         * Build:  ./gradlew assembleFdroid
+         * Output: app/build/outputs/apk/fdroid/app-fdroid-unsigned.apk
+         */
+        fdroid {
+            initWith release
+            signingConfig null
+        }
     }
 }
 
@@ -65,11 +78,6 @@ configurations.all {
 
 apply from: 'capacitor.build.gradle'
 
-try {
-    def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
-        apply plugin: 'com.google.gms.google-services'
-    }
-} catch(Exception e) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
-}
+// Note: google-services plugin intentionally omitted.
+// No Firebase/Google Play features are used.
+// F-Droid compatibility requires zero proprietary dependencies.

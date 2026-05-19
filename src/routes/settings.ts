@@ -12,6 +12,7 @@ import { lifecycle } from '../services/lifecycle';
 import networkMonitor from '../services/network/offline-monitor';
 import { redactToken, sanitizeHtml } from '../services/security';
 import { safeError } from '../services/security/logger';
+import { recordAuthCompleted, recordAuthMethod } from '../services/telemetry/auth-telemetry';
 import gistStore from '../stores/gist-store';
 import { getThemePreference, initTheme } from '../tokens/design-tokens';
 import { showConfirmDialog } from '../utils/dialog';
@@ -48,6 +49,9 @@ export async function render(
                 <button id="device-flow-login-btn" class="btn btn-primary">SIGN IN WITH GITHUB</button>
               </div>
               <div id="device-flow-status" class="micro-label mt-2" style="white-space: pre-line;"></div>
+              <p class="micro-label hint-text mt-2">
+                ⚠️ Only enter the code on <strong>github.com</strong>. Never share it with anyone.
+              </p>
             </div>
           </div>
         </details>
@@ -114,13 +118,23 @@ export async function render(
 
 /**
  * Load and display the current GitHub PAT status in the settings UI.
+ * Shows a rotation reminder if the token is older than 60 days.
  */
 async function loadTokenInfo(container: HTMLElement): Promise<void> {
   const el = container.querySelector('#token-status');
   const token = await getToken();
   if (el) {
     if (token) {
-      el.innerHTML = `<p class="micro-label token-saved">Token active: ${sanitizeHtml(redactToken(token))}</p>`;
+      // Check token age for rotation reminder
+      const savedAt = await (await import('../services/db')).getMetadata<number>('token-saved-at');
+      let rotationHtml = '';
+      if (savedAt) {
+        const ageDays = (Date.now() - savedAt) / (1000 * 60 * 60 * 24);
+        if (ageDays > 60) {
+          rotationHtml = `<p class="micro-label token-rotation">⚠️ Token is ${Math.floor(ageDays)} days old. Consider rotating it for security.</p>`;
+        }
+      }
+      el.innerHTML = `<p class="micro-label token-saved">Token active: ${sanitizeHtml(redactToken(token))}</p>${rotationHtml}`;
     } else {
       el.innerHTML = '<p class="micro-label token-missing">No token saved. Add one above.</p>';
     }
@@ -176,8 +190,10 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
       const input = container.querySelector('#pat-input') as HTMLInputElement;
       if (input.value) {
         void (async () => {
+          await recordAuthMethod('pat');
           await saveToken(input.value);
           toast.success('TOKEN SAVED');
+          await recordAuthCompleted();
           await loadTokenInfo(container);
           input.value = '';
         })();
@@ -214,18 +230,31 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
 
         try {
           const { authenticateWithDeviceFlow } = await import('../services/github/device-flow');
-          const success = await authenticateWithDeviceFlow((status) => {
+          const result = await authenticateWithDeviceFlow((status) => {
             statusEl.textContent = status;
           });
 
-          if (success) {
+          if (result.success) {
             toast.success('AUTHENTICATED VIA GITHUB');
             statusEl.textContent = 'Authentication successful!';
             await loadTokenInfo(container);
           } else {
             toast.error('AUTHENTICATION FAILED');
-            statusEl.textContent =
-              'Authentication failed. The device code may have expired or you may have denied the request.';
+            const errorMessages: Record<string, string> = {
+              expired_token:
+                'The device code expired. Please click "SIGN IN WITH GITHUB" to try again.',
+              access_denied:
+                'You denied the authorization request. Click "SIGN IN WITH GITHUB" to try again.',
+              slow_down: 'GitHub rate-limited the request. Please wait a moment and try again.',
+              network_error: 'A network error occurred. Check your connection and try again.',
+              timeout:
+                'Authentication timed out. Please click "SIGN IN WITH GITHUB" to start over.',
+              save_error: 'Failed to save the token. Please try again.',
+            };
+            const msg = result.error
+              ? errorMessages[result.error] || result.errorDescription
+              : 'Authentication failed. Please try again.';
+            statusEl.textContent = msg || 'Authentication failed. Please try again.';
           }
         } catch {
           toast.error('AUTHENTICATION FAILED');

@@ -120,5 +120,5 @@ Recognize when context is becoming unmanageable:
 ## References
 
 - `AGENTS.md` — Stop conditions and workflow rules
-- `agents-docs/SUB-AGENTS.md` — Handoff templates and synthesis
-- `agents-docs/HARNESS.md` — Quality gate integration
+- `AGENTS.md` — Handoff templates and synthesis
+- `scripts/quality_gate.sh` — Quality gate integration

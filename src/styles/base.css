@@ -966,6 +966,11 @@ body {
   color: var(--color-warning);
 }
 
+.token-rotation {
+  color: var(--color-status-warning-fg, #f97316);
+  margin-top: var(--space-2);
+}
+
 /* ===== Offline Stats ===== */
 .offline-stats {
   display: grid;

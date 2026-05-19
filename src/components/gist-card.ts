@@ -49,6 +49,18 @@ function renderSyncBadge(
   return '';
 }
 
+/**
+ * Escape a string for use as a CSS view-transition-name.
+ * Falls back to a safe prefix when CSS.escape is unavailable (Node/Vitest).
+ */
+function escapeViewTransitionName(id: string): string {
+  if (typeof CSS !== 'undefined' && CSS.escape) {
+    return CSS.escape(`gc-${id}`);
+  }
+  // Fallback: gist IDs are alphanumeric — gc- prefix ensures valid custom-ident
+  return `gc-${id}`;
+}
+
 function renderStalenessTooltip(updatedAt: string, lastSyncedAt?: string): string {
   if (!lastSyncedAt) return '';
   const updatedTs = Date.parse(updatedAt);
@@ -95,8 +107,11 @@ export function renderCard(gist: GistRecord): string {
     ? ''
     : `<time class="micro-label" datetime="${gist.updatedAt}">${formatRelativeTime(gist.updatedAt)}</time>`;
 
+  const vtName = escapeViewTransitionName(gist.id);
+
   const html = `
     <article class="glass-card gist-card${gist.starred ? ' featured' : ''}" data-gist-id="${sanitizeHtml(gist.id)}" data-testid="gist-item" tabindex="0" role="button"
+             style="view-transition-name: ${vtName}"
              aria-label="Open gist: ${sanitizeHtml(description)}">
       <div class="gist-card-header">
         <div class="gist-card-meta">

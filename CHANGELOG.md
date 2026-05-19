@@ -27,8 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **BREAKING**: VERSION bumped from 0.1.0 to 0.2.0-rc.1
 
-## What's new?
-
 ### Added
 
 - CSP violation reporting endpoint (plan 038 F2)

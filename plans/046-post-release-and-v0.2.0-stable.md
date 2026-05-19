@@ -41,16 +41,18 @@ Plan 045 shipped v0.2.0-rc.1 (tag `v0.2.0-rc.1`) with:
 - CHANGELOG.md updated with stable release notes
 - Tag `v0.2.0` pushed — release CI succeeded
 
-### 🟡 Goal 3: Prepare for Play Store Deployment
+### ✅ Goal 3 (Pivot): F-Droid Publication (Replaces Play Store)
 
-- Generate upload keystore and configure GitHub secrets (`ANDROID_KEYSTORE_BASE64`, etc.)
-- Set up Firebase project and add `FIREBASE_TESTLAB_JSON` secret for automated cloud device testing
-- Verify AAB artifacts are signed correctly by running the release workflow
-- Upload `app-release.aab` to Google Play Console Internal Testing track
-- Complete store listing (screenshots, description, privacy policy, content rating)
+**Decision**: F-Droid (free) replaces Google Play Store (requires $25 account).
+- `.fdroid.yml` metadata created in repo root
+- `docs/FDROID_DEPLOYMENT.md` deployment guide created
+- `android/build.gradle` — Google Services dependency removed (unused, blocked F-Droid)
+- `docs/CAPACITOR_ANDROID.md` updated with F-Droid as primary recommendation
+- Tracked in plan 047 for MR submission and publication
 
 ### 🟡 Goal 4: Plan v0.3.0 priorities
 
+- Submit F-Droid MR to fdroiddata repository
 - Evaluate deferred items from ADR-028 (GitHub App installation tokens — deferred to v3)
 - Gather usage telemetry on auth method adoption (PAT vs Device Flow)
 - Identify top UX friction points for the next iteration
@@ -70,12 +72,12 @@ Plan 045 shipped v0.2.0-rc.1 (tag `v0.2.0-rc.1`) with:
 | 7 | Add AAB bundle build to release CI | Release workflow reviewed | Play Store-compatible artifact produced | ✅ Done | S |
 | 8 | Write Play Store deployment docs | AAB build working | Clear guide for Play Store submission | ✅ Done | M |
 | 9 | Add Firebase Test Lab CI step | Debug APK build exists | Automated cloud device smoke test | ✅ Done | S |
-| 10 | Generate keystore & configure GitHub secrets | No keystore exists | Signed release builds possible | 🟡 Pending | M |
-| 11 | Verify signed AAB via release workflow | Secrets configured | AAB is correctly signed for Play Store | 🟡 Pending | XS |
-| 12 | Set up Firebase project & auth | Google Cloud account | Firebase Test Lab step can authenticate | 🟡 Pending | M |
-| 13 | Upload AAB to Play Console Internal Testing | Signed AAB available | App available for internal testers | 🟡 Pending | S |
-| 14 | Complete Play Store listing | Internal test approved | App visible on Play Store | 🟡 Pending | L |
-| 15 | Draft v0.3.0 scope | All Play Store tasks complete | Clear direction for next iteration | ⬜ Future | S |
+| 10 | Create F-Droid metadata (.fdroid.yml + docs) | No keystore needed | F-Droid build instructions ready | ✅ Done | S |
+| 11 | Remove Google Services dependency for F-Droid compliance | android/build.gradle | F-Droid build server can compile | ✅ Done | XS |
+| 12 | Update docs/CAPACITOR_ANDROID.md for F-Droid primary | Docs reviewed | Clear F-Droid vs Play Store guidance | ✅ Done | XS |
+| 13 | Submit F-Droid MR to fdroiddata repository | .fdroid.yml exists | App enters F-Droid review queue | 🟡 Pending | M |
+| 14 | Address F-Droid reviewer feedback | MR submitted | App passes review | 🟡 Pending | S |
+| 15 | Draft v0.3.0 scope | F-Droid published | Clear direction for next iteration | ✅ Done | S |
 
 ---
 
@@ -86,8 +88,8 @@ Plan 045 shipped v0.2.0-rc.1 (tag `v0.2.0-rc.1`) with:
 | Release CI fails on tag push | ✅ Resolved — ProGuard ordering fixed |
 | ProGuard compile step runs before Android platform sync | ✅ Resolved — steps reordered |
 | Firebase Test Lab action unavailable or broken | Fall back to local `gcloud firebase test android run` command |
-| Keystore lost or password forgotten | Generate new keystore, update upload key in Play Console |
-| Play Store rejects AAB | Verify signing config matches Play Console's registered upload certificate |
+| F-Droid build server lacks Node.js for Capacitor prebuild | Add `prebuild` steps in `.fdroid.yml` |
+| F-Droid review flags NonFreeNet Antifeature | Already flagged in `.fdroid.yml`; transparent about GitHub API dependency |
 | RC reveals regressions | Roll back to PAT-only if OAuth flow has issues; address in patch |
 
 *Created: 2026-05-17. Updated: 2026-05-18. Status: Active.*

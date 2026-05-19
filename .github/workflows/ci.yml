@@ -127,7 +127,7 @@ jobs:
         run: pnpm run bundle-budget
       - name: Run Lighthouse CI (performance + accessibility budgets)
         if: github.event_name == 'pull_request'
-        run: npx --yes lhci autorun --config=.lighthouserc.json --collect.staticDistDir=dist
+        run: npx @lhci/cli@0.14.x autorun --config=.lighthouserc.json --collect.staticDistDir=dist
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # pinned from v7
         with:
           name: bundle-analysis
@@ -145,7 +145,7 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # pinned from v6
-      - uses: dorny/paths-filter@de22dfa110e52df00ee35449e9006c7739da589b # pinned from v3
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # pinned from v3.0.3
         id: filter
         with:
           filters: |
@@ -173,6 +173,27 @@ jobs:
       - name: Run unit tests
         if: steps.filter.outputs.unit == 'true'
         run: pnpm exec vitest run --reporter=verbose
+
+  sha-pin-audit:
+    name: SHA-Pin Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: false
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # pinned from v6
+      - name: Audit GitHub Actions SHA pins
+        run: |
+          chmod +x scripts/sha-pin-actions.sh
+          ./scripts/sha-pin-actions.sh
+          # Check if the script modified any files (would mean floating tags exist)
+          if ! git diff --quiet -- .github/workflows/; then
+            echo "❌ Some workflow files have unpinned action versions."
+            echo "Run ./scripts/sha-pin-actions.sh locally to fix."
+            git diff -- .github/workflows/
+            exit 1
+          else
+            echo "✅ All actions are SHA-pinned."
+          fi
 
   visual-tests:
     name: Visual Regression Tests

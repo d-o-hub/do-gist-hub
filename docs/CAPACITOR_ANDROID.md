@@ -111,7 +111,37 @@ If the secrets are not configured, the step is skipped gracefully — debug APK 
 
 ---
 
-## Google Play Store Deployment
+## F-Droid Deployment (Free — Recommended)
+
+> **No developer account fee.** F-Droid is a free, open-source app store.
+> This is the recommended distribution channel for d.o. Gist Hub.
+
+See [`docs/FDROID_DEPLOYMENT.md`](FDROID_DEPLOYMENT.md) for the complete guide.
+
+### Quick Start
+
+1. Push a `v*` tag to GitHub
+2. Fork `https://gitlab.com/fdroid/fdroiddata`
+3. Create `metadata/com.dogisthub.app.yml` (copy from `.fdroid.yml` in this repo)
+4. Submit a Merge Request
+5. App appears on F-Droid within 24-48 hours
+
+### F-Droid vs Google Play
+
+| Aspect | F-Droid (Recommended) | Google Play (Paid) |
+|--------|-----------------------|--------------------|
+| **Cost** | Free | $25 one-time fee |
+| **Build** | From source (automated) | Upload AAB manually |
+| **Open-source** | Required | Not required |
+| **Proprietary deps** | Forbidden | Allowed |
+| **Updates** | Auto via tags | Manual upload |
+
+---
+
+## Google Play Store Deployment (Requires $25 Account)
+
+> **Note**: Requires a paid Google Play Console developer account ($25 one-time fee).
+> Consider F-Droid (above) as the free alternative.
 
 ### Prerequisites
 

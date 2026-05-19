@@ -87,7 +87,7 @@ Implementation locations:
 The `VERSION` file at repository root is the **only** authoritative version string.
 
 ```
-0.1.0
+0.2.0
 ```
 
 ### Derivation Chain

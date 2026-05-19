@@ -8,6 +8,7 @@
   position: fixed;
   inset: 20% auto auto 50%;
   transform: translate(-50%, -20%) scale(0.95);
+  overlay: auto;
   width: min(600px, 90vw);
   background: var(--color-surface);
   border: var(--glass-border);
@@ -24,6 +25,13 @@
 .command-palette:popover-open {
   opacity: 1;
   transform: translate(-50%, -20%) scale(1);
+}
+
+@starting-style {
+  .command-palette:popover-open {
+    opacity: 0;
+    transform: translate(-50%, -20%) scale(0.95);
+  }
 }
 
 .command-palette::backdrop {

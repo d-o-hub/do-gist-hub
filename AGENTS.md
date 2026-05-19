@@ -73,6 +73,7 @@ Consult `.agents/skills/` or `agents-docs/available-skills.md` for the full skil
 | `plans/037-progress-update-2026-07-18.md`                   | TRIZ audit, skill registry, compacted doc updates         |
 | `plans/040-goap-phase-d-039-phase-bc-completion.md` | Plan 039 Phase B/C completion — @scope, shadow tokens, Popover API, interpolate-size, accent-color |
 | `plans/040-progress-update-2026-05-17-plan-039-phase-bc-completion.md` | Progress update — plan 040 execution |
+| `plans/048-codebase-audit-implementation-gaps-ci-docs.md` | Codebase audit — P0 CI broken SHAs, release gate; P1 auth gaps, untested device-flow; P2 CI hardening, doc hygiene |
 | `.agents/skills/codebase-optimizer/SKILL.md`               | Autonomous optimization and self-learning system                                        |
 | `.qwen/skills/` / `.gemini/skills/`                        | 25 skills mirrored across agent frameworks (Qwen, Gemini, Claude)                       |
 

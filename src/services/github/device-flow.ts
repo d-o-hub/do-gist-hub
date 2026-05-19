@@ -14,6 +14,7 @@
  * @see https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#device-flow
  */
 
+import { recordAuthCompleted, recordAuthMethod } from '../telemetry/auth-telemetry';
 import { saveToken } from './auth';
 
 // Configurable via window.__AUTH_PROXY_URL
@@ -44,6 +45,8 @@ export interface DeviceCode {
 export interface DeviceFlowResult {
   success: boolean;
   accessToken?: string;
+  refreshToken?: string;
+  expiresIn?: number;
   error?: string;
   errorDescription?: string;
 }
@@ -128,6 +131,8 @@ export async function pollForToken(
         return {
           success: true,
           accessToken: data.access_token,
+          refreshToken: data.refresh_token,
+          expiresIn: data.expires_in,
         };
       }
 
@@ -185,11 +190,11 @@ export async function pollForToken(
  * This is the high-level API for the settings UI.
  *
  * @param onProgress - Callback invoked with status messages for UI display
- * @returns true if authentication succeeded
+ * @returns DeviceFlowResult with success status, error details, and optional token
  */
 export async function authenticateWithDeviceFlow(
   onProgress?: (status: string) => void
-): Promise<boolean> {
+): Promise<DeviceFlowResult> {
   try {
     onProgress?.('Connecting to GitHub...');
 
@@ -202,20 +207,37 @@ export async function authenticateWithDeviceFlow(
     const result = await pollForToken(code.deviceCode, code.expiresIn, code.interval, onProgress);
 
     if (!result.success || !result.accessToken) {
-      return false;
+      return result;
     }
 
     // Step 3: Save token via the existing auth service
     onProgress?.('Saving token...');
+    await recordAuthMethod('device-flow');
     const saveResult = await saveToken(result.accessToken);
 
     if (!saveResult.success) {
-      return false;
+      return {
+        success: false,
+        error: 'save_error',
+        errorDescription: saveResult.error || 'Failed to save token',
+      };
     }
 
-    return true;
-  } catch (_err) {
-    return false;
+    await recordAuthCompleted();
+
+    // Store refresh token for automatic token refresh on expiry
+    if (result.refreshToken && result.expiresIn) {
+      const { storeRefreshToken } = await import('./auth');
+      await storeRefreshToken(result.refreshToken, result.expiresIn);
+    }
+
+    return { success: true, accessToken: result.accessToken };
+  } catch (err) {
+    return {
+      success: false,
+      error: 'unexpected_error',
+      errorDescription: err instanceof Error ? err.message : 'An unexpected error occurred',
+    };
   }
 }
 

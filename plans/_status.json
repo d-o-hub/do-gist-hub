@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "lastUpdated": "2026-05-18",
+  "lastUpdated": "2026-05-19",
   "sprintComplete": {
     "038-sprint1": "2026-05-16",
     "038-sprint2": "2026-05-16",
@@ -118,7 +118,7 @@
     "adr-022-ambient-light-extension.md": {
       "type": "adr",
       "status": "complete",
-      "summary": "Ambient light sensor theming — implemented in Phase C (029); sensor, permission flow, lifecycle, settings UI, tests"
+      "summary": "Ambient light sensor theming \u2014 implemented in Phase C (029); sensor, permission flow, lifecycle, settings UI, tests"
     },
     "adr-026-phase-a-modernization-goap.md": {
       "type": "adr",
@@ -208,7 +208,7 @@
     "adr-029-android-release-signing.md": {
       "type": "adr",
       "status": "accepted",
-      "summary": "Android release signing via CI — keystore from GitHub secrets, versionCode from GITHUB_RUN_NUMBER, versionName from VERSION file"
+      "summary": "Android release signing via CI \u2014 keystore from GitHub secrets, versionCode from GITHUB_RUN_NUMBER, versionName from VERSION file"
     },
     "041-goap-release-signing-and-plan040-completion.md": {
       "type": "goap",
@@ -229,6 +229,16 @@
       "type": "goap",
       "status": "active",
       "summary": "Post-v0.2.0-rc.1 release monitoring, stable promotion, v0.3.0 planning"
+    },
+    "048-codebase-audit-implementation-gaps-ci-docs.md": {
+      "type": "goap",
+      "status": "active",
+      "summary": "Codebase audit: P0 CI broken SHAs, release gate; P1 auth gaps, untested device-flow; P2 CI hardening, doc hygiene"
+    },
+    "047-v0.3.0-scope.md": {
+      "type": "plan",
+      "status": "draft",
+      "summary": "v0.3.0 scope: F-Droid publication (replaces Play Store), auth telemetry (Device Flow error states, rotation reminder), UX polish (prefers-reduced-data, view transitions, container queries), DevEx/CI (mutation testing, SHA-pin audit, Gradle diagnostics)"
     }
   },
   "archive": [
@@ -262,7 +272,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-030",
-    "plan": "046",
+    "plan": "048",
     "goap": "032"
   }
 }

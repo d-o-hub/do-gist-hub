@@ -4,6 +4,10 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_run:
+    workflows: ['CI']
+    types:
+      - completed
 
 permissions:
   contents: write
@@ -33,7 +37,7 @@ jobs:
         with:
           packages: 'tools platform-tools platforms;android-35 build-tools;35.0.0'
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Read VERSION
         id: version
         run: echo "VERSION=$(< VERSION)" >> "$GITHUB_OUTPUT"
@@ -85,7 +89,7 @@ jobs:
         if: env.FIREBASE_TESTLAB_JSON != ''
         env:
           FIREBASE_TESTLAB_JSON: ${{ secrets.FIREBASE_TESTLAB_JSON }}
-        uses: vacxe/firebase-test-lab-action@586e99ca160590b6c77ef0d49676f6e9a8e32f56  # pinned from v1
+        uses: vacxe/firebase-test-lab-action@bab7fe412819d0ac601b64c288ee0819a91ccf91  # pinned from v0.0.6
         with:
           service-account: ${{ secrets.FIREBASE_TESTLAB_JSON }}
           apk: android/app/build/outputs/apk/debug/app-debug.apk

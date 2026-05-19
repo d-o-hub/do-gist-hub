@@ -35,6 +35,85 @@ function clearTokenCache(): void {
   sessionTokenCache = null;
 }
 
+// Refresh token storage for OAuth device flow
+const REFRESH_TOKEN_KEY = 'github-refresh-token';
+const REFRESH_TOKEN_EXPIRES_KEY = 'github-refresh-expires';
+
+export async function storeRefreshToken(token: string, expiresIn: number): Promise<void> {
+  await setMetadata(REFRESH_TOKEN_KEY, token);
+  await setMetadata(REFRESH_TOKEN_EXPIRES_KEY, Date.now() + expiresIn * 1000);
+}
+
+export async function clearRefreshToken(): Promise<void> {
+  await setMetadata(REFRESH_TOKEN_KEY, null);
+  await setMetadata(REFRESH_TOKEN_EXPIRES_KEY, null);
+}
+
+async function getStoredRefreshToken(): Promise<{ token: string; expiresAt: number } | null> {
+  const [token, expiresAt] = await Promise.all([
+    getMetadata<string>(REFRESH_TOKEN_KEY),
+    getMetadata<number>(REFRESH_TOKEN_EXPIRES_KEY),
+  ]);
+  if (!token || !expiresAt) return null;
+  return { token, expiresAt };
+}
+
+/**
+ * Exchange refresh token for a new access token via the auth proxy.
+ * Returns the new token on success, null if no refresh token or refresh failed.
+ */
+export async function refreshToken(): Promise<string | null> {
+  const stored = await getStoredRefreshToken();
+  if (!stored || stored.expiresAt < Date.now()) {
+    if (stored) await clearRefreshToken();
+    return null;
+  }
+
+  const proxyUrl = getProxyUrl();
+  try {
+    const response = await fetch(`${proxyUrl}/login/oauth/access_token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        refresh_token: stored.token,
+        grant_type: 'refresh_token',
+      }),
+    });
+
+    if (!response.ok) {
+      await clearRefreshToken();
+      return null;
+    }
+
+    const data = await response.json();
+    if (!data.access_token) {
+      await clearRefreshToken();
+      return null;
+    }
+
+    const saveResult = await saveToken(data.access_token);
+    if (!saveResult.success) {
+      return null;
+    }
+
+    if (data.refresh_token) {
+      await storeRefreshToken(data.refresh_token, data.expires_in || 28800);
+    }
+
+    return data.access_token;
+  } catch {
+    return null;
+  }
+}
+
+function getProxyUrl(): string {
+  if (typeof window !== 'undefined') {
+    const win = window as { __AUTH_PROXY_URL?: string };
+    if (win.__AUTH_PROXY_URL) return win.__AUTH_PROXY_URL;
+  }
+  return 'https://auth-proxy.d-o-gist-hub.workers.dev';
+}
+
 // Clear cache on page unload and visibility change
 const authAbortController = new AbortController();
 if (typeof window !== 'undefined') {
@@ -144,6 +223,7 @@ export async function removeToken(): Promise<void> {
   await setMetadata('github-pat-enc', null);
   await setMetadata('github-username', null);
   await setMetadata('token-saved-at', null);
+  await clearRefreshToken();
   clearTokenCache();
   clearUsernameCache();
   resetRateLimit();
@@ -176,9 +256,15 @@ export async function getTokenInfo(): Promise<{
 }
 
 /**
- * Re-validate stored token
+ * Re-validate stored token.
+ * Tries refresh token first (for OAuth device flow), then falls back to PAT validation.
  */
 export async function revalidateToken(): Promise<{ valid: boolean; error?: string }> {
+  const refreshed = await refreshToken();
+  if (refreshed) {
+    return { valid: true };
+  }
+
   const token = await getToken();
 
   if (!token) {

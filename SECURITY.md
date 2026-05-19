@@ -4,7 +4,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.1.x   | :white_check_mark: |
+| 0.2.x   | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
@@ -48,7 +48,12 @@ The app enforces a strict CSP:
 ### Android
 
 - Capacitor WebView uses `androidScheme: 'https'` with cleartext disabled.
-- Planned: Migration to Android Keystore for key storage (v1.1+).
+- The F-Droid build produces an unsigned APK (build variant: `fdroid`). F-Droid signs APKs with its own key.
+- Google Play Services dependency has been removed for F-Droid compliance.
+- **Planned: Migration to Android Keystore for key storage (v0.4.0+).**
+  - Currently, token encryption keys are stored in IndexedDB (non-extractable via Web Crypto API).
+  - Android Keystore integration would move key storage to the OS-level TEE (Trusted Execution Environment).
+  - This requires a Capacitor plugin or native bridge to access Android Keystore from WebView.
 
 ## Disclosure Policy
 

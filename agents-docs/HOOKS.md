@@ -67,10 +67,10 @@ echo "→ Type checking..."
 pnpm run typecheck        # strict TypeScript compilation
 
 echo "→ Linting..."
-pnpm run lint             # ESLint with project rules
+pnpm run lint             # Biome with project rules
 
 echo "→ Format checking..."
-pnpm run format:check     # Prettier consistency
+pnpm run format:check     # Biome consistency
 
 echo "→ Skill validation..."
 ./scripts/validate-skills.sh  # SKILL.md frontmatter + structure

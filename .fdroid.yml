@@ -1,0 +1,72 @@
+# .fdroid.yml — F-Droid build metadata for d.o. Gist Hub
+#
+# This file is embedded in the source repository for F-Droid's build server.
+# When submitting to the fdroiddata repository, this file is placed at:
+#   metadata/com.dogisthub.app.yml
+#
+# Docs: https://f-droid.org/docs/Build_Metadata_Reference/
+# Submission: https://gitlab.com/fdroid/fdroiddata/
+
+RepoType: git
+Repo: https://github.com/d-o-hub/do-gist-hub.git
+
+# Build from source on each version tag
+Builds:
+  - versionName: 0.2.0
+    versionCode: 1
+    commit: v0.2.0
+    subdir: android
+    gradle:
+      - assembleFdroid
+    output: app/build/outputs/apk/fdroid/app-fdroid-unsigned.apk
+    # F-Droid will sign the APK with its own key.
+    # Uses the 'fdroid' build variant (unsigned release with ProGuard + minification).
+    # Reproducible builds are a future goal (varies per environment).
+
+  # Note: v0.2.0-rc.1 omitted from F-Droid Builds list because:
+  # 1. Pre-releases are not appropriate for F-Droid (end-user store)
+  # 2. F-Droid requires strictly increasing versionCode per entry
+  # Add the first stable release (v0.2.0) above when submitting to fdroiddata
+
+# Auto-update configuration
+# Note: versionName/versionCode come from env vars at build time (GITHUB_RUN_NUMBER, VERSION),
+# not from static file content. Manual metadata update in fdroiddata repo is required per release.
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+
+# App metadata
+Categories:
+  - Productivity
+  - Development
+License: MIT
+AuthorName: d.o. Hub
+AuthorEmail: security@d-o-hub.dev
+WebSite: https://gist-hub.d-o.dev
+SourceCode: https://github.com/d-o-hub/do-gist-hub
+IssueTracker: https://github.com/d-o-hub/do-gist-hub/issues
+Translation: https://github.com/d-o-hub/do-gist-hub
+
+# Summary and description for F-Droid listing
+Summary: Offline-first GitHub Gist manager
+Description: |
+  d.o. Gist Hub is an offline-first Progressive Web App (PWA) for managing
+  GitHub Gists. It wraps the web app in a native Android shell via Capacitor.
+
+  Features:
+    • Full Gist CRUD — create, read, update, delete gists
+    • Star/unstar/fork/revisions
+    • Offline-first — read cached gists, queue writes for sync
+    • Conflict detection with local-wins/remote-wins/manual resolution
+    • OAuth Device Flow (opt-in) or fine-grained PAT authentication
+    • Token-driven responsive design — works from 320px phones to 1536px+ desktops
+    • Dark mode first with light theme override
+    • Strict Content Security Policy — zero unsafe-inline
+    • AES-GCM encrypted token storage at rest
+
+  No proprietary dependencies. No Google Play Services. No telemetry.
+  Fully open source under the MIT license.
+
+Antifeatures:
+  - NonFreeNet (GitHub API dependency — required for core functionality)
+  # F-Droid requires Flagging 'NonFreeNet' for any app that depends on a
+  # non-free network service, as GitHub is a proprietary platform.

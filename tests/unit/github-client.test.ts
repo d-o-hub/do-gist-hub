@@ -25,6 +25,8 @@ vi.mock('../../src/services/github/auth', () => ({
 vi.mock('../../src/services/db', () => ({
   getEtag: vi.fn().mockResolvedValue(null),
   setEtag: vi.fn().mockResolvedValue(null),
+  getMetadata: vi.fn().mockResolvedValue(null),
+  setMetadata: vi.fn().mockResolvedValue(null),
 }));
 
 // ─── Imports (after mocks) ───────────────────────────────────────────
