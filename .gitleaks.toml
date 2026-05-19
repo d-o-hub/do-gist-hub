@@ -13,5 +13,6 @@ paths = [
     '''public/offline.html''',
     '''tests/.*''',
     '''agents-docs/.*''',
-    '''plans/.*'''
+    '''plans/.*''',
+    '''reports/.*'''
 ]

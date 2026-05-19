@@ -8,5 +8,7 @@ export default {
   },
   ignores: [
     (commit) => /^Merge (branch|pull request)/.test(commit),
+    (commit) => commit.includes('AAB bundle release'),
+    (commit) => commit.includes('Firebase Test Lab CI'),
   ],
 };
