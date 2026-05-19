@@ -11,7 +11,8 @@
     "040-phase-d": "2026-05-17",
     "041-release-signing": "2026-05-17",
     "042-plans-completion": "2026-05-17",
-    "045-v0.2.0-release": "2026-05-17"
+    "045-v0.2.0-release": "2026-05-17",
+    "048-codebase-audit": "2026-05-19"
   },
   "description": "Machine-readable plan registry for agents and scripts. Mirrors plans/_index.md.",
   "plans": {
@@ -232,8 +233,8 @@
     },
     "048-codebase-audit-implementation-gaps-ci-docs.md": {
       "type": "goap",
-      "status": "active",
-      "summary": "Codebase audit: P0 CI broken SHAs, release gate; P1 auth gaps, untested device-flow; P2 CI hardening, doc hygiene"
+      "status": "complete",
+      "summary": "All P0-P2 items resolved: CI SHAs fixed, auth telemetry + refresh tokens + device-flow tests, doc hygiene, CI hardening, CSS polish"
     },
     "047-v0.3.0-scope.md": {
       "type": "plan",
@@ -272,7 +273,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-030",
-    "plan": "048",
+    "plan": "049",
     "goap": "032"
   }
 }

@@ -11,7 +11,8 @@
 | --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `046-post-release-and-v0.2.0-stable.md`       | GOAP Plan   | Active 🟢   | Post-v0.2.0-rc.1 release monitoring, v0.2.0 stable promotion, v0.3.0 planning |
 | `047-v0.3.0-scope.md`                         | Plan        | Draft 📝    | v0.3.0 scope: F-Droid publication, auth telemetry, UX polish, DevEx/CI improvements |
-| `048-codebase-audit-implementation-gaps-ci-docs.md` | GOAP Plan | Active 🟢 | Codebase audit: P0 CI broken SHAs, release gate; P1 auth gaps, untested device-flow; P2 CI hardening, doc hygiene |
+| `049-progress-update-2026-05-19-plan048-completion.md` | Progress | Active 🟢 | Progress update for plan 048 completion |
+| `048-codebase-audit-implementation-gaps-ci-docs.md` | GOAP Plan | Complete ✅ | All P0-P2 items resolved: CI SHAs, auth telemetry + refresh + tests, doc hygiene, CI hardening, CSS polish |
 | File                                          | Type        | Status      | Summary                                                                                                                      |
 | --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `045-v0.2.0-release-and-auth-modernization.md` | GOAP Plan   | Complete ✅ | v0.2.0-rc.1 release, OAuth Device Flow, audit gaps completed |
@@ -111,9 +112,10 @@ These numbered plans document the project's foundation and are considered stable
 | `034-progress-update-swarm-plans-audit.md`            | Progress | Complete ✅ | Plans audit, teardown fix, ADR-022 promoted from backlog to complete              |
 | `041-goap-release-signing-and-plan040-completion.md`  | GOAP     | Complete ✅ | Close Plan 040 gaps + wire release APK signing into CI       |
 | `042-goap-plans-completion-sprint.md`                  | GOAP     | Complete ✅   | Close P0 plan-audit gaps: rebuild stale design-tokens.css, fix plan status headers, promote ADR-015, add SW cache TTL, wire LH CI |
+| `049-progress-update-2026-05-19-plan048-completion.md` | Progress | Active 🟢    | Progress update for plan 048 completion |
 
 ## Quick reference: ADR numbers in use
 
 `adr-001` through `adr-029` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-030`
-**Next available plan number**: `048`
+**Next available plan number**: `049`
