@@ -149,7 +149,7 @@ describe('Settings Route', () => {
   describe('authentication', () => {
     it('saves token when save button is clicked with value', async () => {
       vi.mocked(getToken).mockResolvedValue(null);
-      vi.mocked(saveToken).mockResolvedValue(undefined);
+      vi.mocked(saveToken).mockResolvedValue({ success: true });
       await render(container);
 
       const input = container.querySelector('#pat-input') as HTMLInputElement;

@@ -141,5 +141,11 @@ describe('Conflict Detection Logic', () => {
       const result = resolveConflict(conflict as GistConflict, 'manual');
       expect(result.syncStatus).toBe('conflict');
     });
+
+    it('handles unknown strategy explicitly', () => {
+      expect(() =>
+        resolveConflict(conflict as GistConflict, 'unknown-strategy' as never)
+      ).toThrow();
+    });
   });
 });

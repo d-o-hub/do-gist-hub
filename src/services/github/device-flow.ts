@@ -212,7 +212,6 @@ export async function authenticateWithDeviceFlow(
 
     // Step 3: Save token via the existing auth service
     onProgress?.('Saving token...');
-    await recordAuthMethod('device-flow');
     const saveResult = await saveToken(result.accessToken);
 
     if (!saveResult.success) {
@@ -223,12 +222,18 @@ export async function authenticateWithDeviceFlow(
       };
     }
 
-    await recordAuthCompleted();
+    // Fire-and-forget telemetry (must not block success)
+    recordAuthMethod('device-flow').catch(() => {});
+    recordAuthCompleted().catch(() => {});
 
-    // Store refresh token for automatic token refresh on expiry
+    // Store refresh token in its own try/catch (must not block success)
     if (result.refreshToken && result.expiresIn) {
-      const { storeRefreshToken } = await import('./auth');
-      await storeRefreshToken(result.refreshToken, result.expiresIn);
+      try {
+        const { storeRefreshToken } = await import('./auth');
+        await storeRefreshToken(result.refreshToken, result.expiresIn);
+      } catch {
+        // Refresh token storage is non-critical
+      }
     }
 
     return { success: true, accessToken: result.accessToken };

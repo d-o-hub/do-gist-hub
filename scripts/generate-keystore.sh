@@ -23,9 +23,9 @@ KEYSTORE_FILE="${OUT_DIR}/release-key.keystore"
 ALIAS="my-key-alias"
 VALIDITY=10000
 CERT_FILE="${OUT_DIR}/upload_cert.pem"
-# ⚠️  Secrets file written OUTSIDE git-tracked directories
+# Secrets file written to temp dir outside the repo
 #     to prevent accidental commit.
-SECRETS_FILE="${DIR}/.github_secrets_do_not_commit.txt"
+SECRETS_FILE="/tmp/do-gist-hub-github-secrets.txt"
 
 echo "============================================="
 echo "  d.o. Gist Hub — Keystore Generator"

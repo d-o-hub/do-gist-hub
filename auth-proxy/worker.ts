@@ -55,6 +55,12 @@ function getCorsHeaders(origin: string | null): Record<string, string> {
 async function handleRequest(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const corsHeaders = getCorsHeaders(request.headers.get('Origin'));
+
+  // Handle CORS preflight
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
   const clientId = env.GITHUB_CLIENT_ID;
 
   if (!clientId) {
@@ -95,14 +101,21 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 
   // Route: POST /login/oauth/access_token
   if (url.pathname === '/login/oauth/access_token' && request.method === 'POST') {
-    const body = (await request.json()) as { device_code?: string };
+    const body = (await request.json()) as {
+      device_code?: string;
+      refresh_token?: string;
+    };
     const deviceCode = body?.device_code;
+    const refreshToken = body?.refresh_token;
 
-    if (!deviceCode) {
-      return new Response(JSON.stringify({ error: 'device_code is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (!deviceCode && !refreshToken) {
+      return new Response(
+        JSON.stringify({ error: 'device_code or refresh_token is required' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      );
     }
 
     const githubResponse = await fetch(`${GITHUB_API}/login/oauth/access_token`, {
@@ -113,8 +126,9 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
       },
       body: JSON.stringify({
         client_id: clientId,
-        device_code: deviceCode,
-        grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
+        ...(deviceCode
+          ? { device_code: deviceCode, grant_type: 'urn:ietf:params:oauth:grant-type:device_code' }
+          : { refresh_token: refreshToken, grant_type: 'refresh_token' }),
       }),
     });
 

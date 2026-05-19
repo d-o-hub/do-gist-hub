@@ -40,7 +40,8 @@ const REFRESH_TOKEN_KEY = 'github-refresh-token';
 const REFRESH_TOKEN_EXPIRES_KEY = 'github-refresh-expires';
 
 export async function storeRefreshToken(token: string, expiresIn: number): Promise<void> {
-  await setMetadata(REFRESH_TOKEN_KEY, token);
+  const encrypted = await encrypt(token);
+  await setMetadata(REFRESH_TOKEN_KEY, encrypted);
   await setMetadata(REFRESH_TOKEN_EXPIRES_KEY, Date.now() + expiresIn * 1000);
 }
 
@@ -50,12 +51,18 @@ export async function clearRefreshToken(): Promise<void> {
 }
 
 async function getStoredRefreshToken(): Promise<{ token: string; expiresAt: number } | null> {
-  const [token, expiresAt] = await Promise.all([
-    getMetadata<string>(REFRESH_TOKEN_KEY),
+  const [enc, expiresAt] = await Promise.all([
+    getMetadata<{ data: string; iv: string }>(REFRESH_TOKEN_KEY),
     getMetadata<number>(REFRESH_TOKEN_EXPIRES_KEY),
   ]);
-  if (!token || !expiresAt) return null;
-  return { token, expiresAt };
+  if (!enc || !expiresAt) return null;
+  try {
+    const token = await decrypt(enc.data, enc.iv);
+    return { token, expiresAt };
+  } catch {
+    await clearRefreshToken();
+    return null;
+  }
 }
 
 /**

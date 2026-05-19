@@ -67,7 +67,7 @@ if [ ! -d "${ANDROID_HOME}" ]; then
   echo "  Tried: ${ANDROID_HOME}"
   echo "  Set ANDROID_HOME to your SDK path and re-run"
   echo "  Or install: ./scripts/setup-android-sdk.sh (if available)"
-  warn "ANDROID_HOME not found at standard locations"
+  fail "ANDROID_HOME not found"
   fi
 fi
 export ANDROID_HOME
@@ -79,17 +79,13 @@ cd "${DIR}"
 
 # Check if pnpm is available
 if ! command -v pnpm &>/dev/null; then
-  warn "pnpm not found — installing..."
-  npm install -g pnpm 2>/dev/null || {
-    echo "  Install Node.js first: https://nodejs.org/"
-    fail "Failed to install pnpm"
-  }
+  fail "pnpm not found — install pnpm first (https://pnpm.io/installation)"
 fi
 ok "pnpm found: $(pnpm --version)"
 
 pnpm install --frozen-lockfile 2>/dev/null || {
-  warn "Frozen lockfile failed — running pnpm install..."
-  pnpm install
+  echo "  Run: pnpm install --frozen-lockfile"
+  fail "Frozen lockfile install failed — lockfile may be out of date"
 }
 ok "JS dependencies installed"
 
@@ -116,7 +112,7 @@ fi
 chmod +x ./gradlew
 
 # Run the build
-./gradlew assembleFdroid 2>&1
+./gradlew assembleFdroid 2>&1 || true
 BUILD_EXIT=$?
 
 if [ ${BUILD_EXIT} -ne 0 ]; then

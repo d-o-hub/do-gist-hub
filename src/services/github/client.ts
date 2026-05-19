@@ -195,6 +195,7 @@ async function fetchWithAuthRetry(
   getOptions: () => Promise<RequestInit>,
   _context: string
 ): Promise<Response> {
+  await recordFirstApiCall();
   let response = await fetch(url, await getOptions());
 
   if (response.status === 401) {
@@ -216,7 +217,6 @@ function fetchWithEtag<T>(url: string, context: string): Promise<T> {
 
   return deduplicatedFetch(key, async () => {
     try {
-      await recordFirstApiCall();
       const cached = await getEtag(url);
       const headers: Record<string, string> = {};
       if (cached?.etag) {

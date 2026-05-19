@@ -63,7 +63,8 @@ Description: |
     • Strict Content Security Policy — zero unsafe-inline
     • AES-GCM encrypted token storage at rest
 
-  No proprietary dependencies. No Google Play Services. No telemetry.
+  No proprietary dependencies. No Google Play Services.
+  No third-party analytics; limited local auth telemetry collected for login diagnostics only.
   Fully open source under the MIT license.
 
 Antifeatures:

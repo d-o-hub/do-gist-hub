@@ -29,11 +29,7 @@ function formatRelativeTime(dateStr: string): string {
   return `${diffDay}D AGO`;
 }
 
-function renderSyncBadge(
-  syncStatus: string | undefined,
-  updatedAt: string,
-  lastSyncedAt?: string
-): string {
+function renderSyncBadge(syncStatus: string | undefined): string {
   if (syncStatus === 'pending') {
     return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #3b82f6;">PENDING</div>';
   }
@@ -42,9 +38,6 @@ function renderSyncBadge(
   }
   if (syncStatus === 'error') {
     return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #ef4444;">ERROR</div>';
-  }
-  if (syncStatus === 'synced' && lastSyncedAt && Date.parse(updatedAt) > Date.parse(lastSyncedAt)) {
-    return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #f97316;">STALE</div>';
   }
   return '';
 }
@@ -137,7 +130,7 @@ export function renderCard(gist: GistRecord): string {
             <span class="micro-label">DELETE</span>
           </button>
         </div>
-        ${renderSyncBadge(gist.syncStatus, gist.updatedAt, gist.lastSyncedAt)}
+        ${renderSyncBadge(gist.syncStatus)}
         ${staleHtml}
         ${timeHtml}
       </footer>

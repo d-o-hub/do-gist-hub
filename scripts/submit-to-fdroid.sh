@@ -114,7 +114,9 @@ if [ -d "${FDROID_DIR}" ]; then
   info "fdroiddata already cloned at ${FDROID_DIR}"
   read -r -p "  Update it? (Y/n): " UPDATE
   if [ "${UPDATE}" != "n" ]; then
-    git -C "${FDROID_DIR}" pull --rebase 2>/dev/null || true
+    if ! git -C "${FDROID_DIR}" pull --rebase 2>/dev/null; then
+      warn "git pull --rebase failed — continuing with existing clone"
+    fi
   fi
 else
   read -r -p "  Enter your GitLab username: " GITLAB_USER
@@ -162,12 +164,13 @@ info "Step 4/6: Committing and pushing..."
     info "No changes to commit (already up-to-date)"
   else
     git commit -m "Add d.o. Gist Hub (com.dogisthub.app)"
-    git push origin main 2>&1 || {
+    if git push origin main 2>&1; then
+      ok "Committed and pushed"
+    else
       warn "Push failed — you may need to set upstream or use SSH"
-      echo "  Try: git remote set-url origin git@gitlab.com:${GITLAB_USER}/fdroiddata.git"
+      echo "  Try: git remote set-url origin git@gitlab.com:${GITLAB_USER:-}/fdroiddata.git"
       echo "  Then: git push origin main"
-    }
-    ok "Committed and pushed"
+    fi
   fi
 )
 

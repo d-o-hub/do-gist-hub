@@ -12,7 +12,7 @@ import { lifecycle } from '../services/lifecycle';
 import networkMonitor from '../services/network/offline-monitor';
 import { redactToken, sanitizeHtml } from '../services/security';
 import { safeError } from '../services/security/logger';
-import { recordAuthCompleted, recordAuthMethod } from '../services/telemetry/auth-telemetry';
+import { recordAuthCompleted } from '../services/telemetry/auth-telemetry';
 import gistStore from '../stores/gist-store';
 import { getThemePreference, initTheme } from '../tokens/design-tokens';
 import { showConfirmDialog } from '../utils/dialog';
@@ -190,12 +190,19 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
       const input = container.querySelector('#pat-input') as HTMLInputElement;
       if (input.value) {
         void (async () => {
-          await recordAuthMethod('pat');
-          await saveToken(input.value);
-          toast.success('TOKEN SAVED');
-          await recordAuthCompleted();
-          await loadTokenInfo(container);
-          input.value = '';
+          try {
+            const result = await saveToken(input.value);
+            if (result.success) {
+              toast.success('TOKEN SAVED');
+              await recordAuthCompleted();
+              await loadTokenInfo(container);
+              input.value = '';
+            } else {
+              toast.error(result.error || 'FAILED TO SAVE TOKEN');
+            }
+          } catch {
+            toast.error('FAILED TO SAVE TOKEN');
+          }
         })();
       } else {
         toast.error('ENTER A TOKEN');
