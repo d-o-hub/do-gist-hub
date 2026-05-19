@@ -9,9 +9,15 @@ import gistStore from '../stores/gist-store';
 import { showConfirmDialog } from '../utils/dialog';
 import { toast } from './ui/toast';
 
+const cardCache = new Map<
+  string,
+  { html: string; updatedAt: string; starred: boolean; syncStatus: string; lastSyncedAt?: string }
+>();
+
 function formatRelativeTime(dateStr: string): string {
   const now = Date.now();
   const dateTs = Date.parse(dateStr);
+  if (Number.isNaN(dateTs)) return '';
   const diffMs = now - dateTs;
   const diffSec = Math.floor(diffMs / 1000);
   if (diffSec < 60) return 'JUST NOW';
@@ -23,16 +29,7 @@ function formatRelativeTime(dateStr: string): string {
   return `${diffDay}D AGO`;
 }
 
-const cardCache = new Map<
-  string,
-  { html: string; updatedAt: string; starred: boolean; syncStatus: string; lastSyncedAt?: string }
->();
-
-function renderSyncBadge(
-  syncStatus: string | undefined,
-  updatedAt: string,
-  lastSyncedAt?: string
-): string {
+function renderSyncBadge(syncStatus: string | undefined): string {
   if (syncStatus === 'pending') {
     return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #3b82f6;">PENDING</div>';
   }
@@ -42,10 +39,40 @@ function renderSyncBadge(
   if (syncStatus === 'error') {
     return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #ef4444;">ERROR</div>';
   }
-  if (syncStatus === 'synced' && lastSyncedAt && Date.parse(updatedAt) > Date.parse(lastSyncedAt)) {
-    return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #f97316;">STALE</div>';
-  }
   return '';
+}
+
+/**
+ * Escape a string for use as a CSS view-transition-name.
+ * Falls back to a safe prefix when CSS.escape is unavailable (Node/Vitest).
+ */
+function escapeViewTransitionName(id: string): string {
+  if (typeof CSS !== 'undefined' && CSS.escape) {
+    return CSS.escape(`gc-${id}`);
+  }
+  // Fallback: gist IDs are alphanumeric — gc- prefix ensures valid custom-ident
+  return `gc-${id}`;
+}
+
+function renderStalenessTooltip(updatedAt: string, lastSyncedAt?: string): string {
+  if (!lastSyncedAt) return '';
+  const updatedTs = Date.parse(updatedAt);
+  const syncedTs = Date.parse(lastSyncedAt);
+  if (Number.isNaN(updatedTs) || Number.isNaN(syncedTs)) return '';
+
+  const staleMs = updatedTs - syncedTs;
+  if (staleMs <= 0) return '';
+
+  const staleMin = Math.floor(staleMs / 60000);
+  const staleHr = Math.floor(staleMs / 3600000);
+  const staleDay = Math.floor(staleMs / 86400000);
+
+  let staleLabel: string;
+  if (staleMin < 60) staleLabel = `${staleMin} MIN`;
+  else if (staleHr < 24) staleLabel = `${staleHr} HOUR`;
+  else staleLabel = `${staleDay} DAY`;
+
+  return `<span class="staleness-indicator" title="Updated ${staleLabel} before last sync. Synced ${formatRelativeTime(lastSyncedAt)}">STALE: ${staleLabel}</span>`;
 }
 
 export function renderCard(gist: GistRecord): string {
@@ -68,8 +95,16 @@ export function renderCard(gist: GistRecord): string {
   const content = firstFile?.content || '';
   const snippet = content.slice(0, 120);
 
+  const staleHtml = renderStalenessTooltip(gist.updatedAt, gist.lastSyncedAt);
+  const timeHtml = staleHtml
+    ? ''
+    : `<time class="micro-label" datetime="${gist.updatedAt}">${formatRelativeTime(gist.updatedAt)}</time>`;
+
+  const vtName = escapeViewTransitionName(gist.id);
+
   const html = `
     <article class="glass-card gist-card${gist.starred ? ' featured' : ''}" data-gist-id="${sanitizeHtml(gist.id)}" data-testid="gist-item" tabindex="0" role="button"
+             style="view-transition-name: ${vtName}"
              aria-label="Open gist: ${sanitizeHtml(description)}">
       <div class="gist-card-header">
         <div class="gist-card-meta">
@@ -95,10 +130,9 @@ export function renderCard(gist: GistRecord): string {
             <span class="micro-label">DELETE</span>
           </button>
         </div>
-        ${renderSyncBadge(gist.syncStatus, gist.updatedAt, gist.lastSyncedAt)}
-        <time class="micro-label" datetime="${gist.updatedAt}">
-          ${formatRelativeTime(gist.updatedAt)}
-        </time>
+        ${renderSyncBadge(gist.syncStatus)}
+        ${staleHtml}
+        ${timeHtml}
       </footer>
     </article>
   `;

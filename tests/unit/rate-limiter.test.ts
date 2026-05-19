@@ -1,30 +1,26 @@
-/**
- * Unit tests for src/services/github/rate-limiter.ts
- * Vitest port of rate-limiter.spec.ts (which used node:test and was never picked up)
- */
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   trackRateLimit,
   getRateLimitState,
   isSafeToRequest,
   getTimeUntilReset,
-  resetRateLimit,
-} from '../../src/services/github/rate-limiter';
+  resetRateLimit
+} from '../../src/services/github/rate-limiter.ts';
 
-function createMockResponse(headers: Record<string, string>): Response {
-  return {
-    headers: {
-      get: (name: string) => headers[name.toLowerCase()] ?? null,
-    },
-  } as unknown as Response;
-}
-
-describe('RateLimiter', () => {
+describe('Rate Limiter', () => {
   beforeEach(() => {
     resetRateLimit();
   });
 
-  it('initializes with default values', () => {
+  function createMockResponse(headers: Record<string, string>): Response {
+    return {
+      headers: {
+        get: (name: string) => headers[name.toLowerCase()] || null
+      }
+    } as unknown as Response;
+  }
+
+  it('should initialize with default values', () => {
     const state = getRateLimitState();
     expect(state.limit).toBe(5000);
     expect(state.remaining).toBe(5000);
@@ -32,18 +28,18 @@ describe('RateLimiter', () => {
     expect(state.isExceeded).toBe(false);
   });
 
-  it('updates state from response headers', () => {
+  it('should update state from headers', () => {
     const nowSecs = Math.floor(Date.now() / 1000);
     const resetSecs = nowSecs + 3600;
 
-    trackRateLimit(
-      createMockResponse({
-        'x-ratelimit-limit': '5000',
-        'x-ratelimit-remaining': '4999',
-        'x-ratelimit-reset': resetSecs.toString(),
-        'x-ratelimit-used': '1',
-      })
-    );
+    const res = createMockResponse({
+      'x-ratelimit-limit': '5000',
+      'x-ratelimit-remaining': '4999',
+      'x-ratelimit-reset': resetSecs.toString(),
+      'x-ratelimit-used': '1'
+    });
+
+    trackRateLimit(res);
 
     const state = getRateLimitState();
     expect(state.limit).toBe(5000);
@@ -54,18 +50,18 @@ describe('RateLimiter', () => {
     expect(state.isExceeded).toBe(false);
   });
 
-  it('sets isLow when remaining < 100', () => {
+  it('should set isLow when remaining < 100', () => {
     const nowSecs = Math.floor(Date.now() / 1000);
     const resetSecs = nowSecs + 3600;
 
-    trackRateLimit(
-      createMockResponse({
-        'x-ratelimit-limit': '5000',
-        'x-ratelimit-remaining': '99',
-        'x-ratelimit-reset': resetSecs.toString(),
-        'x-ratelimit-used': '4901',
-      })
-    );
+    const res = createMockResponse({
+      'x-ratelimit-limit': '5000',
+      'x-ratelimit-remaining': '99',
+      'x-ratelimit-reset': resetSecs.toString(),
+      'x-ratelimit-used': '4901'
+    });
+
+    trackRateLimit(res);
 
     const state = getRateLimitState();
     expect(state.remaining).toBe(99);
@@ -73,18 +69,18 @@ describe('RateLimiter', () => {
     expect(state.isExceeded).toBe(false);
   });
 
-  it('sets isExceeded when remaining <= 0', () => {
+  it('should set isExceeded when remaining <= 0', () => {
     const nowSecs = Math.floor(Date.now() / 1000);
     const resetSecs = nowSecs + 3600;
 
-    trackRateLimit(
-      createMockResponse({
-        'x-ratelimit-limit': '5000',
-        'x-ratelimit-remaining': '0',
-        'x-ratelimit-reset': resetSecs.toString(),
-        'x-ratelimit-used': '5000',
-      })
-    );
+    const res = createMockResponse({
+      'x-ratelimit-limit': '5000',
+      'x-ratelimit-remaining': '0',
+      'x-ratelimit-reset': resetSecs.toString(),
+      'x-ratelimit-used': '5000'
+    });
+
+    trackRateLimit(res);
 
     const state = getRateLimitState();
     expect(state.remaining).toBe(0);
@@ -92,18 +88,18 @@ describe('RateLimiter', () => {
     expect(state.isExceeded).toBe(true);
   });
 
-  it('resets state if reset time has passed', () => {
+  it('should reset state if reset time has passed', () => {
     const nowSecs = Math.floor(Date.now() / 1000);
-    const resetSecs = nowSecs - 3600; // 1 hour ago
+    const resetSecs = nowSecs - 3600;
 
-    trackRateLimit(
-      createMockResponse({
-        'x-ratelimit-limit': '5000',
-        'x-ratelimit-remaining': '0',
-        'x-ratelimit-reset': resetSecs.toString(),
-        'x-ratelimit-used': '5000',
-      })
-    );
+    const res = createMockResponse({
+      'x-ratelimit-limit': '5000',
+      'x-ratelimit-remaining': '0',
+      'x-ratelimit-reset': resetSecs.toString(),
+      'x-ratelimit-used': '5000'
+    });
+
+    trackRateLimit(res);
 
     const state = getRateLimitState();
     expect(state.remaining).toBe(5000);
@@ -112,80 +108,75 @@ describe('RateLimiter', () => {
     expect(state.isExceeded).toBe(false);
   });
 
-  it('isSafeToRequest returns false if exceeded', () => {
+  it('isSafeToRequest should return false if exceeded', () => {
     const nowSecs = Math.floor(Date.now() / 1000);
     const resetSecs = nowSecs + 3600;
 
-    trackRateLimit(
-      createMockResponse({
-        'x-ratelimit-limit': '5000',
-        'x-ratelimit-remaining': '0',
-        'x-ratelimit-reset': resetSecs.toString(),
-      })
-    );
+    const res = createMockResponse({
+      'x-ratelimit-limit': '5000',
+      'x-ratelimit-remaining': '0',
+      'x-ratelimit-reset': resetSecs.toString(),
+    });
+    trackRateLimit(res);
 
     expect(isSafeToRequest()).toBe(false);
   });
 
-  it('isSafeToRequest returns false if remaining <= 10', () => {
+  it('isSafeToRequest should return false if remaining <= 10', () => {
     const nowSecs = Math.floor(Date.now() / 1000);
     const resetSecs = nowSecs + 3600;
 
-    trackRateLimit(
-      createMockResponse({
-        'x-ratelimit-limit': '5000',
-        'x-ratelimit-remaining': '10',
-        'x-ratelimit-reset': resetSecs.toString(),
-      })
-    );
+    const res = createMockResponse({
+      'x-ratelimit-limit': '5000',
+      'x-ratelimit-remaining': '10',
+      'x-ratelimit-reset': resetSecs.toString(),
+    });
+    trackRateLimit(res);
 
     expect(isSafeToRequest()).toBe(false);
   });
 
-  it('isSafeToRequest returns true if remaining > 10', () => {
+  it('isSafeToRequest should return true if remaining > 10', () => {
     const nowSecs = Math.floor(Date.now() / 1000);
     const resetSecs = nowSecs + 3600;
 
-    trackRateLimit(
-      createMockResponse({
-        'x-ratelimit-limit': '5000',
-        'x-ratelimit-remaining': '11',
-        'x-ratelimit-reset': resetSecs.toString(),
-      })
-    );
+    const res = createMockResponse({
+      'x-ratelimit-limit': '5000',
+      'x-ratelimit-remaining': '11',
+      'x-ratelimit-reset': resetSecs.toString(),
+    });
+    trackRateLimit(res);
 
     expect(isSafeToRequest()).toBe(true);
   });
 
-  it('getTimeUntilReset returns 0 if reset passed', () => {
+  it('getTimeUntilReset should return 0 if reset passed', () => {
     const nowSecs = Math.floor(Date.now() / 1000);
     const resetSecs = nowSecs - 3600;
 
-    trackRateLimit(
-      createMockResponse({
-        'x-ratelimit-limit': '5000',
-        'x-ratelimit-remaining': '0',
-        'x-ratelimit-reset': resetSecs.toString(),
-      })
-    );
+    const res = createMockResponse({
+      'x-ratelimit-limit': '5000',
+      'x-ratelimit-remaining': '0',
+      'x-ratelimit-reset': resetSecs.toString(),
+    });
+    trackRateLimit(res);
 
     expect(getTimeUntilReset()).toBe(0);
   });
 
-  it('getTimeUntilReset returns > 0 if reset is in future', () => {
+  it('getTimeUntilReset should return > 0 if reset is in future', () => {
     const nowSecs = Math.floor(Date.now() / 1000);
     const resetSecs = nowSecs + 3600;
 
-    trackRateLimit(
-      createMockResponse({
-        'x-ratelimit-limit': '5000',
-        'x-ratelimit-remaining': '0',
-        'x-ratelimit-reset': resetSecs.toString(),
-      })
-    );
+    const res = createMockResponse({
+      'x-ratelimit-limit': '5000',
+      'x-ratelimit-remaining': '0',
+      'x-ratelimit-reset': resetSecs.toString(),
+    });
+    trackRateLimit(res);
 
     const timeUntilReset = getTimeUntilReset();
     expect(timeUntilReset).toBeGreaterThan(0);
-    expect(timeUntilReset).toBeLessThanOrEqual(3600000); // 1 hour
+    expect(timeUntilReset).toBeLessThanOrEqual(3600000);
   });
 });

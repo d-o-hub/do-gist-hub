@@ -26,3 +26,4 @@
 | `codebase-optimizer`     | Autonomous analysis, detection, fixing |
 | `shell-script-quality`   | ShellCheck/BATS for scripts            |
 | `agent-browser`          | Browser automation CLI                 |
+| `swarm-coordination`     | Multi-agent coordination with handoff  |

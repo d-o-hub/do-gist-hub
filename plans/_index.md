@@ -1,6 +1,6 @@
 # plans/\_index.md — Active Plan Registry
 
-> **Last updated**: 2026-05-17
+> **Last updated**: 2026-05-19
 > Agents: read this before starting any task. Update it when you change plan status.
 
 ---
@@ -9,6 +9,13 @@
 
 | File                                          | Type        | Status      | Summary                                                                                                                      |
 | --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `046-post-release-and-v0.2.0-stable.md`       | GOAP Plan   | Active 🟢   | Post-v0.2.0-rc.1 release monitoring, v0.2.0 stable promotion, v0.3.0 planning |
+| `047-v0.3.0-scope.md`                         | Plan        | Draft 📝    | v0.3.0 scope: F-Droid publication, auth telemetry, UX polish, DevEx/CI improvements |
+| `049-progress-update-2026-05-19-plan048-completion.md` | Progress | Active 🟢 | Progress update for plan 048 completion |
+| `048-codebase-audit-implementation-gaps-ci-docs.md` | GOAP Plan | Complete ✅ | All P0-P2 items resolved: CI SHAs, auth telemetry + refresh + tests, doc hygiene, CI hardening, CSS polish |
+| File                                          | Type        | Status      | Summary                                                                                                                      |
+| --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `045-v0.2.0-release-and-auth-modernization.md` | GOAP Plan   | Complete ✅ | v0.2.0-rc.1 release, OAuth Device Flow, audit gaps completed |
 | `adr-022-2026-ui-trends-recommendations.md`   | ADR         | Complete ✅ | All P0-P2 items implemented; dark mode first, variable fonts, bento grid, glassmorphism, spring physics, performance budgets |
 | `strict-unused-vars.md`                       | Enforcement | Complete ✅ | `noUnusedVariables` enabled in biome.json, zero violations                                                                   |
 | `019-swarm-analysis-codebase-improvements.md` | Analysis    | Complete ✅ | All CI/CD workflows, docs, security items implemented; SHA-pinned actions                                                    |
@@ -105,9 +112,10 @@ These numbered plans document the project's foundation and are considered stable
 | `034-progress-update-swarm-plans-audit.md`            | Progress | Complete ✅ | Plans audit, teardown fix, ADR-022 promoted from backlog to complete              |
 | `041-goap-release-signing-and-plan040-completion.md`  | GOAP     | Complete ✅ | Close Plan 040 gaps + wire release APK signing into CI       |
 | `042-goap-plans-completion-sprint.md`                  | GOAP     | Complete ✅   | Close P0 plan-audit gaps: rebuild stale design-tokens.css, fix plan status headers, promote ADR-015, add SW cache TTL, wire LH CI |
+| `049-progress-update-2026-05-19-plan048-completion.md` | Progress | Active 🟢    | Progress update for plan 048 completion |
 
 ## Quick reference: ADR numbers in use
 
 `adr-001` through `adr-029` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-030`
-**Next available plan number**: `043`
+**Next available plan number**: `049`

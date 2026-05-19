@@ -12,6 +12,7 @@ import { initWebVitals } from './services/perf';
 import { registerServiceWorker } from './services/pwa/register-sw';
 import { safeError, safeLog } from './services/security/logger';
 import syncQueue from './services/sync/queue';
+import { logAuthTelemetry } from './services/telemetry/auth-telemetry';
 import gistStore from './stores/gist-store';
 import { initDesignTokens, initTheme } from './tokens/design-tokens';
 import { isViewTransitionSupported } from './utils/view-transitions';
@@ -45,6 +46,9 @@ void (async function init(): Promise<void> {
   try {
     // Initialize IndexedDB
     await initIndexedDB();
+
+    // Log auth telemetry (local-only, no PII)
+    await logAuthTelemetry();
 
     // Initialize network monitoring
     networkMonitor.init();
@@ -86,4 +90,3 @@ void (async function init(): Promise<void> {
     }
   }
 })();
-// CI trigger test

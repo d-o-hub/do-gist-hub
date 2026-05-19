@@ -13,5 +13,8 @@ paths = [
     '''public/offline.html''',
     '''tests/.*''',
     '''agents-docs/.*''',
-    '''plans/.*'''
+    # Architectural docs only, no credentials
+    '''plans/.*\.md''',
+    # Generated test outputs (Stryker mutation HTML reports)
+    '''reports/.*\.(html|json|xml)$''',
 ]

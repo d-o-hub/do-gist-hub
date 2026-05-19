@@ -36,6 +36,8 @@ vi.mock('../../src/services/export-import', () => ({
 vi.mock('../../src/services/db', () => ({
   clearAllData: vi.fn(),
   exportData: vi.fn().mockResolvedValue(JSON.stringify({ version: '3.0.0' })),
+  getMetadata: vi.fn().mockResolvedValue(null),
+  setMetadata: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../../src/stores/gist-store', () => ({
@@ -147,7 +149,7 @@ describe('Settings Route', () => {
   describe('authentication', () => {
     it('saves token when save button is clicked with value', async () => {
       vi.mocked(getToken).mockResolvedValue(null);
-      vi.mocked(saveToken).mockResolvedValue(undefined);
+      vi.mocked(saveToken).mockResolvedValue({ success: true });
       await render(container);
 
       const input = container.querySelector('#pat-input') as HTMLInputElement;

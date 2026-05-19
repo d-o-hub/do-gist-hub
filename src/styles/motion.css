@@ -373,6 +373,37 @@
   }
 }
 
+/* ===== Reduced Data (Data Saver Mode) ===== */
+/* Disable animations, reduce visual effects when the user has enabled
+   data-saver mode in their browser or OS. */
+@media (prefers-reduced-data: reduce) {
+  .gist-card {
+    animation: none;
+  }
+
+  .app-main {
+    animation: none;
+  }
+
+  .loading-skeleton {
+    animation: none;
+    background: var(--color-surface-2);
+  }
+
+  .card-enter {
+    animation: none;
+  }
+
+  .scroll-progress {
+    display: none;
+  }
+
+  .gist-card img,
+  .gist-card video {
+    display: none;
+  }
+}
+
 /* ===== Reduced Motion ===== */
 @media (prefers-reduced-motion: reduce) {
   *,

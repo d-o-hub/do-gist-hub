@@ -4,12 +4,17 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_run:
+    workflows: ['CI']
+    types:
+      - completed
 
 permissions:
   contents: write
 
 jobs:
   build-and-release:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -33,7 +38,7 @@ jobs:
         with:
           packages: 'tools platform-tools platforms;android-35 build-tools;35.0.0'
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Read VERSION
         id: version
         run: echo "VERSION=$(< VERSION)" >> "$GITHUB_OUTPUT"
@@ -76,7 +81,24 @@ jobs:
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
-      - name: Decode Keystore and Build Release APK
+      - name: ProGuard Compilation Smoke Check
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew compileReleaseSources --stacktrace
+      - name: Firebase Test Lab — Robo Test (smoke)
+        if: env.FIREBASE_TESTLAB_JSON != ''
+        env:
+          FIREBASE_TESTLAB_JSON: ${{ secrets.FIREBASE_TESTLAB_JSON }}
+        uses: vacxe/firebase-test-lab-action@bab7fe412819d0ac601b64c288ee0819a91ccf91  # pinned from v0.0.6
+        with:
+          service-account: ${{ secrets.FIREBASE_TESTLAB_JSON }}
+          apk: android/app/build/outputs/apk/debug/app-debug.apk
+          test: ''
+          device-id: 'Pixel7'
+          os-version-id: '34'
+          robo-directives: ''
+      - name: Decode Keystore and Build Release APK + AAB
         if: env.ANDROID_KEYSTORE_BASE64 != ''
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -90,7 +112,8 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD="$ANDROID_KEYSTORE_PASSWORD" \
           ANDROID_KEY_ALIAS="$ANDROID_KEY_ALIAS" \
           ANDROID_KEY_PASSWORD="$ANDROID_KEY_PASSWORD" \
-          ./gradlew assembleRelease --stacktrace
+          ./gradlew assembleRelease --stacktrace && \
+          ./gradlew bundleRelease --stacktrace
       - name: Create Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # pinned from v3
         with:
@@ -98,9 +121,10 @@ jobs:
           name: Release ${{ steps.version.outputs.VERSION }}
           body: ${{ steps.changelog.outputs.changelog }}
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, '-rc.') || contains(github.ref_name, '-beta.') || contains(github.ref_name, '-alpha.') }}
           fail_on_unmatched_files: false
           files: |
             web-app.zip
             android/app/build/outputs/apk/debug/app-debug.apk
             android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/bundle/release/app-release.aab

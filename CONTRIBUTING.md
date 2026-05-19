@@ -24,7 +24,7 @@ Thank you for your interest in contributing! This document will help you get sta
 ## Development Environment
 
 - **Node.js**: 20+ (check with `node -v`)
-- **Package manager**: npm (or pnpm)
+- **Package manager**: pnpm
 - **Recommended IDE**: VS Code with extensions in `.vscode/extensions.json`
 
 ## Development Workflow

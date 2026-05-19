@@ -58,7 +58,7 @@ export function renderGistDetail(gist: GistRecord): string {
 
   return `
     <div class="gist-detail" data-gist-id="${sanitizeHtml(gist.id)}">
-      <header class="detail-header">
+      <header class="detail-header" style="view-transition-name: detail-header">
         <div class="header-top">
           <button class="btn btn-ghost" id="gist-back-btn" aria-label="Go back">← Back</button>
           <span class="micro-label">Gist Detail</span>

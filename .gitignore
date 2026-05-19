@@ -44,6 +44,9 @@ Thumbs.db
 
 # Coverage reports
 coverage/
+
+# Mutation/stryker reports (may contain false-positive secret detections)
+reports/
 htmlcov/
 .coverage
 *.coverage
