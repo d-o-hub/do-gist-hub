@@ -3,6 +3,9 @@
 exports[`generateCSSVariables > matches the full CSS output snapshot 1`] = `
 "
 :root {
+  /* ===== Theme Color Scheme ===== */
+  color-scheme: dark;
+
   /* ===== Color Primitives ===== */
   --color-black: #000000;
   --color-white: #FFFFFF;
@@ -195,6 +198,7 @@ exports[`generateCSSVariables > matches the full CSS output snapshot 1`] = `
   --bp-phone-small: 320px;
   --bp-phone: 390px;
   --bp-phone-large: 480px;
+  --bp-tablet-small: 640px;
   --bp-tablet-portrait: 768px;
   --bp-tablet-landscape: 1024px;
   --bp-desktop: 1280px;
@@ -254,6 +258,7 @@ exports[`generateCSSVariables > matches the full CSS output snapshot 1`] = `
 
 /* ===== Light Theme Override ===== */
 [data-theme="light"] {
+  color-scheme: light;
   --color-background-primary: #FAFAFA;
   --color-background-secondary: #F3F4F6;
   --color-background-tertiary: #E5E7EB;
@@ -339,6 +344,12 @@ exports[`generateCSSVariables > matches the full CSS output snapshot 1`] = `
 }
 
 @media (min-width: 480px) {
+  :root {
+    --spacing-container: 1.25rem;
+  }
+}
+
+@media (min-width: 640px) {
   :root {
     --spacing-container: 1.25rem;
   }

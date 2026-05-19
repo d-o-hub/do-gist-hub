@@ -7,7 +7,7 @@ import {
   enableAmbientLightTheming,
 } from '../components/ui/ambient-light';
 import { toast } from '../components/ui/toast';
-import { getToken, removeToken, saveToken } from '../services/github/auth';
+import { getToken, getTokenInfo, removeToken, saveToken } from '../services/github/auth';
 import { lifecycle } from '../services/lifecycle';
 import networkMonitor from '../services/network/offline-monitor';
 import { redactToken, sanitizeHtml } from '../services/security';
@@ -134,7 +134,11 @@ async function loadTokenInfo(container: HTMLElement): Promise<void> {
           rotationHtml = `<p class="micro-label token-rotation">⚠️ Token is ${Math.floor(ageDays)} days old. Consider rotating it for security.</p>`;
         }
       }
-      el.innerHTML = `<p class="micro-label token-saved">Token active: ${sanitizeHtml(redactToken(token))}</p>${rotationHtml}`;
+      const tokenInfo = await getTokenInfo();
+      const expiryHtml = tokenInfo?.tokenExpiry
+        ? `<p class="micro-label token-saved">Token expires: ${new Date(tokenInfo.tokenExpiry).toLocaleDateString()}</p>`
+        : '';
+      el.innerHTML = `<p class="micro-label token-saved">Token active: ${sanitizeHtml(redactToken(token))}</p>${expiryHtml}${rotationHtml}`;
     } else {
       el.innerHTML = '<p class="micro-label token-missing">No token saved. Add one above.</p>';
     }

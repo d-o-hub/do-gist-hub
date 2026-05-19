@@ -228,18 +228,18 @@
     },
     "046-post-release-and-v0.2.0-stable.md": {
       "type": "goap",
-      "status": "active",
-      "summary": "Post-v0.2.0-rc.1 release monitoring, stable promotion, v0.3.0 planning"
+      "status": "complete",
+      "summary": "v0.2.0 stable promoted, F-Droid metadata created, release CI hardened, v0.3.0 scoped"
     },
     "048-codebase-audit-implementation-gaps-ci-docs.md": {
       "type": "goap",
       "status": "complete",
-      "summary": "All P0-P2 items resolved: CI SHAs fixed, auth telemetry + refresh tokens + device-flow tests, doc hygiene, CI hardening, CSS polish"
+      "summary": "All GOAP actions 1-27 resolved: CI SHAs, auth telemetry, refresh tokens, device-flow tests, doc hygiene, CI hardening, CSS polish, LHCI dedup, skill evals, lint-staged config, color-scheme CSS"
     },
     "047-v0.3.0-scope.md": {
       "type": "plan",
-      "status": "draft",
-      "summary": "v0.3.0 scope: F-Droid publication (replaces Play Store), auth telemetry (Device Flow error states, rotation reminder), UX polish (prefers-reduced-data, view transitions, container queries), DevEx/CI (mutation testing, SHA-pin audit, Gradle diagnostics)"
+      "status": "active",
+      "summary": "v0.3.0 scope: F-Droid MR submission pending, all other items implemented (auth telemetry, UX polish, DevEx/CI)"
     }
   },
   "archive": [
@@ -273,7 +273,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-030",
-    "plan": "049",
+    "plan": "050",
     "goap": "032"
   }
 }

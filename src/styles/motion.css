@@ -4,28 +4,12 @@
  */
 
 /* ===== Micro-Interaction Transitions ===== */
-.primary-btn,
-.secondary-btn,
 .icon-button {
   transition:
     background-color var(--motion-duration-fast) var(--motion-easing-out),
     transform var(--motion-duration-fast) var(--motion-easing-out),
     box-shadow var(--motion-duration-fast) var(--motion-easing-out);
   will-change: transform;
-}
-
-.primary-btn:hover,
-.secondary-btn:hover {
-  transform: translateY(-1px);
-  transition-duration: 150ms;
-  transition-timing-function: var(--motion-easing-out-expo);
-}
-
-.primary-btn:active,
-.secondary-btn:active {
-  transform: scale(0.98) translateY(0);
-  transition-duration: 100ms;
-  transition-timing-function: var(--motion-easing-in);
 }
 
 /* ===== Form Input Transitions ===== */
@@ -91,10 +75,6 @@
   animation: glow-pulse 3s ease-in-out infinite;
 }
 
-.filter-btn.active {
-  animation: glow-pulse 3s ease-in-out infinite;
-}
-
 /* ===== Page Transition ===== */
 @keyframes page-fade-in {
   from {
@@ -127,23 +107,6 @@
   animation: spin var(--motion-duration-slow) linear infinite;
 }
 
-/* ===== Status Indicator Pulse ===== */
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.15);
-  }
-}
-
-.status-indicator.offline .status-dot {
-  animation: pulse var(--motion-duration-slow) ease-in-out infinite;
-}
-
 /* ===== Toast Slide In ===== */
 @keyframes toast-slide-in {
   from {
@@ -173,13 +136,6 @@
 
 .toast-exit {
   animation: toast-slide-out var(--motion-duration-fast) var(--motion-easing-in);
-}
-
-/* ===== High-Motion Elements ===== */
-.animate-transform {
-  will-change: transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
 }
 
 /* ===== Skeleton Loading Enhancement ===== */
@@ -291,13 +247,6 @@
     contain: paint;
   }
 
-  /* Detail-page hero matches the card's transition-name so the
-     card morphs into the hero. The hero element opts in by
-     setting view-transition-name: var(--gist-vt-name) inline. */
-  .gist-detail-hero {
-    contain: paint;
-  }
-
   ::view-transition-group(*) {
     animation-duration: 300ms;
     animation-timing-function: var(--motion-easing-out-expo);
@@ -355,19 +304,16 @@
   }
 }
 
-/* Native form-control auto-resize for the token paste textarea
-   and any rich filename inputs. Falls back to fixed height. */
+/* Native form-control auto-resize for rich inputs. Falls back to fixed height. */
 @supports (field-sizing: content) {
-  textarea.token-input,
   textarea.content-editor,
   input.filename-input {
     field-sizing: content;
   }
 }
 
-/* Interpolate size for natural height animations on accordions/details */
+/* Interpolate size for natural height animations on details */
 @supports (interpolate-size: allow-keywords) {
-  .accordion-panel,
   details {
     interpolate-size: allow-keywords;
   }
@@ -419,12 +365,7 @@
     scroll-behavior: auto !important;
   }
 
-  .status-indicator.offline .status-dot {
-    animation: none;
-  }
-
-  .nav-item.active,
-  .filter-btn.active {
+  .nav-item.active {
     animation: none;
   }
 

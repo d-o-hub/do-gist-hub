@@ -1,7 +1,7 @@
 /**
  * Unit tests for Settings Route
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -9,6 +9,7 @@ vi.mock('../../src/services/github/auth', () => ({
   getToken: vi.fn(),
   saveToken: vi.fn(),
   removeToken: vi.fn(),
+  getTokenInfo: vi.fn(),
 }));
 
 vi.mock('../../src/services/network/offline-monitor', () => ({
@@ -72,15 +73,15 @@ vi.mock('../../src/utils/dialog', () => ({
 
 // ── Imports (after mocks) ───────────────────────────────────────────
 
-import { render } from '../../src/routes/settings';
+import {
+  cleanupAmbientLightSensor,
+  enableAmbientLightTheming,
+} from '../../src/components/ui/ambient-light';
 import { toast } from '../../src/components/ui/toast';
-import { getToken, saveToken, removeToken } from '../../src/services/github/auth';
+import { render } from '../../src/routes/settings';
+import { getToken, removeToken, saveToken } from '../../src/services/github/auth';
 import networkMonitor from '../../src/services/network/offline-monitor';
 import { getThemePreference, initTheme } from '../../src/tokens/design-tokens';
-import {
-  enableAmbientLightTheming,
-  cleanupAmbientLightSensor,
-} from '../../src/components/ui/ambient-light';
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
@@ -278,9 +279,7 @@ describe('Settings Route', () => {
       fileInput.dispatchEvent(new Event('change'));
 
       await vi.waitFor(() => {
-        expect(toast.success).toHaveBeenCalledWith(
-          expect.stringContaining('IMPORT COMPLETE')
-        );
+        expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('IMPORT COMPLETE'));
       });
     });
 

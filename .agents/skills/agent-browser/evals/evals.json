@@ -1,0 +1,51 @@
+{
+  "skill_name": "agent-browser",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Navigate to https://example.com and take a screenshot of the page",
+      "expected_output": "The agent opens the URL using `agent-browser open`, verifies the page loaded, and takes a screenshot. Returns the screenshot file path.",
+      "files": [],
+      "assertions": [
+        "The agent runs agent-browser open with the target URL",
+        "The agent takes a screenshot using agent-browser screenshot",
+        "The agent reports the screenshot file path"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Fill in a login form on https://example.com/login with email 'test@example.com' and password 'mypassword', then submit",
+      "expected_output": "The agent navigates to the login page, calls `agent-browser snapshot -i` to get element refs, fills the email and password fields using `agent-browser fill`, then clicks the submit button using `agent-browser click`.",
+      "files": [],
+      "assertions": [
+        "The agent first navigates to the target URL",
+        "The agent takes an interactive snapshot to get element refs",
+        "The agent fills email and password fields using refs",
+        "The agent clicks the submit button using the correct ref"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Extract all links from https://example.com and save them to a file",
+      "expected_output": "The agent navigates to the page, runs `agent-browser snapshot` with appropriate flags to extract data, and writes the extracted links to a text file.",
+      "files": [],
+      "assertions": [
+        "The agent navigates to the target URL",
+        "The agent extracts links using snapshot with --urls flag",
+        "The agent writes results to a file on disk"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Run a multi-step search flow: open duckduckgo.com, search for 'agent-browser npm', wait for results, and extract the first result link",
+      "expected_output": "The agent chains multiple commands: navigate to duckduckgo.com, find the search input via snapshot, fill the search term, press Enter, wait for results, snapshot again, and extract the first result link.",
+      "files": [],
+      "assertions": [
+        "The agent navigates to the search engine",
+        "The agent fills the search input and submits",
+        "The agent waits for results to load",
+        "The agent extracts the first result link from the results page"
+      ]
+    }
+  ]
+}
