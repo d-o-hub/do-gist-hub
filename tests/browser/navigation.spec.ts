@@ -15,8 +15,8 @@ test.describe('Responsive Navigation', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('.app-shell', { state: 'visible' });
-    await expect(page.locator('.rail-nav').first()).toBeVisible();
-    await expect(page.locator('.sidebar-nav, .bottom-nav').first()).toBeHidden();
+    await expect(page.locator('.rail-nav').first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.sidebar-nav, .bottom-nav').first()).toBeHidden({ timeout: 5000 });
   });
 
   test('should show sidebar on desktop', async ({ page }) => {
