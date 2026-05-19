@@ -97,8 +97,42 @@
 | 24-26 | Doc updates | XS each | ✅ |
 | 27 | Remove CI trigger test comment | XS | ✅ |
 
-*Plan 048 status in `_status.json` updated to reflect completion.*
-
 ---
 
-*Created: 2026-05-19. Status: Complete.*
+## Round 2: CodeRabbit Review Fixes (18 comments)
+
+All 18 actionable CodeRabbit comments addressed in commit `e37750a`:
+
+### Test fixes
+- `tests/unit/conflict-detector.test.ts` — Added unknown-strategy edge-case test
+- `tests/unit/github-client.test.ts` — Fixed metadata mocks (null→undefined)
+
+### CI/Doc fixes
+- `.fdroid.yml` — Updated "No telemetry" to describe local auth telemetry
+- `.github/workflows/release.yml` — Added CI success guard to `workflow_run` trigger
+- `.github/workflows/security-scan.yml` — Removed broad `pull-requests: write` permission
+- `.gitleaks.toml` — Narrowed allowlist patterns to specific file extensions
+- `src/styles/base.css` — Removed hex fallback from `staleness-indicator`
+
+### Auth fixes
+- `src/services/github/auth.ts` — Encrypt refresh token at rest using existing crypto utils
+- `src/services/github/client.ts` — Moved `recordFirstApiCall` into `fetchWithAuthRetry`
+- `src/services/github/device-flow.ts` — Fire-and-forget telemetry, isolated try/catch for storeRefreshToken
+- `src/routes/settings.ts` — Proper saveToken success check with try/catch
+- `auth-proxy/worker.ts` — Early OPTIONS preflight response, refresh_token grant support
+
+### Script fixes
+- `scripts/build-fdroid-apk.sh` — Fatal ANDROID_HOME, no pnpm fallback
+- `scripts/generate-keystore.sh` — Secrets written to /tmp outside repo
+- `scripts/submit-to-fdroid.sh` — Explicit git pull/push error handling
+
+### UI fix
+- `src/components/gist-card.ts` — Removed duplicate stale indicator
+
+### CI Status (All Passing)
+- ✅ All 18 GitHub Actions checks pass
+- ✅ 985 tests (up from 984)
+- ✅ TypeScript strict, Biome lint zero errors
+- **PR mergeable**: MERGEABLE (awaiting CodeRabbit review completion)
+
+*Updated: 2026-05-19. Status: Complete.*
