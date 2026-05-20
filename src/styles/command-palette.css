@@ -1,9 +1,28 @@
 /**
  * Command Palette Styles
- * Converted to Popover API (Plan 039 Phase B).
- * Uses the popover attribute + ::backdrop instead of JS classes.
+ * JS-based visibility (open/visible classes) with Popover API foundation.
+ * All styles consolidated from navigation.css (removed legacy duplicate).
+ * TODO: Migrate TS component to use .popover attribute directly (Plan 039+).
  */
 
+/* ===== Backdrop ===== */
+.command-palette-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-surface-overlay);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--motion-duration-base) var(--motion-easing);
+  z-index: 900;
+}
+
+.command-palette-backdrop.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ===== Container ===== */
 .command-palette {
   position: fixed;
   inset: 20% auto auto 50%;
@@ -17,11 +36,22 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
   transition:
     transform var(--motion-duration-base) var(--motion-easing),
-    opacity var(--motion-duration-base) var(--motion-easing);
+    opacity var(--motion-duration-base) var(--motion-easing),
+    visibility var(--motion-duration-base) var(--motion-easing);
 }
 
+/* JS-based visibility (used by current component) */
+.command-palette.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -20%) scale(1);
+}
+
+/* Popover API visibility (future migration target) */
 .command-palette:popover-open {
   opacity: 1;
   transform: translate(-50%, -20%) scale(1);
