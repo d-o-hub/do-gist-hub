@@ -34,7 +34,7 @@ export function initDesignTokens(): void {
     tokensLink.href = URL.createObjectURL(blob);
   } else {
     // Prod: use build-time generated static CSS file
-    tokensLink.href = '/design-tokens.css';
+    tokensLink.href = './design-tokens.css';
   }
 
   document.head.appendChild(tokensLink);
