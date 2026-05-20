@@ -211,6 +211,11 @@
       "status": "accepted",
       "summary": "Android release signing via CI \u2014 keystore from GitHub secrets, versionCode from GITHUB_RUN_NUMBER, versionName from VERSION file"
     },
+    "adr-030-github-pages-deployment.md": {
+      "type": "adr",
+      "status": "proposed",
+      "summary": "GitHub Pages deployment \u2014 base path, auth proxy CORS, SW path fixes for subpath hosting"
+    },
     "041-goap-release-signing-and-plan040-completion.md": {
       "type": "goap",
       "status": "complete",
@@ -277,7 +282,7 @@
     "016-pwa-offline-page.md"
   ],
   "nextAvailable": {
-    "adr": "adr-030",
+    "adr": "adr-031",
     "plan": "051",
     "goap": "032"
   }

@@ -1,9 +1,9 @@
-import { defineConfig, Plugin } from 'vite';
-import path from 'path';
-import fs from 'fs';
-import zlib from 'zlib';
+import fs from 'node:fs';
+import path from 'node:path';
+import zlib from 'node:zlib';
 import esbuild from 'esbuild';
 import { visualizer } from 'rollup-plugin-visualizer';
+import { defineConfig, type Plugin } from 'vite';
 import { APP } from './src/config/app.config';
 import { PERFORMANCE_BUDGETS } from './src/services/perf/budgets';
 import { generateCSSVariables } from './src/tokens/css-variables';
@@ -127,8 +127,8 @@ function manifestPlugin(): Plugin {
             theme_color: APP.themeColor,
             background_color: '#ffffff',
             display: 'standalone',
-            scope: '/',
-            start_url: '/',
+            scope: './',
+            start_url: './',
             orientation: 'any' as const,
             categories: ['productivity', 'developer tools'],
             icons: [
@@ -147,7 +147,7 @@ function manifestPlugin(): Plugin {
               { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
             ],
           };
-          fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+          fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
         })
         .catch(() => {
           // Silent fallback during dev — manifest is written manually
@@ -244,7 +244,9 @@ function designTokensBuildPlugin(): Plugin {
       }
       const targetPath = path.resolve(publicDir, 'design-tokens.css');
       fs.writeFileSync(targetPath, css);
-      console.log(`✓ Design tokens CSS generated: public/design-tokens.css (${Buffer.byteLength(css, 'utf8')} bytes)`);
+      console.log(
+        `✓ Design tokens CSS generated: public/design-tokens.css (${Buffer.byteLength(css, 'utf8')} bytes)`
+      );
     },
   };
 }
@@ -276,6 +278,7 @@ function swGeneratorPlugin(): Plugin {
           format: 'iife',
           write: false,
           minify: process.env.NODE_ENV === 'production',
+          // BASE_URL not injected — SW derives it from self.location.pathname at runtime
         });
 
         if (result.outputFiles?.[0]) {
@@ -295,6 +298,7 @@ function swGeneratorPlugin(): Plugin {
 const shouldAnalyze = process.env.ANALYZE === 'true';
 
 export default defineConfig({
+  base: './',
   plugins: [
     appConfigHtmlPlugin(),
     cspPlugin(),

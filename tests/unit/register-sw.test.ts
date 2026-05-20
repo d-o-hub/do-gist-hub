@@ -1,7 +1,7 @@
 /**
  * Unit tests for Service Worker Registration utilities
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -20,7 +20,7 @@ vi.mock('../../src/services/security/logger', () => ({
 // ── Imports (after mocks) ───────────────────────────────────────────
 
 import { toast } from '../../src/components/ui/toast';
-import { safeLog, safeError, safeWarn } from '../../src/services/security/logger';
+import { safeError, safeLog, safeWarn } from '../../src/services/security/logger';
 
 // ── Shared mock ports (updated per test) ─────────────────────────────
 
@@ -57,7 +57,7 @@ class MockMessageChannel {
 }
 
 function createMockServiceWorkerRegistration(
-  overrides: Partial<ServiceWorkerRegistration> = {},
+  overrides: Partial<ServiceWorkerRegistration> = {}
 ): ServiceWorkerRegistration {
   return {
     scope: '/',
@@ -91,7 +91,9 @@ describe('Service Worker Registration', () => {
 
     // Save originals before replacing globals
     originalMessageChannel = globalThis.MessageChannel;
-    originalSyncManager = (globalThis as Record<string, unknown>).SyncManager as typeof SyncManager | undefined;
+    originalSyncManager = (globalThis as Record<string, unknown>).SyncManager as
+      | typeof SyncManager
+      | undefined;
 
     // Initialize shared mock ports
     currentMockPort1 = makePort();
@@ -140,9 +142,9 @@ describe('Service Worker Registration', () => {
       return mod.registerServiceWorker();
     }
 
-    it('registers service worker at root scope', async () => {
+    it('registers service worker at relative path', async () => {
       const registration = await register();
-      expect(mockRegister).toHaveBeenCalledWith('/sw.js', { scope: '/' });
+      expect(mockRegister).toHaveBeenCalledWith('./sw.js');
       expect(registration).toBe(mockSWRegistration);
     });
 
@@ -169,10 +171,7 @@ describe('Service Worker Registration', () => {
 
       const result = await register();
       expect(result).toBeNull();
-      expect(safeError).toHaveBeenCalledWith(
-        '[PWA] Service Worker registration failed:',
-        error,
-      );
+      expect(safeError).toHaveBeenCalledWith('[PWA] Service Worker registration failed:', error);
     });
 
     it('sets up updatefound listener on registration', async () => {
@@ -184,33 +183,27 @@ describe('Service Worker Registration', () => {
       mockReady.mockResolvedValue(mockSWRegistration);
 
       await register();
-      expect(addEventListenerMock).toHaveBeenCalledWith(
-        'updatefound',
-        expect.any(Function),
-      );
+      expect(addEventListenerMock).toHaveBeenCalledWith('updatefound', expect.any(Function));
     });
 
     it('notifies update available when new worker is installed and controller exists', async () => {
-      let updatefoundHandler!: () => void;
+      let _updatefoundHandler!: () => void;
 
       const mockWorker = {
         state: 'installed',
         addEventListener: vi.fn((_event: string, handler: () => void) => {
-          updatefoundHandler = handler;
+          _updatefoundHandler = handler;
         }),
         postMessage: vi.fn(),
         terminate: vi.fn(),
       };
 
-      const regAddEventListener = vi.fn(
-        (event: string, handler: () => void) => {
-          if (event === 'updatefound') {
-            mockSWRegistration.installing =
-              mockWorker as unknown as ServiceWorker;
-            handler();
-          }
-        },
-      );
+      const regAddEventListener = vi.fn((event: string, handler: () => void) => {
+        if (event === 'updatefound') {
+          mockSWRegistration.installing = mockWorker as unknown as ServiceWorker;
+          handler();
+        }
+      });
 
       mockSWRegistration = createMockServiceWorkerRegistration({
         addEventListener: regAddEventListener,
@@ -224,13 +217,10 @@ describe('Service Worker Registration', () => {
 
       await register();
 
-      expect(mockWorker.addEventListener).toHaveBeenCalledWith(
-        'statechange',
-        expect.any(Function),
-      );
+      expect(mockWorker.addEventListener).toHaveBeenCalledWith('statechange', expect.any(Function));
 
       const stateChangeHandler = mockWorker.addEventListener.mock.calls.find(
-        (c: [string, () => void]) => c[0] === 'statechange',
+        (c: [string, () => void]) => c[0] === 'statechange'
       )?.[1];
       expect(stateChangeHandler).toBeDefined();
       stateChangeHandler!();
@@ -238,7 +228,7 @@ describe('Service Worker Registration', () => {
       expect(toast.info).toHaveBeenCalledWith(
         'New version available — refresh to update',
         0,
-        expect.objectContaining({ label: 'Refresh' }),
+        expect.objectContaining({ label: 'Refresh' })
       );
     });
   });
@@ -290,10 +280,7 @@ describe('Service Worker Registration', () => {
 
       // Wait for clearCaches to set up and call postMessage
       await vi.waitFor(() => {
-        expect(mockPostMessage).toHaveBeenCalledWith(
-          { type: 'CLEAR_CACHE' },
-          expect.any(Array),
-        );
+        expect(mockPostMessage).toHaveBeenCalledWith({ type: 'CLEAR_CACHE' }, expect.any(Array));
       });
 
       // Resolve the hanging promise to prevent unhandled rejection
@@ -426,10 +413,7 @@ describe('Service Worker Registration', () => {
 
       const result = await requestSync();
       expect(result).toBe(false);
-      expect(safeError).toHaveBeenCalledWith(
-        '[PWA] Background sync registration failed:',
-        error,
-      );
+      expect(safeError).toHaveBeenCalledWith('[PWA] Background sync registration failed:', error);
     });
   });
 });

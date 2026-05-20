@@ -75,6 +75,7 @@ See `plans/archive/` for completed or superseded files moved here on 2026-05-15.
 | `adr-026-phase-a-modernization-goap.md`               | Phase A modernization GOAP             |
 | `adr-027-ci-node24-android-hardening.md`               | CI Node 24 migration, Android build hardening                 |
 | `adr-029-android-release-signing.md`                    | Android release signing via CI — ADR-029                      |
+| `adr-030-github-pages-deployment.md`                   | GitHub Pages deployment — base path, CORS, SW paths (Proposed) |
 
 ## Reference docs (foundational, stable)
 
@@ -117,6 +118,6 @@ These numbered plans document the project's foundation and are considered stable
 
 ## Quick reference: ADR numbers in use
 
-`adr-001` through `adr-029` (gaps: 017-019 reserved)
-**Next available ADR**: `adr-030`
+`adr-001` through `adr-030` (gaps: 017-019 reserved)
+**Next available ADR**: `adr-031`
 **Next available plan number**: `051`
