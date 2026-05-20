@@ -13,6 +13,8 @@ export interface RateLimitState {
   isLow: boolean;
   /** Whether we've hit the rate limit */
   isExceeded: boolean;
+  /** Server-directed retry delay from Retry-After header (ms) */
+  retryAfterMs: number;
   /** Last updated timestamp */
   updatedAt: number;
 }
@@ -24,6 +26,7 @@ let rateLimit: RateLimitState = {
   used: 0,
   isLow: false,
   isExceeded: false,
+  retryAfterMs: 0,
   updatedAt: 0,
 };
 
@@ -36,6 +39,9 @@ export function trackRateLimit(response: Response): void {
   const remaining = response.headers.get('x-ratelimit-remaining');
   const reset = response.headers.get('x-ratelimit-reset');
   const used = response.headers.get('x-ratelimit-used');
+  const retryAfter = response.headers.get('retry-after');
+
+  rateLimit.retryAfterMs = retryAfter ? Number.parseInt(retryAfter, 10) * 1000 : 0;
 
   if (remaining && reset) {
     rateLimit.remaining = Number.parseInt(remaining, 10);
@@ -88,6 +94,14 @@ export function getTimeUntilReset(): number {
 }
 
 /**
+ * Get server-directed retry delay from Retry-After header (ms).
+ * Returns 0 if no Retry-After was set.
+ */
+export function getRetryAfterMs(): number {
+  return rateLimit.retryAfterMs;
+}
+
+/**
  * Reset rate limit state (e.g., on logout).
  */
 export function resetRateLimit(): void {
@@ -98,6 +112,7 @@ export function resetRateLimit(): void {
     used: 0,
     isLow: false,
     isExceeded: false,
+    retryAfterMs: 0,
     updatedAt: 0,
   };
 }

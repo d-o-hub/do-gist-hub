@@ -2,7 +2,7 @@
 
 > **Date**: 2026-05-19
 > **Type**: GOAP Plan
-> **Status**: Active
+> **Status**: Complete
 > **Related**: `046-post-release-and-v0.2.0-stable.md`, `047-v0.3.0-scope.md`, `adr-028-github-app-vs-pat-2026.md`, `adr-029-android-release-signing.md`
 
 ---
@@ -92,33 +92,33 @@ Top-to-bottom audit of the codebase after `main` at commit `45fb525`. This plan 
 
 | # | Action | Precondition | Effect | Cost | Status |
 |---|--------|-------------|--------|------|--------|
-| 1 | Fix `dorny/paths-filter` SHA to valid commit `d1c1ffe0248fe513906c8e24db8ea791d46f8590` | P0-1 identified | CI quick-tests job passes | XS | ☐ |
-| 2 | Fix `vacxe/firebase-test-lab-action` SHA or pin to v0.0.6 at `bab7fe412819d0ac601b64c288ee0819a91ccf91` | P0-2 identified | Release CI Firebase step works when secret is set | XS | ☐ |
-| 3 | Add CI gate to `release.yml` (require CI workflow_run) | P0-3 identified | Broken code cannot be released | S | ☐ |
-| 4 | Change `release.yml` to `--frozen-lockfile` | P0-4 identified | Release builds are reproducible | XS | ☐ |
-| 5 | Add auth telemetry (`auth.method` counter + time-to-first-call timer) | P1-1, Plan 047 G2 | OAuth adoption measurable | S | ☐ |
-| 6 | Add transparent 401→revalidate→retry flow in github client | P1-2, P1-3 | Tokens refresh automatically; users aren't logged out after 8h | M | ☐ |
-| 7 | Write `tests/unit/device-flow.test.ts` | P1-4 identified | Device flow auth covered by tests | S | ☐ |
-| 8 | Migrate or remove 4 orphaned `.spec.ts` files | P1-5 identified | All test code is executed | S | ☐ |
-| 9 | Fix `CONTRIBUTING.md` npm→pnpm | P1-6 identified | Contributors use correct package manager | XS | ☐ |
-| 10 | Update `SECURITY.md` version table to 0.2.x | P1-7 identified | Accurate support scope | XS | ☐ |
-| 11 | Update `agents-docs/HOOKS.md` ESLint/Prettier→Biome | P1-8 identified | Accurate tooling reference | XS | ☐ |
-| 12 | Create or remove `CONTEXT.md` references to SUB-AGENTS.md and HARNESS.md | P1-9 identified | No dead doc references | XS | ☐ |
-| 13 | Add `swarm-coordination` to `available-skills.md` | P1-10 identified | Skill list accurate (25/25) | XS | ☐ |
-| 14 | Change `ci.yml` SHA-pin audit from `continue-on-error: true` to `false` | P2-1 identified | Invalid SHAs block CI | XS | ☐ |
-| 15 | Deduplicate Lighthouse CI — remove from `lighthouse.yml` PR trigger or `ci.yml` bundle-budget | P2-2 identified | No wasted CI minutes | XS | ☐ |
-| 16 | Align `security-scan.yml` audit level to `high` | P2-3 identified | Consistent vulnerability gating | XS | ☐ |
-| 17 | Pin `lhci` version in `ci.yml` bundle-budget job to `@0.14.x` | P2-4 identified | Reproducible CI builds | XS | ☐ |
-| 18 | Change `commitlint.yml` to `--frozen-lockfile` | P2-5 identified | Consistent CI reproducibility | XS | ☐ |
-| 19 | Replace `audit-actions.yml` `github-script` SHA with commit SHA `3a2844b7e9c422d3c10d287c8955737108da1b3` | P2-6 identified | Consistent SHA pinning | XS | ☐ |
-| 20 | Add evals for `agent-browser`, `codebase-optimizer`, `swarm-coordination` skills | P2-7 identified | All 25 skills evaluated | M | ☐ |
-| 21 | Remove `.agents/skills/skills` circular symlink | P2-8 identified | No infinite directory traversal | XS | ☐ |
-| 22 | Implement `@starting-style` for popover/dialog entry animations | P2-10 identified | Plan 039 Phase B/C complete | S | ☐ |
-| 23 | Implement `overlay: auto` for layered Popover API transitions | P2-11 identified | Plan 040 Phase C complete | S | ☐ |
-| 24 | Update `README.md` version badge from `0.1.0` to `0.2.0` | P2-16 identified | Correct version display | XS | ☐ |
-| 25 | Update `CHANGELOG.md` v0.2.0-rc.1 section format | P2-14 identified | Consistent changelog format | XS | ☐ |
-| 26 | Update `agents-docs/CONFIG.md` example version to `0.2.0` | P2-15 identified | Accurate example | XS | ☐ |
-| 27 | Remove `// CI trigger test` comment from `main.ts:89` | P3-7 identified | Clean code | XS | ☐ |
+| 1 | Fix `dorny/paths-filter` SHA to valid commit `d1c1ffe0248fe513906c8e24db8ea791d46f8590` | P0-1 identified | CI quick-tests job passes | XS | ✅ |
+| 2 | Fix `vacxe/firebase-test-lab-action` SHA or pin to v0.0.6 at `bab7fe412819d0ac601b64c288ee0819a91ccf91` | P0-2 identified | Release CI Firebase step works when secret is set | XS | ✅ |
+| 3 | Add CI gate to `release.yml` (require CI workflow_run) | P0-3 identified | Broken code cannot be released | S | ✅ |
+| 4 | Change `release.yml` to `--frozen-lockfile` | P0-4 identified | Release builds are reproducible | XS | ✅ |
+| 5 | Add auth telemetry (`auth.method` counter + time-to-first-call timer) | P1-1, Plan 047 G2 | OAuth adoption measurable | S | ✅ |
+| 6 | Add transparent 401→revalidate→retry flow in github client | P1-2, P1-3 | Tokens refresh automatically; users aren't logged out after 8h | M | ✅ |
+| 7 | Write `tests/unit/device-flow.test.ts` | P1-4 identified | Device flow auth covered by tests | S | ✅ |
+| 8 | Migrate or remove 4 orphaned `.spec.ts` files | P1-5 identified | All test code is executed | S | ✅ |
+| 9 | Fix `CONTRIBUTING.md` npm→pnpm | P1-6 identified | Contributors use correct package manager | XS | ✅ |
+| 10 | Update `SECURITY.md` version table to 0.2.x | P1-7 identified | Accurate support scope | XS | ✅ |
+| 11 | Update `agents-docs/HOOKS.md` ESLint/Prettier→Biome | P1-8 identified | Accurate tooling reference | XS | ✅ |
+| 12 | Create or remove `CONTEXT.md` references to SUB-AGENTS.md and HARNESS.md | P1-9 identified | No dead doc references | XS | ✅ |
+| 13 | Add `swarm-coordination` to `available-skills.md` | P1-10 identified | Skill list accurate (25/25) | XS | ✅ |
+| 14 | Change `ci.yml` SHA-pin audit from `continue-on-error: true` to `false` | P2-1 identified | Invalid SHAs block CI | XS | ✅ |
+| 15 | Deduplicate Lighthouse CI — remove from `lighthouse.yml` PR trigger | P2-2 identified | No wasted CI minutes | XS | ✅ |
+| 16 | Align `security-scan.yml` audit level to `high` | P2-3 identified | Consistent vulnerability gating | XS | ✅ |
+| 17 | Pin `lhci` version in `ci.yml` bundle-budget job to `@0.14.x` | P2-4 identified | Reproducible CI builds | XS | ✅ |
+| 18 | Change `commitlint.yml` to `--frozen-lockfile` | P2-5 identified | Consistent CI reproducibility | XS | ✅ |
+| 19 | Replace `audit-actions.yml` `github-script` SHA with commit SHA `3a2844b7e9c422d3c10d287c8955737108da1b3` | P2-6 identified | Consistent SHA pinning | XS | ✅ |
+| 20 | Add evals for `agent-browser`, `codebase-optimizer`, `swarm-coordination` skills | P2-7 identified | All 25 skills evaluated | M | ✅ |
+| 21 | Remove `.agents/skills/skills` circular symlink | P2-8 identified | No infinite directory traversal | XS | ✅ |
+| 22 | Implement `@starting-style` for popover/dialog entry animations | P2-10 identified | Plan 039 Phase B/C complete | S | ✅ |
+| 23 | Implement `overlay: auto` for layered Popover API transitions | P2-11 identified | Plan 040 Phase C complete | S | ✅ |
+| 24 | Update `README.md` version badge from `0.1.0` to `0.2.0` | P2-16 identified | Correct version display | XS | ✅ |
+| 25 | Update `CHANGELOG.md` v0.2.0-rc.1 section format | P2-14 identified | Consistent changelog format | XS | ✅ |
+| 26 | Update `agents-docs/CONFIG.md` example version to `0.2.0` | P2-15 identified | Accurate example | XS | ✅ |
+| 27 | Remove `// CI trigger test` comment from `main.ts:89` | P3-7 identified | Clean code | XS | ✅ |
 
 ---
 
@@ -296,7 +296,7 @@ All 20 claimed features verified as implemented. Two minor discrepancies:
 |---|--------|-------------|--------|------|--------|
 | 28 | Add WCAG AA contrast lint rule for tokens | ADR-001 compliance | Automated contrast checking | M | ☐ |
 | 29 | Remove hardcoded `rgba()` and pixel values from CSS that should use tokens | P2-9 related | Token-only CSS compliance | S | ☐ |
-| 30 | Add `.lintstagedrc.json` config for lint-staged (Biome commands) | ADR-012 compliance | Pre-commit only runs on staged files | S | ☐ |
+| 30 | Add `.lintstagedrc.json` config for lint-staged (Biome commands) | ADR-012 compliance | Pre-commit only runs on staged files | S | ✅ |
 | 31 | Pass `Retry-After` header from rate-limiter to sync queue | ADR-014 compliance | Server-directed backoff | XS | ☐ |
 | 32 | Remove legacy `.command-palette` styles from `navigation.css` (dead code) | CSS audit | Removes ~120 lines of dead CSS | XS | ☐ |
 | 33 | Deduplicate `.gist-grid` definition in `base.css` | CSS audit | Cleaner stylesheet | XS | ☐ |
@@ -304,11 +304,11 @@ All 20 claimed features verified as implemented. Two minor discrepancies:
 | 35 | Fix `.empty-state-title`/`.empty-state-description` duplicate definitions with conflicting tokens | CSS audit | Correct empty-state styling | XS | ☐ |
 | 36 | Remove 11 unused CSS classes from stylesheets | CSS audit | Reduces CSS bundle size | S | ☐ |
 | 37 | Add missing 640px breakpoint to `breakpoints.ts` and `css-variables.ts` | Responsive audit | Full 7-breakpoint system | XS | ☐ |
-| 38 | Add `color-scheme: dark` / `color-scheme: light` to `:root` and `[data-theme="light"]` | CSS audit | Native browser chrome follows theme | XS | ☐ |
+| 38 | Add `color-scheme: dark` / `color-scheme: light` to `:root` and `[data-theme="light"]` | CSS audit | Native browser chrome follows theme | XS | ✅ |
 | 39 | Unify OKLCH shadow source — source OKLCH shadows from TypeScript tokens, not hand-coded CSS | Token pipeline | Single source of truth for shadows | M | ☐ |
-| 40 | Wire `scripts/check-bundle-size.sh` into `ci.yml` as a step | Plan 045 gap | Bundle budget enforced in CI | XS | ☐ |
-| 41 | Add `device-flow.test.ts` | P1-4 | Device flow auth covered by tests | S | ☐ |
-| 42 | Remove `// CI trigger test` comment from `main.ts:89` | P3-7 | Clean code | XS | ☐ |
+| 40 | Wire `scripts/check-bundle-size.sh` into `ci.yml` as a step | Plan 045 gap | Bundle budget enforced in CI | XS | ✅ |
+| 41 | Add `device-flow.test.ts` | P1-4 | Device flow auth covered by tests | S | ✅ |
+| 42 | Remove `// CI trigger test` comment from `main.ts:89` | P3-7 | Clean code | XS | ✅ |
 
 ---
 

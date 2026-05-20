@@ -47,11 +47,8 @@
      User-tunable hue via --accent-h (settings stores override).
      Hex fallbacks live above for engines without OKLCH support.
      ============================================================ */
-  --accent-h: 220; /* default brand blue */
-  --accent-c: 0.18; /* chroma */
-  --accent: #3b82f6;
-  --accent-soft: #93c5fd;
-  --accent-strong: #1d4ed8;
+  --accent-h: 220;
+  --accent-c: 0.18;
 }
 
 @supports (color: oklch(0 0 0)) {
@@ -59,6 +56,7 @@
     --accent: oklch(0.62 var(--accent-c) var(--accent-h));
     --accent-soft: oklch(0.82 calc(var(--accent-c) * 0.55) var(--accent-h));
     --accent-strong: oklch(0.42 var(--accent-c) var(--accent-h));
+    accent-color: var(--accent);
     /* Mix-based surface tints — single source of truth */
     --accent-tint-12: color-mix(in oklch, var(--accent) 12%, transparent);
     --accent-tint-24: color-mix(in oklch, var(--accent) 24%, transparent);
@@ -85,7 +83,7 @@
 
 /* Color-scheme-aware accent color for native form controls (Plan 039 Phase C) */
 :root {
-  accent-color: var(--accent);
+  accent-color: #3b82f6;
 }
 
 /* ===== App Shell ===== */
@@ -1233,14 +1231,6 @@ textarea.form-textarea {
   white-space: nowrap;
 }
 
-/* ===== Bento Grid Dashboard ===== */
-.gist-grid {
-  display: grid;
-  gap: var(--space-4);
-  grid-template-columns: 1fr;
-  grid-auto-flow: dense;
-}
-
 /* @scope eliminates selector bleed from generic child classes.
    Single source of truth for .gist-card.featured grid placement — the
    unscoped duplicate was removed to prevent override collisions. */
@@ -1290,49 +1280,5 @@ textarea.form-textarea {
   }
   to {
     transform: scaleX(1);
-  }
-}
-
-/* Scroll-reveal utility for route content */
-.scroll-reveal {
-  opacity: 0;
-  transform: translateY(16px);
-  transition:
-    opacity var(--motion-duration-normal) var(--motion-easing-out),
-    transform var(--motion-duration-normal) var(--motion-easing-out);
-}
-
-.scroll-reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Content stagger reveal for detail view */
-.file-tab-scroll,
-.file-content-scroll {
-  opacity: 0;
-  transform: translateY(12px);
-  animation: content-reveal var(--motion-duration-normal) var(--motion-easing-out) forwards;
-  animation-timeline: view();
-  animation-range: entry 0% entry 80%;
-}
-
-@supports not (animation-timeline: view()) {
-  .file-tab-scroll,
-  .file-content-scroll {
-    opacity: 1;
-    transform: none;
-    animation: none;
-  }
-}
-
-@keyframes content-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }

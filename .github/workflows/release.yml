@@ -4,17 +4,12 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_run:
-    workflows: ['CI']
-    types:
-      - completed
 
 permissions:
   contents: write
 
 jobs:
   build-and-release:
-    if: github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:

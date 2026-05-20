@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { SyncQueue, type SyncAction } from '../../src/services/sync/queue';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as db from '../../src/services/db';
-import networkMonitor from '../../src/services/network/offline-monitor';
 import * as github from '../../src/services/github';
 import * as rateLimiter from '../../src/services/github/rate-limiter';
+import networkMonitor from '../../src/services/network/offline-monitor';
 import * as conflictDetector from '../../src/services/sync/conflict-detector';
+import { type SyncAction, SyncQueue } from '../../src/services/sync/queue';
 import type { GitHubGist } from '../../src/types/api';
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
@@ -38,6 +38,7 @@ vi.mock('../../src/services/github', () => ({
 
 vi.mock('../../src/services/github/rate-limiter', () => ({
   isSafeToRequest: vi.fn(() => true),
+  getRetryAfterMs: vi.fn(() => 0),
 }));
 
 vi.mock('../../src/services/security/logger', () => ({
@@ -170,9 +171,7 @@ describe('SyncQueue', () => {
     it('triggers processQueue when online', async () => {
       vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
       vi.mocked(db.queueWrite).mockResolvedValue(4);
-      const processQueueSpy = vi
-        .spyOn(queue, 'processQueue')
-        .mockResolvedValue(undefined);
+      const processQueueSpy = vi.spyOn(queue, 'processQueue').mockResolvedValue(undefined);
 
       await queue.queueOperation('gist-4', 'create', {});
 
@@ -183,9 +182,7 @@ describe('SyncQueue', () => {
     it('does not trigger processQueue when offline', async () => {
       vi.mocked(networkMonitor.isOnline).mockReturnValue(false);
       vi.mocked(db.queueWrite).mockResolvedValue(5);
-      const processQueueSpy = vi
-        .spyOn(queue, 'processQueue')
-        .mockResolvedValue(undefined);
+      const processQueueSpy = vi.spyOn(queue, 'processQueue').mockResolvedValue(undefined);
 
       await queue.queueOperation('gist-5', 'create', {});
 

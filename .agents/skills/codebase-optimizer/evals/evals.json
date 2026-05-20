@@ -1,0 +1,50 @@
+{
+  "skill_name": "codebase-optimizer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Run a full codebase analysis with validation on the current project. Check for CSS issues, performance problems, and code quality concerns.",
+      "expected_output": "The agent runs `./scripts/analyze-codebase.sh --validate`, parses the output for issues found, categorizes them by severity (CSS, performance, code quality), and provides a summary report.",
+      "files": [],
+      "assertions": [
+        "The agent runs the analyze-codebase.sh script with --validate flag",
+        "The agent parses the output for categorized issues",
+        "The agent provides a summary with issue counts by category"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "A screenshot shows a visual regression: the gist card shadows look wrong after a CSS change. Diagnose and fix the issue.",
+      "expected_output": "The agent examines CSS shadow tokens, checks for hardcoded shadow values vs token usage, identifies the source of the visual regression, and applies a fix that uses the token system correctly.",
+      "files": [],
+      "assertions": [
+        "The agent examines shadow-related CSS rules",
+        "The agent checks both token-generated and hardcoded shadow values",
+        "The agent identifies the root cause of the visual regression",
+        "The agent applies a fix that uses the token system"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "The CI pipeline shows a new lint error about `noUnusedVariables`. Find and fix all unused variable violations in the codebase.",
+      "expected_output": "The agent runs the linter to discover all unused variable violations, reads each affected file, removes or prefixes unused variables, and re-runs the linter to confirm zero violations.",
+      "files": [],
+      "assertions": [
+        "The agent runs the linter to find violations",
+        "The agent reads affected files and removes unused variables",
+        "The agent re-runs the linter to confirm zero violations"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our IndexedDB schema has evolved and there may be orphaned records from old migrations. Scan the db.ts service for potential issues and recommend fixes.",
+      "expected_output": "The agent reads the db.ts service, checks schema version handling, verifies migration paths, identifies any potential orphaned data patterns, and recommends fixes with code examples.",
+      "files": [],
+      "assertions": [
+        "The agent reads db.ts for schema migration logic",
+        "The agent identifies potential orphaned record patterns",
+        "The agent provides concrete fix recommendations with code"
+      ]
+    }
+  ]
+}

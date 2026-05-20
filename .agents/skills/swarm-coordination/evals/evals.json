@@ -1,0 +1,54 @@
+{
+  "skill_name": "swarm-coordination",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to audit the codebase for unused CSS classes and then fix them. Coordinate the work across agents.",
+      "expected_output": "The agent identifies the two-step workflow: first use an explore agent to find unused CSS classes, then use a general agent to remove them. The agent launches both tasks with proper handoff, passes the explore agent's findings to the fix agent, and reports the final result.",
+      "files": [],
+      "assertions": [
+        "The agent splits work into separate agent tasks",
+        "The agent uses explore agent for discovery/search tasks",
+        "The agent uses general agent for modification tasks",
+        "The agent passes results between agents for the handoff",
+        "The agent reports the final result after both tasks complete"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Run npm test and then analyze the coverage report to find untested modules. I need both executed.",
+      "expected_output": "The agent correctly identifies that an explore agent cannot run bash commands. The agent uses a general agent to both run the tests and analyze the coverage report in a single task, returning the coverage gaps found.",
+      "files": [],
+      "assertions": [
+        "The agent selects general agent type (not explore) for the task",
+        "The agent runs npm test via the general agent",
+        "The agent analyzes the coverage report for gaps",
+        "The agent returns a list of untested modules"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Search all src/ files for 'TODO' comments, then create a new plan file documenting each TODO with its file location and suggested action. Track this in the plans/ registry.",
+      "expected_output": "The agent uses an explore agent to grep for TODO comments across src/, receives the results, categorizes them by area, creates a new plan file in plans/ with the findings, and updates the plan registry.",
+      "files": [],
+      "assertions": [
+        "The agent uses explore agent for the grep/search task",
+        "The agent categorizes TODOs by functional area",
+        "The agent creates a new plan file documenting all TODOs",
+        "The agent updates the plan registry with the new entry"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "An explore agent returned empty results for a task that requires bash commands. Diagnose the failure and re-execute correctly.",
+      "expected_output": "The agent recognizes the empty-task-result failure pattern from the skill docs. The agent identifies that using an explore agent with bash commands caused the failure. The agent re-executes the task with the general agent type and returns the correct results.",
+      "files": [],
+      "assertions": [
+        "The agent identifies the empty-result failure as wrong agent type",
+        "The agent explains that explore agents cannot run bash",
+        "The agent re-runs the task with a general agent",
+        "The agent returns the correct results from the re-execution"
+      ]
+    }
+  ]
+}

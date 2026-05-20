@@ -48,7 +48,7 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew :app:assembleRelease --dry-run 2>&1 | tee ../proguard-dry-run.log
+          ./gradlew :app:assembleRelease --dry-run --stacktrace 2>&1 | tee ../proguard-dry-run.log
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # pinned from v7
         if: always()

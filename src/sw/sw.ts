@@ -195,12 +195,24 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
     return;
   }
 
-  // Default - Network first
+  // Default - Network first with cache fallback (ADR-010)
   event.respondWith(
-    fetch(request).catch(async () => {
-      const cached = await caches.match(request);
-      return cached || new Response('Not found', { status: 404 });
-    })
+    fetch(request)
+      .then((response) => {
+        const responseClone = response.clone();
+        const timestampedResponse = addTimestampToResponse(responseClone);
+        caches
+          .open(APP.cacheName)
+          .then((cache) => {
+            cache.put(request, timestampedResponse).catch(() => {});
+          })
+          .catch(() => {});
+        return response;
+      })
+      .catch(async () => {
+        const cached = await caches.match(request);
+        return cached || new Response('Not found', { status: 404 });
+      })
   );
 });
 

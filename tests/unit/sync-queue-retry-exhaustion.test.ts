@@ -38,6 +38,7 @@ vi.mock('../../src/services/github', () => ({
 
 vi.mock('../../src/services/github/rate-limiter', () => ({
   isSafeToRequest: vi.fn(() => true),
+  getRetryAfterMs: vi.fn(() => 0),
 }));
 
 vi.mock('../../src/services/security/logger', () => ({
