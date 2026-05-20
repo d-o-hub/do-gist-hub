@@ -240,6 +240,11 @@
       "type": "plan",
       "status": "active",
       "summary": "v0.3.0 scope: F-Droid MR submission pending, all other items implemented (auth telemetry, UX polish, DevEx/CI)"
+    },
+    "050-goap-plans-completion-v2.md": {
+      "type": "goap",
+      "status": "complete",
+      "summary": "Complete remaining plan 048 deep audit items: CI/CD fixes (6 workflows), CSS consolidation (command-palette, OKLCH shadows, unused classes), SW cache separation (ADR-010), token expiry UI (ADR-028), Retry-After header (ADR-014), 640px breakpoint, color-scheme, responsive nav fix, skill evals"
     }
   },
   "archive": [
@@ -273,7 +278,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-030",
-    "plan": "050",
+    "plan": "051",
     "goap": "032"
   }
 }

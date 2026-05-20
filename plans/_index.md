@@ -13,6 +13,7 @@
 | `049-progress-update-2026-05-19-plan048-completion.md` | Progress | Active 🟢 | Progress update for plan 048 completion |
 | File                                          | Type        | Status      | Summary                                                                                                                      |
 | --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `050-goap-plans-completion-v2.md`             | GOAP Plan   | Complete ✅ | Complete remaining deep audit: CI/CD fixes (6 workflows), CSS consolidation (command-palette, OKLCH shadows, unused classes), SW cache, token expiry UI, Retry-After header, 640px breakpoint, color-scheme, responsive nav fix, skill evals |
 | `045-v0.2.0-release-and-auth-modernization.md` | GOAP Plan   | Complete ✅ | v0.2.0-rc.1 release, OAuth Device Flow, audit gaps completed |
 | `046-post-release-and-v0.2.0-stable.md`       | GOAP Plan   | Complete ✅ | v0.2.0 stable promoted, F-Droid metadata, release CI hardened, v0.3.0 scoped |
 | `048-codebase-audit-implementation-gaps-ci-docs.md` | GOAP Plan | Complete ✅ | All 27 GOAP actions complete: CI SHAs, auth telemetry, refresh tokens, tests, doc hygiene, CI hardening, CSS polish, LHCI dedup, skill evals |
@@ -118,4 +119,4 @@ These numbered plans document the project's foundation and are considered stable
 
 `adr-001` through `adr-029` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-030`
-**Next available plan number**: `050`
+**Next available plan number**: `051`
