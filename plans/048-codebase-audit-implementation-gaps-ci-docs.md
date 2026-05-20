@@ -294,7 +294,7 @@ All 20 claimed features verified as implemented. Two minor discrepancies:
 
 | # | Action | Precondition | Effect | Cost | Status |
 |---|--------|-------------|--------|------|--------|
-| 28 | Add WCAG AA contrast lint rule for tokens | ADR-001 compliance | Automated contrast checking | M | ☐ |
+| 28 | Add WCAG AA contrast lint rule for tokens | ADR-001 compliance | Automated contrast checking | M | ✅ |
 | 29 | Remove hardcoded `rgba()` and pixel values from CSS that should use tokens | P2-9 related | Token-only CSS compliance | S | ✅ |
 | 30 | Add `.lintstagedrc.json` config for lint-staged (Biome commands) | ADR-012 compliance | Pre-commit only runs on staged files | S | ✅ |
 | 31 | Pass `Retry-After` header from rate-limiter to sync queue | ADR-014 compliance | Server-directed backoff | XS | ✅ |

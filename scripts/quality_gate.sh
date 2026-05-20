@@ -53,6 +53,11 @@ if [[ -f "$ROOT_DIR/scripts/check-adr-compliance.sh" ]]; then
   echo "✓ ADR compliance check passed"
 fi
 
+# WCAG AA contrast check (from plan 048 Action 28)
+echo "→ WCAG AA contrast check..."
+npx tsx "$ROOT_DIR/scripts/check-contrast.ts" || { echo "✗ WCAG AA contrast check failed"; exit 1; }
+echo "✓ WCAG AA contrast check passed"
+
 # Plan numbering consistency (from plan 038 E4)
 if [[ -f "$ROOT_DIR/scripts/check-plan-numbering.sh" ]]; then
   echo "→ Plan numbering check..."

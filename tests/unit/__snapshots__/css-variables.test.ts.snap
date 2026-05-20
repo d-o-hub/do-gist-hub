@@ -278,14 +278,14 @@ exports[`generateCSSVariables > matches the full CSS output snapshot 1`] = `
 
   --color-foreground-primary: #0F172A;
   --color-foreground-secondary: #475569;
-  --color-foreground-muted: #94A3B8;
+  --color-foreground-muted: #64748B;
   --color-foreground-inverse: #FFFFFF;
 
-  --color-accent-primary: #3B82F6;
-  --color-accent-hover: #2563EB;
-  --color-accent-active: #1D4ED8;
-  --color-accent-subtle: rgba(59, 130, 246, 0.08);
-  --color-accent-glow: rgba(59, 130, 246, 0.25);
+  --color-accent-primary: #2563EB;
+  --color-accent-hover: #1D4ED8;
+  --color-accent-active: #1E40AF;
+  --color-accent-subtle: rgba(37, 99, 235, 0.08);
+  --color-accent-glow: rgba(37, 99, 235, 0.25);
 
   --color-border-default: #E2E8F0;
   --color-border-emphasis: #CBD5E1;
@@ -304,12 +304,12 @@ exports[`generateCSSVariables > matches the full CSS output snapshot 1`] = `
   --color-status-warning-border: #FDE047;
 
   --color-status-info-bg: #EFF6FF;
-  --color-status-info-fg: #1D4ED8;
+  --color-status-info-fg: #2563EB;
   --color-status-info-border: #93C5FD;
 
   --color-interactive-hover: #F1F5F9;
   --color-interactive-active: #E2E8F0;
-  --color-interactive-focus: rgba(59, 130, 246, 0.15);
+  --color-interactive-focus: rgba(37, 99, 235, 0.15);
 
   /* Light mode shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);

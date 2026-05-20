@@ -15,15 +15,15 @@ export const colorSemantic = {
     foreground: {
       primary: '#0F172A',
       secondary: '#475569',
-      muted: '#94A3B8',
+      muted: '#64748B',
       inverse: '#FFFFFF',
     },
     accent: {
-      primary: '#3B82F6',
-      hover: '#2563EB',
-      active: '#1D4ED8',
-      subtle: 'rgba(59, 130, 246, 0.08)',
-      glow: 'rgba(59, 130, 246, 0.25)',
+      primary: '#2563EB',
+      hover: '#1D4ED8',
+      active: '#1E40AF',
+      subtle: 'rgba(37, 99, 235, 0.08)',
+      glow: 'rgba(37, 99, 235, 0.25)',
     },
     border: {
       default: '#E2E8F0',
@@ -34,12 +34,12 @@ export const colorSemantic = {
       success: { bg: '#F0FDF4', fg: '#15803D', border: '#86EFAC' },
       error: { bg: '#FEF2F2', fg: '#B91C1C', border: '#FCA5A5' },
       warning: { bg: '#FFFBEB', fg: '#B45309', border: '#FDE047' },
-      info: { bg: '#EFF6FF', fg: '#1D4ED8', border: '#93C5FD' },
+      info: { bg: '#EFF6FF', fg: '#2563EB', border: '#93C5FD' },
     },
     interactive: {
       hover: '#F1F5F9',
       active: '#E2E8F0',
-      focus: 'rgba(59, 130, 246, 0.15)',
+      focus: 'rgba(37, 99, 235, 0.15)',
     },
   },
   dark: {
