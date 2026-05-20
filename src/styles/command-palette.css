@@ -54,6 +54,7 @@
 /* Popover API visibility (future migration target) */
 .command-palette:popover-open {
   opacity: 1;
+  visibility: visible;
   transform: translate(-50%, -20%) scale(1);
 }
 
