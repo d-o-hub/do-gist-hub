@@ -30,7 +30,7 @@ function createDefaultTelemetry(): AuthTelemetryData {
   };
 }
 
-async function readTelemetry(): Promise<AuthTelemetryData> {
+export async function readTelemetry(): Promise<AuthTelemetryData> {
   const data = await getMetadata<AuthTelemetryData>(TELEMETRY_KEY);
   return data ?? createDefaultTelemetry();
 }

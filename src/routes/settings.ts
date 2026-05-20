@@ -12,7 +12,11 @@ import { lifecycle } from '../services/lifecycle';
 import networkMonitor from '../services/network/offline-monitor';
 import { redactToken, sanitizeHtml } from '../services/security';
 import { safeError } from '../services/security/logger';
-import { recordAuthCompleted } from '../services/telemetry/auth-telemetry';
+import {
+  readTelemetry,
+  recordAuthCompleted,
+  recordAuthMethod,
+} from '../services/telemetry/auth-telemetry';
 import gistStore from '../stores/gist-store';
 import { getThemePreference, initTheme } from '../tokens/design-tokens';
 import { showConfirmDialog } from '../utils/dialog';
@@ -111,7 +115,7 @@ export async function render(
   `;
 
   await loadTokenInfo(container);
-  loadDiagnostics(container);
+  await loadDiagnostics(container);
   loadAccentHue(container);
   bindEvents(container, signal);
 }
@@ -146,9 +150,9 @@ async function loadTokenInfo(container: HTMLElement): Promise<void> {
 }
 
 /**
- * Render diagnostics info (online status, gist count, current theme) into the settings UI.
+ * Render diagnostics info (online status, gist count, current theme, auth telemetry) into the settings UI.
  */
-function loadDiagnostics(container: HTMLElement): void {
+async function loadDiagnostics(container: HTMLElement): Promise<void> {
   const diagnosticsContainer = container.querySelector('#diagnostics-info');
   if (!diagnosticsContainer) return;
 
@@ -156,13 +160,25 @@ function loadDiagnostics(container: HTMLElement): void {
     online: networkMonitor.isOnline(),
     gistsCount: gistStore.getGists().length,
     theme: document.documentElement.getAttribute('data-theme'),
+    telemetry: await (async () => {
+      try {
+        return await readTelemetry();
+      } catch {
+        return null;
+      }
+    })(),
   };
+
+  const telemetryHtml = info.telemetry
+    ? `<p>Auth: ${info.telemetry.patCount} PAT, ${info.telemetry.deviceFlowCount} Device Flow</p>`
+    : '';
 
   diagnosticsContainer.innerHTML = `
     <div class="diagnostics-content micro-label">
       <p>Online: ${info.online ? 'Yes' : 'No'}</p>
       <p>Gists: ${info.gistsCount}</p>
       <p>Theme: ${sanitizeHtml(info.theme || 'auto')}</p>
+      ${telemetryHtml}
     </div>
   `;
 }
@@ -198,6 +214,7 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
             const result = await saveToken(input.value);
             if (result.success) {
               toast.success('TOKEN SAVED');
+              await recordAuthMethod('pat');
               await recordAuthCompleted();
               await loadTokenInfo(container);
               input.value = '';
@@ -305,14 +322,14 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
             select.value = effective;
           }
           if (signal.aborted) return;
-          loadDiagnostics(container);
+          await loadDiagnostics(container);
         })();
         return;
       } else {
         localStorage.setItem('theme-preference', theme);
         initTheme();
       }
-      loadDiagnostics(container);
+      void loadDiagnostics(container);
     },
     { signal }
   );

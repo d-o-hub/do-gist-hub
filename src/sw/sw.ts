@@ -154,9 +154,32 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
     return;
   }
 
-  // GitHub API requests — never cache; always go to network
+  // GitHub API requests — network first with dedicated API cache (ADR-010)
   if (url.origin === 'https://api.github.com') {
-    event.respondWith(fetch(request));
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const responseClone = response.clone();
+          const timestampedResponse = addTimestampToResponse(responseClone);
+          caches
+            .open(APP.apiCacheName)
+            .then((cache) => {
+              cache.put(request, timestampedResponse).catch(() => {});
+            })
+            .catch(() => {});
+          return response;
+        })
+        .catch(async () => {
+          const cached = await caches.match(request);
+          return (
+            cached ||
+            new Response(JSON.stringify({ error: 'offline' }), {
+              status: 503,
+              headers: { 'Content-Type': 'application/json' },
+            })
+          );
+        })
+    );
     return;
   }
 
