@@ -9,6 +9,9 @@
 
 import { APP } from '../config/app.config';
 
+// Derive deployment base path from SW's own URL — works at any subpath without hardcoding
+const BASE_PATH = self.location.pathname.substring(0, self.location.pathname.lastIndexOf('/') + 1);
+
 const STATIC_CACHE = `${APP.staticCacheName}-__BUILD_TIMESTAMP__`;
 
 // Cache entry TTL: 30 days in milliseconds
@@ -45,14 +48,14 @@ async function cleanExpiredEntries(cacheName: string): Promise<void> {
 
 // Assets to precache (app shell)
 const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/offline.html',
-  '/manifest.webmanifest',
-  '/favicon.svg',
-  '/apple-touch-icon.png',
-  '/pwa-192x192.png',
-  '/pwa-512x512.png',
+  BASE_PATH,
+  `${BASE_PATH}index.html`,
+  `${BASE_PATH}offline.html`,
+  `${BASE_PATH}manifest.webmanifest`,
+  `${BASE_PATH}favicon.svg`,
+  `${BASE_PATH}apple-touch-icon.png`,
+  `${BASE_PATH}pwa-192x192.png`,
+  `${BASE_PATH}pwa-512x512.png`,
 ];
 
 // Type assertions for service worker global scope
@@ -100,7 +103,7 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
   const url = new URL(request.url);
 
   // CSP violation reports (plan 038 F2) — redact and return 204
-  if (url.pathname === '/csp-report' && request.method === 'POST') {
+  if (url.pathname === `${BASE_PATH}csp-report` && request.method === 'POST') {
     event.respondWith(
       request.text().then((body) => {
         try {
@@ -137,7 +140,7 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
         })
         .catch(async () => {
           // Serve offline fallback first when offline
-          const offlineResponse = await caches.match('/offline.html');
+          const offlineResponse = await caches.match(`${BASE_PATH}offline.html`);
           if (offlineResponse) return offlineResponse;
 
           // Fallback to cached response if offline.html not available

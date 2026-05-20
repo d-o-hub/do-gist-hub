@@ -15,6 +15,7 @@ const GITHUB_API = 'https://github.com';
 const ALLOWED_ORIGINS = [
   'https://d-o-gist-hub.pages.dev',
   'https://do-gist-hub.vercel.app',
+  'https://d-o-hub.github.io',
   /^https?:\/\/localhost:\d+$/,
 ];
 
@@ -109,13 +110,10 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     const refreshToken = body?.refresh_token;
 
     if (!deviceCode && !refreshToken) {
-      return new Response(
-        JSON.stringify({ error: 'device_code or refresh_token is required' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        },
-      );
+      return new Response(JSON.stringify({ error: 'device_code or refresh_token is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const githubResponse = await fetch(`${GITHUB_API}/login/oauth/access_token`, {

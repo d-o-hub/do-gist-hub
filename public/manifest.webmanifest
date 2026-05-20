@@ -5,8 +5,8 @@
   "theme_color": "#2563eb",
   "background_color": "#ffffff",
   "display": "standalone",
-  "scope": "/",
-  "start_url": "/",
+  "scope": "./",
+  "start_url": "./",
   "orientation": "any",
   "categories": [
     "productivity",

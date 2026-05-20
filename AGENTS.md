@@ -39,7 +39,7 @@ pnpm run test:unit
   ```bash
   cp scripts/commit-msg-hook.sh .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
   ```
-- **Style**: Direct, professional. No conversational filler or emojis in generated docs.
+- **No Hardcoded Values or Magic Numbers (Updated 2026-05-20)**: Never hardcode deployment-specific paths, port numbers, API versions, or magic numeric literals. Use relative paths (`base: './'`), runtime derivation (`self.location`), environment variables, or named constants with clear intent. All `.agents/skills/` SKILL.md files and scripts must be reviewed for this rule.
 
 ## Architecture
 

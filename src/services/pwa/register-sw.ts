@@ -15,9 +15,8 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   }
 
   try {
-    const registration = await navigator.serviceWorker.register('/sw.js', {
-      scope: '/',
-    });
+    // Use relative path — resolves relative to page URL, works at any deployment subpath
+    const registration = await navigator.serviceWorker.register('./sw.js');
 
     // Handle updates
     registration.addEventListener('updatefound', () => {
