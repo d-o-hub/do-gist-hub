@@ -86,10 +86,15 @@ swSelf.addEventListener('activate', (event: ExtendableEvent) => {
     caches
       .keys()
       .then((cacheNames) => {
+        const preserve = [STATIC_CACHE, APP.apiCacheName];
         const deleteOldCaches = cacheNames
-          .filter((name) => name !== STATIC_CACHE)
+          .filter((name) => !preserve.includes(name))
           .map((name) => caches.delete(name));
-        return Promise.all([...deleteOldCaches, cleanExpiredEntries(STATIC_CACHE)]);
+        return Promise.all([
+          ...deleteOldCaches,
+          cleanExpiredEntries(STATIC_CACHE),
+          cleanExpiredEntries(APP.apiCacheName),
+        ]);
       })
       .then(() => swSelf.clients.claim())
   );
@@ -155,18 +160,21 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
   }
 
   // GitHub API requests — network first with dedicated API cache (ADR-010)
+  // Only cache GET requests with successful responses
   if (url.origin === 'https://api.github.com') {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const responseClone = response.clone();
-          const timestampedResponse = addTimestampToResponse(responseClone);
-          caches
-            .open(APP.apiCacheName)
-            .then((cache) => {
-              cache.put(request, timestampedResponse).catch(() => {});
-            })
-            .catch(() => {});
+          if (request.method === 'GET' && response.ok) {
+            const responseClone = response.clone();
+            const timestampedResponse = addTimestampToResponse(responseClone);
+            caches
+              .open(APP.apiCacheName)
+              .then((cache) => {
+                cache.put(request, timestampedResponse).catch(() => {});
+              })
+              .catch(() => {});
+          }
           return response;
         })
         .catch(async () => {

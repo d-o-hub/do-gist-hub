@@ -169,18 +169,19 @@ async function loadDiagnostics(container: HTMLElement): Promise<void> {
     })(),
   };
 
-  const telemetryHtml = info.telemetry
-    ? `<p>Auth: ${info.telemetry.patCount} PAT, ${info.telemetry.deviceFlowCount} Device Flow</p>`
-    : '';
-
   diagnosticsContainer.innerHTML = `
     <div class="diagnostics-content micro-label">
       <p>Online: ${info.online ? 'Yes' : 'No'}</p>
       <p>Gists: ${info.gistsCount}</p>
       <p>Theme: ${sanitizeHtml(info.theme || 'auto')}</p>
-      ${telemetryHtml}
     </div>
   `;
+
+  if (info.telemetry) {
+    const telemetryRow = document.createElement('p');
+    telemetryRow.textContent = `Auth: ${info.telemetry.patCount} PAT, ${info.telemetry.deviceFlowCount} Device Flow`;
+    diagnosticsContainer.querySelector('.diagnostics-content')?.appendChild(telemetryRow);
+  }
 }
 
 /**
@@ -214,8 +215,8 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
             const result = await saveToken(input.value);
             if (result.success) {
               toast.success('TOKEN SAVED');
-              await recordAuthMethod('pat');
-              await recordAuthCompleted();
+              void recordAuthMethod('pat').catch(() => {});
+              void recordAuthCompleted().catch(() => {});
               await loadTokenInfo(container);
               input.value = '';
             } else {
