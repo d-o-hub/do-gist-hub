@@ -295,17 +295,17 @@ All 20 claimed features verified as implemented. Two minor discrepancies:
 | # | Action | Precondition | Effect | Cost | Status |
 |---|--------|-------------|--------|------|--------|
 | 28 | Add WCAG AA contrast lint rule for tokens | ADR-001 compliance | Automated contrast checking | M | ☐ |
-| 29 | Remove hardcoded `rgba()` and pixel values from CSS that should use tokens | P2-9 related | Token-only CSS compliance | S | ☐ |
+| 29 | Remove hardcoded `rgba()` and pixel values from CSS that should use tokens | P2-9 related | Token-only CSS compliance | S | ✅ |
 | 30 | Add `.lintstagedrc.json` config for lint-staged (Biome commands) | ADR-012 compliance | Pre-commit only runs on staged files | S | ✅ |
-| 31 | Pass `Retry-After` header from rate-limiter to sync queue | ADR-014 compliance | Server-directed backoff | XS | ☐ |
-| 32 | Remove legacy `.command-palette` styles from `navigation.css` (dead code) | CSS audit | Removes ~120 lines of dead CSS | XS | ☐ |
-| 33 | Deduplicate `.gist-grid` definition in `base.css` | CSS audit | Cleaner stylesheet | XS | ☐ |
-| 34 | Deduplicate `.offline-stats` across `base.css` and `conflicts.css` | CSS audit | Single source of truth | XS | ☐ |
-| 35 | Fix `.empty-state-title`/`.empty-state-description` duplicate definitions with conflicting tokens | CSS audit | Correct empty-state styling | XS | ☐ |
-| 36 | Remove 11 unused CSS classes from stylesheets | CSS audit | Reduces CSS bundle size | S | ☐ |
-| 37 | Add missing 640px breakpoint to `breakpoints.ts` and `css-variables.ts` | Responsive audit | Full 7-breakpoint system | XS | ☐ |
+| 31 | Pass `Retry-After` header from rate-limiter to sync queue | ADR-014 compliance | Server-directed backoff | XS | ✅ |
+| 32 | Remove legacy `.command-palette` styles from `navigation.css` (dead code) | CSS audit | Removes ~120 lines of dead CSS | XS | ✅ |
+| 33 | Deduplicate `.gist-grid` definition in `base.css` | CSS audit | Cleaner stylesheet | XS | ✅ |
+| 34 | Deduplicate `.offline-stats` across `base.css` and `conflicts.css` | CSS audit | Single source of truth | XS | ✅ |
+| 35 | Fix `.empty-state-title`/`.empty-state-description` duplicate definitions with conflicting tokens | CSS audit | Correct empty-state styling | XS | ✅ |
+| 36 | Remove 11 unused CSS classes from stylesheets | CSS audit | Reduces CSS bundle size | S | ✅ |
+| 37 | Add missing 640px breakpoint to `breakpoints.ts` and `css-variables.ts` | Responsive audit | Full 7-breakpoint system | XS | ✅ |
 | 38 | Add `color-scheme: dark` / `color-scheme: light` to `:root` and `[data-theme="light"]` | CSS audit | Native browser chrome follows theme | XS | ✅ |
-| 39 | Unify OKLCH shadow source — source OKLCH shadows from TypeScript tokens, not hand-coded CSS | Token pipeline | Single source of truth for shadows | M | ☐ |
+| 39 | Unify OKLCH shadow source — source OKLCH shadows from TypeScript tokens, not hand-coded CSS | Token pipeline | Single source of truth for shadows | M | ✅ |
 | 40 | Wire `scripts/check-bundle-size.sh` into `ci.yml` as a step | Plan 045 gap | Bundle budget enforced in CI | XS | ✅ |
 | 41 | Add `device-flow.test.ts` | P1-4 | Device flow auth covered by tests | S | ✅ |
 | 42 | Remove `// CI trigger test` comment from `main.ts:89` | P3-7 | Clean code | XS | ✅ |

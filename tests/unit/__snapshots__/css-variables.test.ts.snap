@@ -256,6 +256,18 @@ exports[`generateCSSVariables > matches the full CSS output snapshot 1`] = `
   --shadow-glass-hover: 0 0 60px oklch(0 0 0 / 0.6), 0 0 0 1px oklch(1 0 0 / 0.1);
 }
 
+/* ===== OKLCH Shadow Ramp (Enhanced browsers) ===== */
+@supports (color: oklch(0 0 0)) {
+  :root {
+    --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.06);
+    --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);
+    --shadow-md: 0 4px 6px oklch(0 0 0 / 0.1), 0 2px 4px oklch(0 0 0 / 0.06);
+    --shadow-lg: 0 10px 15px oklch(0 0 0 / 0.12), 0 4px 6px oklch(0 0 0 / 0.08);
+    --shadow-xl: 0 20px 25px oklch(0 0 0 / 0.14), 0 8px 10px oklch(0 0 0 / 0.1);
+    --shadow-2xl: 0 30px 40px oklch(0 0 0 / 0.16);
+  }
+}
+
 /* ===== Light Theme Override ===== */
 [data-theme="light"] {
   color-scheme: light;
@@ -328,6 +340,18 @@ exports[`generateCSSVariables > matches the full CSS output snapshot 1`] = `
   --color-status-success-subtle: rgba(22, 163, 74, 0.1);
   --skeleton-shimmer-start: rgba(0, 0, 0, 0.04);
   --skeleton-shimmer-mid: rgba(0, 0, 0, 0.08);
+}
+
+/* Light mode OKLCH shadows */
+@supports (color: oklch(0 0 0)) {
+  [data-theme="light"] {
+    --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.04);
+    --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.03);
+    --shadow-md: 0 4px 6px oklch(0 0 0 / 0.08), 0 2px 4px oklch(0 0 0 / 0.04);
+    --shadow-lg: 0 10px 15px oklch(0 0 0 / 0.08), 0 4px 6px oklch(0 0 0 / 0.04);
+    --shadow-xl: 0 20px 25px oklch(0 0 0 / 0.1), 0 8px 10px oklch(0 0 0 / 0.06);
+    --shadow-2xl: 0 30px 40px oklch(0 0 0 / 0.12);
+  }
 }
 
 /* ===== Responsive Container Spacing ===== */

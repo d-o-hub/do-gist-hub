@@ -6,7 +6,7 @@
 import { gistCard } from './component/cards';
 import { navTokens } from './component/navigation';
 import { uiTokens } from './component/ui';
-import { shadowTokens } from './elevation/shadows';
+import { shadowOklch, shadowTokens } from './elevation/shadows';
 import { motionTokens } from './motion/motion';
 import { colors } from './primitive/colors';
 import { radius } from './primitive/radius';
@@ -277,6 +277,18 @@ export function generateCSSVariables(): string {
   --shadow-glass-hover: 0 0 60px oklch(0 0 0 / 0.6), 0 0 0 1px oklch(1 0 0 / 0.1);
 }
 
+/* ===== OKLCH Shadow Ramp (Enhanced browsers) ===== */
+@supports (color: oklch(0 0 0)) {
+  :root {
+    --shadow-xs: ${shadowOklch.xs};
+    --shadow-sm: ${shadowOklch.sm};
+    --shadow-md: ${shadowOklch.md};
+    --shadow-lg: ${shadowOklch.lg};
+    --shadow-xl: ${shadowOklch.xl};
+    --shadow-2xl: ${shadowOklch['2xl']};
+  }
+}
+
 /* ===== Light Theme Override ===== */
 [data-theme="light"] {
   color-scheme: light;
@@ -349,6 +361,18 @@ export function generateCSSVariables(): string {
   --color-status-success-subtle: rgba(22, 163, 74, 0.1);
   --skeleton-shimmer-start: rgba(0, 0, 0, 0.04);
   --skeleton-shimmer-mid: rgba(0, 0, 0, 0.08);
+}
+
+/* Light mode OKLCH shadows */
+@supports (color: oklch(0 0 0)) {
+  [data-theme="light"] {
+    --shadow-xs: ${shadowOklch['xs-light']};
+    --shadow-sm: ${shadowOklch['sm-light']};
+    --shadow-md: ${shadowOklch['md-light']};
+    --shadow-lg: ${shadowOklch['lg-light']};
+    --shadow-xl: ${shadowOklch['xl-light']};
+    --shadow-2xl: ${shadowOklch['2xl-light']};
+  }
 }
 
 /* ===== Responsive Container Spacing ===== */

@@ -20,6 +20,25 @@ export const shadowTokens = {
   'lg-dark': '0 10px 15px -3px rgba(255, 255, 255, 0.08), 0 4px 6px -2px rgba(255, 255, 255, 0.04)',
 } as const;
 
+/**
+ * OKLCH shadow values for @supports (color: oklch) block.
+ * Single source of truth — replaces hand-authored CSS in base.css.
+ */
+export const shadowOklch = {
+  xs: '0 1px 2px oklch(0 0 0 / 0.06)',
+  sm: '0 1px 3px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04)',
+  md: '0 4px 6px oklch(0 0 0 / 0.1), 0 2px 4px oklch(0 0 0 / 0.06)',
+  lg: '0 10px 15px oklch(0 0 0 / 0.12), 0 4px 6px oklch(0 0 0 / 0.08)',
+  xl: '0 20px 25px oklch(0 0 0 / 0.14), 0 8px 10px oklch(0 0 0 / 0.1)',
+  '2xl': '0 30px 40px oklch(0 0 0 / 0.16)',
+  'xs-light': '0 1px 2px oklch(0 0 0 / 0.04)',
+  'sm-light': '0 1px 3px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.03)',
+  'md-light': '0 4px 6px oklch(0 0 0 / 0.08), 0 2px 4px oklch(0 0 0 / 0.04)',
+  'lg-light': '0 10px 15px oklch(0 0 0 / 0.08), 0 4px 6px oklch(0 0 0 / 0.04)',
+  'xl-light': '0 20px 25px oklch(0 0 0 / 0.1), 0 8px 10px oklch(0 0 0 / 0.06)',
+  '2xl-light': '0 30px 40px oklch(0 0 0 / 0.12)',
+} as const;
+
 export const zIndex = {
   hide: '-1',
   base: '0',

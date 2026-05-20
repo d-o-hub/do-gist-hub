@@ -60,26 +60,11 @@
     /* Mix-based surface tints — single source of truth */
     --accent-tint-12: color-mix(in oklch, var(--accent) 12%, transparent);
     --accent-tint-24: color-mix(in oklch, var(--accent) 24%, transparent);
-
-    /* OKLCH shadow ramp (Plan 039 Phase B) — no hex, themable via --accent-h */
-    --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.06);
-    --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);
-    --shadow-md: 0 4px 6px oklch(0 0 0 / 0.1), 0 2px 4px oklch(0 0 0 / 0.06);
-    --shadow-lg: 0 10px 15px oklch(0 0 0 / 0.12), 0 4px 6px oklch(0 0 0 / 0.08);
-    --shadow-xl: 0 20px 25px oklch(0 0 0 / 0.14), 0 8px 10px oklch(0 0 0 / 0.1);
-    --shadow-2xl: 0 30px 40px oklch(0 0 0 / 0.16);
   }
 }
 
-/* Dark-mode shadow overrides — lighter shadows on dark surfaces */
-[data-theme="light"] {
-  --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.04);
-  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.03);
-  --shadow-md: 0 4px 6px oklch(0 0 0 / 0.08), 0 2px 4px oklch(0 0 0 / 0.04);
-  --shadow-lg: 0 10px 15px oklch(0 0 0 / 0.08), 0 4px 6px oklch(0 0 0 / 0.04);
-  --shadow-xl: 0 20px 25px oklch(0 0 0 / 0.1), 0 8px 10px oklch(0 0 0 / 0.06);
-  --shadow-2xl: 0 30px 40px oklch(0 0 0 / 0.12);
-}
+/* Light mode OKLCH shadows are now sourced from TypeScript tokens (css-variables.ts @supports block).
+   The @supports (color: oklch) block above only sets --accent/* accent-color — shadows come from pipeline. */
 
 /* Color-scheme-aware accent color for native form controls (Plan 039 Phase C) */
 :root {
