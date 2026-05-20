@@ -24,7 +24,7 @@ import {
   unstarGist,
   updateGist,
 } from '../github';
-import { isSafeToRequest } from '../github/rate-limiter';
+import { getRetryAfterMs, isSafeToRequest } from '../github/rate-limiter';
 import networkMonitor from '../network/offline-monitor';
 import { safeError, safeLog } from '../security/logger';
 import { detectConflict, storeConflict } from './conflict-detector';
@@ -112,8 +112,12 @@ export class SyncQueue {
             await updatePendingWriteError(write.id, result.error || 'Max retries reached');
           }
         }
-        // Exponential backoff with jitter between operations
-        const backoffMs = SyncQueue.calculateBackoff(write.retryCount ?? 0);
+        // Exponential backoff with jitter between operations, respecting server Retry-After
+        const retryAfterMs = getRetryAfterMs();
+        const backoffMs = SyncQueue.calculateBackoff(
+          write.retryCount ?? 0,
+          retryAfterMs || undefined
+        );
         await SyncQueue.delay(backoffMs);
       }
     } catch (error) {

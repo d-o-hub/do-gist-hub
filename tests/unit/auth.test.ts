@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // In-memory metadata store for mocking IndexedDB
 const metadataStore = new Map<string, unknown>();
@@ -36,18 +36,18 @@ vi.mock('../../src/services/security/logger', () => ({
   redactToken: vi.fn(() => '[REDACTED]'),
 }));
 
+import { setMetadata } from '../../src/services/db';
 import {
-  saveToken,
   getToken,
-  isAuthenticated,
-  getUsername,
-  removeToken,
   getTokenInfo,
+  getUsername,
+  isAuthenticated,
+  removeToken,
   revalidateToken,
+  saveToken,
 } from '../../src/services/github/auth';
 import { validateToken } from '../../src/services/github/client';
-import { encrypt, decrypt } from '../../src/services/security/crypto';
-import { setMetadata } from '../../src/services/db';
+import { decrypt, encrypt } from '../../src/services/security/crypto';
 import { safeLog } from '../../src/services/security/logger';
 
 describe('auth', () => {
@@ -192,6 +192,7 @@ describe('auth', () => {
         hasToken: true,
         username: 'alice',
         savedAt: 1700000000000,
+        tokenExpiry: null,
       });
     });
   });

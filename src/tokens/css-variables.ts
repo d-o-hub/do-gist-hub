@@ -24,6 +24,9 @@ import { colorSemantic } from './semantic/color-semantic';
 export function generateCSSVariables(): string {
   return `
 :root {
+  /* ===== Theme Color Scheme ===== */
+  color-scheme: dark;
+
   /* ===== Color Primitives ===== */
   --color-black: ${colors.black};
   --color-white: ${colors.white};
@@ -216,6 +219,7 @@ export function generateCSSVariables(): string {
   --bp-phone-small: ${breakpoints['phone-small']};
   --bp-phone: ${breakpoints.phone};
   --bp-phone-large: ${breakpoints['phone-large']};
+  --bp-tablet-small: ${breakpoints['tablet-small']};
   --bp-tablet-portrait: ${breakpoints['tablet-portrait']};
   --bp-tablet-landscape: ${breakpoints['tablet-landscape']};
   --bp-desktop: ${breakpoints.desktop};
@@ -275,6 +279,7 @@ export function generateCSSVariables(): string {
 
 /* ===== Light Theme Override ===== */
 [data-theme="light"] {
+  color-scheme: light;
   --color-background-primary: ${colorSemantic.light.background.primary};
   --color-background-secondary: ${colorSemantic.light.background.secondary};
   --color-background-tertiary: ${colorSemantic.light.background.tertiary};
@@ -360,6 +365,12 @@ export function generateCSSVariables(): string {
 }
 
 @media (min-width: ${breakpoints['phone-large']}) {
+  :root {
+    --spacing-container: ${spacing[5]};
+  }
+}
+
+@media (min-width: ${breakpoints['tablet-small']}) {
   :root {
     --spacing-container: ${spacing[5]};
   }

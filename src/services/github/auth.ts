@@ -244,11 +244,13 @@ export async function getTokenInfo(): Promise<{
   hasToken: boolean;
   username: string | null;
   savedAt: number | null;
+  tokenExpiry: number | null;
 } | null> {
-  const [hasToken, username, savedAt] = await Promise.all([
+  const [hasToken, username, savedAt, refreshExpiry] = await Promise.all([
     isAuthenticated(),
     getUsername(),
     getMetadata<number>('token-saved-at'),
+    getMetadata<number>('github-refresh-expires'),
   ]);
 
   if (!hasToken) {
@@ -259,6 +261,7 @@ export async function getTokenInfo(): Promise<{
     hasToken: true,
     username,
     savedAt: savedAt || null,
+    tokenExpiry: refreshExpiry || null,
   };
 }
 
