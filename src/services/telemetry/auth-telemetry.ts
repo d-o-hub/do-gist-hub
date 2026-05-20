@@ -30,7 +30,11 @@ function createDefaultTelemetry(): AuthTelemetryData {
   };
 }
 
-async function readTelemetry(): Promise<AuthTelemetryData> {
+/**
+ * Read the current auth telemetry data from IndexedDB.
+ * Returns a default structure if no data has been persisted yet.
+ */
+export async function readTelemetry(): Promise<AuthTelemetryData> {
   const data = await getMetadata<AuthTelemetryData>(TELEMETRY_KEY);
   return data ?? createDefaultTelemetry();
 }
