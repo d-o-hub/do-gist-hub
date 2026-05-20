@@ -62,10 +62,19 @@ function blendRgbaOnHex(rgba: string, bgHex: string): string | null {
   if (!rgbaMatch) {
     return null;
   }
-  const rFg = Number.parseInt(rgbaMatch[1]);
-  const gFg = Number.parseInt(rgbaMatch[2]);
-  const bFg = Number.parseInt(rgbaMatch[3]);
+  const rFg = Number.parseInt(rgbaMatch[1], 10);
+  const gFg = Number.parseInt(rgbaMatch[2], 10);
+  const bFg = Number.parseInt(rgbaMatch[3], 10);
   const a = Number.parseFloat(rgbaMatch[4]);
+
+  if (
+    !Number.isInteger(rFg) || rFg < 0 || rFg > 255 ||
+    !Number.isInteger(gFg) || gFg < 0 || gFg > 255 ||
+    !Number.isInteger(bFg) || bFg < 0 || bFg > 255 ||
+    Number.isNaN(a) || a < 0 || a > 1
+  ) {
+    return null;
+  }
 
   const bgRgb = hexToRgb(bgHex);
   if (!bgRgb) {
@@ -255,14 +264,16 @@ let checked = 0;
 
 for (const pair of pairs) {
   if (!pair.bg || !pair.fg) {
-    console.log(`[SKIP] ${pair.name} — could not resolve color`);
+    console.error(`[FAIL] ${pair.name} — could not resolve color (fg=${pair.fg}, bg=${pair.bg})`);
+    failures++;
     continue;
   }
 
   const ratio = contrastRatio(pair.fg, pair.bg);
 
   if (ratio === null) {
-    console.log(`[SKIP] ${pair.name} — could not compute ratio`);
+    console.error(`[FAIL] ${pair.name} — could not compute ratio (fg=${pair.fg}, bg=${pair.bg})`);
+    failures++;
     continue;
   }
 
