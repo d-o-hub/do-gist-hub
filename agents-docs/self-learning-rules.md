@@ -49,6 +49,7 @@
 | `spy_on_cleanup` | `vi.clearAllMocks()` does NOT restore original implementations; use `vi.restoreAllMocks()` or explicit `.mockRestore()` to clean up `vi.spyOn` calls between tests | Medium |
 | `global_restore_aftereach` | When tests mutate `globalThis.MessageChannel`, `SyncManager`, or other globals, always save the original and restore it in `afterEach` to prevent cross-test contamination | Medium |
 | `test_name_match` | Ensure test names accurately reflect assertions — a test named "returns false" that asserts `toBe(true)` is a documentation bug | Low |
+| `circular_export_tdz` | `import { X } from './Y'` where `Y` also imports from this module. Causes TDZ "Cannot access 'a' before initialization" errors in production bundles. Break the cycle by inlining or extracting to a third module | High |
 
 ## CodeRabbit Review Patterns
 

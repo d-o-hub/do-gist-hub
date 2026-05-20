@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "lastUpdated": "2026-05-19",
+  "lastUpdated": "2026-05-20",
   "sprintComplete": {
     "038-sprint1": "2026-05-16",
     "038-sprint2": "2026-05-16",
@@ -283,7 +283,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-031",
-    "plan": "051",
+    "plan": "052",
     "goap": "032"
   }
 }

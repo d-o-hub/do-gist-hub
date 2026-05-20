@@ -1,8 +1,10 @@
-import { safeWarn } from './security/logger';
-
 /**
  * IndexedDB Service
  * Offline-first local storage for gists and app data
+ *
+ * NOTE: No imports from ./security/logger here to avoid circular dependency
+ * (logger imports getDB/isDBReady from this module). All DB lifecycle
+ * messages use console.warn directly.
  */
 
 import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
@@ -165,7 +167,7 @@ export async function initIndexedDB(): Promise<IDBPDatabase<GistDBSchema>> {
 
   dbInstance = await openDB<GistDBSchema>(DB_NAME, DB_VERSION, {
     upgrade(db, oldVersion, newVersion) {
-      safeWarn(`[IndexedDB] Upgrading from ${oldVersion} to ${newVersion}`);
+      console.warn(`[IndexedDB] Upgrading from ${oldVersion} to ${newVersion}`);
 
       if (oldVersion < 1) {
         // Create gists store
@@ -203,16 +205,16 @@ export async function initIndexedDB(): Promise<IDBPDatabase<GistDBSchema>> {
     },
 
     blocked() {
-      safeWarn('[IndexedDB] Database blocked by another connection');
+      console.warn('[IndexedDB] Database blocked by another connection');
     },
 
     blocking() {
-      safeWarn('[IndexedDB] Database blocking upgrade');
+      console.warn('[IndexedDB] Database blocking upgrade');
       dbInstance?.close();
     },
 
     terminated() {
-      safeWarn('[IndexedDB] Database connection terminated');
+      console.warn('[IndexedDB] Database connection terminated');
       dbInstance = null;
     },
   });
