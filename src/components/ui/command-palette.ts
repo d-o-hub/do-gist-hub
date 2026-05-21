@@ -18,11 +18,10 @@ export interface Command {
 
 export class CommandPalette {
   private container: HTMLElement | null = null;
-  private backdrop: HTMLElement | null = null;
-  private isOpen = false;
   private commands: Command[] = [];
   private filteredCommands: Command[] = [];
   private selectedIndex = 0;
+  private _isOpen = false;
   private abortController = new AbortController();
 
   constructor() {
@@ -30,12 +29,12 @@ export class CommandPalette {
     this.setupGlobalShortcut();
   }
 
+  private get isOpen(): boolean {
+    return this._isOpen;
+  }
+
   private createElements(): void {
     if (typeof document === 'undefined') return;
-
-    this.backdrop = document.createElement('div');
-    this.backdrop.className = 'command-palette-backdrop';
-    this.backdrop.onclick = () => this.close();
 
     this.container = document.createElement('div');
     this.container.className = 'command-palette';
@@ -43,11 +42,10 @@ export class CommandPalette {
     this.container.setAttribute('role', 'combobox');
     this.container.setAttribute('aria-expanded', 'false');
     this.container.setAttribute('aria-haspopup', 'listbox');
+    this.container.setAttribute('popover', 'manual');
 
-    document.body.appendChild(this.backdrop);
     document.body.appendChild(this.container);
 
-    // Click listener for results (event delegation)
     this.container.addEventListener(
       'click',
       (e) => {
@@ -86,34 +84,34 @@ export class CommandPalette {
   }
 
   async open(): Promise<void> {
-    if (!this.container || !this.backdrop || this.isOpen) return;
+    const container = this.container;
+    if (!container || this._isOpen) return;
 
-    this.isOpen = true;
+    this._isOpen = true;
     this.selectedIndex = 0;
     this.filteredCommands = this.commands;
 
     this.render();
 
     await withViewTransition(() => {
-      this.backdrop!.classList.add('visible');
-      this.container!.classList.add('open');
-      this.container!.setAttribute('aria-expanded', 'true');
+      container.showPopover();
+      container.setAttribute('aria-expanded', 'true');
     });
 
-    focusTrap.activate(this.container);
+    focusTrap.activate(container);
     announcer.announce('Command palette opened');
   }
 
   async close(): Promise<void> {
-    if (!this.container || !this.backdrop || !this.isOpen) return;
+    const container = this.container;
+    if (!container || !this._isOpen) return;
 
     focusTrap.deactivate();
-    this.isOpen = false;
+    this._isOpen = false;
 
     await withViewTransition(() => {
-      this.backdrop!.classList.remove('visible');
-      this.container!.classList.remove('open');
-      this.container!.setAttribute('aria-expanded', 'false');
+      container.hidePopover();
+      container.setAttribute('aria-expanded', 'false');
     });
   }
 
@@ -217,7 +215,6 @@ export class CommandPalette {
   destroy(): void {
     this.abortController.abort();
     this.container?.remove();
-    this.backdrop?.remove();
   }
 }
 
