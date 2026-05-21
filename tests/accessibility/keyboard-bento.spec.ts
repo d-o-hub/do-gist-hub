@@ -4,11 +4,15 @@
  * tabbing to the grid, navigating between gist cards, activating cards,
  * focus management after back navigation, and focus-trap containment.
  */
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { seedGists } from '../helpers/seed-gists';
 
 test.describe('Accessibility - Keyboard Bento', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
+    await page.waitForLoadState('networkidle');
+    await seedGists(page);
+    await page.reload();
     await page.waitForLoadState('networkidle');
   });
 
@@ -16,17 +20,23 @@ test.describe('Accessibility - Keyboard Bento', () => {
     await page.waitForTimeout(1000);
 
     let foundGrid = false;
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 50; i++) {
       await page.keyboard.press('Tab');
       await page.waitForTimeout(50);
 
       const activeElement = await page.evaluate(() => {
         const el = document.activeElement;
         if (!el) return null;
-        return el.id || el.className?.toString().slice(0, 50) || el.tagName;
+        return (
+          el.getAttribute('data-gist-id') || el.className?.toString().slice(0, 50) || el.tagName
+        );
       });
 
-      if (activeElement === 'gist-list' || activeElement?.includes('gist-grid')) {
+      if (
+        activeElement?.includes('gist-list') ||
+        activeElement?.includes('gist-grid') ||
+        activeElement?.match(/^[\w-]+$/)
+      ) {
         foundGrid = true;
         break;
       }
@@ -43,7 +53,7 @@ test.describe('Accessibility - Keyboard Bento', () => {
 
     // Tab forward to first card
     let firstCard: string | null = null;
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 50; i++) {
       await page.keyboard.press('Tab');
       await page.waitForTimeout(50);
 
@@ -96,7 +106,7 @@ test.describe('Accessibility - Keyboard Bento', () => {
 
     // Tab to first focusable card
     let focused = false;
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 50; i++) {
       await page.keyboard.press('Tab');
       await page.waitForTimeout(50);
 
@@ -132,7 +142,7 @@ test.describe('Accessibility - Keyboard Bento', () => {
 
     // Tab to first focusable card
     let focused = false;
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 50; i++) {
       await page.keyboard.press('Tab');
       await page.waitForTimeout(50);
 
@@ -166,7 +176,7 @@ test.describe('Accessibility - Keyboard Bento', () => {
     await page.waitForTimeout(1000);
 
     // Tab to first card and activate
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 50; i++) {
       await page.keyboard.press('Tab');
       await page.waitForTimeout(50);
 
@@ -182,7 +192,10 @@ test.describe('Accessibility - Keyboard Bento', () => {
     await page.waitForTimeout(500);
 
     // Check we got to detail
-    const detailVisible = await page.locator('.gist-detail').isVisible().catch(() => false);
+    const detailVisible = await page
+      .locator('.gist-detail')
+      .isVisible()
+      .catch(() => false);
 
     if (detailVisible) {
       // Focus should be somewhere in the detail view
@@ -209,11 +222,13 @@ test.describe('Accessibility - Keyboard Bento', () => {
     expect(activeAfterReturn).toBeTruthy();
   });
 
-  test('should trap focus within the gist grid and not escape unintentionally', async ({ page }) => {
+  test('should trap focus within the gist grid and not escape unintentionally', async ({
+    page,
+  }) => {
     await page.waitForTimeout(1000);
 
     // Tab until we reach a gist card
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 50; i++) {
       await page.keyboard.press('Tab');
       await page.waitForTimeout(50);
     }

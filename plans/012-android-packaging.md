@@ -31,7 +31,7 @@ cd android && ./gradlew assembleDebug  # Build debug APK
 - [x] Service Worker generates at build time (`src/sw/sw.ts` → `dist/sw.js`)
 - [x] App config derived from single source (`src/config/app.config.ts`)
 - [x] Release signing configuration (for production APK/AAB) — ADR-029
-- [ ] Google Play Store metadata preparation
+- [x] Google Play Store metadata preparation — superseded by F-Droid pivot (plan 046)
 - [x] ProGuard/R8 obfuscation — enabled in release buildType
 
 ## Known Limitations

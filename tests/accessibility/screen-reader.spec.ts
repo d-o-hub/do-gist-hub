@@ -2,11 +2,15 @@
  * Accessibility Screen Reader Tests
  * Test screen reader announcements, live regions, and assistive technology support
  */
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { seedGists } from '../helpers/seed-gists';
 
 test.describe('Accessibility - Screen Reader', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3000');
+    await page.waitForLoadState('networkidle');
+    await seedGists(page);
+    await page.reload();
     await page.waitForLoadState('networkidle');
   });
 
@@ -85,7 +89,7 @@ test.describe('Accessibility - Screen Reader', () => {
 
     // Check if there's an aria-live region for announcements
     const announcer = page.locator('[aria-live="polite"], [aria-live="assertive"]');
-    const announcerExists = await announcer.count().then(c => c > 0);
+    const announcerExists = await announcer.count().then((c) => c > 0);
 
     test.info().annotations.push({
       type: 'nav-announcement',
@@ -95,7 +99,10 @@ test.describe('Accessibility - Screen Reader', () => {
 
   test('should provide context for icon-only buttons', async ({ page }) => {
     // Settings button should have accessible label (aria-label or text content)
-    const settingsBtn = page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first();
+    const settingsBtn = page
+      .locator('[data-testid="settings-btn"]')
+      .filter({ visible: true })
+      .first();
     const settingsAriaLabel = await settingsBtn.getAttribute('aria-label');
     const settingsText = (await settingsBtn.textContent())?.trim();
     const hasLabel = Boolean(settingsAriaLabel || settingsText);
@@ -155,7 +162,7 @@ test.describe('Accessibility - Screen Reader', () => {
 
     if (ariaDescribedBy) {
       const helpText = page.locator(`#${ariaDescribedBy}`);
-      const helpExists = await helpText.count().then(c => c > 0);
+      const helpExists = await helpText.count().then((c) => c > 0);
       expect(helpExists).toBe(true);
     } else {
       // Check if help text is visually associated
@@ -195,13 +202,15 @@ test.describe('Accessibility - Screen Reader', () => {
   test('should have proper heading for main content sections', async ({ page }) => {
     // Home route should have active "all" filter chip
     await page.locator('[data-testid="nav-home"]').filter({ visible: true }).first().click();
-    await page.waitForTimeout(300);
-    await expect(page.locator('.chip.active[data-filter="all"]')).toBeVisible();
+    await page.waitForTimeout(500);
+    await expect(page.locator('.chip.active[data-filter="all"]')).toBeVisible({ timeout: 5000 });
 
     // Starred route should have active "starred" filter chip
     await page.locator('[data-testid="nav-starred"]').filter({ visible: true }).first().click();
-    await page.waitForTimeout(300);
-    await expect(page.locator('.chip.active[data-filter="starred"]')).toBeVisible();
+    await page.waitForTimeout(500);
+    await expect(page.locator('.chip.active[data-filter="starred"]')).toBeVisible({
+      timeout: 5000,
+    });
 
     // Create route should have heading
     await page.locator('[data-testid="nav-create"]').filter({ visible: true }).first().click();
@@ -222,7 +231,7 @@ test.describe('Accessibility - Screen Reader', () => {
       const firstCard = cards.first();
 
       // Card should be an article element
-      const tagName = await firstCard.evaluate(el => el.tagName);
+      const tagName = await firstCard.evaluate((el) => el.tagName);
       expect(tagName.toLowerCase()).toBe('article');
 
       // Should have accessible name
@@ -257,9 +266,7 @@ test.describe('Accessibility - Screen Reader', () => {
   });
 
   test('should use lang attribute on html element', async ({ page }) => {
-    const htmlLang = await page.evaluate(() =>
-      document.documentElement.getAttribute('lang')
-    );
+    const htmlLang = await page.evaluate(() => document.documentElement.getAttribute('lang'));
 
     test.info().annotations.push({
       type: 'html-lang',
