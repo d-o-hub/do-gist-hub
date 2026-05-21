@@ -76,7 +76,13 @@ function renderStalenessTooltip(updatedAt: string, lastSyncedAt?: string): strin
   else if (staleHr < 24) staleLabel = `${staleHr} HOUR`;
   else staleLabel = `${staleDay} DAY`;
 
-  return `<span class="staleness-indicator" title="Updated ${staleLabel} before last sync. Synced ${formatRelativeTime(lastSyncedAt)}">STALE: ${staleLabel}</span>`;
+  const tooltipId = `tt-${staleMin}-${staleHr}-${staleDay}`;
+  const syncedRelative = formatRelativeTime(lastSyncedAt);
+
+  return `<span class="staleness-wrapper" style="anchor-name: --anchor-${tooltipId};">
+    <button class="staleness-indicator" popovertarget="${tooltipId}" type="button">STALE: ${staleLabel}</button>
+    <div class="staleness-tooltip" id="${tooltipId}" popover="manual" style="position-anchor: --anchor-${tooltipId}; position-area: block-end;">Updated ${staleLabel} before last sync. Synced ${syncedRelative}</div>
+  </span>`;
 }
 
 export function renderCard(gist: GistRecord): string {
