@@ -354,6 +354,126 @@ describe('Home Route', () => {
     });
   });
 
+  // ── Sorting optimization (PR change) ──────────────────────────────────────
+
+  describe('sorting optimization', () => {
+    it('skips sorting when sort is updated-desc (preserves store order)', () => {
+      // Store returns gists in reverse-chronological order (newest first)
+      const testGists = [
+        makeStoreGist('newest', { updatedAt: '2026-03-01T00:00:00Z' }),
+        makeStoreGist('middle', { updatedAt: '2026-02-01T00:00:00Z' }),
+        makeStoreGist('oldest', { updatedAt: '2026-01-01T00:00:00Z' }),
+      ];
+      vi.mocked(gistStore.getGists).mockReturnValue(testGists as never[]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue(testGists as never[]);
+
+      render(container, { filter: 'all', sort: 'updated-desc', searchQuery: '' });
+
+      // renderCard should be called with gists in the original store order
+      const calls = vi.mocked(renderCard).mock.calls.map((c) => (c[0] as { id: string }).id);
+      const callOrder = calls.filter((id) => ['newest', 'middle', 'oldest'].includes(id));
+      expect(callOrder.indexOf('newest')).toBeLessThan(callOrder.indexOf('middle'));
+      expect(callOrder.indexOf('middle')).toBeLessThan(callOrder.indexOf('oldest'));
+    });
+
+    it('skips sorting when sort is updated-desc even with an active search query (regression)', () => {
+      // In the old code: `currentSort !== 'updated-desc' || searchQuery` would trigger sort even for
+      // updated-desc when a search query was present. The new code only sorts when sort !== updated-desc.
+      const testGists = [
+        makeStoreGist('alpha', { updatedAt: '2026-03-01T00:00:00Z', description: 'Gist alpha' }),
+        makeStoreGist('beta', { updatedAt: '2026-01-01T00:00:00Z', description: 'Gist beta' }),
+      ];
+      vi.mocked(gistStore.getGists).mockReturnValue(testGists as never[]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue(testGists as never[]);
+
+      render(container, { filter: 'all', sort: 'updated-desc', searchQuery: 'Gist' });
+
+      // Both cards should be rendered; store order (alpha before beta) is preserved
+      const calls = vi.mocked(renderCard).mock.calls.map((c) => (c[0] as { id: string }).id);
+      const relevant = calls.filter((id) => ['alpha', 'beta'].includes(id));
+      // alpha was newer so it should appear first in the output
+      expect(relevant.indexOf('alpha')).toBeLessThan(relevant.indexOf('beta'));
+    });
+
+    it('sorts by createdAt descending when sort is created-desc', () => {
+      const testGists = [
+        makeStoreGist('old-create', { createdAt: '2024-01-01T00:00:00Z', updatedAt: '2026-03-01T00:00:00Z' }),
+        makeStoreGist('new-create', { createdAt: '2026-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' }),
+        makeStoreGist('mid-create', { createdAt: '2025-06-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' }),
+      ];
+      vi.mocked(gistStore.getGists).mockReturnValue(testGists as never[]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue(testGists as never[]);
+
+      render(container, { filter: 'all', sort: 'created-desc', searchQuery: '' });
+
+      const calls = vi.mocked(renderCard).mock.calls.map((c) => (c[0] as { id: string }).id);
+      const relevant = calls.filter((id) => ['old-create', 'new-create', 'mid-create'].includes(id));
+      // Newest created first: new-create > mid-create > old-create
+      expect(relevant.indexOf('new-create')).toBeLessThan(relevant.indexOf('mid-create'));
+      expect(relevant.indexOf('mid-create')).toBeLessThan(relevant.indexOf('old-create'));
+    });
+
+    it('sorts by updatedAt ascending when sort is updated-asc', () => {
+      const testGists = [
+        makeStoreGist('recent', { updatedAt: '2026-03-01T00:00:00Z' }),
+        makeStoreGist('earliest', { updatedAt: '2024-01-01T00:00:00Z' }),
+        makeStoreGist('middle', { updatedAt: '2025-06-01T00:00:00Z' }),
+      ];
+      vi.mocked(gistStore.getGists).mockReturnValue(testGists as never[]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue(testGists as never[]);
+
+      render(container, { filter: 'all', sort: 'updated-asc', searchQuery: '' });
+
+      const calls = vi.mocked(renderCard).mock.calls.map((c) => (c[0] as { id: string }).id);
+      const relevant = calls.filter((id) => ['recent', 'earliest', 'middle'].includes(id));
+      // Oldest first: earliest < middle < recent
+      expect(relevant.indexOf('earliest')).toBeLessThan(relevant.indexOf('middle'));
+      expect(relevant.indexOf('middle')).toBeLessThan(relevant.indexOf('recent'));
+    });
+
+    it('sorts by updatedAt ascending when sort is updated-asc with active search query', () => {
+      const testGists = [
+        makeStoreGist('newer', { updatedAt: '2026-03-01T00:00:00Z', description: 'test newer' }),
+        makeStoreGist('older', { updatedAt: '2024-01-01T00:00:00Z', description: 'test older' }),
+      ];
+      vi.mocked(gistStore.getGists).mockReturnValue(testGists as never[]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue(testGists as never[]);
+
+      render(container, { filter: 'all', sort: 'updated-asc', searchQuery: 'test' });
+
+      const calls = vi.mocked(renderCard).mock.calls.map((c) => (c[0] as { id: string }).id);
+      const relevant = calls.filter((id) => ['newer', 'older'].includes(id));
+      // Oldest first
+      expect(relevant.indexOf('older')).toBeLessThan(relevant.indexOf('newer'));
+    });
+
+    it('does not sort when sort is updated-desc regardless of whether gists are ordered or not', () => {
+      // Even if store returns gists in a non-sorted order, updated-desc should not re-sort them
+      const testGists = [
+        makeStoreGist('out-of-order-a', { updatedAt: '2024-01-01T00:00:00Z' }),
+        makeStoreGist('out-of-order-b', { updatedAt: '2026-03-01T00:00:00Z' }),
+      ];
+      vi.mocked(gistStore.getGists).mockReturnValue(testGists as never[]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue(testGists as never[]);
+
+      render(container, { filter: 'all', sort: 'updated-desc', searchQuery: '' });
+
+      // The store order should be preserved as-is (no sort applied)
+      const calls = vi.mocked(renderCard).mock.calls.map((c) => (c[0] as { id: string }).id);
+      const relevant = calls.filter((id) =>
+        ['out-of-order-a', 'out-of-order-b'].includes(id)
+      );
+      // 'a' appears first in the store, so it should appear first in output
+      expect(relevant.indexOf('out-of-order-a')).toBeLessThan(relevant.indexOf('out-of-order-b'));
+    });
+  });
+
   // ── Mine Filter Behavior ───────────────────────────────────────────────────
 
   describe('mine filter behavior', () => {
