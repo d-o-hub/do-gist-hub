@@ -21,16 +21,18 @@ const timestampCache = new Map<string, number>();
 export function render(container: HTMLElement, params?: Record<string, string>): void {
   const signal = lifecycle.getRouteSignal();
 
+  // State must be declared before subscribe() because the callback fires synchronously
+  // and accesses these variables. If declared after, they're in the Temporal Dead Zone.
+  let currentFilter = (params?.filter as Filter) || 'all';
+  let currentSort = (params?.sort as Sort) || 'updated-desc';
+  let searchQuery = params?.searchQuery || '';
+
   const unsubscribe = gistStore.subscribe(() => {
     if (document.contains(container)) {
       updateList();
     }
   });
   lifecycle.onRouteCleanup(() => unsubscribe());
-
-  let currentFilter = (params?.filter as Filter) || 'all';
-  let currentSort = (params?.sort as Sort) || 'updated-desc';
-  let searchQuery = params?.searchQuery || '';
 
   container.innerHTML = getHomeHtml(currentFilter, currentSort, searchQuery);
   updateList();

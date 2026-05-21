@@ -75,6 +75,7 @@ Consult `.agents/skills/` or `agents-docs/available-skills.md` for the full skil
 | `plans/040-progress-update-2026-05-17-plan-039-phase-bc-completion.md` | Progress update — plan 040 execution |
 | `plans/048-codebase-audit-implementation-gaps-ci-docs.md` | Codebase audit — P0 CI broken SHAs, release gate; P1 auth gaps, untested device-flow; P2 CI hardening, doc hygiene |
 | `plans/051-progress-update-2026-05-20-tdz-circular-dep-fix.md` | TDZ circular dependency fix — db.ts ↔ logger.ts cycle broken |
+| `plans/053-progress-update-2026-05-21-playwright-cache-fix.md` | Playwright WebKit cache deps fix — system libs missing on cache hit |
 | `.agents/skills/codebase-optimizer/SKILL.md`               | Autonomous optimization and self-learning system                                        |
 | `.qwen/skills/` / `.gemini/skills/`                        | 25 skills mirrored across agent frameworks (Qwen, Gemini, Claude)                       |
 

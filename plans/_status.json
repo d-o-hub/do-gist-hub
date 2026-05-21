@@ -260,6 +260,11 @@
       "type": "goap",
       "status": "complete",
       "summary": "Popover API command palette, Anchor Positioned tooltips, skeleton CSS extraction, hex codes → tokens, JSDOM polyfill, plan registration"
+    },
+    "053-progress-update-2026-05-21-playwright-cache-fix.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "Playwright WebKit cache deps fix — system libs missing on cache hit in cross-browser.yml"
     }
   },
   "archive": [
