@@ -624,7 +624,8 @@ body {
 }
 
 @position-try --try-top {
-  position-area: block-start;
+  bottom: anchor(bottom);
+  top: auto;
 }
 
 /* ===== Detail View ===== */

@@ -84,7 +84,8 @@ export class CommandPalette {
   }
 
   async open(): Promise<void> {
-    if (!this.container || this._isOpen) return;
+    const container = this.container;
+    if (!container || this._isOpen) return;
 
     this._isOpen = true;
     this.selectedIndex = 0;
@@ -93,23 +94,24 @@ export class CommandPalette {
     this.render();
 
     await withViewTransition(() => {
-      this.container!.showPopover();
-      this.container!.setAttribute('aria-expanded', 'true');
+      container.showPopover();
+      container.setAttribute('aria-expanded', 'true');
     });
 
-    focusTrap.activate(this.container);
+    focusTrap.activate(container);
     announcer.announce('Command palette opened');
   }
 
   async close(): Promise<void> {
-    if (!this.container || !this._isOpen) return;
+    const container = this.container;
+    if (!container || !this._isOpen) return;
 
     focusTrap.deactivate();
     this._isOpen = false;
 
     await withViewTransition(() => {
-      this.container!.hidePopover();
-      this.container!.setAttribute('aria-expanded', 'false');
+      container.hidePopover();
+      container.setAttribute('aria-expanded', 'false');
     });
   }
 
