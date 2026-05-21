@@ -1,7 +1,7 @@
 /**
  * Unit tests for Command Palette Component
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -45,19 +45,19 @@ describe('CommandPalette', () => {
   });
 
   afterEach(() => {
-    // Cleanup DOM elements created by constructor
-    document.querySelectorAll('.command-palette').forEach((el) => el.remove());
-    document.querySelectorAll('.command-palette-backdrop').forEach((el) => el.remove());
+    document.querySelectorAll('.command-palette').forEach((el) => {
+      el.remove();
+    });
   });
 
   // ── Constructor ─────────────────────────────────────────────────────
 
   describe('constructor', () => {
-    it('creates backdrop and container elements', () => {
-      const backdrops = document.querySelectorAll('.command-palette-backdrop');
+    it('creates container element with popover attribute', () => {
       const containers = document.querySelectorAll('.command-palette');
-      expect(backdrops.length).toBeGreaterThanOrEqual(1);
       expect(containers.length).toBeGreaterThanOrEqual(1);
+      const container = containers[0];
+      expect(container?.getAttribute('popover')).toBe('manual');
     });
 
     it('creates container with correct ARIA attributes', () => {
@@ -66,22 +66,6 @@ describe('CommandPalette', () => {
       expect(container?.getAttribute('aria-expanded')).toBe('false');
       expect(container?.getAttribute('aria-haspopup')).toBe('listbox');
       expect(container?.getAttribute('data-testid')).toBe('command-palette');
-    });
-
-    it('backdrop click closes palette', async () => {
-      palette.setCommands([
-        { id: '1', title: 'Test', action: vi.fn() },
-      ]);
-
-      await palette.open();
-
-      const backdrop = document.querySelector('.command-palette-backdrop') as HTMLElement;
-      backdrop?.click();
-
-      await vi.waitFor(() => {
-        const container = document.querySelector('.command-palette');
-        expect(container?.classList.contains('open')).toBe(false);
-      });
     });
   });
 
@@ -115,14 +99,13 @@ describe('CommandPalette', () => {
   // ── open / close ────────────────────────────────────────────────────
 
   describe('open', () => {
-    it('adds open and visible classes', async () => {
+    it('invokes showPopover on container', async () => {
       palette.setCommands([{ id: '1', title: 'Test', action: vi.fn() }]);
+      const container = document.querySelector('.command-palette')!;
+      const spy = vi.spyOn(container, 'showPopover');
       await palette.open();
 
-      const container = document.querySelector('.command-palette');
-      const backdrop = document.querySelector('.command-palette-backdrop');
-      expect(container?.classList.contains('open')).toBe(true);
-      expect(backdrop?.classList.contains('visible')).toBe(true);
+      expect(spy).toHaveBeenCalled();
     });
 
     it('sets aria-expanded to true', async () => {
@@ -148,13 +131,10 @@ describe('CommandPalette', () => {
     });
 
     it('is idempotent — does nothing when already open', async () => {
-      palette.setCommands([
-        { id: '1', title: 'First', action: vi.fn() },
-      ]);
+      palette.setCommands([{ id: '1', title: 'First', action: vi.fn() }]);
       await palette.open();
       await palette.open();
 
-      // focusTrap.activate should only be called once
       expect(focusTrap.activate).toHaveBeenCalledTimes(1);
     });
 
@@ -179,15 +159,14 @@ describe('CommandPalette', () => {
   });
 
   describe('close', () => {
-    it('removes open and visible classes', async () => {
+    it('invokes hidePopover on container', async () => {
       palette.setCommands([{ id: '1', title: 'Test', action: vi.fn() }]);
       await palette.open();
+      const container = document.querySelector('.command-palette')!;
+      const spy = vi.spyOn(container, 'hidePopover');
       await palette.close();
 
-      const container = document.querySelector('.command-palette');
-      const backdrop = document.querySelector('.command-palette-backdrop');
-      expect(container?.classList.contains('open')).toBe(false);
-      expect(backdrop?.classList.contains('visible')).toBe(false);
+      expect(spy).toHaveBeenCalled();
     });
 
     it('sets aria-expanded to false', async () => {
@@ -273,9 +252,7 @@ describe('CommandPalette', () => {
     });
 
     it('shows "No commands found" when no matches', async () => {
-      palette.setCommands([
-        { id: '1', title: 'Home', action: vi.fn() },
-      ]);
+      palette.setCommands([{ id: '1', title: 'Home', action: vi.fn() }]);
       await palette.open();
 
       const input = document.querySelector('.command-palette input') as HTMLInputElement;
@@ -380,9 +357,7 @@ describe('CommandPalette', () => {
 
     it('Enter triggers selected command action', async () => {
       const action = vi.fn();
-      const commands = [
-        { id: '1', title: 'First', action },
-      ];
+      const commands = [{ id: '1', title: 'First', action }];
       palette.setCommands(commands);
       await palette.open();
 
@@ -394,9 +369,7 @@ describe('CommandPalette', () => {
 
     it('Enter closes palette after executing command', async () => {
       const action = vi.fn();
-      const commands = [
-        { id: '1', title: 'First', action },
-      ];
+      const commands = [{ id: '1', title: 'First', action }];
       palette.setCommands(commands);
       await palette.open();
 
@@ -404,7 +377,7 @@ describe('CommandPalette', () => {
       input!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
 
       const container = document.querySelector('.command-palette');
-      expect(container?.classList.contains('open')).toBe(false);
+      expect(container?.getAttribute('aria-expanded')).toBe('false');
     });
   });
 
@@ -429,9 +402,7 @@ describe('CommandPalette', () => {
     });
 
     it('closes palette after click on command', async () => {
-      const commands = [
-        { id: '1', title: 'Test', action: vi.fn() },
-      ];
+      const commands = [{ id: '1', title: 'Test', action: vi.fn() }];
       palette.setCommands(commands);
       await palette.open();
 
@@ -439,7 +410,7 @@ describe('CommandPalette', () => {
       item?.click();
 
       const container = document.querySelector('.command-palette');
-      expect(container?.classList.contains('open')).toBe(false);
+      expect(container?.getAttribute('aria-expanded')).toBe('false');
     });
   });
 
@@ -453,7 +424,7 @@ describe('CommandPalette', () => {
 
       await vi.waitFor(() => {
         const container = document.querySelector('.command-palette');
-        expect(container?.classList.contains('open')).toBe(true);
+        expect(container?.getAttribute('aria-expanded')).toBe('true');
       });
     });
 
@@ -464,7 +435,7 @@ describe('CommandPalette', () => {
 
       await vi.waitFor(() => {
         const container = document.querySelector('.command-palette');
-        expect(container?.classList.contains('open')).toBe(true);
+        expect(container?.getAttribute('aria-expanded')).toBe('true');
       });
     });
 
@@ -476,7 +447,7 @@ describe('CommandPalette', () => {
 
       await vi.waitFor(() => {
         const container = document.querySelector('.command-palette');
-        expect(container?.classList.contains('open')).toBe(false);
+        expect(container?.getAttribute('aria-expanded')).toBe('false');
       });
     });
   });

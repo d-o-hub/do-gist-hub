@@ -74,3 +74,60 @@ describe('html tagged template', () => {
     expect(result).toBe('<input disabled="true" />');
   });
 });
+
+// ── sanitizeHtml fast-path (PR: single-pass fast-path optimization) ──────────
+
+describe('sanitizeHtml fast-path', () => {
+  it('returns the string unchanged when it contains no special characters', () => {
+    const clean = 'Hello World';
+    const result = sanitizeHtml(clean);
+    expect(result).toBe(clean);
+  });
+
+  it('returns an empty string unchanged via fast-path', () => {
+    const result = sanitizeHtml('');
+    expect(result).toBe('');
+  });
+
+  it('returns alphanumeric strings unchanged', () => {
+    const input = 'abc123XYZ';
+    expect(sanitizeHtml(input)).toBe(input);
+  });
+
+  it('returns strings with spaces and punctuation (no special chars) unchanged', () => {
+    const input = 'Hello, world! How are you?';
+    expect(sanitizeHtml(input)).toBe(input);
+  });
+
+  it('escapes & even when it is the only special character (bypasses fast-path)', () => {
+    expect(sanitizeHtml('a&b')).toBe('a&amp;b');
+  });
+
+  it('escapes < even when it is the only special character (bypasses fast-path)', () => {
+    expect(sanitizeHtml('a<b')).toBe('a&lt;b');
+  });
+
+  it('escapes > even when it is the only special character (bypasses fast-path)', () => {
+    expect(sanitizeHtml('a>b')).toBe('a&gt;b');
+  });
+
+  it('escapes " even when it is the only special character (bypasses fast-path)', () => {
+    expect(sanitizeHtml('say "hi"')).toBe('say &quot;hi&quot;');
+  });
+
+  it("escapes ' even when it is the only special character (bypasses fast-path)", () => {
+    expect(sanitizeHtml("it's")).toBe('it&#039;s');
+  });
+
+  it('returns a long clean string unchanged via fast-path (regression)', () => {
+    const longClean = 'a'.repeat(10000);
+    const result = sanitizeHtml(longClean);
+    expect(result).toBe(longClean);
+    expect(result.length).toBe(10000);
+  });
+
+  it('correctly escapes a string that starts with clean chars and ends with special chars', () => {
+    const input = 'clean prefix <dangerous>';
+    expect(sanitizeHtml(input)).toBe('clean prefix &lt;dangerous&gt;');
+  });
+});

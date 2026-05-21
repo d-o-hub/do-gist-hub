@@ -421,7 +421,12 @@ export async function exportData(): Promise<string> {
   // Sentinel: Sensitive secrets (PATs and encryption keys) are excluded from
   // standard exports. This ensures that a compromised backup file does not
   // leak credentials, although it requires re-authentication on restore.
-  const SENSITIVE_METADATA_KEYS = ['gist-hub-master-key', 'github-pat-enc', 'github-pat'];
+  const SENSITIVE_METADATA_KEYS = [
+    'gist-hub-master-key',
+    'github-pat-enc',
+    'github-pat',
+    'github-refresh-token',
+  ];
   const safeMetadata = metadata.filter((m) => !SENSITIVE_METADATA_KEYS.includes(m.key));
 
   const data = {

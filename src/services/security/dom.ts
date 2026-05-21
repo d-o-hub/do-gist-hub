@@ -13,11 +13,14 @@ const ESCAPE_LOOKUP: Record<string, string> = {
 
 /**
  * Sanitize a string for HTML insertion
- * ⚡ Bolt: Fast single-pass regex-based escaping for maximum performance
+ * ⚡ Bolt: Fast single-pass regex-based escaping for maximum performance.
+ * Includes a fast-path for strings that do not contain any special characters.
  */
 export function sanitizeHtml(input: string): string {
   if (input === null || input === undefined) return '';
-  return String(input).replace(/[&<>"']/g, (match) => ESCAPE_LOOKUP[match]!);
+  const str = String(input);
+  if (!/[&<>"']/.test(str)) return str;
+  return str.replace(/[&<>"']/g, (match) => ESCAPE_LOOKUP[match]!);
 }
 
 /**

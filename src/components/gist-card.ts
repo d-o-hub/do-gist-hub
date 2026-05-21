@@ -29,17 +29,18 @@ function formatRelativeTime(dateStr: string): string {
   return `${diffDay}D AGO`;
 }
 
+const SYNC_BADGE_LOOKUP: Record<string, string> = {
+  pending: '<div class="sync-status-badge sync-status-pending">PENDING</div>',
+  conflict: '<div class="sync-status-badge sync-status-conflict">CONFLICT</div>',
+  error: '<div class="sync-status-badge sync-status-error">ERROR</div>',
+};
+
+/**
+ * Render sync status badge.
+ * BOLT: Use a lookup table to avoid repeated conditional logic and string creation.
+ */
 function renderSyncBadge(syncStatus: string | undefined): string {
-  if (syncStatus === 'pending') {
-    return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #3b82f6;">PENDING</div>';
-  }
-  if (syncStatus === 'conflict') {
-    return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #f97316;">CONFLICT</div>';
-  }
-  if (syncStatus === 'error') {
-    return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #ef4444;">ERROR</div>';
-  }
-  return '';
+  return (syncStatus && SYNC_BADGE_LOOKUP[syncStatus]) || '';
 }
 
 /**
@@ -72,7 +73,13 @@ function renderStalenessTooltip(updatedAt: string, lastSyncedAt?: string): strin
   else if (staleHr < 24) staleLabel = `${staleHr} HOUR`;
   else staleLabel = `${staleDay} DAY`;
 
-  return `<span class="staleness-indicator" title="Updated ${staleLabel} before last sync. Synced ${formatRelativeTime(lastSyncedAt)}">STALE: ${staleLabel}</span>`;
+  const tooltipId = `tt-${staleMin}-${staleHr}-${staleDay}`;
+  const syncedRelative = formatRelativeTime(lastSyncedAt);
+
+  return `<span class="staleness-wrapper" style="anchor-name: --anchor-${tooltipId};">
+    <button class="staleness-indicator" popovertarget="${tooltipId}" type="button">STALE: ${staleLabel}</button>
+    <div class="staleness-tooltip" id="${tooltipId}" popover="manual" style="position-anchor: --anchor-${tooltipId}; position-area: block-end;">Updated ${staleLabel} before last sync. Synced ${syncedRelative}</div>
+  </span>`;
 }
 
 export function renderCard(gist: GistRecord): string {
@@ -86,8 +93,14 @@ export function renderCard(gist: GistRecord): string {
   )
     return cached.html;
 
-  const fileCount = Object.keys(gist.files).length;
-  const firstFile = Object.values(gist.files)[0];
+  // BOLT: Calculate file count and get first file in a single pass to avoid multiple array allocations
+  let fileCount = 0;
+  let firstFile: GistRecord['files'][string] | undefined;
+  for (const key in gist.files) {
+    if (!firstFile) firstFile = gist.files[key];
+    fileCount++;
+  }
+
   const language = firstFile?.language || 'TEXT';
   const description = gist.description || 'UNTITLED GIST';
 
@@ -190,6 +203,22 @@ export function bindCardEvents(
           if (id) onCardClick(id);
         }
       })();
+    },
+    { signal }
+  );
+
+  container.addEventListener(
+    'keydown',
+    (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        const target = e.target as HTMLElement;
+        const card = target.closest('.gist-card') as HTMLElement;
+        // Only activate if the card itself is focused (not a sub-button)
+        if (card && target === card) {
+          e.preventDefault();
+          card.click();
+        }
+      }
     },
     { signal }
   );

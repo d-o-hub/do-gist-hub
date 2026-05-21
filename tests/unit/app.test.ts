@@ -66,12 +66,14 @@ vi.mock('../../src/components/ui/bottom-sheet', () => ({
   bottomSheet: {
     open: vi.fn().mockResolvedValue(undefined),
     close: vi.fn().mockResolvedValue(undefined),
+    destroy: vi.fn(),
   },
 }));
 
 vi.mock('../../src/components/ui/command-palette', () => ({
   commandPalette: {
     setCommands: vi.fn(),
+    destroy: vi.fn(),
   },
 }));
 
@@ -80,6 +82,7 @@ vi.mock('../../src/components/ui/nav-rail', () => ({
     render: vi.fn(() => '<nav class="rail-nav"></nav>'),
     mount: vi.fn(),
     updateActive: vi.fn(),
+    destroy: vi.fn(),
   },
 }));
 
@@ -180,6 +183,14 @@ import { bottomSheet } from '../../src/components/ui/bottom-sheet';
 
 describe('App Component', () => {
   let container: HTMLElement;
+
+  afterEach(() => {
+    // skipcq: JS-0010
+    (App.prototype as any).destroy?.call({
+      abortController: { abort: () => {} },
+      networkUnsubscribe: () => {},
+    });
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
