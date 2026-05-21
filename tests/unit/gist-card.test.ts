@@ -468,5 +468,41 @@ describe('Gist Card', () => {
       // Should not throw — onCardClick not called since no id
       expect(onCardClick).not.toHaveBeenCalled();
     });
+
+    it('calls onCardClick when Enter is pressed on the card', () => {
+      const onCardClick = vi.fn();
+      container.innerHTML = renderCard(makeGist('enter-test'));
+      bindCardEvents(container, onCardClick);
+
+      const card = container.querySelector('.gist-card') as HTMLElement;
+      const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
+      card?.dispatchEvent(event);
+
+      expect(onCardClick).toHaveBeenCalledWith('enter-test');
+    });
+
+    it('calls onCardClick when Space is pressed on the card', () => {
+      const onCardClick = vi.fn();
+      container.innerHTML = renderCard(makeGist('space-test'));
+      bindCardEvents(container, onCardClick);
+
+      const card = container.querySelector('.gist-card') as HTMLElement;
+      const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true });
+      card?.dispatchEvent(event);
+
+      expect(onCardClick).toHaveBeenCalledWith('space-test');
+    });
+
+    it('does not call onCardClick when Enter is pressed on a sub-button', () => {
+      const onCardClick = vi.fn();
+      container.innerHTML = renderCard(makeGist('sub-button-test'));
+      bindCardEvents(container, onCardClick);
+
+      const starBtn = container.querySelector('.star-btn') as HTMLElement;
+      const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
+      starBtn?.dispatchEvent(event);
+
+      expect(onCardClick).not.toHaveBeenCalled();
+    });
   });
 });

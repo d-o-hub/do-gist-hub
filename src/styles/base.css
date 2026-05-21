@@ -454,7 +454,8 @@ body {
   }
 }
 
-.gist-card:hover {
+.gist-card:hover,
+.gist-card:focus-visible {
   transform: translateY(-2px);
 }
 

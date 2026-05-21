@@ -210,6 +210,22 @@ export function bindCardEvents(
     { signal }
   );
 
+  container.addEventListener(
+    'keydown',
+    (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        const target = e.target as HTMLElement;
+        const card = target.closest('.gist-card') as HTMLElement;
+        // Only activate if the card itself is focused (not a sub-button)
+        if (card && target === card) {
+          e.preventDefault();
+          card.click();
+        }
+      }
+    },
+    { signal }
+  );
+
   container.dataset.eventsBound = 'true';
 
   // Reset eventsBound when the signal aborts so future mounts can rebind
