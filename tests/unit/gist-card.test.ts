@@ -214,6 +214,123 @@ describe('Gist Card', () => {
     });
   });
 
+  // ── renderSyncBadge via SYNC_BADGE_LOOKUP (PR change) ───────────────────
+
+  describe('renderSyncBadge (via renderCard)', () => {
+    it('renders pending sync badge with blue color', () => {
+      const gist = makeGist('sync-pending', { syncStatus: 'pending' });
+      const html = renderCard(gist);
+
+      expect(html).toContain('sync-status-badge');
+      expect(html).toContain('PENDING');
+      expect(html).toContain('#3b82f6');
+    });
+
+    it('renders conflict sync badge with orange color', () => {
+      const gist = makeGist('sync-conflict', { syncStatus: 'conflict' });
+      const html = renderCard(gist);
+
+      expect(html).toContain('sync-status-badge');
+      expect(html).toContain('CONFLICT');
+      expect(html).toContain('#f97316');
+    });
+
+    it('renders error sync badge with red color', () => {
+      const gist = makeGist('sync-error', { syncStatus: 'error' });
+      const html = renderCard(gist);
+
+      expect(html).toContain('sync-status-badge');
+      expect(html).toContain('ERROR');
+      expect(html).toContain('#ef4444');
+    });
+
+    it('renders no badge when syncStatus is "synced"', () => {
+      const gist = makeGist('sync-synced', { syncStatus: 'synced' });
+      const html = renderCard(gist);
+
+      expect(html).not.toContain('sync-status-badge');
+    });
+
+    it('renders no badge when syncStatus is undefined', () => {
+      const gist = makeGist('sync-undef', { syncStatus: undefined });
+      const html = renderCard(gist);
+
+      expect(html).not.toContain('sync-status-badge');
+    });
+
+    it('renders no badge when syncStatus is an unknown string', () => {
+      const gist = makeGist('sync-unknown', { syncStatus: 'unknown-status' });
+      const html = renderCard(gist);
+
+      expect(html).not.toContain('sync-status-badge');
+    });
+
+    it('renders no badge when syncStatus is an empty string', () => {
+      const gist = makeGist('sync-empty', { syncStatus: '' });
+      const html = renderCard(gist);
+
+      expect(html).not.toContain('sync-status-badge');
+    });
+  });
+
+  // ── renderCard single-pass file count / firstFile (PR change) ───────────
+
+  describe('renderCard single-pass file count and firstFile', () => {
+    it('shows file count of 1 for a gist with a single file', () => {
+      const gist = makeGist('one-file');
+      const html = renderCard(gist);
+
+      expect(html).toContain('>1<');
+      expect(html).toContain('FILES');
+    });
+
+    it('shows correct file count for a gist with three files', () => {
+      const gist = makeGist('three-files', {
+        files: {
+          'a.ts': { filename: 'a.ts', content: 'aaa', language: 'TypeScript' },
+          'b.ts': { filename: 'b.ts', content: 'bbb', language: 'TypeScript' },
+          'c.ts': { filename: 'c.ts', content: 'ccc', language: 'TypeScript' },
+        },
+      });
+      const html = renderCard(gist);
+
+      expect(html).toContain('>3<');
+    });
+
+    it('picks the first file language when multiple files are present', () => {
+      const gist = makeGist('first-lang', {
+        files: {
+          'main.py': { filename: 'main.py', content: 'print()', language: 'Python' },
+          'helper.js': { filename: 'helper.js', content: 'var x', language: 'JavaScript' },
+        },
+      });
+      const html = renderCard(gist);
+
+      // The first file is 'main.py' with language 'Python'
+      expect(html).toContain('PYTHON');
+    });
+
+    it('renders "TEXT" language and zero file count for a gist with no files', () => {
+      const gist = makeGist('no-files', { files: {} });
+      const html = renderCard(gist);
+
+      expect(html).toContain('>0<');
+      expect(html).toContain('TEXT');
+    });
+
+    it('picks the first file content as snippet', () => {
+      const gist = makeGist('first-content', {
+        files: {
+          'first.txt': { filename: 'first.txt', content: 'FIRST_CONTENT', language: 'Text' },
+          'second.txt': { filename: 'second.txt', content: 'SECOND_CONTENT', language: 'Text' },
+        },
+      });
+      const html = renderCard(gist);
+
+      expect(html).toContain('FIRST_CONTENT');
+    });
+  });
+
   // ── Card Caching ─────────────────────────────────────────────────────
 
   describe('card caching', () => {
