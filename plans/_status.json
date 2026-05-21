@@ -119,7 +119,7 @@
     "adr-022-ambient-light-extension.md": {
       "type": "adr",
       "status": "complete",
-      "summary": "Ambient light sensor theming \u2014 implemented in Phase C (029); sensor, permission flow, lifecycle, settings UI, tests"
+      "summary": "Ambient light sensor theming — implemented in Phase C (029); sensor, permission flow, lifecycle, settings UI, tests"
     },
     "adr-026-phase-a-modernization-goap.md": {
       "type": "adr",
@@ -209,12 +209,12 @@
     "adr-029-android-release-signing.md": {
       "type": "adr",
       "status": "accepted",
-      "summary": "Android release signing via CI \u2014 keystore from GitHub secrets, versionCode from GITHUB_RUN_NUMBER, versionName from VERSION file"
+      "summary": "Android release signing via CI — keystore from GitHub secrets, versionCode from GITHUB_RUN_NUMBER, versionName from VERSION file"
     },
     "adr-030-github-pages-deployment.md": {
       "type": "adr",
       "status": "proposed",
-      "summary": "GitHub Pages deployment \u2014 base path, auth proxy CORS, SW path fixes for subpath hosting"
+      "summary": "GitHub Pages deployment — base path, auth proxy CORS, SW path fixes for subpath hosting"
     },
     "041-goap-release-signing-and-plan040-completion.md": {
       "type": "goap",
@@ -298,7 +298,12 @@
   ],
   "nextAvailable": {
     "adr": "adr-031",
-    "plan": "053",
+    "plan": "055",
     "goap": "032"
+  },
+  "054-upstream-template-impact-analysis.md": {
+    "type": "analysis",
+    "status": "active",
+    "summary": "Analysis of gaps between upstream github-template-ai-agents v0.2.9 and current repo state"
   }
 }
