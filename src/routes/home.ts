@@ -84,20 +84,15 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     }
 
     // BOLT: Optimize by skipping sorting when the order matches the store's natural order (updated-desc).
-    // The store already maintains gists sorted by updatedAt descending.
-    if (currentSort !== 'updated-desc' || searchQuery) {
-      gists = [...gists].sort((a, b) => {
-        if (currentSort === 'created-desc') {
-          return getTs(b.createdAt) - getTs(a.createdAt);
-        }
-        if (currentSort === 'updated-desc') {
-          return getTs(b.updatedAt) - getTs(a.updatedAt);
-        }
-        if (currentSort === 'updated-asc') {
-          return getTs(a.updatedAt) - getTs(b.updatedAt);
-        }
-        return 0;
-      });
+    // The store already maintains gists sorted by updatedAt descending, and filtering preserves order.
+    if (currentSort !== 'updated-desc') {
+      gists = gists
+        .map((gist) => ({
+          gist,
+          ts: getTs(currentSort === 'created-desc' ? gist.createdAt : gist.updatedAt),
+        }))
+        .sort((a, b) => (currentSort === 'updated-asc' ? a.ts - b.ts : b.ts - a.ts))
+        .map((item) => item.gist);
     }
 
     if (gists.length === 0) {
