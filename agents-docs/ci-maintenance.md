@@ -8,3 +8,4 @@
 4. **Build Job Timeouts**: Set `timeout-minutes` on Android build jobs (e.g., `30`) to prevent Gradle hangs from consuming runner minutes.
 5. **No Hardcoded ANDROID_HOME**: When `setup-android` is used, do not override `ANDROID_HOME`; let the action configure the correct SDK path.
 6. **Periodic Action Audit**: Re-audit all workflow actions every GitHub deprecation cycle (or when `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` appears in logs).
+7. **Playwright System Deps on Cache Hit**: When caching Playwright browsers in CI, always separate browser install from system deps. Use `npx playwright install` (gated on cache miss) for browser binaries, and `npx playwright install-deps` (gated on cache hit) for apt packages. See `agents-docs/issues/2026-05-21-playwright-cache-system-deps.md`.
