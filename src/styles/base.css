@@ -624,6 +624,7 @@ body {
 }
 
 @position-try --try-top {
+  /* stylelint-disable-next-line at-rule-descriptor-value-no-unknown */
   bottom: anchor(bottom);
   top: auto;
 }
