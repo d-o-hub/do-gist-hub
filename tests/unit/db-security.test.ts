@@ -1,7 +1,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import 'fake-indexeddb/auto';
-import { exportData, initIndexedDB, setMetadata } from '../../src/services/db';
+import { SENSITIVE_METADATA_KEYS, exportData, initIndexedDB, setMetadata } from '../../src/services/db';
 
 // Mock app config
 vi.mock('@/config/app.config', () => ({
@@ -20,6 +20,7 @@ describe('exportData security', () => {
     await setMetadata('gist-hub-master-key', { secret: 'key' });
     await setMetadata('github-pat-enc', { secret: 'token' });
     await setMetadata('github-pat', 'legacy-token');
+    await setMetadata('github-refresh-token', { secret: 'refresh' });
     await setMetadata('theme-preference', 'dark');
 
     const exportedJson = await exportData();
@@ -31,5 +32,12 @@ describe('exportData security', () => {
     expect(keys).not.toContain('gist-hub-master-key');
     expect(keys).not.toContain('github-pat-enc');
     expect(keys).not.toContain('github-pat');
+    expect(keys).not.toContain('github-refresh-token');
+  });
+
+  it('should verify the presence of sensitive keys in SENSITIVE_METADATA_KEYS array', () => {
+    expect(SENSITIVE_METADATA_KEYS).toContain('github-pat-enc');
+    expect(SENSITIVE_METADATA_KEYS).toContain('github-refresh-token');
+    expect(SENSITIVE_METADATA_KEYS).toContain('gist-hub-master-key');
   });
 });
