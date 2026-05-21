@@ -29,17 +29,17 @@ function formatRelativeTime(dateStr: string): string {
   return `${diffDay}D AGO`;
 }
 
+const SYNC_BADGE_LOOKUP: Record<string, string> = {
+  pending:
+    '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #3b82f6;">PENDING</div>',
+  conflict:
+    '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #f97316;">CONFLICT</div>',
+  error:
+    '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #ef4444;">ERROR</div>',
+};
+
 function renderSyncBadge(syncStatus: string | undefined): string {
-  if (syncStatus === 'pending') {
-    return '<div class="sync-status-badge sync-status-pending">PENDING</div>';
-  }
-  if (syncStatus === 'conflict') {
-    return '<div class="sync-status-badge sync-status-conflict">CONFLICT</div>';
-  }
-  if (syncStatus === 'error') {
-    return '<div class="sync-status-badge sync-status-error">ERROR</div>';
-  }
-  return '';
+  return (syncStatus && SYNC_BADGE_LOOKUP[syncStatus]) || '';
 }
 
 /**
