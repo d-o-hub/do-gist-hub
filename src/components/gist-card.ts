@@ -29,17 +29,21 @@ function formatRelativeTime(dateStr: string): string {
   return `${diffDay}D AGO`;
 }
 
+const SYNC_BADGE_LOOKUP: Record<string, string> = {
+  pending:
+    '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #3b82f6;">PENDING</div>',
+  conflict:
+    '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #f97316;">CONFLICT</div>',
+  error:
+    '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #ef4444;">ERROR</div>',
+};
+
+/**
+ * Render sync status badge.
+ * BOLT: Use a lookup table to avoid repeated conditional logic and string creation.
+ */
 function renderSyncBadge(syncStatus: string | undefined): string {
-  if (syncStatus === 'pending') {
-    return '<div class="sync-status-badge sync-status-pending">PENDING</div>';
-  }
-  if (syncStatus === 'conflict') {
-    return '<div class="sync-status-badge sync-status-conflict">CONFLICT</div>';
-  }
-  if (syncStatus === 'error') {
-    return '<div class="sync-status-badge sync-status-error">ERROR</div>';
-  }
-  return '';
+  return (syncStatus && SYNC_BADGE_LOOKUP[syncStatus]) || '';
 }
 
 /**
@@ -92,8 +96,14 @@ export function renderCard(gist: GistRecord): string {
   )
     return cached.html;
 
-  const fileCount = Object.keys(gist.files).length;
-  const firstFile = Object.values(gist.files)[0];
+  // BOLT: Calculate file count and get first file in a single pass to avoid multiple array allocations
+  let fileCount = 0;
+  let firstFile: GistRecord['files'][string] | undefined;
+  for (const key in gist.files) {
+    if (!firstFile) firstFile = gist.files[key];
+    fileCount++;
+  }
+
   const language = firstFile?.language || 'TEXT';
   const description = gist.description || 'UNTITLED GIST';
 
