@@ -31,13 +31,13 @@ function formatRelativeTime(dateStr: string): string {
 
 function renderSyncBadge(syncStatus: string | undefined): string {
   if (syncStatus === 'pending') {
-    return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #3b82f6;">PENDING</div>';
+    return '<div class="sync-status-badge sync-status-pending">PENDING</div>';
   }
   if (syncStatus === 'conflict') {
-    return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #f97316;">CONFLICT</div>';
+    return '<div class="sync-status-badge sync-status-conflict">CONFLICT</div>';
   }
   if (syncStatus === 'error') {
-    return '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #ef4444;">ERROR</div>';
+    return '<div class="sync-status-badge sync-status-error">ERROR</div>';
   }
   return '';
 }
@@ -72,7 +72,13 @@ function renderStalenessTooltip(updatedAt: string, lastSyncedAt?: string): strin
   else if (staleHr < 24) staleLabel = `${staleHr} HOUR`;
   else staleLabel = `${staleDay} DAY`;
 
-  return `<span class="staleness-indicator" title="Updated ${staleLabel} before last sync. Synced ${formatRelativeTime(lastSyncedAt)}">STALE: ${staleLabel}</span>`;
+  const tooltipId = `tt-${staleMin}-${staleHr}-${staleDay}`;
+  const syncedRelative = formatRelativeTime(lastSyncedAt);
+
+  return `<span class="staleness-wrapper" style="anchor-name: --anchor-${tooltipId};">
+    <button class="staleness-indicator" popovertarget="${tooltipId}" type="button">STALE: ${staleLabel}</button>
+    <div class="staleness-tooltip" id="${tooltipId}" popover="manual" style="position-anchor: --anchor-${tooltipId}; position-area: block-end;">Updated ${staleLabel} before last sync. Synced ${syncedRelative}</div>
+  </span>`;
 }
 
 export function renderCard(gist: GistRecord): string {
