@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "")"
 
 # Guard Rails: Prevent global hooks from overriding local
 GLOBAL_HOOKS_PATH=$(git config --global core.hooksPath 2>/dev/null || echo "")
@@ -12,7 +12,7 @@ if [[ -n "$GLOBAL_HOOKS_PATH" && -z "${SKIP_GLOBAL_HOOKS_CHECK:-}" ]]; then
 fi
 
 # Warn if commit-msg hook is not installed (prevents late CI failures)
-if [[ ! -f "$SCRIPT_DIR/../.git/hooks/commit-msg" ]]; then
+if [[ ! -f "$REPO_ROOT/.git/hooks/commit-msg" ]]; then
   echo "⚠️  commit-msg hook not installed. Run: cp scripts/commit-msg-hook.sh .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg"
 fi
 
@@ -22,4 +22,6 @@ if command -v npx >/dev/null 2>&1; then
 fi
 
 # Run quality gate
-"$SCRIPT_DIR/quality_gate.sh"
+if [[ -n "$REPO_ROOT" && -f "$REPO_ROOT/scripts/quality_gate.sh" ]]; then
+  "$REPO_ROOT/scripts/quality_gate.sh"
+fi

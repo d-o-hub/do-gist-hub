@@ -1,6 +1,6 @@
 # plans/\_index.md — Active Plan Registry
 
-> **Last updated**: 2026-05-19
+> **Last updated**: 2026-05-21
 > Agents: read this before starting any task. Update it when you change plan status.
 
 ---
@@ -9,6 +9,7 @@
 
 | File                                          | Type        | Status      | Summary                                                                                                                      |
 | --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `052-goap-ui-ux-modernization-completion.md`  | GOAP Plan   | Complete ✅   | Popover API command palette, Anchor Positioned tooltips, skeleton CSS extraction, hex codes → tokens, JSDOM polyfill           |
 | `047-v0.3.0-scope.md`                         | Plan        | Active 🟢   | v0.3.0 scope: F-Droid MR submission pending, all other items (auth telemetry, UX polish, DevEx/CI) implemented |
 | `049-progress-update-2026-05-19-plan048-completion.md` | Progress | Active 🟢 | Progress update for plan 048 completion |
 | File                                          | Type        | Status      | Summary                                                                                                                      |
@@ -115,9 +116,10 @@ These numbered plans document the project's foundation and are considered stable
 | `041-goap-release-signing-and-plan040-completion.md`  | GOAP     | Complete ✅ | Close Plan 040 gaps + wire release APK signing into CI       |
 | `042-goap-plans-completion-sprint.md`                  | GOAP     | Complete ✅   | Close P0 plan-audit gaps: rebuild stale design-tokens.css, fix plan status headers, promote ADR-015, add SW cache TTL, wire LH CI |
 | `049-progress-update-2026-05-19-plan048-completion.md` | Progress | Complete ✅   | Progress update for plan 048 completion |
+| `051-progress-update-2026-05-20-tdz-circular-dep-fix.md` | Progress | Complete ✅ | Diagnosed and fixed circular dependency TDZ ReferenceError (db.ts ↔ logger.ts) |
 
 ## Quick reference: ADR numbers in use
 
 `adr-001` through `adr-030` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-031`
-**Next available plan number**: `051`
+**Next available plan number**: `053`
