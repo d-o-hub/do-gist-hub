@@ -117,9 +117,10 @@ These numbered plans document the project's foundation and are considered stable
 | `042-goap-plans-completion-sprint.md`                  | GOAP     | Complete ✅   | Close P0 plan-audit gaps: rebuild stale design-tokens.css, fix plan status headers, promote ADR-015, add SW cache TTL, wire LH CI |
 | `049-progress-update-2026-05-19-plan048-completion.md` | Progress | Complete ✅   | Progress update for plan 048 completion |
 | `051-progress-update-2026-05-20-tdz-circular-dep-fix.md` | Progress | Complete ✅ | Diagnosed and fixed circular dependency TDZ ReferenceError (db.ts ↔ logger.ts) |
+| `054-upstream-template-impact-analysis.md`           | Analysis      | Active ⏳ | Analysis of gaps between upstream github-template-ai-agents v0.2.9 and current repo state |
 
 ## Quick reference: ADR numbers in use
 
 `adr-001` through `adr-030` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-031`
-**Next available plan number**: `053`
+**Next available plan number**: `055`
