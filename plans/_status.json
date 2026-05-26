@@ -305,6 +305,21 @@
       "type": "goap",
       "status": "complete",
       "summary": "Fix cross-browser WebKit test failures by adding --with-deps flag to playwright install step"
+    },
+    "adr-032-vitest-environment-teardown.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Mock all transitively resolved modules (skeleton) to prevent vitest EnvironmentTeardownError"
+    },
+    "adr-033-webkit-indexeddb-flaky-tests.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Skip WebKit tests with unreliable IndexedDB evaluation on Linux Playwright port"
+    },
+    "059-goap-resolve-pre-existing-ci-issues.md": {
+      "type": "goap",
+      "status": "complete",
+      "summary": "Resolved vitest EnvironmentTeardownError and WebKit flaky star-toggle test"
     }
   },
   "archive": [
@@ -337,8 +352,8 @@
     "016-pwa-offline-page.md"
   ],
   "nextAvailable": {
-    "adr": "adr-032",
-    "plan": "059",
-    "goap": "059"
+    "adr": "adr-034",
+    "plan": "060",
+    "goap": "060"
   }
 }
