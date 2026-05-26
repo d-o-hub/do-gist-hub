@@ -8,10 +8,7 @@
     "src/components/gist-card.ts",
     "src/components/gist-detail.ts"
   ],
-  "plugins": [
-    "@stryker-mutator/vitest-runner",
-    "@stryker-mutator/typescript-checker"
-  ],
+  "plugins": ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
   "testRunner": "vitest",
   "checkers": ["typescript"],
   "typescriptChecker": {
@@ -25,18 +22,22 @@
   "thresholds": {
     "break": 70
   },
-  "reporters": [
-    "html",
-    "clear-text",
-    "progress"
-  ],
+  "reporters": ["html", "clear-text", "progress"],
   "htmlReporter": {
     "fileName": "reports/mutation/index.html"
   },
   "clearTextReporter": {
     "allowColor": true
   },
-  "ignorePatterns": [".claude", ".cursor", ".agents", ".qwen", ".gemini", ".jules"],
+  "ignorePatterns": [
+    ".claude",
+    ".cursor",
+    ".agents",
+    ".qwen",
+    ".gemini",
+    ".jules",
+    ".antigravitycli"
+  ],
   "tempDirName": ".stryker-tmp",
   "cleanTempDir": true
 }

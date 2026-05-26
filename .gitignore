@@ -131,4 +131,7 @@ playwright-report/
 analysis/
 opencode.json
 actionlint
+
+# AI agent project configs (local, machine-specific)
+.antigravitycli/
 pnpm-workspace.yaml
