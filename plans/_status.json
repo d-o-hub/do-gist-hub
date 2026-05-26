@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "lastUpdated": "2026-05-26T16:48:00Z",
+  "lastUpdated": "2026-05-26T18:15:00Z",
   "sprintComplete": {
     "038-sprint1": "2026-05-16",
     "038-sprint2": "2026-05-16",
@@ -295,6 +295,16 @@
       "type": "progress",
       "status": "complete",
       "summary": "Swarm implementation: all remaining plan gaps closed, 5 parallel agents"
+    },
+    "adr-031-playwright-webkit-deps-ci.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "Playwright WebKit system dependencies must use --with-deps on cache miss to install GTK4, GStreamer, flite etc."
+    },
+    "058-goap-cross-browser-webkit-fix.md": {
+      "type": "goap",
+      "status": "active",
+      "summary": "Fix cross-browser WebKit test failures by adding --with-deps flag to playwright install step"
     }
   },
   "archive": [
@@ -327,8 +337,8 @@
     "016-pwa-offline-page.md"
   ],
   "nextAvailable": {
-    "adr": "adr-031",
-    "plan": "057",
-    "goap": "057"
+    "adr": "adr-032",
+    "plan": "059",
+    "goap": "059"
   }
 }

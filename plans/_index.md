@@ -77,6 +77,7 @@ See `plans/archive/` for completed or superseded files moved here on 2026-05-15.
 | `adr-027-ci-node24-android-hardening.md`               | CI Node 24 migration, Android build hardening                 |
 | `adr-029-android-release-signing.md`                    | Android release signing via CI — ADR-029                      |
 | `adr-030-github-pages-deployment.md`                   | GitHub Pages deployment — all actions A1-A8 complete, site live at https://d-o-hub.github.io/do-gist-hub/ — Complete |
+| `adr-031-playwright-webkit-deps-ci.md`                 | Playwright WebKit must use --with-deps on cache miss for system libs — Accepted |
 
 ## Reference docs (foundational, stable)
 
@@ -121,10 +122,11 @@ These numbered plans document the project's foundation and are considered stable
 | `055-goap-plan-registry-implementation-gaps.md`  | GOAP          | Complete ✅ | Plan registry hygiene: goap counter fix, ADR-030 promotion, schema fix, status consistency, sync badge tokens |
 | `050-goap-plans-completion-v2.md`              | GOAP          | Complete ✅ | Complete remaining plan 048 deep audit items: CI/CD fixes, CSS consolidation, SW cache, token expiry UI, Retry-After header, 640px breakpoint, color-scheme |
 | `056-goap-upstream-sync-phase-a.md`              | GOAP          | Complete ✅ | Shell injection hardening, ShellCheck zero-tolerance, .shellcheckrc, CI integration, pre-commit shfmt hook |
+| `058-goap-cross-browser-webkit-fix.md`              | GOAP          | Active 🟢 | Fix WebKit 58-test failure: add --with-deps to playwright install step |
 
 ## Quick reference: ADR numbers in use
 
-`adr-001` through `adr-030` (gaps: 017-019 reserved)
-**Next available ADR**: `adr-031`
-**Next available plan/GOAP number**: `057`
-**Next available GOAP action number**: New GOAP plan = `057`
+`adr-001` through `adr-031` (gaps: 017-019 reserved)
+**Next available ADR**: `adr-032`
+**Next available plan/GOAP number**: `059`
+**Next available GOAP action number**: New GOAP plan = `059`
