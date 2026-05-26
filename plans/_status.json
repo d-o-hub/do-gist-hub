@@ -303,7 +303,7 @@
     },
     "058-goap-cross-browser-webkit-fix.md": {
       "type": "goap",
-      "status": "active",
+      "status": "complete",
       "summary": "Fix cross-browser WebKit test failures by adding --with-deps flag to playwright install step"
     }
   },
