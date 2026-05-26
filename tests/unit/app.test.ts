@@ -1,7 +1,7 @@
 /**
  * Unit tests for Root App Component
  */
-import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -22,7 +22,7 @@ vi.mock('../../src/services/lifecycle', () => ({
 vi.mock('../../src/services/security', () => ({
   sanitizeHtml: vi.fn((s: string) => s),
   html: vi.fn((strings: TemplateStringsArray, ...values: unknown[]) =>
-    strings.reduce((acc, str, i) => `${acc}${str}${values[i] ?? ''}`, ''),
+    strings.reduce((acc, str, i) => `${acc}${str}${values[i] ?? ''}`, '')
   ),
   redactSecrets: vi.fn((s: unknown) => s),
   redactToken: vi.fn((t: string) => t),
@@ -121,10 +121,20 @@ vi.mock('../../src/routes/gist-detail', () => ({
   render: vi.fn(),
 }));
 
+// Prevent idb from being loaded after environment teardown by mocking it
+// before any test code runs. db.ts imports openDB from idb; even though db.ts
+// is mocked via vi.mock, transitive module resolution can trigger idb loading
+// after the JS DOM environment has been torn down.
+vi.mock('idb', () => ({
+  openDB: vi.fn(),
+}));
+
 vi.mock('../../src/services/db', () => ({
   isDBReady: vi.fn(() => false),
   initIndexedDB: vi.fn(),
-  getDB: vi.fn(() => { throw new Error('[IndexedDB] Database not initialized. Call initIndexedDB() first.'); }),
+  getDB: vi.fn(() => {
+    throw new Error('[IndexedDB] Database not initialized. Call initIndexedDB() first.');
+  }),
   closeDB: vi.fn(),
   saveGist: vi.fn(),
   saveGists: vi.fn(),
@@ -146,8 +156,7 @@ vi.mock('../../src/services/db', () => ({
 
 vi.mock('../../src/components/conflict-resolution', () => ({
   loadConflictResolution: vi.fn(
-    async (_container: HTMLElement, _onResolve: () => void, _signal?: AbortSignal) =>
-      undefined
+    async (_container: HTMLElement, _onResolve: () => void, _signal?: AbortSignal) => undefined
   ),
 }));
 
@@ -170,27 +179,19 @@ beforeAll(async () => {
 });
 
 import { App } from '../../src/components/app';
+import { bottomSheet } from '../../src/components/ui/bottom-sheet';
+import { commandPalette } from '../../src/components/ui/command-palette';
+import { navRail } from '../../src/components/ui/nav-rail';
 import { APP } from '../../src/config/app.config';
 import { lifecycle } from '../../src/services/lifecycle';
 import networkMonitor from '../../src/services/network/offline-monitor';
 import syncQueue from '../../src/services/sync/queue';
 import { announcer } from '../../src/utils/announcer';
-import { commandPalette } from '../../src/components/ui/command-palette';
-import { navRail } from '../../src/components/ui/nav-rail';
-import { bottomSheet } from '../../src/components/ui/bottom-sheet';
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
 describe('App Component', () => {
   let container: HTMLElement;
-
-  afterEach(() => {
-    // skipcq: JS-0010
-    (App.prototype as any).destroy?.call({
-      abortController: { abort: () => {} },
-      networkUnsubscribe: () => {},
-    });
-  });
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -200,6 +201,11 @@ describe('App Component', () => {
   });
 
   afterEach(() => {
+    // skipcq: JS-0010
+    (App.prototype as Record<string, unknown>).destroy?.call({
+      abortController: { abort: () => {} },
+      networkUnsubscribe: () => {},
+    });
     document.body.removeChild(container);
   });
 
@@ -472,12 +478,10 @@ describe('App Component', () => {
     it('triggers sync indicator update when network monitor fires', async () => {
       // Capture the subscribe callback so we can trigger it directly
       let subscribeCallback: () => void = () => {};
-      vi.mocked(networkMonitor.subscribe).mockImplementation(
-        (cb: () => void) => {
-          subscribeCallback = cb;
-          return vi.fn();
-        }
-      );
+      vi.mocked(networkMonitor.subscribe).mockImplementation((cb: () => void) => {
+        subscribeCallback = cb;
+        return vi.fn();
+      });
 
       vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
       vi.mocked(syncQueue.getQueueLength).mockResolvedValue(0);
@@ -497,12 +501,10 @@ describe('App Component', () => {
 
     it('sets syncing status on reconnect when queue is non-empty', async () => {
       let subscribeCallback: () => void = () => {};
-      vi.mocked(networkMonitor.subscribe).mockImplementation(
-        (cb: () => void) => {
-          subscribeCallback = cb;
-          return vi.fn();
-        }
-      );
+      vi.mocked(networkMonitor.subscribe).mockImplementation((cb: () => void) => {
+        subscribeCallback = cb;
+        return vi.fn();
+      });
 
       vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
       vi.mocked(syncQueue.getQueueLength).mockResolvedValue(2);
@@ -533,9 +535,7 @@ describe('App Component', () => {
         })
       );
 
-      expect(announcer.announce).toHaveBeenCalledWith(
-        'Navigating to conflicts page'
-      );
+      expect(announcer.announce).toHaveBeenCalledWith('Navigating to conflicts page');
     });
   });
 });

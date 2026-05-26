@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  '@xmldom/xmldom': ^0.8.13
-
 importers:
 
   .:

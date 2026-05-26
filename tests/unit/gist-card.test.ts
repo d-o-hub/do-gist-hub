@@ -1,7 +1,7 @@
 /**
  * Unit tests for Gist Card Component
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -29,10 +29,10 @@ vi.mock('../../src/components/ui/toast', () => ({
 
 // ── Imports (after mocks) ───────────────────────────────────────────
 
-import { renderCard, bindCardEvents } from '../../src/components/gist-card';
+import { bindCardEvents, renderCard } from '../../src/components/gist-card';
+import { toast } from '../../src/components/ui/toast';
 import gistStore from '../../src/stores/gist-store';
 import { showConfirmDialog } from '../../src/utils/dialog';
-import { toast } from '../../src/components/ui/toast';
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -217,31 +217,31 @@ describe('Gist Card', () => {
   // ── renderSyncBadge via SYNC_BADGE_LOOKUP (PR change) ───────────────────
 
   describe('renderSyncBadge (via renderCard)', () => {
-    it('renders pending sync badge with blue color', () => {
+    it('renders pending sync badge with token class', () => {
       const gist = makeGist('sync-pending', { syncStatus: 'pending' });
       const html = renderCard(gist);
 
       expect(html).toContain('sync-status-badge');
       expect(html).toContain('PENDING');
-      expect(html).toContain('#3b82f6');
+      expect(html).toContain('sync-status-pending');
     });
 
-    it('renders conflict sync badge with orange color', () => {
+    it('renders conflict sync badge with token class', () => {
       const gist = makeGist('sync-conflict', { syncStatus: 'conflict' });
       const html = renderCard(gist);
 
       expect(html).toContain('sync-status-badge');
       expect(html).toContain('CONFLICT');
-      expect(html).toContain('#f97316');
+      expect(html).toContain('sync-status-conflict');
     });
 
-    it('renders error sync badge with red color', () => {
+    it('renders error sync badge with token class', () => {
       const gist = makeGist('sync-error', { syncStatus: 'error' });
       const html = renderCard(gist);
 
       expect(html).toContain('sync-status-badge');
       expect(html).toContain('ERROR');
-      expect(html).toContain('#ef4444');
+      expect(html).toContain('sync-status-error');
     });
 
     it('renders no badge when syncStatus is "synced"', () => {

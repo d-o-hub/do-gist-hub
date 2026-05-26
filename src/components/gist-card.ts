@@ -30,12 +30,9 @@ function formatRelativeTime(dateStr: string): string {
 }
 
 const SYNC_BADGE_LOOKUP: Record<string, string> = {
-  pending:
-    '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #3b82f6;">PENDING</div>',
-  conflict:
-    '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #f97316;">CONFLICT</div>',
-  error:
-    '<div class="sync-status-badge" style="display: inline-flex; align-items: center; gap: 4px; color: #ef4444;">ERROR</div>',
+  pending: '<div class="sync-status-badge sync-status-pending">PENDING</div>',
+  conflict: '<div class="sync-status-badge sync-status-conflict">CONFLICT</div>',
+  error: '<div class="sync-status-badge sync-status-error">ERROR</div>',
 };
 
 /**
