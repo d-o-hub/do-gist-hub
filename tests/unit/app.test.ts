@@ -121,6 +121,17 @@ vi.mock('../../src/routes/gist-detail', () => ({
   render: vi.fn(),
 }));
 
+// Prevent skeleton from being loaded after environment teardown when
+// the real gist-detail or home module is transiently resolved instead
+// of the mock (same pattern as idb below).
+vi.mock('../../src/components/ui/skeleton', () => ({
+  Skeleton: {
+    renderDetail: vi.fn(() => '<div class="skeleton-detail"></div>'),
+    renderList: vi.fn((_count?: number) => '<div class="skeleton-list"></div>'),
+    renderCard: vi.fn(() => '<div class="skeleton-card"></div>'),
+  },
+}));
+
 // Prevent idb from being loaded after environment teardown by mocking it
 // before any test code runs. db.ts imports openDB from idb; even though db.ts
 // is mocked via vi.mock, transitive module resolution can trigger idb loading

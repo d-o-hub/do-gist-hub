@@ -1,6 +1,6 @@
 # plans/\_index.md — Active Plan Registry
 
-> **Last updated**: 2026-05-26
+> **Last updated**: 2026-05-26T18:22
 > Agents: read this before starting any task. Update it when you change plan status.
 
 ---
