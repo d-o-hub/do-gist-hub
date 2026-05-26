@@ -134,3 +134,4 @@ actionlint
 
 # AI agent project configs (local, machine-specific)
 .antigravitycli/
+pnpm-workspace.yaml
