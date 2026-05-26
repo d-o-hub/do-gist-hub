@@ -1,0 +1,87 @@
+name: Dedup Issues
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  dedup:
+    name: Detect and Close Duplicate Issues
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # pinned from v9.0.0
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const issue = context.payload.issue;
+            const newTitle = issue.title.toLowerCase();
+            const newBody = (issue.body || '').toLowerCase();
+
+            const { data: allIssues } = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: 'open',
+              per_page: 100,
+            });
+
+            const similar = allIssues.filter(i => {
+              if (i.number === issue.number) return false;
+              const t = i.title.toLowerCase();
+              const b = (i.body || '').toLowerCase();
+              const titleSim = similarity(newTitle, t);
+              const bodySim = newBody && b ? similarity(newBody, b) : 0;
+              return titleSim > 0.8 || bodySim > 0.7;
+            });
+
+            function similarity(a, b) {
+              const longer = a.length >= b.length ? a : b;
+              const shorter = a.length < b.length ? a : b;
+              if (longer.length === 0) return 1.0;
+              const editDist = levenshtein(longer, shorter);
+              return 1.0 - editDist / longer.length;
+            }
+
+            function levenshtein(a, b) {
+              const m = a.length, n = b.length;
+              const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+              for (let i = 0; i <= m; i++) dp[i][0] = i;
+              for (let j = 0; j <= n; j++) dp[0][j] = j;
+              for (let i = 1; i <= m; i++) {
+                for (let j = 1; j <= n; j++) {
+                  dp[i][j] = a[i - 1] === b[j - 1]
+                    ? dp[i - 1][j - 1]
+                    : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+                }
+              }
+              return dp[m][n];
+            }
+
+            if (similar.length > 0) {
+              const refs = similar.map(i => `#${i.number}`).join(', ');
+              const body = [
+                `This issue appears to be a duplicate of ${refs}.`,
+                '',
+                'Please continue the discussion in the original issue(s).',
+                'Closing this as a duplicate.',
+              ].join('\n');
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: issue.number,
+                body,
+              });
+
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: issue.number,
+                state: 'closed',
+                state_reason: 'not_planned',
+              });
+            }

@@ -8,6 +8,7 @@ import { getMetadata, setMetadata } from '../db';
 import { lifecycle } from '../lifecycle';
 import { decrypt, encrypt } from '../security/crypto';
 import { redactToken, safeError, safeLog } from '../security/logger';
+import { recordAuthCompleted, recordAuthMethod } from '../telemetry/auth-telemetry';
 import { clearUsernameCache, validateToken } from './client';
 import { resetRateLimit } from './rate-limiter';
 
@@ -163,6 +164,8 @@ export async function saveToken(token: string): Promise<{ success: boolean; erro
     await setMetadata('token-saved-at', Date.now());
 
     safeLog(`[Auth] Token saved and encrypted: ${redactToken(token)}`);
+    recordAuthMethod('pat').catch(() => {});
+    recordAuthCompleted().catch(() => {});
     return { success: true };
   } catch (error) {
     safeError('[Auth] Failed to save token:', error);

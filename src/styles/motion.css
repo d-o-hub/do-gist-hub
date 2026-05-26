@@ -99,8 +99,8 @@
 }
 
 .spinner {
-  width: 24px;
-  height: 24px;
+  width: var(--spacing-6);
+  height: var(--spacing-6);
   border: 2px solid var(--color-border);
   border-top-color: var(--color-accent);
   border-radius: var(--radius-full);

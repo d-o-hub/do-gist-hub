@@ -139,11 +139,21 @@ function parseLinkHeader(linkHeader: string | null): PaginationInfo {
 }
 
 /**
- * Handle API errors with proper typing
+ * Handle API errors with proper typing.
+ * Attempts token revalidation on 401 before propagating the error.
  */
-export function handleApiError(error: unknown, context: string): never {
+export async function handleApiError(error: unknown, context: string): Promise<never> {
   if (error instanceof DOMException && error.name === 'AbortError') {
     throw new Error(`Request cancelled: ${context}`);
+  }
+
+  if (error instanceof Response && error.status === 401) {
+    try {
+      const { revalidateToken } = await import('./auth');
+      await revalidateToken();
+    } catch {
+      // Revalidation is best-effort
+    }
   }
 
   // Use the central error handler
@@ -358,12 +368,12 @@ export async function deleteGist(id: string): Promise<void> {
     );
 
     if (!response.ok) {
-      handleApiError(response, 'deleteGist');
+      return handleApiError(response, 'deleteGist');
     }
 
     trackRateLimit(response);
   } catch (error) {
-    handleApiError(error, 'deleteGist');
+    return handleApiError(error, 'deleteGist');
   }
 }
 
@@ -379,12 +389,12 @@ export async function starGist(id: string): Promise<void> {
     );
 
     if (!response.ok) {
-      handleApiError(response, 'starGist');
+      return handleApiError(response, 'starGist');
     }
 
     trackRateLimit(response);
   } catch (error) {
-    handleApiError(error, 'starGist');
+    return handleApiError(error, 'starGist');
   }
 }
 
@@ -400,12 +410,12 @@ export async function unstarGist(id: string): Promise<void> {
     );
 
     if (!response.ok) {
-      handleApiError(response, 'unstarGist');
+      return handleApiError(response, 'unstarGist');
     }
 
     trackRateLimit(response);
   } catch (error) {
-    handleApiError(error, 'unstarGist');
+    return handleApiError(error, 'unstarGist');
   }
 }
 

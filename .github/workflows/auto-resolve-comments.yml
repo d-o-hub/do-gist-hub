@@ -1,0 +1,38 @@
+name: Auto-Resolve Comments
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  auto-resolve:
+    name: Auto-Resolve PR Comments
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # pinned from v9.0.0
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            const prAuthor = context.payload.pull_request.user.login;
+
+            const { data: comments } = await github.rest.pulls.listReviewComments({
+              owner,
+              repo,
+              pull_number: prNumber,
+            });
+
+            for (const comment of comments) {
+              if (comment.user.login === prAuthor) {
+                await github.rest.pulls.deleteReviewComment({
+                  owner,
+                  repo,
+                  comment_id: comment.id,
+                });
+              }
+            }

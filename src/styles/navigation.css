@@ -106,7 +106,7 @@
   color: var(--color-text-muted);
   cursor: pointer;
   transition: all var(--motion-duration-fast) var(--motion-easing);
-  min-height: 44px;
+  min-height: var(--spacing-11);
 }
 
 .chip.active,
@@ -164,8 +164,8 @@
   background: transparent;
   cursor: pointer;
   transition: all var(--motion-duration-fast) var(--motion-easing);
-  min-height: 44px;
-  min-width: 44px;
+  min-height: var(--spacing-11);
+  min-width: var(--spacing-11);
   position: relative;
 }
 
@@ -305,7 +305,7 @@
   border: none;
   background: transparent;
   text-align: left;
-  min-height: 44px;
+  min-height: var(--spacing-11);
   position: relative;
 }
 

@@ -69,7 +69,7 @@
 
 /* Color-scheme-aware accent color for native form controls (Plan 039 Phase C) */
 :root {
-  accent-color: #3b82f6;
+  accent-color: var(--color-accent-primary);
 }
 
 [data-theme="light"] {
@@ -235,8 +235,8 @@ body {
     background var(--motion-duration-normal) ease,
     border-color var(--motion-duration-normal) ease;
   gap: var(--spacing-2);
-  min-height: 44px;
-  min-width: 44px;
+  min-height: var(--spacing-11);
+  min-width: var(--spacing-11);
   background: var(--color-background-elevated);
   color: var(--color-foreground-primary);
 }
@@ -550,8 +550,8 @@ body {
     transform var(--motion-duration-normal) var(--motion-easing-spring),
     background var(--motion-duration-normal) ease,
     border-color var(--motion-duration-normal) ease;
-  min-height: 44px;
-  min-width: 44px;
+  min-height: var(--spacing-11);
+  min-width: var(--spacing-11);
 }
 
 .gist-action-btn:hover {
@@ -579,7 +579,7 @@ body {
 .sync-status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-1);
 }
 
 .sync-status-pending {
@@ -718,7 +718,7 @@ body {
 }
 
 .btn-copy-sm {
-  min-height: 36px;
+  min-height: var(--spacing-9);
   padding: var(--space-1) var(--space-3);
   flex-shrink: 0;
 }
@@ -798,24 +798,24 @@ body {
 }
 
 .skeleton-icon-round {
-  width: 24px;
-  height: 24px;
+  width: var(--spacing-6);
+  height: var(--spacing-6);
   border-radius: var(--radius-full);
 }
 
 .skeleton-icon-md {
-  width: 40px;
-  height: 24px;
+  width: var(--spacing-10);
+  height: var(--spacing-6);
   border-radius: var(--radius-md);
 }
 
 .skeleton-meta-sm {
-  width: 80px;
+  width: var(--spacing-20);
   height: 0.75rem;
 }
 
 .skeleton-meta-xs {
-  width: 60px;
+  width: var(--spacing-15);
   height: 0.75rem;
 }
 
@@ -951,8 +951,8 @@ body {
     transform var(--motion-duration-normal) var(--motion-easing-spring),
     background var(--motion-duration-normal) ease,
     border-color var(--motion-duration-normal) ease;
-  min-height: 44px;
-  min-width: 44px;
+  min-height: var(--spacing-11);
+  min-width: var(--spacing-11);
 }
 
 .icon-button:hover {
@@ -1119,8 +1119,8 @@ body {
     background var(--motion-duration-normal) ease,
     border-color var(--motion-duration-normal) ease,
     color var(--motion-duration-normal) ease;
-  min-height: 44px;
-  min-width: 44px;
+  min-height: var(--spacing-11);
+  min-width: var(--spacing-11);
   text-align: left;
 }
 
@@ -1168,8 +1168,8 @@ body {
   text-align: left;
   justify-content: flex-start;
   padding: var(--spacing-3) var(--spacing-4);
-  min-height: 44px;
-  min-width: 44px;
+  min-height: var(--spacing-11);
+  min-width: var(--spacing-11);
 }
 
 .hidden {
