@@ -27,6 +27,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Run pnpm audit
         run: pnpm audit --audit-level high
+      - name: ShellCheck all scripts
+        run: shellcheck --severity=warning scripts/*.sh scripts/lib/*.sh
       - name: Run Quality Gate
         run: pnpm run quality
 

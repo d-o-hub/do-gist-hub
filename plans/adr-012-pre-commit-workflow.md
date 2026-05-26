@@ -1,7 +1,7 @@
 <!-- Last Audit: 2026-04-25 -->
 # ADR-012: Pre-commit Workflow Enhancement
 
-**Status**: Implemented
+**Status**: Accepted
 **Date**: 2026-04-25
 **Deciders**: Architect, DevOps Agent
 

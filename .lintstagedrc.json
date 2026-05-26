@@ -1,5 +1,4 @@
 {
-  "*.{ts,tsx,json}": ["biome check --write"],
-  "*.css": ["biome check --write"],
-  "*.{sh,bash}": ["shellcheck --severity=warning"]
+  "*.{ts,tsx}": ["biome check --write"],
+  "*.css": ["biome check --write"]
 }

@@ -3,7 +3,7 @@
 
 ## Status
 
-Accepted → Implemented
+Accepted
 
 ## Context
 

@@ -3,7 +3,6 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
-SKILLS_DIR="$ROOT_DIR/.agents/skills"
 
 # Agent directories to create symlinks in
 AGENT_DIRS=(".claude" ".gemini" ".qwen" ".cursor")

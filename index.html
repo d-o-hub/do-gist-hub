@@ -5,6 +5,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="%VITE_APP_THEME_COLOR%" />
+    <meta name="color-scheme" content="dark light" />
     <meta name="description" content="%VITE_APP_DESCRIPTION%" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/manifest.webmanifest" />
@@ -29,8 +30,7 @@
                font-src 'self';
                connect-src 'self' https://api.github.com https://auth-proxy.d-o-gist-hub.workers.dev; 
                frame-src 'none'; 
-               object-src 'none';
-               report-uri ./csp-report;"
+                object-src 'none';"
     />
 
     <!-- Speculation Rules for instant navigation (039 B2) -->

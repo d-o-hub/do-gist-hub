@@ -58,7 +58,7 @@ sv::get_repo_version() {
   fi
   local version_file="$root_dir/VERSION"
   if [[ -f "$version_file" ]]; then
-    cat "$version_file" | tr -d '[:space:]'
+    tr -d '[:space:]' < "$version_file"
   else
     echo ""
   fi

@@ -1,0 +1,68 @@
+name: Knowledge Cleanup
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  cleanup-knowledge:
+    name: Archive Stale Knowledge Artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # pinned from v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Archive stale detected artifacts
+        run: |
+          echo "## Stale Detected Artifacts" >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p agents-docs/detected/archive
+          while IFS= read -r -d '' file; do
+            name=$(basename "$file")
+            if [ "$name" = ".gitkeep" ]; then
+              continue
+            fi
+            mv -n "$file" "agents-docs/detected/archive/$name" 2>/dev/null
+            echo "- $name archived" >> "$GITHUB_STEP_SUMMARY"
+          done < <(find agents-docs/detected -maxdepth 1 -type f -mtime +90 -print0)
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+      - name: Archive stale issue docs
+        run: |
+          echo "## Stale Issue Docs" >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p agents-docs/issues/archive
+          count=0
+          while IFS= read -r -d '' file; do
+            name=$(basename "$file")
+            if [ "$name" = "README.md" ] || [ "$name" = ".gitkeep" ]; then
+              continue
+            fi
+            mv -n "$file" "agents-docs/issues/archive/$name" 2>/dev/null
+            echo "- $name archived" >> "$GITHUB_STEP_SUMMARY"
+            count=$((count + 1))
+          done < <(find agents-docs/issues -maxdepth 1 -type f -mtime +90 -print0)
+          if [ "$count" -eq 0 ]; then
+            echo "No stale items to archive." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Commit and create PR
+        run: |
+          if [[ -n "$(git status --porcelain -- agents-docs/)" ]]; then
+            branch="knowledge-cleanup-$(date +%s)"
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git checkout -b "$branch"
+            git add agents-docs/
+            git commit -m "chore: archive stale knowledge artifacts [skip ci]"
+            git push origin "$branch"
+            gh pr create \
+              --title "chore: archive stale knowledge artifacts" \
+              --body "This PR archives knowledge artifacts in \`agents-docs/detected/\` and \`agents-docs/issues/\` that are older than 90 days." \
+              --base main \
+              --head "$branch"
+          else
+            echo "No stale knowledge artifacts to archive."
+          fi

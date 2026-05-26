@@ -1,7 +1,7 @@
 <!-- Last Audit: 2026-04-25 -->
 # ADR-014: Exponential Backoff for Sync Queue
 
-**Status**: Implemented
+**Status**: Accepted
 **Date**: 2026-04-25
 **Deciders**: Architect, Offline-First Agent
 

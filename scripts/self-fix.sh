@@ -10,7 +10,6 @@ AGENT_DOCS="$ROOT_DIR/agents-docs"
 DATE=$(date +%Y-%m-%d)
 
 DRY_RUN=false
-VERBOSE=false
 
 usage() {
     echo "Usage: $0 [OPTIONS]"
@@ -24,7 +23,7 @@ usage() {
 while [[ $# -gt 0 ]]; do
     case $1 in
         --dry-run) DRY_RUN=true ;;
-        --verbose) VERBOSE=true ;;
+        --verbose) ;;  # accepted but unused
         -h|--help) usage; exit 0 ;;
         *) echo "Unknown option: $1"; usage; exit 1 ;;
     esac
@@ -157,7 +156,8 @@ fix_flex_scroll() {
     
     while IFS= read -r line; do
         if echo "$line" | grep -q "overflow-y:\s*auto"; then
-            local prev_lines=$(grep -B10 "$line" "$css_file" | tail -10)
+            local prev_lines
+            prev_lines=$(grep -B10 "$line" "$css_file" | tail -10)
             if ! echo "$prev_lines" | grep -q "min-height:\s*0"; then
                 needs_fix=true
                 break
