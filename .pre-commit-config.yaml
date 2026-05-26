@@ -38,6 +38,13 @@ repos:
         args: ['--severity=warning']
         files: \.(sh|bash)$
 
+  # Shell formatting
+  - repo: https://github.com/mvdan/shfmt
+    rev: v3.8.0
+    hooks:
+      - id: shfmt
+        args: ['-i', '2', '-ci', '-bn', '-sr']
+
   # Local hooks (fast checks on staged files only — full gate runs in CI)
   - repo: local
     hooks:

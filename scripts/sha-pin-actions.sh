@@ -17,7 +17,7 @@ resolve_sha() {
 }
 
 pin_file() {
-  local file=$1 tmpfile tmp
+  local file=$1 tmpfile
   tmpfile=$(mktemp)
   echo "Processing $file ..."
   while IFS= read -r line; do

@@ -3,6 +3,7 @@
 /* ===== CSS Custom Property Aliases ===== */
 /* Bridge legacy --space-* and --text-* tokens to generated --spacing-* and --font-size-* */
 :root {
+  color-scheme: dark;
   --space-1: var(--spacing-1);
   --space-2: var(--spacing-2);
   --space-3: var(--spacing-3);
@@ -69,6 +70,10 @@
 /* Color-scheme-aware accent color for native form controls (Plan 039 Phase C) */
 :root {
   accent-color: #3b82f6;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
 }
 
 /* ===== App Shell ===== */

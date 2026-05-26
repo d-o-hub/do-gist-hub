@@ -22,7 +22,6 @@ FIX_MODE=false
 VALIDATE_MODE=false
 WATCH_MODE=false
 PRE_COMMIT=false
-VERBOSE=false
 
 usage() {
     echo "Usage: $0 [OPTIONS]"
@@ -49,7 +48,7 @@ while [[ $# -gt 0 ]]; do
         --validate) VALIDATE_MODE=true ;;
         --watch) WATCH_MODE=true ;;
         --pre-commit) PRE_COMMIT=true ;;
-        --verbose) VERBOSE=true ;;
+        --verbose) ;;  # accepted but unused - reserved for future use
         -h|--help) usage; exit 0 ;;
         *) echo "Unknown option: $1"; usage; exit 1 ;;
     esac
@@ -241,7 +240,7 @@ extract_patterns() {
     log "Extracting patterns from previous fixes..."
     
     # Check for sidebar visibility pattern
-    if ls "$AGENT_DOCS/issues/"*"sidebar"*".md" 1>/dev/null 2>&1; then
+    if compgen -G "$AGENT_DOCS/issues/"*"sidebar"*".md" >/dev/null 2>&1; then
         local pattern_file="$AGENT_DOCS/patterns/css-navigation-patterns.md"
         
         if [[ ! -f "$pattern_file" ]]; then

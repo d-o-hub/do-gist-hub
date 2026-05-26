@@ -2,7 +2,7 @@
 
 # ADR-011: Unit Testing Infrastructure with Vitest
 
-**Status**: Implemented
+**Status**: Accepted
 **Date**: 2026-04-30
 **Deciders**: Architect, Testing Agent
 

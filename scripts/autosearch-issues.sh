@@ -124,7 +124,8 @@ document_detection() {
     local description="$3"
     local severity="$4"
     
-    local safe_name=$(echo "$pattern_name" | tr '_' '-')
+    local safe_name
+    safe_name=$(echo "$pattern_name" | tr '_' '-')
     local detect_file="$AGENT_DOCS/detected/${DATE}-${safe_name}.md"
     
     # Don't duplicate if already documented today
@@ -167,8 +168,14 @@ EOF
 
 # Generate summary report
 generate_report() {
-    local total_detected=$(ls -1 "$AGENT_DOCS/detected/"*.md 2>/dev/null | wc -l)
-    local total_resolved=$(ls -1 "$AGENT_DOCS/resolved/"*.md 2>/dev/null | wc -l)
+    local total_detected=0
+    if [[ -d "$AGENT_DOCS/detected" ]]; then
+        total_detected=$(find "$AGENT_DOCS/detected" -maxdepth 1 -name '*.md' 2>/dev/null | wc -l)
+    fi
+    local total_resolved=0
+    if [[ -d "$AGENT_DOCS/resolved" ]]; then
+        total_resolved=$(find "$AGENT_DOCS/resolved" -maxdepth 1 -name '*.md' 2>/dev/null | wc -l)
+    fi
     
     local report_file="$AGENT_DOCS/reports/${DATE}-scan-report.md"
     mkdir -p "$(dirname "$report_file")"
@@ -188,7 +195,8 @@ EOF
     # List all detected issues
     if [[ $total_detected -gt 0 ]]; then
         for issue in "$AGENT_DOCS/detected/"*.md; do
-            local name=$(basename "$issue" .md)
+            local name
+            name=$(basename "$issue" .md)
             echo "- [$name]($issue)" >> "$report_file"
         done
     else
@@ -202,13 +210,18 @@ EOF
 EOF
 
     # Count by severity
-    local high_count=$(grep -l "Severity: high" "$AGENT_DOCS/detected/"*.md 2>/dev/null | wc -l)
-    local medium_count=$(grep -l "Severity: medium" "$AGENT_DOCS/detected/"*.md 2>/dev/null | wc -l)
-    local low_count=$(grep -l "Severity: low" "$AGENT_DOCS/detected/"*.md 2>/dev/null | wc -l)
+    local high_count=0 medium_count=0 low_count=0
+    if [[ -d "$AGENT_DOCS/detected" ]]; then
+        high_count=$(find "$AGENT_DOCS/detected" -maxdepth 1 -name '*.md' -exec grep -l "Severity: high" {} + 2>/dev/null | wc -l)
+        medium_count=$(find "$AGENT_DOCS/detected" -maxdepth 1 -name '*.md' -exec grep -l "Severity: medium" {} + 2>/dev/null | wc -l)
+        low_count=$(find "$AGENT_DOCS/detected" -maxdepth 1 -name '*.md' -exec grep -l "Severity: low" {} + 2>/dev/null | wc -l)
+    fi
 
-    echo "- High: $high_count" >> "$report_file"
-    echo "- Medium: $medium_count" >> "$report_file"
-    echo "- Low: $low_count" >> "$report_file"
+    {
+        echo "- High: $high_count"
+        echo "- Medium: $medium_count"
+        echo "- Low: $low_count"
+    } >> "$report_file"
 
     echo ""
     echo "Report generated: $report_file"

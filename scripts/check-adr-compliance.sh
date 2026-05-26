@@ -45,11 +45,6 @@ log_ok() {
   echo "  $1"
 }
 
-log_warn() {
-  if $JSON_OUTPUT; then return; fi
-  echo "  $1"
-}
-
 log_fail() {
   if $JSON_OUTPUT; then return; fi
   echo "  $1"

@@ -1,7 +1,7 @@
 # ADR-030: GitHub Pages Deployment
 
 > **Date**: 2026-05-20
-> **Status**: Proposed
+> **Status**: Complete
 > **Related**: `cd.yml`, `vite.config.ts`, `auth-proxy/worker.ts`, `adr-005-no-backend-v1.md`
 
 ---
