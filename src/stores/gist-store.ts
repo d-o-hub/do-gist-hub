@@ -183,8 +183,7 @@ class GistStore {
     public_: boolean,
     files: Record<string, string>
   ): Promise<GistRecord | null> {
-const randomPart = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
-const tempId = `temp-${Date.now()}-${randomPart}`;
+    const tempId = `temp-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
     const now = new Date().toISOString();
     const tempRecord: GistRecord = {
       id: tempId,
