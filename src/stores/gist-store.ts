@@ -183,7 +183,7 @@ class GistStore {
     public_: boolean,
     files: Record<string, string>
   ): Promise<GistRecord | null> {
-    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const tempId = `temp-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
     const now = new Date().toISOString();
     const tempRecord: GistRecord = {
       id: tempId,
