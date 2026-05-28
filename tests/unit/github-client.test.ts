@@ -48,39 +48,15 @@ import {
   clearUsernameCache,
   type GitHubGist,
   type CreateGistRequest,
-  type UpdateGistRequest,
 } from '../../src/services/github/client';
-
-import { trackRateLimit } from '../../src/services/github/rate-limiter';
-
-// ─── Helpers ─────────────────────────────────────────────────────────
-
-function makeGitHubGist(id: string, overrides: Partial<GitHubGist> = {}): GitHubGist {
-  return {
-    id,
-    node_id: `node_${id}`,
-    git_pull_url: `https://api.github.com/gists/${id}/git/pull`,
-    git_push_url: `https://api.github.com/gists/${id}/git/push`,
-    html_url: `https://gist.github.com/${id}`,
-    files: { 'test.txt': { filename: 'test.txt', content: 'hello', type: 'text/plain' } },
-    public: true,
-    created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
-    description: `Gist ${id}`,
-    comments: 0,
-    user: null,
-    comments_url: `https://api.github.com/gists/${id}/comments`,
-    ...overrides,
-  };
-}
-
-// ─── Tests ─────────────────────────────────────────────────────────────
+import { getToken } from '../../src/services/github/auth';
 
 describe('GitHub API Client', () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(getToken).mockResolvedValue('test-token-123');
     clearUsernameCache();
     cancelAllRequests();
     fetchMock = vi.fn();
@@ -99,7 +75,7 @@ describe('GitHub API Client', () => {
         new Response(JSON.stringify({ login: 'testuser' }), { status: 200 })
       );
 
-      const result = await validateToken('valid-token');
+      const result = await validateToken('ghp_valid');
       expect(result.isValid).toBe(true);
       expect(result.username).toBe('testuser');
     });
@@ -109,18 +85,34 @@ describe('GitHub API Client', () => {
         new Response(JSON.stringify({ message: 'Bad credentials' }), { status: 401 })
       );
 
-      const result = await validateToken('invalid-token');
+      const result = await validateToken('ghp_invalid');
       expect(result.isValid).toBe(false);
       expect(result.error).toBe('Bad credentials');
     });
 
     it('handles network errors', async () => {
-      fetchMock.mockRejectedValueOnce(new Error('Network error'));
-      const result = await validateToken('any-token');
+      fetchMock.mockRejectedValueOnce(new Error('Network fail'));
+
+      const result = await validateToken('ghp_any');
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Network error');
+      expect(result.error).toBe('Network fail');
     });
   });
+
+  // ── Helper to make a mock gist ──
+  const makeGitHubGist = (id: string): GitHubGist =>
+    ({
+      id,
+      description: 'Test Gist',
+      public: true,
+      files: { 'test.js': { filename: 'test.js', type: 'application/javascript', language: 'JavaScript', raw_url: '...', size: 100 } },
+      html_url: '...',
+      git_pull_url: '...',
+      git_push_url: '...',
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z',
+      owner: { login: 'testuser', id: 1, avatar_url: '...', html_url: '...' },
+    }) as unknown as GitHubGist;
 
   // ── listGists ───────────────────────────────────────────────────
 
@@ -138,7 +130,7 @@ describe('GitHub API Client', () => {
             {
               status: 200,
               headers: {
-                Link: '<https://api.github.com/user/gists?page=2>; rel="next", <https://api.github.com/user/gists?page=5>; rel="last"',
+                Link: '<https://api.github.com/user/gists?page=2>; rel="next", <https://api.github.com/user/gists?page=1>; rel="first", <https://api.github.com/user/gists?page=5>; rel="last"',
               },
             }
           )
@@ -164,13 +156,13 @@ describe('GitHub API Client', () => {
       await listGists({ page: 2, perPage: 50 });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        expect.stringContaining('page=2'),
+        expect.stringContaining('page=2&per_page=50'),
         expect.any(Object)
       );
     });
   });
 
-  // ── listStarredGists ──────────────────────────────────────────────────
+  // ── listStarredGists ────────────────────────────────────────────────
 
   describe('listStarredGists', () => {
     it('fetches starred gists', async () => {
@@ -198,7 +190,7 @@ describe('GitHub API Client', () => {
     });
   });
 
-  // ── createGist ──────────────────────────────────────────────────────
+  // ── createGist ────────────────────────────────────────────────────────
 
   describe('createGist', () => {
     it('creates a new gist', async () => {
@@ -208,36 +200,41 @@ describe('GitHub API Client', () => {
       );
 
       const payload: CreateGistRequest = {
-        description: 'Test Gist',
+        description: 'New',
         public: true,
-        files: { 'test.txt': { content: 'hello' } },
+        files: { 'a.js': { content: 'hello' } },
       };
 
       const result = await createGist(payload);
       expect(result.id).toBe('new-gist');
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.github.com/gists',
-        expect.objectContaining({ method: 'POST' })
+        expect.stringContaining('/gists'),
+        expect.objectContaining({ method: 'POST', body: JSON.stringify(payload) })
       );
     });
   });
 
-  // ── updateGist ──────────────────────────────────────────────────────
+  // ── updateGist ────────────────────────────────────────────────────────
 
   describe('updateGist', () => {
     it('updates an existing gist', async () => {
-      const gist = makeGitHubGist('gist-1', { description: 'Updated' });
+      const gist = makeGitHubGist('gist-1');
       fetchMock.mockResolvedValueOnce(
         new Response(JSON.stringify(gist), { status: 200 })
       );
 
-      const payload: UpdateGistRequest = { description: 'Updated' };
+      const payload = { description: 'Updated' };
       const result = await updateGist('gist-1', payload);
-      expect(result.description).toBe('Updated');
+
+      expect(result.id).toBe('gist-1');
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining('/gists/gist-1'),
+        expect.objectContaining({ method: 'PATCH', body: JSON.stringify(payload) })
+      );
     });
   });
 
-  // ── deleteGist ────────────────────────────────────────────────────
+  // ── deleteGist ────────────────────────────────────────────────────────
 
   describe('deleteGist', () => {
     it('deletes a gist', async () => {
@@ -247,7 +244,7 @@ describe('GitHub API Client', () => {
 
       await deleteGist('gist-1');
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.github.com/gists/gist-1',
+        expect.stringContaining('/gists/gist-1'),
         expect.objectContaining({ method: 'DELETE' })
       );
     });
@@ -255,7 +252,7 @@ describe('GitHub API Client', () => {
 
   // ── starGist / unstarGist ─────────────────────────────────────────────
 
-  describe('starGist / unstarGist', () => {
+  describe('starring', () => {
     it('stars a gist', async () => {
       fetchMock.mockResolvedValueOnce(
         new Response(null, { status: 204 })
@@ -348,6 +345,19 @@ describe('GitHub API Client', () => {
 
       expect(result1.id).toBe('gist-1');
       expect(result2.id).toBe('gist-1');
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('deduplicates concurrent identical requests for starred gists', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify([]), { status: 200 })
+      );
+
+      await Promise.all([
+        listStarredGists(),
+        listStarredGists(),
+      ]);
+
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
   });

@@ -167,6 +167,11 @@ describe('security logger', () => {
       expect(result).toBe('Authorization: [REDACTED]');
     });
 
+    it('redacts Bearer tokens with Base64 characters and padding', () => {
+      const result = redactSecrets('Bearer a+b/c1234567890abcdef1234567890def==');
+      expect(result).toBe('[REDACTED]');
+    });
+
     it('redacts gho_ OAuth token pattern', () => {
       const result = redactSecrets('Token: gho_1234567890abcdefghijklmnopqrstuvwxyzvalid');
       expect(result).toBe('Token: [REDACTED]');

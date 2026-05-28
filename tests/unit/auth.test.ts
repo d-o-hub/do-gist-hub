@@ -46,7 +46,7 @@ import {
   revalidateToken,
   saveToken,
 } from '../../src/services/github/auth';
-import { validateToken } from '../../src/services/github/client';
+import { clearUsernameCache, validateToken } from '../../src/services/github/client';
 import { decrypt, encrypt } from '../../src/services/security/crypto';
 import { safeLog } from '../../src/services/security/logger';
 
@@ -89,6 +89,14 @@ describe('auth', () => {
       });
       expect(setMetadata).toHaveBeenCalledWith('github-username', 'testuser');
       expect(setMetadata).toHaveBeenCalledWith('token-saved-at', expect.any(Number));
+    });
+
+    it('clears username cache on success', async () => {
+      vi.mocked(validateToken).mockResolvedValue({ isValid: true, username: 'testuser' });
+
+      await saveToken('ghp_newtoken');
+
+      expect(clearUsernameCache).toHaveBeenCalled();
     });
   });
 
