@@ -21,7 +21,7 @@ export function sanitizeHtml(input: string): string {
   if (input === null || input === undefined) return '';
   const str = String(input);
   if (!/[&<>"'`]/.test(str)) return str;
-  return str.replace(/[&<>\"'`]/g, (match) => ESCAPE_LOOKUP[match] ?? match);
+  return str.replace(/[&<>"'`]/g, (match) => ESCAPE_LOOKUP[match]!);
 }
 
 /**
