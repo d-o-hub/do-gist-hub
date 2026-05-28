@@ -9,6 +9,7 @@ const ESCAPE_LOOKUP: Record<string, string> = {
   '>': '&gt;',
   '"': '&quot;',
   "'": '&#039;',
+  '`': '&#096;',
 };
 
 /**
@@ -19,8 +20,8 @@ const ESCAPE_LOOKUP: Record<string, string> = {
 export function sanitizeHtml(input: string): string {
   if (input === null || input === undefined) return '';
   const str = String(input);
-  if (!/[&<>"']/.test(str)) return str;
-  return str.replace(/[&<>"']/g, (match) => ESCAPE_LOOKUP[match]!);
+  if (!/[&<>"'`]/.test(str)) return str;
+  return str.replace(/[&<>"'`]/g, (match) => ESCAPE_LOOKUP[match]!);
 }
 
 /**

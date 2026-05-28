@@ -26,7 +26,10 @@ export function redactSecrets(input: string): string {
     /(ghp_[A-Za-z0-9_]{36,})/g, // Personal Access Token (classic)
     /(github_pat_[A-Za-z0-9_]{22,})/g, // Fine-grained PAT
     /(gho_[A-Za-z0-9_]{36,})/g, // OAuth token
-    /(Bearer [A-Za-z0-9._-]{20,})/g, // Bearer token
+    /(ghr_[A-Za-z0-9_]{36,})/g, // Refresh token
+    /(ghu_[A-Za-z0-9_]{36,})/g, // User-to-server token
+    /(ghs_[A-Za-z0-9_]{36,})/g, // Installation token
+    /(Bearer [A-Za-z0-9._~+\-/]{20,}=*)/g, // Bearer token (JWT/Base64)
     /(token [A-Za-z0-9_]{20,})/g, // Token header value
   ];
 

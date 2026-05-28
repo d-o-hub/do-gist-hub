@@ -505,7 +505,7 @@ async function getCurrentUsername(): Promise<string> {
     throw new Error('No authentication token available');
   }
 
-  const key = `GET:getCurrentUsername:${token.slice(-8)}`;
+  const key = 'GET:getCurrentUsername';
 
   return deduplicatedFetch(key, async () => {
     try {

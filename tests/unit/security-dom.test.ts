@@ -119,6 +119,10 @@ describe('sanitizeHtml fast-path', () => {
     expect(sanitizeHtml("it's")).toBe('it&#039;s');
   });
 
+  it('escapes ` even when it is the only special character (bypasses fast-path)', () => {
+    expect(sanitizeHtml('`')).toBe('&#096;');
+  });
+
   it('returns a long clean string unchanged via fast-path (regression)', () => {
     const longClean = 'a'.repeat(10000);
     const result = sanitizeHtml(longClean);
