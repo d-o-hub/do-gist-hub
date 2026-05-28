@@ -49,14 +49,13 @@ import {
   type GitHubGist,
   type CreateGistRequest,
 } from '../../src/services/github/client';
-import { getToken } from '../../src/services/github/auth';
+import type { PaginatedResult } from '../../src/types/api';
 
 describe('GitHub API Client', () => {
   let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getToken).mockResolvedValue('test-token-123');
     clearUsernameCache();
     cancelAllRequests();
     fetchMock = vi.fn();
