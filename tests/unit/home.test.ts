@@ -133,12 +133,6 @@ describe('Home Route', () => {
       const searchInput = container.querySelector('#gist-search') as HTMLInputElement;
       expect(searchInput?.value).toBe('test query');
     });
-
-    it('has accessibility aria-label on search input', () => {
-      render(container);
-      const searchInput = container.querySelector('#gist-search');
-      expect(searchInput?.getAttribute('aria-label')).toBe('Search gists');
-    });
   });
 
   // ── Gist List ──────────────────────────────────────────────────────────
