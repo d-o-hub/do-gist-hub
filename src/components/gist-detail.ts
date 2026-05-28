@@ -228,7 +228,7 @@ export function bindDetailEvents(
       (e) => {
         const keyboardEvent = e as KeyboardEvent;
         const currentTab = document.activeElement as HTMLElement;
-        if (!currentTab?.classList.contains('file-tab')) return;
+        if (!currentTab.classList.contains('file-tab')) return;
 
         const tabsArray = Array.from(tabs) as HTMLElement[];
         const index = tabsArray.indexOf(currentTab);
