@@ -43,7 +43,7 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     return `
       <div class="route-home">
         <div class="search-container">
-          <input type="text" id="gist-search" class="search-input" placeholder="Search gists..." value="${sanitizeHtml(query)}">
+          <input type="text" id="gist-search" class="search-input" placeholder="Search gists..." value="${sanitizeHtml(query)}" aria-label="Search gists">
         </div>
         <div class="filter-header flex-between mb-4">
             <div class="filter-buttons filter-chips">

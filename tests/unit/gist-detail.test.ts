@@ -173,6 +173,7 @@ describe('GistDetail', () => {
       const html = renderRevisions('gist-1', revisions);
       expect(html).toContain('Revisions (2)');
       expect(html).toContain('gist-back-btn');
+      expect(html).toContain('aria-label="Go back"');
       expect(html).toContain('data-action="view-revision"');
     });
 
@@ -406,6 +407,81 @@ describe('GistDetail', () => {
       expect(secondTab.classList.contains('active')).toBe(true);
       expect(secondTab.getAttribute('aria-selected')).toBe('true');
       expect(container.querySelector('#tab-0')?.getAttribute('aria-selected')).toBe('false');
+    });
+
+    it('implements roving tabindex for file tabs', async () => {
+      const gistStoreModule = await import('../../src/stores/gist-store');
+      vi.mocked(gistStoreModule.default.getGist).mockReturnValue({
+        id: 'gist-1',
+        files: { 'a.ts': {}, 'b.ts': {} },
+      } as any);
+
+      bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+
+      const tab0 = container.querySelector('#tab-0') as HTMLElement;
+      const tab1 = container.querySelector('#tab-1') as HTMLElement;
+
+      // Initial state (assuming renderGistDetail was called with first tab active)
+      tab0.setAttribute('tabindex', '0');
+      tab1.setAttribute('tabindex', '-1');
+
+      tab1.click();
+
+      await vi.waitFor(() => {
+        expect(tab1.getAttribute('tabindex')).toBe('0');
+        expect(tab0.getAttribute('tabindex')).toBe('-1');
+      });
+    });
+
+    it('supports keyboard navigation between tabs', async () => {
+      const gistStoreModule = await import('../../src/stores/gist-store');
+      vi.mocked(gistStoreModule.default.getGist).mockReturnValue({
+        id: 'gist-1',
+        files: { 'a.ts': {}, 'b.ts': {}, 'c.ts': {} },
+      } as any);
+
+      // Re-render with 3 tabs for Home/End test
+      container.innerHTML = `
+        <div class="gist-detail">
+          <div class="file-tabs" role="tablist">
+            <button class="file-tab active" id="tab-0" tabindex="0">A</button>
+            <button class="file-tab" id="tab-1" tabindex="-1">B</button>
+            <button class="file-tab" id="tab-2" tabindex="-1">C</button>
+          </div>
+        </div>
+      `;
+      const tab0 = container.querySelector('#tab-0') as HTMLElement;
+      const tab1 = container.querySelector('#tab-1') as HTMLElement;
+      const tab2 = container.querySelector('#tab-2') as HTMLElement;
+
+      bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+
+      // Mock focus because JSDOM focus handling can be tricky
+      const focusSpy0 = vi.spyOn(tab0, 'focus');
+      const focusSpy1 = vi.spyOn(tab1, 'focus');
+      const focusSpy2 = vi.spyOn(tab2, 'focus');
+
+      const tabList = container.querySelector('.file-tabs') as HTMLElement;
+
+      // ArrowRight from 0 to 1
+      tab0.focus();
+      tabList.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      expect(focusSpy1).toHaveBeenCalled();
+
+      // ArrowLeft from 1 to 0
+      tab1.focus();
+      tabList.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+      expect(focusSpy0).toHaveBeenCalled();
+
+      // End to last tab
+      tab0.focus();
+      tabList.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+      expect(focusSpy2).toHaveBeenCalled();
+
+      // Home to first tab
+      tab2.focus();
+      tabList.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+      expect(focusSpy0).toHaveBeenCalled();
     });
 
     it('copies content to clipboard when copy button is clicked', async () => {
