@@ -9,14 +9,12 @@ import { Skeleton } from '../components/ui/skeleton';
 import { lifecycle } from '../services/lifecycle';
 import { sanitizeHtml } from '../services/security';
 import gistStore from '../stores/gist-store';
+import { parseIsoDate } from '../utils/date';
 
 export type Filter = 'all' | 'mine' | 'starred';
 export type Sort = 'created-desc' | 'updated-desc' | 'updated-asc';
 
 let searchTimeout: number | undefined;
-
-// BOLT: Module-scope cache for parsed timestamps to improve sorting performance across renders
-const timestampCache = new Map<string, number>();
 
 export function render(container: HTMLElement, params?: Record<string, string>): void {
   const signal = lifecycle.getRouteSignal();
@@ -91,7 +89,7 @@ export function render(container: HTMLElement, params?: Record<string, string>):
       gists = gists
         .map((gist) => ({
           gist,
-          ts: getTs(currentSort === 'created-desc' ? gist.createdAt : gist.updatedAt),
+          ts: parseIsoDate(currentSort === 'created-desc' ? gist.createdAt : gist.updatedAt),
         }))
         .sort((a, b) => (currentSort === 'updated-asc' ? a.ts - b.ts : b.ts - a.ts))
         .map((item) => item.gist);
@@ -119,19 +117,6 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     }
 
     return gists.map((g) => renderCard(g)).join('');
-  }
-
-  /**
-   * Get numeric timestamp from date string, with module-level caching.
-   * BOLT: Consolidate timestamp parsing logic for O(N) instead of O(N log N).
-   */
-  function getTs(dateStr: string): number {
-    let ts = timestampCache.get(dateStr);
-    if (ts === undefined) {
-      ts = Date.parse(dateStr);
-      timestampCache.set(dateStr, ts);
-    }
-    return ts;
   }
 
   function updateList(): void {

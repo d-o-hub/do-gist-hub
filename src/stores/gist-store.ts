@@ -20,6 +20,7 @@ import {
 } from '../services/sync/conflict-detector';
 import syncQueue from '../services/sync/queue';
 import type { GitHubGist, UpdateGistRequest } from '../types/api';
+import { parseIsoDate } from '../utils/date';
 
 export type GistStoreListener = (gists: GistRecord[]) => void;
 
@@ -454,26 +455,14 @@ class GistStore {
     }
   }
 
-  // BOLT: Persistent cache for parsed timestamps to maximize sorting efficiency
-  private static timestampCache = new Map<string, number>();
-
   /**
    * Sort gists by updatedAt descending.
    * BOLT: Implement Schwartzian Transform to reduce timestamp lookups from O(N log N) to O(N).
    */
   private sortGists(): void {
-    const getTimestamp = (dateStr: string): number => {
-      let ts = GistStore.timestampCache.get(dateStr);
-      if (ts === undefined) {
-        ts = Date.parse(dateStr);
-        GistStore.timestampCache.set(dateStr, ts);
-      }
-      return ts;
-    };
-
     // Schwartzian Transform: map to temp objects with timestamps, sort, map back
     this.gists = this.gists
-      .map((gist) => ({ gist, ts: getTimestamp(gist.updatedAt) }))
+      .map((gist) => ({ gist, ts: parseIsoDate(gist.updatedAt) }))
       .sort((a, b) => b.ts - a.ts)
       .map((item) => item.gist);
   }
