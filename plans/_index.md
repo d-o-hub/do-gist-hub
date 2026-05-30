@@ -1,6 +1,6 @@
 # plans/\_index.md — Active Plan Registry
 
-> **Last updated**: 2026-05-26T18:22
+> **Last updated**: 2026-05-30T12:00
 > Agents: read this before starting any task. Update it when you change plan status.
 
 ---
@@ -31,6 +31,7 @@
 | `adr-029-android-release-signing.md`           | ADR           | Accepted ✅  | Android release signing via CI — keystore from GitHub secrets, versionCode from GITHUB_RUN_NUMBER, versionName from VERSION |
 | `041-goap-release-signing-and-plan040-completion.md` | GOAP Plan | Complete ✅ | Close Plan 040 gaps (@scope dedup, OKLCH shadow tokens) + wire release APK signing into CI |
 | `042-goap-plans-completion-sprint.md` | GOAP Plan | Complete ✅ | Close P0 plan-audit gaps: rebuild stale design-tokens.css, fix plan status headers, promote ADR-015, add SW cache TTL, wire LH CI |
+| `061-progress-update-2026-05-30-implementation-gaps.md` | Progress | Complete ✅ | Implementation gaps audit: ADR-016 lazy hydration missing, F-Droid MR not submitted, GOAP 060 zero implementation |
 
 ## Archived
 
@@ -126,10 +127,12 @@ These numbered plans document the project's foundation and are considered stable
 | `056-goap-upstream-sync-phase-a.md`              | GOAP          | Complete ✅ | Shell injection hardening, ShellCheck zero-tolerance, .shellcheckrc, CI integration, pre-commit shfmt hook |
 | `058-goap-cross-browser-webkit-fix.md`              | GOAP          | Complete ✅ | Fix WebKit 58-test failure: add --with-deps to playwright install step |
 | `059-goap-resolve-pre-existing-ci-issues.md`              | GOAP          | Complete ✅ | Fix vitest EnvironmentTeardownError and WebKit flaky star-toggle test |
+| `060-goap-plain-text-paste-llm-gist-creation.md`          | GOAP          | Active      | Plain text paste parser, LLM-assisted gist creation, drag-and-drop file import |
+| `061-progress-update-2026-05-30-implementation-gaps.md`    | Progress      | Complete ✅ | Implementation gaps audit: ADR-016 lazy hydration missing, F-Droid MR not submitted, GOAP 060 zero implementation |
 
 ## Quick reference: ADR numbers in use
 
 `adr-001` through `adr-033` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-034`
-**Next available plan/GOAP number**: `060`
-**Next available GOAP action number**: New GOAP plan = `060`
+**Next available plan/GOAP number**: `062`
+**Next available GOAP action number**: New GOAP plan = `062`

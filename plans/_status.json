@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "lastUpdated": "2026-05-26T18:15:00Z",
+  "lastUpdated": "2026-05-30T12:00:00Z",
   "sprintComplete": {
     "038-sprint1": "2026-05-16",
     "038-sprint2": "2026-05-16",
@@ -319,7 +319,17 @@
     "059-goap-resolve-pre-existing-ci-issues.md": {
       "type": "goap",
       "status": "complete",
-      "summary": "Resolved vitest EnvironmentTeardownError and WebKit flaky star-toggle test"
+      "summary": "Fix vitest EnvironmentTeardownError and WebKit flaky star-toggle test"
+    },
+    "060-goap-plain-text-paste-llm-gist-creation.md": {
+      "type": "goap",
+      "status": "active",
+      "summary": "Plain text paste parser, LLM-assisted gist creation, drag-and-drop file import"
+    },
+    "061-progress-update-2026-05-30-implementation-gaps.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "Implementation gaps audit: ADR-016 lazy hydration missing, F-Droid MR not submitted, GOAP 060 zero implementation, recordFirstApiCall hook may be missing"
     }
   },
   "archive": [
@@ -353,7 +363,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-034",
-    "plan": "060",
-    "goap": "060"
+    "plan": "062",
+    "goap": "062"
   }
 }
