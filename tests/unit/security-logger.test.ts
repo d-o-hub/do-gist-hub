@@ -70,6 +70,12 @@ describe('security logger', () => {
       expect(redactSecrets(input)).toBe(expected);
     });
 
+    it('should redact ghr, ghu, ghs token patterns', () => {
+      expect(redactSecrets('refresh: ghr_1234567890abcdefghijklmnopqrstuvwxyzvalid')).toBe('refresh: [REDACTED]');
+      expect(redactSecrets('user: ghu_1234567890abcdefghijklmnopqrstuvwxyzvalid')).toBe('user: [REDACTED]');
+      expect(redactSecrets('install: ghs_1234567890abcdefghijklmnopqrstuvwxyzvalid')).toBe('install: [REDACTED]');
+    });
+
     it('should handle strings', () => {
       expect(redactAny('ghp_1234567890abcdefghijklmnopqrstuvwxyz')).toBe('[REDACTED]');
       expect(redactAny('safe string')).toBe('safe string');
@@ -159,6 +165,11 @@ describe('security logger', () => {
     it('redacts Bearer token pattern in strings', () => {
       const result = redactSecrets('Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0');
       expect(result).toBe('Authorization: [REDACTED]');
+    });
+
+    it('redacts Bearer tokens with Base64 characters and padding', () => {
+      const result = redactSecrets('Bearer a+b/c1234567890abcdef1234567890def==');
+      expect(result).toBe('[REDACTED]');
     });
 
     it('redacts gho_ OAuth token pattern', () => {

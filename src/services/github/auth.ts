@@ -164,6 +164,7 @@ export async function saveToken(token: string): Promise<{ success: boolean; erro
     await setMetadata('token-saved-at', Date.now());
 
     safeLog(`[Auth] Token saved and encrypted: ${redactToken(token)}`);
+    clearUsernameCache();
     recordAuthMethod('pat').catch(() => {});
     recordAuthCompleted().catch(() => {});
     return { success: true };

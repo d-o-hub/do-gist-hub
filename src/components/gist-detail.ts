@@ -9,8 +9,21 @@ import { safeError } from '../services/security/logger';
 import gistStore from '../stores/gist-store';
 import type { GistRecord } from '../types';
 import type { GistRevision } from '../types/api';
-import { formatRelativeTime } from '../utils/date';
 import { toast } from './ui/toast';
+
+function formatRelativeTime(dateStr: string): string {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  if (diffSec < 60) return 'Just now';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  return `${diffDay}d ago`;
+}
 
 export function renderFileContent(content: string, language?: string): string {
   return `<pre class="code-block language-${sanitizeHtml(language || 'text')}"><code>${sanitizeHtml(content)}</code></pre>`;
@@ -28,7 +41,7 @@ export function renderGistDetail(gist: GistRecord): string {
       ${Object.entries(gist.files)
         .map(
           ([key, file], index) => `
-        <button class="chip file-tab ${index === 0 ? 'active' : ''}" data-file-key="${sanitizeHtml(key)}" id="tab-${index}" role="tab" aria-selected="${index === 0}" aria-controls="file-content-area" tabindex="${index === 0 ? '0' : '-1'}">
+        <button class="chip file-tab ${index === 0 ? 'active' : ''}" data-file-key="${sanitizeHtml(key)}" id="tab-${index}" role="tab" aria-selected="${index === 0}" aria-controls="file-content-area">
           ${sanitizeHtml(file.filename.toUpperCase())}
         </button>
       `
@@ -55,7 +68,7 @@ export function renderGistDetail(gist: GistRecord): string {
           <span class="detail-chip">${fileCount} Files</span>
           <span class="detail-chip">${visibility}</span>
           <time class="micro-label" datetime="${gist.updatedAt}">
-            Updated ${formatRelativeTime(gist.updatedAt, 'long')}
+            Updated ${formatRelativeTime(gist.updatedAt)}
           </time>
         </div>
         <div class="gist-detail-actions">
@@ -134,7 +147,7 @@ export function renderRevisions(gistId: string, revisions: GistRevision[]): stri
   return `
     <div class="revisions-list" data-gist-id="${sanitizeHtml(gistId)}">
       <header class="detail-header">
-        <button class="btn btn-ghost" id="gist-back-btn" aria-label="Go back">← Back</button>
+        <button class="btn btn-ghost" id="gist-back-btn">← Back</button>
         <h1 class="detail-title">Revisions (${revisions.length})</h1>
       </header>
       <div class="revisions-container">${revisionsHtml}</div>
@@ -207,42 +220,6 @@ export function bindDetailEvents(
 
   // File Tabs
   const tabs = container.querySelectorAll('.file-tab');
-  const tabList = container.querySelector('.file-tabs');
-
-  if (tabList) {
-    tabList.addEventListener(
-      'keydown',
-      (e) => {
-        const keyboardEvent = e as KeyboardEvent;
-        const currentTab = document.activeElement as HTMLElement;
-        if (!currentTab.classList.contains('file-tab')) return;
-
-        const tabsArray = Array.from(tabs) as HTMLElement[];
-        const index = tabsArray.indexOf(currentTab);
-
-        let nextIndex = -1;
-        if (keyboardEvent.key === 'ArrowRight') {
-          nextIndex = (index + 1) % tabsArray.length;
-        } else if (keyboardEvent.key === 'ArrowLeft') {
-          nextIndex = (index - 1 + tabsArray.length) % tabsArray.length;
-        } else if (keyboardEvent.key === 'Home') {
-          nextIndex = 0;
-        } else if (keyboardEvent.key === 'End') {
-          nextIndex = tabsArray.length - 1;
-        }
-
-        const nextTab =
-          nextIndex !== -1 ? (tabsArray[nextIndex] as HTMLElement | undefined) : undefined;
-        if (nextTab) {
-          e.preventDefault();
-          nextTab.focus();
-          nextTab.click();
-        }
-      },
-      { signal }
-    );
-  }
-
   tabs.forEach((tab) => {
     tab.addEventListener(
       'click',
@@ -254,11 +231,9 @@ export function bindDetailEvents(
         tabs.forEach((t) => {
           t.classList.remove('active');
           t.setAttribute('aria-selected', 'false');
-          t.setAttribute('tabindex', '-1');
         });
         tab.classList.add('active');
         tab.setAttribute('aria-selected', 'true');
-        tab.setAttribute('tabindex', '0');
 
         // Update content
         void (async () => {
