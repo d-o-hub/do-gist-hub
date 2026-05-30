@@ -3,7 +3,9 @@
  */
 
 import { toast } from '../components/ui/toast';
+import { parsePasteText } from '../services/gist-paste-parser';
 import { lifecycle } from '../services/lifecycle';
+import { generateDescription, loadLLMConfig, splitIntoFiles } from '../services/llm/client';
 import gistStore from '../stores/gist-store';
 
 let nextFileId = 0;
@@ -72,6 +74,15 @@ export function render(container: HTMLElement): void {
           <input type="text" id="gist-description" class="form-input" placeholder="Gist description..." required>
         </div>
 
+        <div class="form-group">
+          <label class="form-label" for="paste-input">Paste to Gist</label>
+          <textarea id="paste-input" class="form-textarea paste-zone" placeholder="Paste plain text here (supports --- filename.ext --- delimiters, ## headers, or code blocks)..." rows="4"></textarea>
+          <div class="paste-zone-actions">
+            <button type="button" id="parse-paste-btn" class="btn btn-ghost">PARSE PASTE</button>
+            <button type="button" id="ai-parse-btn" class="btn btn-ghost" disabled title="Configure LLM in Settings">AI PARSE</button>
+          </div>
+        </div>
+
        <div class="form-group">
          <div class="files-header">
            <span class="form-label">Files</span>
@@ -113,6 +124,207 @@ export function render(container: HTMLElement): void {
     },
     { signal }
   );
+
+  // Paste zone: parse paste text into files
+  const parseAndPopulate = (text: string): void => {
+    const result = parsePasteText(text);
+    if (result.files.length === 0) {
+      toast.error('NO FILES DETECTED IN PASTE');
+      return;
+    }
+
+    // Clear existing files and populate with parsed results
+    filesContainer.innerHTML = '';
+    for (const file of result.files) {
+      const id = nextFileId++;
+      const row = createFileRow(id, container, signal);
+      const filenameInput = row.querySelector('.gist-filename') as HTMLInputElement;
+      const contentInput = row.querySelector('.gist-content') as HTMLTextAreaElement;
+      if (filenameInput) filenameInput.value = file.filename;
+      if (contentInput) contentInput.value = file.content;
+      filesContainer.appendChild(row);
+    }
+    updateRemoveButtons(filesContainer);
+
+    // Auto-fill description if suggested
+    if (result.suggestedDescription) {
+      const descInput = container.querySelector('#gist-description') as HTMLInputElement;
+      if (descInput && !descInput.value) {
+        descInput.value = result.suggestedDescription;
+      }
+    }
+
+    toast.success(`PARSED ${result.files.length} FILE${result.files.length > 1 ? 'S' : ''}`);
+  };
+
+  // Parse paste button
+  container.querySelector('#parse-paste-btn')?.addEventListener(
+    'click',
+    () => {
+      const pasteInput = container.querySelector('#paste-input') as HTMLTextAreaElement;
+      const text = pasteInput?.value?.trim();
+      if (!text) {
+        toast.error('PASTE TEXT FIRST');
+        return;
+      }
+      parseAndPopulate(text);
+    },
+    { signal }
+  );
+
+  // Paste event on textarea
+  container.querySelector('#paste-input')?.addEventListener(
+    'paste',
+    (_e) => {
+      // Let the paste happen naturally first, then parse after a tick
+      setTimeout(() => {
+        const pasteInput = container.querySelector('#paste-input') as HTMLTextAreaElement;
+        const text = pasteInput?.value?.trim();
+        if (text) {
+          parseAndPopulate(text);
+        }
+      }, 0);
+    },
+    { signal }
+  );
+
+  // Drag-and-drop support on files container
+  filesContainer.addEventListener(
+    'dragover',
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      filesContainer.classList.add('drag-over');
+    },
+    { signal }
+  );
+
+  filesContainer.addEventListener(
+    'dragleave',
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      filesContainer.classList.remove('drag-over');
+    },
+    { signal }
+  );
+
+  filesContainer.addEventListener(
+    'drop',
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      filesContainer.classList.remove('drag-over');
+
+      const droppedFiles = e.dataTransfer?.files;
+      if (!droppedFiles || droppedFiles.length === 0) return;
+
+      const textFiles = Array.from(droppedFiles).filter(
+        (f) => f.type.startsWith('text/') || f.name.endsWith('.json') || f.name.endsWith('.md')
+      );
+
+      if (textFiles.length === 0) {
+        toast.error('ONLY TEXT FILES ARE SUPPORTED');
+        return;
+      }
+
+      // Clear existing files and populate with dropped files
+      filesContainer.innerHTML = '';
+
+      for (const file of textFiles) {
+        const id = nextFileId++;
+        const row = createFileRow(id, container, signal);
+        const filenameInput = row.querySelector('.gist-filename') as HTMLInputElement;
+        const contentInput = row.querySelector('.gist-content') as HTMLTextAreaElement;
+        if (filenameInput) filenameInput.value = file.name;
+        filesContainer.appendChild(row);
+
+        // Read file content
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (contentInput) contentInput.value = reader.result as string;
+        };
+        reader.readAsText(file);
+      }
+
+      updateRemoveButtons(filesContainer);
+      toast.success(`IMPORTED ${textFiles.length} FILE${textFiles.length > 1 ? 'S' : ''}`);
+    },
+    { signal }
+  );
+
+  // Initialize LLM and enable AI PARSE button if configured
+  void (async () => {
+    try {
+      const config = await loadLLMConfig();
+      const aiParseBtn = container.querySelector('#ai-parse-btn') as HTMLButtonElement;
+      if (aiParseBtn && config.enabled) {
+        aiParseBtn.disabled = false;
+        aiParseBtn.title = `AI Parse using ${config.provider}`;
+
+        // AI PARSE button handler
+        aiParseBtn.addEventListener(
+          'click',
+          () => {
+            const pasteInput = container.querySelector('#paste-input') as HTMLTextAreaElement;
+            const text = pasteInput?.value?.trim();
+            if (!text) {
+              toast.error('PASTE TEXT FIRST');
+              return;
+            }
+
+            // Show loading state
+            aiParseBtn.disabled = true;
+            aiParseBtn.textContent = 'PARSING...';
+
+            void (async () => {
+              try {
+                const result = await splitIntoFiles(text);
+                if (result.files.length === 0) {
+                  toast.error('NO FILES DETECTED');
+                  return;
+                }
+
+                // Clear existing files and populate with LLM results
+                filesContainer.innerHTML = '';
+                for (const file of result.files) {
+                  const id = nextFileId++;
+                  const row = createFileRow(id, container, signal);
+                  const filenameInput = row.querySelector('.gist-filename') as HTMLInputElement;
+                  const contentInput = row.querySelector('.gist-content') as HTMLTextAreaElement;
+                  if (filenameInput) filenameInput.value = file.filename;
+                  if (contentInput) contentInput.value = file.content;
+                  filesContainer.appendChild(row);
+                }
+                updateRemoveButtons(filesContainer);
+
+                // Generate description if files are present
+                const description = await generateDescription(result.files);
+                const descInput = container.querySelector('#gist-description') as HTMLInputElement;
+                if (descInput && !descInput.value) {
+                  descInput.value = description;
+                }
+
+                toast.success(
+                  `AI PARSED ${result.files.length} FILE${result.files.length > 1 ? 'S' : ''}`
+                );
+              } catch (_err) {
+                toast.error('AI PARSE FAILED, USING BASIC PARSER');
+                // Fallback to heuristic parser
+                parseAndPopulate(text);
+              } finally {
+                aiParseBtn.disabled = false;
+                aiParseBtn.textContent = 'AI PARSE';
+              }
+            })();
+          },
+          { signal }
+        );
+      }
+    } catch {
+      // LLM not configured - leave AI PARSE button disabled
+    }
+  })();
 
   container.querySelector('#create-gist-form')?.addEventListener(
     'submit',

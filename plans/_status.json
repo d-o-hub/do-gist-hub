@@ -323,8 +323,13 @@
     },
     "060-goap-plain-text-paste-llm-gist-creation.md": {
       "type": "goap",
-      "status": "active",
+      "status": "complete",
       "summary": "Plain text paste parser, LLM-assisted gist creation, drag-and-drop file import"
+    },
+    "062-progress-update-2026-05-30-plan060-completion.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "Plan 060 complete: paste parser, LLM client (OpenAI + GitHub Models), paste zone UI, AI PARSE toggle, drag-and-drop, 25 GOAP actions implemented"
     },
     "061-progress-update-2026-05-30-implementation-gaps.md": {
       "type": "progress",

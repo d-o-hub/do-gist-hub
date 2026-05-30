@@ -11,3 +11,4 @@ export type {
   PendingWrite,
 } from '../services/db';
 export * from './api';
+export * from './gist';

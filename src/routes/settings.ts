@@ -9,6 +9,7 @@ import {
 import { toast } from '../components/ui/toast';
 import { getToken, getTokenInfo, removeToken, saveToken } from '../services/github/auth';
 import { lifecycle } from '../services/lifecycle';
+import { loadLLMConfig, saveLLMConfig } from '../services/llm/client';
 import networkMonitor from '../services/network/offline-monitor';
 import { redactToken, sanitizeHtml } from '../services/security';
 import { safeError } from '../services/security/logger';
@@ -110,12 +111,42 @@ export async function render(
             <div id="diagnostics-info" class="diagnostics-info diagnostics-mt"></div>
           </div>
         </details>
+
+        <details class="settings-section">
+          <summary class="settings-section-header">
+            <h3 class="form-label">AI Integration (Optional)</h3>
+          </summary>
+          <div class="settings-section-content">
+            <div class="form-group">
+              <label class="form-label" for="llm-provider-select">LLM Provider</label>
+              <select id="llm-provider-select" class="form-input">
+                <option value="none">Disabled</option>
+                <option value="github-models">GitHub Models (uses your PAT)</option>
+                <option value="openai">OpenAI (requires API key)</option>
+              </select>
+              <p class="micro-label hint-text mt-2">Enable AI-assisted paste processing and description generation.</p>
+            </div>
+            <div id="llm-api-key-group" class="form-group" style="display: none;">
+              <label class="form-label" for="llm-api-key-input">API Key</label>
+              <input type="password" id="llm-api-key-input" class="form-input" placeholder="sk-...">
+            </div>
+            <div id="llm-model-group" class="form-group" style="display: none;">
+              <label class="form-label" for="llm-model-input">Model</label>
+              <input type="text" id="llm-model-input" class="form-input" placeholder="gpt-4o-mini">
+              <p class="micro-label hint-text mt-2">Leave blank for default model.</p>
+            </div>
+            <div class="form-actions">
+              <button id="save-llm-btn" class="btn btn-primary">SAVE LLM SETTINGS</button>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
   `;
 
   await loadTokenInfo(container);
   await loadDiagnostics(container);
+  await loadLLMSettings(container);
   loadAccentHue(container);
   bindEvents(container, signal);
 }
@@ -199,6 +230,50 @@ function loadAccentHue(container: HTMLElement): void {
     display.textContent = saved;
   }
   document.documentElement.style.setProperty('--accent-h', saved);
+}
+
+/**
+ * Load LLM configuration and populate the settings UI.
+ */
+async function loadLLMSettings(container: HTMLElement): Promise<void> {
+  try {
+    const config = await loadLLMConfig();
+    const providerSelect = container.querySelector('#llm-provider-select') as HTMLSelectElement;
+    const apiKeyGroup = container.querySelector('#llm-api-key-group') as HTMLElement;
+    const modelGroup = container.querySelector('#llm-model-group') as HTMLElement;
+    const apiKeyInput = container.querySelector('#llm-api-key-input') as HTMLInputElement;
+    const modelInput = container.querySelector('#llm-model-input') as HTMLInputElement;
+
+    if (providerSelect) {
+      providerSelect.value = config.provider;
+    }
+    if (apiKeyInput && config.apiKey) {
+      apiKeyInput.value = config.apiKey;
+    }
+    if (modelInput && config.model) {
+      modelInput.value = config.model;
+    }
+
+    // Show/hide provider-specific fields
+    updateLLMFieldsVisibility(config.provider, apiKeyGroup, modelGroup);
+  } catch {
+    // Silently handle - LLM is optional
+  }
+}
+
+/**
+ * Show/hide API key and model fields based on provider selection.
+ */
+function updateLLMFieldsVisibility(
+  provider: string,
+  apiKeyGroup: HTMLElement,
+  modelGroup: HTMLElement
+): void {
+  const showApiKey = provider === 'openai';
+  const showModel = provider !== 'none';
+
+  apiKeyGroup.style.display = showApiKey ? '' : 'none';
+  modelGroup.style.display = showModel ? '' : 'none';
 }
 
 /**
@@ -435,6 +510,47 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
       if (display) {
         display.textContent = value;
       }
+    },
+    { signal }
+  );
+
+  // LLM provider change
+  container.querySelector('#llm-provider-select')?.addEventListener(
+    'change',
+    (e) => {
+      const provider = (e.target as HTMLSelectElement).value;
+      const apiKeyGroup = container.querySelector('#llm-api-key-group') as HTMLElement;
+      const modelGroup = container.querySelector('#llm-model-group') as HTMLElement;
+      updateLLMFieldsVisibility(provider, apiKeyGroup, modelGroup);
+    },
+    { signal }
+  );
+
+  // Save LLM settings
+  container.querySelector('#save-llm-btn')?.addEventListener(
+    'click',
+    () => {
+      void (async () => {
+        try {
+          const providerSelect = container.querySelector(
+            '#llm-provider-select'
+          ) as HTMLSelectElement;
+          const apiKeyInput = container.querySelector('#llm-api-key-input') as HTMLInputElement;
+          const modelInput = container.querySelector('#llm-model-input') as HTMLInputElement;
+
+          const config = {
+            provider: providerSelect.value as 'none' | 'openai' | 'github-models',
+            apiKey: apiKeyInput?.value || undefined,
+            model: modelInput?.value || undefined,
+            enabled: providerSelect.value !== 'none',
+          };
+
+          await saveLLMConfig(config);
+          toast.success('LLM SETTINGS SAVED');
+        } catch {
+          toast.error('FAILED TO SAVE LLM SETTINGS');
+        }
+      })();
     },
     { signal }
   );

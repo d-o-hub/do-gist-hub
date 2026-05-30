@@ -1392,3 +1392,29 @@ textarea.form-textarea {
     transform: scaleX(1);
   }
 }
+
+/* ===== Paste Zone ===== */
+.paste-zone {
+  min-height: var(--spacing-28);
+  border: 2px dashed var(--color-border);
+  transition:
+    border-color var(--motion-duration-fast) var(--motion-easing),
+    background var(--motion-duration-fast) var(--motion-easing);
+}
+
+.paste-zone:focus {
+  border-color: var(--color-accent);
+}
+
+.paste-zone-actions {
+  display: flex;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-2);
+}
+
+.files-container.drag-over {
+  border-color: var(--color-accent-primary);
+  background: var(--color-accent-subtle);
+  outline: 2px dashed var(--color-accent-primary);
+  outline-offset: var(--spacing-2);
+}
