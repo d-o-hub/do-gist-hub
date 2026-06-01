@@ -7,6 +7,7 @@
 
 import type {
   CreateGistRequest,
+  GistFile,
   GistRevision,
   GitHubError,
   GitHubGist,
@@ -138,6 +139,17 @@ function parseLinkHeader(linkHeader: string | null): PaginationInfo {
   return result;
 }
 
+function stripFileContent<T extends GitHubGist>(gists: T[]): T[] {
+  return gists.map((g) => {
+    const strippedFiles: Record<string, GistFile> = {};
+    for (const [name, f] of Object.entries(g.files)) {
+      const { content: _content, truncated: _truncated, ...rest } = f;
+      strippedFiles[name] = rest as GistFile;
+    }
+    return { ...g, files: strippedFiles };
+  });
+}
+
 /**
  * Handle API errors with proper typing.
  * Attempts token revalidation on 401 before propagating the error.
@@ -254,7 +266,7 @@ function fetchWithEtag<T>(url: string, context: string): Promise<T> {
       let result = data;
       if (context === 'listGists' || context === 'listStarredGists') {
         const pagination = parseLinkHeader(response.headers.get('Link'));
-        result = { data, pagination };
+        result = { data: stripFileContent(data as GitHubGist[]), pagination };
       }
 
       const etag = response.headers.get('ETag');

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -29,26 +29,40 @@ vi.mock('../../src/services/db', () => ({
   setMetadata: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock('../../src/services/telemetry/auth-telemetry', () => ({
+  recordFirstApiCall: vi.fn().mockResolvedValue(undefined),
+  recordAuthCompleted: vi.fn().mockResolvedValue(undefined),
+  recordAuthMethod: vi.fn().mockResolvedValue(undefined),
+  logAuthTelemetry: vi.fn().mockResolvedValue(undefined),
+  readTelemetry: vi.fn().mockResolvedValue({
+    patCount: 0,
+    deviceFlowCount: 0,
+    authCompletedAt: null,
+    timeToFirstApiCallDeltas: [],
+  }),
+}));
+
 // ─── Imports (after mocks) ───────────────────────────────────────────
 
 import {
-  validateToken,
+  type CreateGistRequest,
+  cancelAllRequests,
+  checkIfStarred,
+  clearUsernameCache,
+  createGist,
+  deleteGist,
+  forkGist,
+  type GitHubGist,
+  getGist,
+  listGistRevisions,
   listGists,
   listStarredGists,
-  getGist,
-  createGist,
-  updateGist,
-  deleteGist,
   starGist,
   unstarGist,
-  checkIfStarred,
-  forkGist,
-  listGistRevisions,
-  cancelAllRequests,
-  clearUsernameCache,
-  type GitHubGist,
-  type CreateGistRequest,
+  updateGist,
+  validateToken,
 } from '../../src/services/github/client';
+import { recordFirstApiCall } from '../../src/services/telemetry/auth-telemetry';
 import type { PaginatedResult } from '../../src/types/api';
 
 describe('GitHub API Client', () => {
@@ -104,7 +118,15 @@ describe('GitHub API Client', () => {
       id,
       description: 'Test Gist',
       public: true,
-      files: { 'test.js': { filename: 'test.js', type: 'application/javascript', language: 'JavaScript', raw_url: '...', size: 100 } },
+      files: {
+        'test.js': {
+          filename: 'test.js',
+          type: 'application/javascript',
+          language: 'JavaScript',
+          raw_url: '...',
+          size: 100,
+        },
+      },
       html_url: '...',
       git_pull_url: '...',
       git_push_url: '...',
@@ -124,15 +146,12 @@ describe('GitHub API Client', () => {
         )
         .mockResolvedValueOnce(
           // /users/testuser/gists endpoint
-          new Response(
-            JSON.stringify([makeGitHubGist('gist-1'), makeGitHubGist('gist-2')]),
-            {
-              status: 200,
-              headers: {
-                Link: '<https://api.github.com/user/gists?page=2>; rel="next", <https://api.github.com/user/gists?page=1>; rel="first", <https://api.github.com/user/gists?page=5>; rel="last"',
-              },
-            }
-          )
+          new Response(JSON.stringify([makeGitHubGist('gist-1'), makeGitHubGist('gist-2')]), {
+            status: 200,
+            headers: {
+              Link: '<https://api.github.com/user/gists?page=2>; rel="next", <https://api.github.com/user/gists?page=1>; rel="first", <https://api.github.com/user/gists?page=5>; rel="last"',
+            },
+          })
         );
 
       const result = await listGists();
@@ -145,12 +164,8 @@ describe('GitHub API Client', () => {
 
     it('fetches with custom pagination options', async () => {
       fetchMock
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ login: 'testuser' }), { status: 200 })
-        )
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify([]), { status: 200 })
-        );
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
 
       await listGists({ page: 2, perPage: 50 });
 
@@ -180,9 +195,7 @@ describe('GitHub API Client', () => {
   describe('getGist', () => {
     it('fetches a single gist by id', async () => {
       const gist = makeGitHubGist('gist-1');
-      fetchMock.mockResolvedValueOnce(
-        new Response(JSON.stringify(gist), { status: 200 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(gist), { status: 200 }));
 
       const result = await getGist('gist-1');
       expect(result.id).toBe('gist-1');
@@ -194,9 +207,7 @@ describe('GitHub API Client', () => {
   describe('createGist', () => {
     it('creates a new gist', async () => {
       const gist = makeGitHubGist('new-gist');
-      fetchMock.mockResolvedValueOnce(
-        new Response(JSON.stringify(gist), { status: 201 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(gist), { status: 201 }));
 
       const payload: CreateGistRequest = {
         description: 'New',
@@ -218,9 +229,7 @@ describe('GitHub API Client', () => {
   describe('updateGist', () => {
     it('updates an existing gist', async () => {
       const gist = makeGitHubGist('gist-1');
-      fetchMock.mockResolvedValueOnce(
-        new Response(JSON.stringify(gist), { status: 200 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(gist), { status: 200 }));
 
       const payload = { description: 'Updated' };
       const result = await updateGist('gist-1', payload);
@@ -237,9 +246,7 @@ describe('GitHub API Client', () => {
 
   describe('deleteGist', () => {
     it('deletes a gist', async () => {
-      fetchMock.mockResolvedValueOnce(
-        new Response(null, { status: 204 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
       await deleteGist('gist-1');
       expect(fetchMock).toHaveBeenCalledWith(
@@ -253,9 +260,7 @@ describe('GitHub API Client', () => {
 
   describe('starring', () => {
     it('stars a gist', async () => {
-      fetchMock.mockResolvedValueOnce(
-        new Response(null, { status: 204 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
       await starGist('gist-1');
       expect(fetchMock).toHaveBeenCalledWith(
@@ -265,9 +270,7 @@ describe('GitHub API Client', () => {
     });
 
     it('unstars a gist', async () => {
-      fetchMock.mockResolvedValueOnce(
-        new Response(null, { status: 204 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
       await unstarGist('gist-1');
       expect(fetchMock).toHaveBeenCalledWith(
@@ -281,18 +284,14 @@ describe('GitHub API Client', () => {
 
   describe('checkIfStarred', () => {
     it('returns true when gist is starred (204)', async () => {
-      fetchMock.mockResolvedValueOnce(
-        new Response(null, { status: 204 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
       const result = await checkIfStarred('gist-1');
       expect(result).toBe(true);
     });
 
     it('returns false when gist is not starred (404)', async () => {
-      fetchMock.mockResolvedValueOnce(
-        new Response(null, { status: 404 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 404 }));
 
       const result = await checkIfStarred('gist-1');
       expect(result).toBe(false);
@@ -304,9 +303,7 @@ describe('GitHub API Client', () => {
   describe('forkGist', () => {
     it('forks a gist', async () => {
       const gist = makeGitHubGist('forked-gist');
-      fetchMock.mockResolvedValueOnce(
-        new Response(JSON.stringify(gist), { status: 201 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(gist), { status: 201 }));
 
       const result = await forkGist('gist-1');
       expect(result.id).toBe('forked-gist');
@@ -318,9 +315,7 @@ describe('GitHub API Client', () => {
   describe('listGistRevisions', () => {
     it('lists gist revisions', async () => {
       const revisions = [{ version: 'abc123', committed_at: '2024-01-01T00:00:00Z' }];
-      fetchMock.mockResolvedValueOnce(
-        new Response(JSON.stringify(revisions), { status: 200 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(revisions), { status: 200 }));
 
       const result = await listGistRevisions('gist-1');
       expect(result).toHaveLength(1);
@@ -333,14 +328,9 @@ describe('GitHub API Client', () => {
     it('deduplicates concurrent identical requests', async () => {
       const gist = makeGitHubGist('gist-1');
 
-      fetchMock.mockResolvedValueOnce(
-        new Response(JSON.stringify(gist), { status: 200 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(gist), { status: 200 }));
 
-      const [result1, result2] = await Promise.all([
-        getGist('gist-1'),
-        getGist('gist-1'),
-      ]);
+      const [result1, result2] = await Promise.all([getGist('gist-1'), getGist('gist-1')]);
 
       expect(result1.id).toBe('gist-1');
       expect(result2.id).toBe('gist-1');
@@ -348,14 +338,9 @@ describe('GitHub API Client', () => {
     });
 
     it('deduplicates concurrent identical requests for starred gists', async () => {
-      fetchMock.mockResolvedValueOnce(
-        new Response(JSON.stringify([]), { status: 200 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
 
-      await Promise.all([
-        listStarredGists(),
-        listStarredGists(),
-      ]);
+      await Promise.all([listStarredGists(), listStarredGists()]);
 
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
@@ -366,9 +351,7 @@ describe('GitHub API Client', () => {
   describe('pagination parsing', () => {
     it('parses Link header correctly', async () => {
       fetchMock
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ login: 'testuser' }), { status: 200 })
-        )
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
         .mockResolvedValueOnce(
           new Response(JSON.stringify([]), {
             status: 200,
@@ -398,9 +381,7 @@ describe('GitHub API Client', () => {
       // cancelAllRequests creates a fresh AbortController.
       // getGist doesn't need /user, so only one fetch mock is needed.
       const gist = makeGitHubGist('gist-after-cancel');
-      fetchMock.mockResolvedValueOnce(
-        new Response(JSON.stringify(gist), { status: 200 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(gist), { status: 200 }));
 
       cancelAllRequests();
       const result = await getGist('gist-after-cancel');
@@ -414,9 +395,7 @@ describe('GitHub API Client', () => {
     it('clears cached username so next call re-fetches', async () => {
       // First call caches the username
       fetchMock
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ login: 'testuser' }), { status: 200 })
-        )
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
         .mockResolvedValueOnce(
           new Response(JSON.stringify([makeGitHubGist('gist-1')]), { status: 200 })
         );
@@ -427,9 +406,7 @@ describe('GitHub API Client', () => {
       clearUsernameCache();
 
       fetchMock
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ login: 'testuser' }), { status: 200 })
-        )
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
         .mockResolvedValueOnce(
           new Response(JSON.stringify([makeGitHubGist('gist-2')]), { status: 200 })
         );
@@ -457,9 +434,7 @@ describe('GitHub API Client', () => {
         new Response(JSON.stringify({ message: 'Not Found' }), { status: 404 })
       );
 
-      await expect(
-        updateGist('non-existent', { description: 'Updated' })
-      ).rejects.toThrow();
+      await expect(updateGist('non-existent', { description: 'Updated' })).rejects.toThrow();
     });
 
     it('throws on deleteGist error response', async () => {
@@ -510,9 +485,7 @@ describe('GitHub API Client', () => {
       });
 
       // Only one fetch call needed (for getGist, which doesn't call /user)
-      fetchMock.mockResolvedValueOnce(
-        new Response(null, { status: 304 })
-      );
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 304 }));
 
       const result = await getGist('cached-gist');
 
@@ -575,9 +548,7 @@ describe('GitHub API Client', () => {
   describe('parseLinkHeader edge cases', () => {
     it('returns null pagination when no Link header present', async () => {
       fetchMock
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ login: 'testuser' }), { status: 200 })
-        )
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
         .mockResolvedValueOnce(
           new Response(JSON.stringify([makeGitHubGist('gist-1')]), { status: 200 })
         );
@@ -587,6 +558,274 @@ describe('GitHub API Client', () => {
       expect(result.pagination?.nextPage).toBeNull();
       expect(result.pagination?.lastPage).toBeNull();
       expect(result.data).toHaveLength(1);
+    });
+  });
+
+  // ── recordFirstApiCall Wiring (regression for #215) ──────────────────
+
+  describe('recordFirstApiCall wiring (issue #215)', () => {
+    it('calls recordFirstApiCall on the first API call (listGists)', async () => {
+      fetchMock
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify([makeGitHubGist('gist-1')]), { status: 200 })
+        );
+
+      await listGists();
+
+      expect(recordFirstApiCall).toHaveBeenCalled();
+    });
+
+    it('calls recordFirstApiCall on getGist', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify(makeGitHubGist('gist-1')), { status: 200 })
+      );
+
+      await getGist('gist-1');
+
+      expect(recordFirstApiCall).toHaveBeenCalled();
+    });
+
+    it('calls recordFirstApiCall on createGist', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify(makeGitHubGist('gist-new')), { status: 201 })
+      );
+
+      const payload: CreateGistRequest = {
+        description: 'New',
+        public: true,
+        files: { 'test.js': { content: 'console.log("hi")' } },
+      };
+      await createGist(payload);
+
+      expect(recordFirstApiCall).toHaveBeenCalled();
+    });
+
+    it('calls recordFirstApiCall on updateGist', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify(makeGitHubGist('gist-1')), { status: 200 })
+      );
+
+      const payload: UpdateGistRequest = {
+        description: 'Updated',
+        files: { 'test.js': { content: 'console.log("updated")' } },
+      };
+      await updateGist('gist-1', payload);
+
+      expect(recordFirstApiCall).toHaveBeenCalled();
+    });
+
+    it('calls recordFirstApiCall on deleteGist', async () => {
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+      await deleteGist('gist-1');
+
+      expect(recordFirstApiCall).toHaveBeenCalled();
+    });
+
+    it('calls recordFirstApiCall on starGist', async () => {
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+      await starGist('gist-1');
+
+      expect(recordFirstApiCall).toHaveBeenCalled();
+    });
+
+    it('calls recordFirstApiCall on unstarGist', async () => {
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+      await unstarGist('gist-1');
+
+      expect(recordFirstApiCall).toHaveBeenCalled();
+    });
+
+    it('calls recordFirstApiCall on checkIfStarred', async () => {
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+      await checkIfStarred('gist-1');
+
+      expect(recordFirstApiCall).toHaveBeenCalled();
+    });
+
+    it('calls recordFirstApiCall on forkGist', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify(makeGitHubGist('gist-fork')), { status: 201 })
+      );
+
+      await forkGist('gist-1');
+
+      expect(recordFirstApiCall).toHaveBeenCalled();
+    });
+
+    it('calls recordFirstApiCall on listGistRevisions', async () => {
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
+
+      await listGistRevisions('gist-1');
+
+      expect(recordFirstApiCall).toHaveBeenCalled();
+    });
+  });
+
+  // ── list-mode file content stripping (issue #216, ADR-016) ─────────
+
+  describe('list-mode file content stripping (issue #216, ADR-016)', () => {
+    const makeGistWithContent = (
+      id: string,
+      filename: string,
+      content: string,
+      truncated: boolean
+    ): GitHubGist =>
+      ({
+        id,
+        description: 'Test Gist',
+        public: true,
+        files: {
+          [filename]: {
+            filename,
+            type: 'text/plain',
+            language: 'Plain Text',
+            raw_url: `https://gist.githubusercontent.com/raw/${id}/${filename}`,
+            size: content.length,
+            truncated,
+            content,
+          },
+        },
+        html_url: `https://gist.github.com/${id}`,
+        git_pull_url: `https://gist.github.com/${id}.git`,
+        git_push_url: `https://gist.github.com/${id}.git`,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+        owner: { login: 'testuser', id: 1, avatar_url: '...', html_url: '...' },
+      }) as unknown as GitHubGist;
+
+    it('listGists strips content and truncated but preserves metadata fields', async () => {
+      const fullGist = makeGistWithContent('gist-1', 'a.js', 'console.log("big body")', true);
+
+      fetchMock
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify([fullGist]), {
+            status: 200,
+            headers: {
+              Link: '<https://api.github.com/user/gists?page=2>; rel="next", <https://api.github.com/user/gists?page=5>; rel="last"',
+            },
+          })
+        );
+
+      const result: PaginatedResult<GitHubGist> = await listGists();
+
+      const file = result.data[0]?.files['a.js'];
+      expect(file).toBeDefined();
+      expect(file?.content).toBeUndefined();
+      expect(file?.truncated).toBeUndefined();
+      expect(file?.filename).toBe('a.js');
+      expect(file?.language).toBe('Plain Text');
+      expect(file?.size).toBe(23);
+      expect(file?.raw_url).toBe('https://gist.githubusercontent.com/raw/gist-1/a.js');
+    });
+
+    it('listStarredGists strips content and truncated but preserves metadata fields', async () => {
+      const fullGist = makeGistWithContent('starred-1', 'b.py', 'print("hello")', false);
+
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify([fullGist]), { status: 200 }));
+
+      const result = await listStarredGists();
+
+      const file = result.data[0]?.files['b.py'];
+      expect(file).toBeDefined();
+      expect(file?.content).toBeUndefined();
+      expect(file?.truncated).toBeUndefined();
+      expect(file?.filename).toBe('b.py');
+      expect(file?.language).toBe('Plain Text');
+      expect(file?.size).toBe(14);
+      expect(file?.raw_url).toBe('https://gist.githubusercontent.com/raw/starred-1/b.py');
+    });
+
+    it('getGist still returns full file content (regression guard)', async () => {
+      const fullGist = makeGistWithContent('gist-1', 'a.js', 'console.log("body")', false);
+
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(fullGist), { status: 200 }));
+
+      const result = await getGist('gist-1');
+
+      const file = result.files['a.js'];
+      expect(file?.content).toBe('console.log("body")');
+      expect(file?.truncated).toBe(false);
+      expect(file?.filename).toBe('a.js');
+    });
+
+    it('304 cached response returns stripped payload (not original full content)', async () => {
+      const strippedCached = makeGistWithContent('gist-1', 'a.js', '', false);
+      delete strippedCached.files['a.js']?.content;
+      delete strippedCached.files['a.js']?.truncated;
+
+      const { getEtag } = await import('../../src/services/db');
+      vi.mocked(getEtag).mockResolvedValue({
+        etag: '"stripped-etag"',
+        data: {
+          data: [strippedCached],
+          pagination: { nextPage: 2, prevPage: null, firstPage: 1, lastPage: 5, totalPages: 5 },
+        },
+      });
+
+      fetchMock
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
+        .mockResolvedValueOnce(new Response(null, { status: 304 }));
+
+      const result = await listGists();
+
+      const file = result.data[0]?.files['a.js'];
+      expect(file?.content).toBeUndefined();
+      expect(file?.truncated).toBeUndefined();
+      expect(file?.filename).toBe('a.js');
+      expect(result.pagination?.nextPage).toBe(2);
+    });
+
+    it('handles empty files object without error', async () => {
+      const emptyGist = {
+        id: 'gist-empty',
+        description: 'Empty',
+        public: true,
+        files: {},
+        html_url: '...',
+        git_pull_url: '...',
+        git_push_url: '...',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      } as unknown as GitHubGist;
+
+      fetchMock
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify([emptyGist]), { status: 200 }));
+
+      const result = await listGists();
+
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0]?.id).toBe('gist-empty');
+      expect(result.data[0]?.files).toEqual({});
+    });
+
+    it('preserves pagination metadata through the strip', async () => {
+      const fullGist = makeGistWithContent('gist-1', 'a.js', 'body', true);
+
+      fetchMock
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify([fullGist]), {
+            status: 200,
+            headers: {
+              Link: '<https://api.github.com/user/gists?page=3>; rel="next", <https://api.github.com/user/gists?page=1>; rel="prev", <https://api.github.com/user/gists?page=10>; rel="last"',
+            },
+          })
+        );
+
+      const result = await listGists();
+
+      expect(result.pagination?.nextPage).toBe(3);
+      expect(result.pagination?.prevPage).toBe(1);
+      expect(result.pagination?.lastPage).toBe(10);
+      expect(result.pagination?.totalPages).toBe(10);
+      expect(result.data[0]?.files['a.js']?.content).toBeUndefined();
     });
   });
 });
