@@ -28,7 +28,7 @@ type TelemetryModule = typeof import('../../src/services/telemetry/auth-telemetr
 
 let telemetryModule: TelemetryModule;
 
-const loadTelemetry = async (): Promise<TelemetryModule> => {
+const loadTelemetry = (): Promise<TelemetryModule> => {
   vi.resetModules();
   return import('../../src/services/telemetry/auth-telemetry');
 };
