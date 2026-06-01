@@ -1,119 +1,479 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All significant updates and improvements
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## Upcoming version
 
-## [0.2.0] - 2026-05-18
+### 🚀 Features
 
-### Changed
+- Add AAB bundle release to CI and document Play Store deployment ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([66590f3](https://github.com/d-o-hub/do-gist-hub/commit/66590f3f0036feefc0bcc9af441e6219540da2c6))
+- Add Firebase Test Lab CI and update plan 046 with Play Store goals ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([8d73a72](https://github.com/d-o-hub/do-gist-hub/commit/8d73a72fd3a7c9fcdee529d8e9e5adca0f94aaf2))
+- Implement plan 048 codebase audit fixes ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([de3d763](https://github.com/d-o-hub/do-gist-hub/commit/de3d76344dddb61f1f28704d00b2c6e717ca7bcc))
+- Implement all remaining plan gaps across CI, CSS, SW, and auth ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([cf3375d](https://github.com/d-o-hub/do-gist-hub/commit/cf3375dbaef62bf7fae871d81287873b1ea0f648))
+- Complete remaining plan 048 deep audit items — command palette, OKLCH shadows ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([9e7edbf](https://github.com/d-o-hub/do-gist-hub/commit/9e7edbf6725d1a0c7c2e21e28344aac2c7829de1))
+- *(048)* Add WCAG AA contrast lint rule — plan 050 completion ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([f907358](https://github.com/d-o-hub/do-gist-hub/commit/f907358ebca369eef481f774c5d049c8eb93d31b))
+- *(adr-030)* Enable GitHub Pages deployment with dynamic base path ([#196](https://github.com/d-o-hub/do-gist-hub/issues/196)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([a4f5c63](https://github.com/d-o-hub/do-gist-hub/commit/a4f5c635f485fcf1fff3a0871959eabab03909b0))
+- Implement remaining gaps — PAT telemetry, auth diagnostics UI, SW API cache ([#197](https://github.com/d-o-hub/do-gist-hub/issues/197)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([9f62d8b](https://github.com/d-o-hub/do-gist-hub/commit/9f62d8b9883a517aefd21d5144963214a5bb1b67))
+- *(052)* UI/UX modernization — Popover API, Anchor Positioning, token-driven skeletons ([#204](https://github.com/d-o-hub/do-gist-hub/issues/204)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([4b69d55](https://github.com/d-o-hub/do-gist-hub/commit/4b69d55df8b38a19ff0aecfa94a0218d5ddb12cf))
+- Redact github-refresh-token from system-wide data exports ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([2757a3d](https://github.com/d-o-hub/do-gist-hub/commit/2757a3d249a3155c579bdfde16b21e2c5235bbce))
+- Add keyboard activation for Gist cards ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([8bc6214](https://github.com/d-o-hub/do-gist-hub/commit/8bc6214e2ac4553721f71fa1e20f21cadc05a88e))
+- Implement plan 060 - paste parser, LLM integration, drag-and-drop ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([6ee35ef](https://github.com/d-o-hub/do-gist-hub/commit/6ee35ef3d1b35463d0976be4b095f5febc764aac))
+- Resolve issues 214, 215, 216 - F-Droid CI, telemetry wiring, lazy hydration ([#218](https://github.com/d-o-hub/do-gist-hub/issues/218)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([e99b25a](https://github.com/d-o-hub/do-gist-hub/commit/e99b25a6879a08230bc0af8fd45fda19c2fe8c27))
 
-- **Stable release**: Promoted from v0.2.0-rc.1 to v0.2.0 stable
-- Release workflow: fixed ProGuard compile ordering — `compileReleaseSources` now runs after Android platform sync
-- Release workflow: prerelease flag now set dynamically based on tag name (`-rc.`, `-beta.`, `-alpha.` tags auto-marked as prerelease)
+### 🐛 Bug Fixes
 
-## [0.2.0-rc.1] - 2026-05-17
+- Address all 18 CodeRabbit review comments on PR #188 ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([e37750a](https://github.com/d-o-hub/do-gist-hub/commit/e37750ab4907eec7e50a1dc4eb8400ec90250d89))
+- Restore continue-on-error for dependency review ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([69b49d9](https://github.com/d-o-hub/do-gist-hub/commit/69b49d91d14a7f9fec8e8fc09f38229bd650b24a))
+- Responsive nav — sidebar-nav should only show on desktop (1024px+) ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([3235f3e](https://github.com/d-o-hub/do-gist-hub/commit/3235f3ef4e5ebb04327d73f12a8a0a6d11f19684))
+- Add visibility: visible to command-palette:popover-open ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([72c7efd](https://github.com/d-o-hub/do-gist-hub/commit/72c7efd9bcb2d6af32a4adf1f0cb8baa00d08b72))
+- Use relative path for design-tokens.css on GitHub Pages subpath ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([ecf5cb0](https://github.com/d-o-hub/do-gist-hub/commit/ecf5cb0096e6d9dd4f1bae196dc4c41361c4b00e))
+- Break circular dependency between db.ts and security/logger.ts ([#199](https://github.com/d-o-hub/do-gist-hub/issues/199)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([419790a](https://github.com/d-o-hub/do-gist-hub/commit/419790a3c00f55fa45367bfd110c1e2187fc274b))
+- Install Playwright system deps on browser cache hit ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([19be35a](https://github.com/d-o-hub/do-gist-hub/commit/19be35abda2ae65b3f9511a0f5a3ae5c3aa75f5b))
+- Gitignore and stryker ignore .antigravitycli to fix CI mutation testing ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([012a9e1](https://github.com/d-o-hub/do-gist-hub/commit/012a9e11900bea319665844f2ff7589ae822240c))
+- Resolve plan registry issues, sync badge hex colors, and test teardown error ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([64f8aff](https://github.com/d-o-hub/do-gist-hub/commit/64f8aff8d1d3c1afc61d73abb880205980f4d2fd))
+- Add --with-deps to playwright install for WebKit system libs ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([1201e81](https://github.com/d-o-hub/do-gist-hub/commit/1201e8141f311b86027d1700bc04510eb215f86a))
+- Resolve pre-existing CI EnvironmentTeardownError and WebKit flaky test ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([036e038](https://github.com/d-o-hub/do-gist-hub/commit/036e0386c00c3d6ba6e03a3f95f9f0bd3ede4c03))
 
-### Added
+### 📚 Documentation
 
-- OAuth Device Flow authentication (opt-in alternative to PAT)
-- Auth-proxy Cloudflare Worker for stateless CORS relay
-- Staleness indicators on gist cards ("Updated X ago")
-- Conflict-resolution UI E2E tests
-- ProGuard CI smoke check for Android release builds
+- Add plan 049 progress update and mark plan 048 complete ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([8875a49](https://github.com/d-o-hub/do-gist-hub/commit/8875a49e8f1f42cd0b62ec263532c2aa03171c50))
+- Update plan 049 progress with code review round 2 ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([3556118](https://github.com/d-o-hub/do-gist-hub/commit/355611894c13154db3608296fe9de4e8fc387332))
+- Update plan registry — add plan 050, mark deep audit complete ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([791c032](https://github.com/d-o-hub/do-gist-hub/commit/791c03233a294299bbf41576f4944e6de86726cc))
+- *(plans)* Add impact analysis for upstream template sync ([#206](https://github.com/d-o-hub/do-gist-hub/issues/206)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([2c54ea1](https://github.com/d-o-hub/do-gist-hub/commit/2c54ea124e104c9fd918e07fb67b6066c91acfe4))
+- *(plans)* Mark Plan 058 complete, add ADR-031 ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([1f86397](https://github.com/d-o-hub/do-gist-hub/commit/1f863978003b142557a691b004451012f92c66e2))
+- *(plans)* Register ADR-032, ADR-033, GOAP Plan 059 ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([b55d787](https://github.com/d-o-hub/do-gist-hub/commit/b55d787faf9c00cd90c66d1ead7fa16f3a8bb2a8))
+- Sync plans/README.md numbering with _status.json ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([01614c6](https://github.com/d-o-hub/do-gist-hub/commit/01614c64a3398198458a2b35169a2b6754dbe55d))
+- Add implementation gaps audit and plan 060 registration ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([d02a9d5](https://github.com/d-o-hub/do-gist-hub/commit/d02a9d5f327326b871864ad690ee4fe44b0d6c12))
 
-### Changed
+### ⚡ Performance
 
-- **BREAKING**: VERSION bumped from 0.1.0 to 0.2.0-rc.1
+- Optimize list rendering and sorting pipeline ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([c6a627a](https://github.com/d-o-hub/do-gist-hub/commit/c6a627a3bbc52c7f916467af824eef14f478c64b))
 
-### Added
+### ⚙️ Miscellaneous Tasks
 
-- CSP violation reporting endpoint (plan 038 F2)
-- Stryker mutation testing configuration (plan 038 D6)
-- Dependency review CI workflow (plan 038 B6)
-- ProGuard CI smoke check workflow (plan 038 F6)
-- Conflict-resolution UI E2E walkthrough tests (plan 038 F1)
-- Release Please automated release workflow (plan 038 E3)
-- Postinstall hook for automatic commit-msg installation (plan 038 E2)
-- Self-hosted variable fonts (Inter Variable, JetBrains Mono Variable) per ADR-022
-- Scroll-driven animations with CSS `animation-timeline: view()`
-- Copy-to-clipboard feature in gist detail view
-- Build-time service worker generation from TypeScript template (ADR-010)
-- Navigation rail component for tablet breakpoint (ADR-017)
-- Bulk operations support and selection store
-- CodeRabbit AI code review configuration
-- ETag-based conditional GETs for GitHub API efficiency (ADR-016)
-- Lazy gist hydration (metadata-first, content on demand)
-- Rate limit awareness (pauses background sync when limits critically low)
-- Pre-write conflict detection with `expectedRemoteVersion` in sync queue
-- Background Sync API integration in service worker
-- Export data security: sensitive metadata redaction
-- Visual regression testing project
-- Bundle analysis CI job with artifact upload
-- Reactive auth-store and ui-store singletons
-- Capacitor 8 upgrade with Android SDK 35 targeting
-- Gradle 8.5 wrapper for Java 21 bytecode compatibility
+- Sync pnpm-lock.yaml with package.json overrides ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([c130ccf](https://github.com/d-o-hub/do-gist-hub/commit/c130ccfd9a832e3eb65e0feecb637c459d250f94))
+- Sync pnpm-lock.yaml with package.json overrides ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([3df54cc](https://github.com/d-o-hub/do-gist-hub/commit/3df54cc2d366027ea349d39d038ce42b097d536b))
+- Merge main and resolve dorny/paths-filter SHA conflict ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([214299f](https://github.com/d-o-hub/do-gist-hub/commit/214299fabfd6b015af00d0f6c302d5325fb91388))
+- Implement all plan gaps, upstream sync Phases B+C, CSS tokens, auth telemetry ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([a942aaa](https://github.com/d-o-hub/do-gist-hub/commit/a942aaa6a22c8846c17e1f4b68ef6207ceb7861c))
 
-### Changed
+### 👷 Continuous Integration
 
-- **BREAKING**: Migrated from npm to pnpm exclusively
-- **BREAKING**: Replaced ESLint + Prettier with Biome for linting and formatting
-- Upgraded TypeScript to 6.x (strict mode, `ignoreDeprecations: "6.0"`)
-- Upgraded Vite to 8.x
-- Upgraded Vitest to 4.x
-- Upgraded Playwright to 1.49+
-- Upgraded Capacitor from 6 to 8
-- Dark mode first: default theme is now dark per ADR-022
-- Removed emojis from buttons, implemented token-driven button styles
-- Security headers: X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy
-- Crypto key: re-imported as non-extractable for runtime to prevent XSS exfiltration
-- Token redaction: unconditional `[REDACTED]` in logs
-- Service worker: GitHub API requests never cached, offline.html serves first
-- All GitHub Actions SHA-pinned and migrated to node24-native
+- Fix dorny/paths-filter action version ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([e48780c](https://github.com/d-o-hub/do-gist-hub/commit/e48780ce4ee3c8e33118fbc5c6767f65344607b1))
+- Fix commitlint body limit, gitleaks reports leak, security-scan permissions ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([14629e4](https://github.com/d-o-hub/do-gist-hub/commit/14629e489fc956b0abb90937f364b6884fd3c6a1))
+- Fix github-script SHA, gitleaks reports exclusion, commitlint ignores ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([e9d7aa9](https://github.com/d-o-hub/do-gist-hub/commit/e9d7aa98abbe36de4df5f33f3e981ccb48415b9b))
 
-### Fixed
+## v0.2.0
 
-- Android: excluded kotlin-stdlib-jdk7/jdk8 to resolve duplicate class conflicts
-- Android: bumped compileSdk and targetSdk to 35 for Capacitor 8 compatibility
-- CI: resolved TypeScript 6 deprecation warnings
-- CI: fixed yamllint, commitlint, and shellcheck failures
-- CI: bumped Android build JDK from 17 to 21
-- Playwright: fixed navigation test failures with proper IndexedDB initialization
-- Playwright: fixed visual regression timeouts and brittle tests
-- Auth service: corrected unit test mocks and cache clearing
-- CD workflow: graceful skip when GitHub Pages not enabled
+Released on: May 18, 2026
 
-### Documentation
+### 🚀 Features
 
-- Added ADR-021 merge strategy
-- Added ADR-022 2026 UI trends recommendations
-- Added ADR-026 Phase A modernization GoAP
-- Updated ADR-015 with full Android build remediation chain
-- Added progress updates and missing v1 task tracking
-- Aligned AGENTS.md skills with template recommendations
+- Activate plan 046 after successful v0.2.0-rc.1 release ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([3a09320](https://github.com/d-o-hub/do-gist-hub/commit/3a0932093c2b21e2a9d5ed7ffbe919e908270660))
+- Promote v0.2.0 stable release ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([71a930f](https://github.com/d-o-hub/do-gist-hub/commit/71a930f3f3fdc51baacca7f8ae1cef2106636218))
 
-## [0.1.0] - 2026-04-28
+### 🐛 Bug Fixes
 
-### Added
+- Set prerelease flag dynamically based on tag name ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([e897a72](https://github.com/d-o-hub/do-gist-hub/commit/e897a7281ce81ea60a068f349f10c56ac23eba96))
 
-- Initial release of d.o. Gist Hub
-- PAT authentication with AES-GCM encryption at rest
-- Offline-first gist CRUD with IndexedDB source of truth
-- Optimistic writes with pending sync queue and exponential backoff
-- Conflict detection with local-wins / remote-wins / manual strategies
-- Full GitHub Gist REST API client with pagination and rate limiting
-- DTCG-aligned design token system with 7 breakpoints
-- Mobile-first responsive UI with bottom nav, rail, and sidebar modes
-- Command palette (`Ctrl+K`) for rapid navigation
-- PWA with service worker caching and offline fallback page
-- Capacitor 6 Android packaging
-- Export/import for full IndexedDB backup/restore
-- Structured error taxonomy with recovery actions
-- Memory leak prevention via AbortController and lifecycle cleanup
-- Performance budgets with runtime monitoring and build-time enforcement
-- Accessibility: skip links, ARIA landmarks, reduced motion, high contrast
+## v0.2.0-rc.1
 
-[0.2.0]: https://github.com/d-o-hub/do-gist-hub/releases/tag/v0.2.0
-[0.2.0-rc.1]: https://github.com/d-o-hub/do-gist-hub/releases/tag/v0.2.0-rc.1
-[0.1.0]: https://github.com/d-o-hub/do-gist-hub/releases/tag/v0.1.0
+Released on: May 18, 2026
+
+### 🚀 Features
+
+- Plan 040 completion + signed release apk in ci ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([9918f55](https://github.com/d-o-hub/do-gist-hub/commit/9918f559b4daa2bfdb6a8378659e77e7e1bf7124))
+- Complete plan 042 — plans completion sprint ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([749e878](https://github.com/d-o-hub/do-gist-hub/commit/749e87840c7924848019022031714e4269831830))
+- Add TTL-based cache entry expiration to service worker (30-day max-age) ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([eee208b](https://github.com/d-o-hub/do-gist-hub/commit/eee208b735bb62ffb5279fd939322c036446a63a))
+- Resolve ui/ux audit findings and expand design tokens ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([faba2d4](https://github.com/d-o-hub/do-gist-hub/commit/faba2d4e00f2a149f4c4d089b1ce1c1b268ff866))
+- Complete plan 042 — SW TTL cache expiry and plan status updates ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([566637b](https://github.com/d-o-hub/do-gist-hub/commit/566637bba879d38f4278c28b57e5c571e67b7bf0))
+- Implement Sprint 4 quality and feature polish ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([ab4a8d0](https://github.com/d-o-hub/do-gist-hub/commit/ab4a8d06da7049a515d21b8332e5f49175dfb91f))
+- Plan 045 — v0.2.0-rc.1 release with OAuth Device Flow and audit gap fixes ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([8098bc3](https://github.com/d-o-hub/do-gist-hub/commit/8098bc30ce8e0500f327b676dbc89edf443c5588))
+
+### 🐛 Bug Fixes
+
+- Mark plan 042 complete and fix plan 040 status header ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([3d2d02a](https://github.com/d-o-hub/do-gist-hub/commit/3d2d02a4f7b43fddbecba61f7add8b7212d2bbe8))
+- Address coderabbit feedback - ttl cache read enforcement and null-safe timestamp check ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([d8f678f](https://github.com/d-o-hub/do-gist-hub/commit/d8f678f7115e909bcecdc4c20058cb386ff76257))
+- Enforce TTL on all cache reads and sync plan registries ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([295e5f5](https://github.com/d-o-hub/do-gist-hub/commit/295e5f5a2403212ae524f49da0543eb4396cc9c3))
+- Reorder release workflow steps — proguard compile after android sync ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([102d632](https://github.com/d-o-hub/do-gist-hub/commit/102d632fbf27db777b64c98559d374f82cd11dbf))
+
+### 📚 Documentation
+
+- Add release process docs and plan 040 refs to agents.md ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([65c1511](https://github.com/d-o-hub/do-gist-hub/commit/65c1511c425a9cc89b5d650fb2caec202fc33399))
+- Add progress update for plan 042 completion ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([be8109e](https://github.com/d-o-hub/do-gist-hub/commit/be8109e8fab901170c49513f8934b58bc569d4ee))
+- Draft plan 046 and update plan registry ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([9d6180f](https://github.com/d-o-hub/do-gist-hub/commit/9d6180f0f4a7d90b5ea91edf6730a9183ff8bc59))
+
+### ⚙️ Miscellaneous Tasks
+
+- Update plan registries and next available plan number ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([8e9add1](https://github.com/d-o-hub/do-gist-hub/commit/8e9add161b6ddabe2834d2f4b0f627616e37b065))
+- Mark plan 045 as complete ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([f38578c](https://github.com/d-o-hub/do-gist-hub/commit/f38578c7d56c6e3ac572afd38843dce11133716e))
+- Update plan 046 with CI failure note and fix _index.md date ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([56bba3b](https://github.com/d-o-hub/do-gist-hub/commit/56bba3bbe70195331971151d60c2487e0cc787a0))
+
+## v0.1.0
+
+Released on: May 17, 2026
+
+### 🚀 Features
+
+- *(app)* Implement gist CRUD, offline sync, and add agent-browser skill ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([0dbb15f](https://github.com/d-o-hub/do-gist-hub/commit/0dbb15f4acbd0a67318d693a862e597e2006c4a7))
+- *(app)* Add gist detail, edit, fork/revisions UI, PWA, sort, and settings ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([5ce7220](https://github.com/d-o-hub/do-gist-hub/commit/5ce722064aecaed43afd98cd36772984ff1b2382))
+- *(ui)* Modernize to 2026 UI/UX standards with full compliance ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([1b56e88](https://github.com/d-o-hub/do-gist-hub/commit/1b56e88e16f2f390316942114156b0d5b59a5d3d))
+- *(ui)* Modernize reader-ui-ux skill with 2026 best practices ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([4561f25](https://github.com/d-o-hub/do-gist-hub/commit/4561f25404592c456b5c923af26578930de3941c))
+- *(core)* Add rate limiting, conflict detection, data import/export, and security hardening ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([caee3ec](https://github.com/d-o-hub/do-gist-hub/commit/caee3ece6130939b5d9947554a999cebb4752778))
+- *(quality)* Add comprehensive test suites, CSP headers, and performance budgets ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([fc7d2a0](https://github.com/d-o-hub/do-gist-hub/commit/fc7d2a0b299515b432f7c6bf5c7fba2c14391555))
+- *(skills)* Add agents-docs reference files and eval case for agents-md-author skill ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([75688ad](https://github.com/d-o-hub/do-gist-hub/commit/75688ad976c29c16c2c37b259aff05f9b2a3a97d))
+- Modernize d.o. Gist Hub with 2026 best practices ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([c8ecd33](https://github.com/d-o-hub/do-gist-hub/commit/c8ecd33ea579c4e8f2282518f39db35c0ae30fae))
+- Implement ARIA tablist for gist files ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([58a8028](https://github.com/d-o-hub/do-gist-hub/commit/58a802807dd9de36166c9c19ba79546cefeefc27))
+- Complete full UI/UX redesign to App Mode ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([21ac7f8](https://github.com/d-o-hub/do-gist-hub/commit/21ac7f8022f77834cfd6d553edc3f6e30416d2b7))
+- Improve file rename and delete in gist edit form ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([64af201](https://github.com/d-o-hub/do-gist-hub/commit/64af2012c1724c3d70e601e8dc9f0df38e0272dc))
+- Improve gist editing and fix CI regressions ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([f25ee90](https://github.com/d-o-hub/do-gist-hub/commit/f25ee90434e66d5e85c729eead9990ec8671e6b6))
+- Automate pre-commit hook installation and migrate to pnpm ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([fdf4576](https://github.com/d-o-hub/do-gist-hub/commit/fdf45763484c8c95474646cd02de0e199f3a6fd3))
+- Automate pre-commit hook installation and complete pnpm migration ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([31b1f60](https://github.com/d-o-hub/do-gist-hub/commit/31b1f6049b0588b303f197d95f6be5e4c73aa672))
+- Automate pre-commit hook installation and fix CI pnpm migration ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([2e401e9](https://github.com/d-o-hub/do-gist-hub/commit/2e401e955d6e6fd690acd274bcc35b1b5472bd5f))
+- Add .vscode settings for editor consistency ([#42](https://github.com/d-o-hub/do-gist-hub/issues/42)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([e9ca7b9](https://github.com/d-o-hub/do-gist-hub/commit/e9ca7b9f6e70cb165c6b78fcdcad291f91311c70))
+- Implement actionable empty states for improved UX ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([ac68555](https://github.com/d-o-hub/do-gist-hub/commit/ac6855558215ace8fc2bda43a43c05cf49d980f0))
+- Implement actionable empty states with event delegation ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([d19d491](https://github.com/d-o-hub/do-gist-hub/commit/d19d49109d18f2eee32e3a8b3c34927dba237e1e))
+- Enforce strict unused vars and catch blocks ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([856471b](https://github.com/d-o-hub/do-gist-hub/commit/856471b291c162e770453b2324f84cebe6983939))
+- Mobile-first navigation for all breakpoints with tokens ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([86e2ad6](https://github.com/d-o-hub/do-gist-hub/commit/86e2ad6b438c207b248604cf28b36d40a91ed5ce))
+- Accessibility landmarks and ARIA navigation ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([e40a133](https://github.com/d-o-hub/do-gist-hub/commit/e40a133d6422fac9679e383976d07a962ccd1ad2))
+- PWA offline fallback page with branded design ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([37e87fd](https://github.com/d-o-hub/do-gist-hub/commit/37e87fd641ebdcaf9f8ef2667fcca1ec2a650362))
+- Request deduplication and exponential backoff ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([4cad1fb](https://github.com/d-o-hub/do-gist-hub/commit/4cad1fb5e0abd45864ceb94a5647fc8b90460f5d))
+- Navigation overhaul with section grouping and accessibility ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([c62d01c](https://github.com/d-o-hub/do-gist-hub/commit/c62d01c76838667b968b93e336e46d0cadb8498e))
+- *(architecture)* Extract routes, add reactive stores, improve sync queue ・ by d.o. Agent ([d1db0b1](https://github.com/d-o-hub/do-gist-hub/commit/d1db0b19789d64c7f8568fdaf9f0eb207c3bc9b9))
+- *(architecture)* Extract routes, add reactive stores, improve sync queue ・ by d.o. Agent ([0b3b892](https://github.com/d-o-hub/do-gist-hub/commit/0b3b89207ea913993483b8db81789c3ff8074fc5))
+- Phase-a critical fixes for csp, pagination, and optimistic ui ・ by d.o. Agent ([f5e679f](https://github.com/d-o-hub/do-gist-hub/commit/f5e679fcc2224549d857100c1a042c4f5bf9454a))
+- *(build)* Add bundle analyzer and enforce gzip budgets in CI ・ by d.o. Agent ([2854793](https://github.com/d-o-hub/do-gist-hub/commit/28547931a03ea94b5e3c9d34de07af084f964e50))
+- Phase A critical fixes — CSP, pagination, optimistic UI ([#88](https://github.com/d-o-hub/do-gist-hub/issues/88)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([bf38433](https://github.com/d-o-hub/do-gist-hub/commit/bf3843365f235ee9e34fa0cb63bc922c4377506c))
+- *(v1-gaps)* Multi-file gist creation, auth tests, Android smoke test, bundle CI ・ by d.o. Agent ([8bef164](https://github.com/d-o-hub/do-gist-hub/commit/8bef164dcfee58322eb90cbe388ffffc8d9a73ce))
+- Implement ADR-010 build-time SW generation and ADR-017 nav rail component ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([8ae69d6](https://github.com/d-o-hub/do-gist-hub/commit/8ae69d66f7bd1c8f77204432d09e4b82fd5b24f0))
+- Add copy to clipboard and fix tab switching in gist detail ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([65e2bcd](https://github.com/d-o-hub/do-gist-hub/commit/65e2bcd4861d8de0f18d6fc5060a3d4d5553af7b))
+- Implement ADR-022 UI trends and fix pending issues ([#137](https://github.com/d-o-hub/do-gist-hub/issues/137)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([1a667a3](https://github.com/d-o-hub/do-gist-hub/commit/1a667a377b77a03da8c8ea308c09fccbf0a9ecea))
+- Add bulk operations, search engine, and selection store ・ by d-o-hub ([@d-o-hub](https://github.com/d-o-hub)) ([d061a5f](https://github.com/d-o-hub/do-gist-hub/commit/d061a5f5b1aa5783391d0f6c31487811fbb28add))
+- Add implementation plans and component styles ・ by d-o-hub ([@d-o-hub](https://github.com/d-o-hub)) ([472d100](https://github.com/d-o-hub/do-gist-hub/commit/472d1008f171abfb36492df9254e701ac4871ac0))
+- Implement ADR-022 recommendations — self-hosted variable fonts, scroll-driven animations ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([b6c4633](https://github.com/d-o-hub/do-gist-hub/commit/b6c4633c0a75f2cc078a892def10a679959450a5))
+- Scroll-driven animations, bento-grid layout, and token-driven CSS utilities ([#149](https://github.com/d-o-hub/do-gist-hub/issues/149)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([aa3064b](https://github.com/d-o-hub/do-gist-hub/commit/aa3064b1dfa9dd299e3359134d5af256036ebf4d))
+- Add pwa update toast, remove dead code, add token css utilities ([#150](https://github.com/d-o-hub/do-gist-hub/issues/150)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([8c842ec](https://github.com/d-o-hub/do-gist-hub/commit/8c842eca0cd1b7819317e279274ea777a29b02c2))
+- Time-based theme engine, container queries expansion, and design-tokens test suite ([#151](https://github.com/d-o-hub/do-gist-hub/issues/151)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([d9e81e0](https://github.com/d-o-hub/do-gist-hub/commit/d9e81e018c9ca490d286f365ff988b8c1caaf68e))
+- Ambient light sensor theming, Android release signing, and dead code cleanup ([#152](https://github.com/d-o-hub/do-gist-hub/issues/152)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([b99ec36](https://github.com/d-o-hub/do-gist-hub/commit/b99ec364d3595b17895fc734cb5bc4e5138d4c8b))
+- Enhance container queries with CSS variables, add scroll-driven parallax and build-time token generation ([#153](https://github.com/d-o-hub/do-gist-hub/issues/153)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([4008558](https://github.com/d-o-hub/do-gist-hub/commit/40085584c26a5bf614fd998ed2dad7836e640718))
+- Enhance showConfirmDialog accessibility and focus management ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([8627c13](https://github.com/d-o-hub/do-gist-hub/commit/8627c13a94ee2a0beb25a1ae5235c15ceab27c75))
+- Implement all missing plan tasks — dark mode first, strict unused vars, SHA-pinned actions ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([f67a8ad](https://github.com/d-o-hub/do-gist-hub/commit/f67a8ade3bdd12e323a7f0701e410112ea518813))
+- *(security)* Implement dynamic CSP transformation for production builds ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([f5f2cdb](https://github.com/d-o-hub/do-gist-hub/commit/f5f2cdb810d610c8c2385b04efe48eacd00665db))
+- *(security)* Dynamic CSP hardening for production ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([3b6fd45](https://github.com/d-o-hub/do-gist-hub/commit/3b6fd451ca50344b979cd510c383ec253004f516))
+- Implement route-level AbortController wiring for event listeners (ADR-009) ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([64e5e94](https://github.com/d-o-hub/do-gist-hub/commit/64e5e94a359eece5d197e2c7926b2a28a8405263))
+- Implement route-level AbortController wiring for event listeners (ADR-009) ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([fa2a27d](https://github.com/d-o-hub/do-gist-hub/commit/fa2a27d3d78d158a88b95b92ebd787af29183893))
+- Complete AbortController wiring and lifecycle fixes (ADR-009) ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([6c47291](https://github.com/d-o-hub/do-gist-hub/commit/6c47291158ba89c2067accf2acc99e0b0f9c38c3))
+- Refine AbortController wiring and lifecycle management (ADR-009) ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([8cd9193](https://github.com/d-o-hub/do-gist-hub/commit/8cd9193ff3755d769856cd397918005e1d374c98))
+- Implement plan 038 sprint 1 and plan 039 phase a ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([30d6c0c](https://github.com/d-o-hub/do-gist-hub/commit/30d6c0c58392960f762f70c95f2613e631c88fee))
+- Implement plan 038 sprint 2 — ci hardening, biome strictness, bundle budget ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([2a161b8](https://github.com/d-o-hub/do-gist-hub/commit/2a161b85aed3d1b6c3292c78afea9f54bf87d9ce))
+- Implement plan 038 sprint 3 — tests, lint, ci hardening ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([ff63324](https://github.com/d-o-hub/do-gist-hub/commit/ff63324967591f7bd565220cb9f83ad7ddd4594b))
+- Implement plan 038 sprint 4 and plan 039 phase b via swarm ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([1c97b1c](https://github.com/d-o-hub/do-gist-hub/commit/1c97b1cd33e3e477951ff15bb7707464d05aba6f))
+- Complete remaining plan 038 items (B6, D6, E2, E3, F1, F2, F6) ([#171](https://github.com/d-o-hub/do-gist-hub/issues/171)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([2e57919](https://github.com/d-o-hub/do-gist-hub/commit/2e57919a2a8af5bc5962fd39912454fbeb5dd31e))
+- Implement plan 039 phase b/c remaining items — scope blocks, oklch shadows, popover api, interpolate-size, accent-color ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([2ae86fc](https://github.com/d-o-hub/do-gist-hub/commit/2ae86fcffde53e5d3a0d6213b7d6b6816a08ffd3))
+
+### 🐛 Bug Fixes
+
+- *(skills)* Add evals to all skills and clarify structure rules ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([e7677fc](https://github.com/d-o-hub/do-gist-hub/commit/e7677fc9a62efae01be521013e38b71f49cac9af))
+- *(docs)* Use analysis/ for temp outputs instead of absolute paths ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([7f53ac7](https://github.com/d-o-hub/do-gist-hub/commit/7f53ac705a76a3d8180cace124cd51c9d60aa368))
+- Resolve Vite warning by setting env vars in pre plugin ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([a7d4db5](https://github.com/d-o-hub/do-gist-hub/commit/a7d4db5400bfc04ba633d8f190b190096f472806))
+- Resolve flaky Playwright tests in CI ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([ebe1341](https://github.com/d-o-hub/do-gist-hub/commit/ebe1341f97fd8073d1f2e0517c93fd0a4720fcde))
+- Resolve flaky Playwright tests in CI ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([e8c489c](https://github.com/d-o-hub/do-gist-hub/commit/e8c489c743d66af41bf73473b4cf6f88102b1fe7))
+- Resolve flaky Playwright tests in CI ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([4643efe](https://github.com/d-o-hub/do-gist-hub/commit/4643efee03b342778d975229b5033393ad2c2c29))
+- Resolve flaky Playwright tests in CI ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([cacdf81](https://github.com/d-o-hub/do-gist-hub/commit/cacdf814d1de2793a9a0be5cebae666ffa4284f9))
+- Restore missing expect import in performance tests ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([091c930](https://github.com/d-o-hub/do-gist-hub/commit/091c930040dc493ce204f0fa3e958cf7ce2c07cf))
+- *(CI)* Resolve Node.js deprecation and Playwright test failures ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([b154f2e](https://github.com/d-o-hub/do-gist-hub/commit/b154f2e029349960cad6849209d6abf6d5070473))
+- Resolve CI failures and PR review feedback across all open PRs ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([f783982](https://github.com/d-o-hub/do-gist-hub/commit/f7839828a139f4efd3b9bf01a8ca4c9f7470b711))
+- Resolve DeepSource JS issues in db.ts ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([5644b42](https://github.com/d-o-hub/do-gist-hub/commit/5644b427b7586f131a782f2ac7727af42b68ade3))
+- Improve db.ts type safety and eslint scoping ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([c695c53](https://github.com/d-o-hub/do-gist-hub/commit/c695c535eda443eea1762aaf5737fc2d606de634))
+- Resolve DeepSource JavaScript blocking issues ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([f278aa2](https://github.com/d-o-hub/do-gist-hub/commit/f278aa287ca5420ab839fb6027e2cfe342c51cf0))
+- Update .deepsource.yml with correct ESLint-based rule names ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([eadd6e9](https://github.com/d-o-hub/do-gist-hub/commit/eadd6e9476cd7e960cb962b15ad095516b08380b))
+- Update .deepsource.yml with correct JS-XXXX shortcode IDs ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([afd58a9](https://github.com/d-o-hub/do-gist-hub/commit/afd58a94ce0b61832c22f3ee7d99126d02e779da))
+- Clean up .deepsource.yml - remove redundant suppressions ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([21dca53](https://github.com/d-o-hub/do-gist-hub/commit/21dca5372ca1b85f04389c2486007ce010cd073b))
+- Add inline DeepSource skipcq annotations and remove non-functional .deepsource.yml ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([384da8f](https://github.com/d-o-hub/do-gist-hub/commit/384da8f2d7f70c34b947b523473181fd60ddc848))
+- Add .deepsource.toml to align CI with local ESLint config ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([d39b139](https://github.com/d-o-hub/do-gist-hub/commit/d39b139f7e1f0dba36d11f08ecfc060dfa00c121))
+- Add .deepsource.toml to align CI with local ESLint config ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([ebfe341](https://github.com/d-o-hub/do-gist-hub/commit/ebfe3411ac3610605147046d7e93fa3ea989f098))
+- Disable DeepSource rules that conflict with project ESLint ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([4f1d231](https://github.com/d-o-hub/do-gist-hub/commit/4f1d231f86bba250f6f4a6e949e4d6af388186bb))
+- Align DeepSource with local ESLint config ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([deceb9c](https://github.com/d-o-hub/do-gist-hub/commit/deceb9c5c0ebdf5ddbaec6ae3db9c31f47dca32a))
+- DeepSource config with runtime_version = 24 ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([77d95d2](https://github.com/d-o-hub/do-gist-hub/commit/77d95d23be61b7156e99ced6dcb4e7a77558bd8a))
+- Disable DeepSource ESLint rules conflicting with TypeScript-eslint ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([2e9f6d4](https://github.com/d-o-hub/do-gist-hub/commit/2e9f6d455c5d1b46063acaa6f670e93961a72817))
+- Add ESLint linter to DeepSource configuration ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([1da48e4](https://github.com/d-o-hub/do-gist-hub/commit/1da48e454f409e872b80a885ba5e08908723c67e))
+- Add rule overrides to disable DeepSource ESLint failures ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([451fec8](https://github.com/d-o-hub/do-gist-hub/commit/451fec82444b5b3783b4cd4c94d63a8d34bde69e))
+- TOML syntax - use double quotes for string keys ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([15a266b](https://github.com/d-o-hub/do-gist-hub/commit/15a266b8982e05d11b0f43b15838a59346401063))
+- Move rule disables to [analyzers.meta] section ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([11910f5](https://github.com/d-o-hub/do-gist-hub/commit/11910f5b757c7515091f599509ff86e2943e9210))
+- TOML syntax - use double quotes for string values ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([98b1150](https://github.com/d-o-hub/do-gist-hub/commit/98b1150d168f3a1195447be443b7abcd1089e426))
+- DeepSource configuration with rule disables ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([0bd10ea](https://github.com/d-o-hub/do-gist-hub/commit/0bd10ea76f0ce6faea06baf748ed59db97448249))
+- Revert README version to v0.1.0 per user request ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([1fb8d59](https://github.com/d-o-hub/do-gist-hub/commit/1fb8d5997b8648870c42676fc7627ffafa2a644c))
+- Use semantic version '1.0.0' in db export for consistency with export-import service ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([2396624](https://github.com/d-o-hub/do-gist-hub/commit/23966244081e6ee3bd58a982cb638f32f244bf4d))
+- Mobile navigation and responsive test failures ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([545cce8](https://github.com/d-o-hub/do-gist-hub/commit/545cce8b55935db2c5b033cfad41770235ded15f))
+- Improve settings button test stability and HTML validity ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([3663b3a](https://github.com/d-o-hub/do-gist-hub/commit/3663b3a86fc040ead657fc726e8f9c6da8bf8be8))
+- Improve Playwright test stability and HTML validity ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([1fdcb67](https://github.com/d-o-hub/do-gist-hub/commit/1fdcb67529d732fd1b25fa3b781f6a7cd848dcef))
+- Improve test stability, HTML validity, and CI configuration ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([65bdcdd](https://github.com/d-o-hub/do-gist-hub/commit/65bdcdd6c03e4304a35587241b351a22d65f8837))
+- Improve Playwright test stability and resolve CI warnings ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([39c84fc](https://github.com/d-o-hub/do-gist-hub/commit/39c84fcc1b621290edbe5e504a7f5fd473c57e55))
+- Resolve merge conflicts and improve test robustness ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([2152299](https://github.com/d-o-hub/do-gist-hub/commit/21522991d9b6ec8a2718963b45da1b5d50715f23))
+- Resolve merge conflicts and enhance command palette reliability ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([44ad443](https://github.com/d-o-hub/do-gist-hub/commit/44ad443a1c17528767175aa1634134c2a75f83bd))
+- Add void operator to floating promises in command-palette ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([33bc1e9](https://github.com/d-o-hub/do-gist-hub/commit/33bc1e9af982944c4c3b2d30141f15101525bf9e))
+- Resolve memory leaks in cache-service.js ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([416c432](https://github.com/d-o-hub/do-gist-hub/commit/416c432c556be182874e511e8c37f7824f457ea9))
+- Resolve memory leaks and stabilize CI tests ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([0f15145](https://github.com/d-o-hub/do-gist-hub/commit/0f151452046edbe7a34136a29caf2f5c0fac716e))
+- Final stabilization of browser tests and UI consistency ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([c1431dd](https://github.com/d-o-hub/do-gist-hub/commit/c1431dd37b07b012cd42c83c5ac2a9548480b343))
+- Resolve memory leaks and comprehensive CI test stabilization ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([fcac186](https://github.com/d-o-hub/do-gist-hub/commit/fcac186651195033e30e67365e219f88f545d632))
+- Resolve memory leaks, stabilize tests, and merge remote changes ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([06acdc3](https://github.com/d-o-hub/do-gist-hub/commit/06acdc3f0ae54b34aabe949db468a03691a0bf3a))
+- Use encrypted token retrieval in GitHub client ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([7dcab49](https://github.com/d-o-hub/do-gist-hub/commit/7dcab49c23c4b3311604808ee224c1776fc1518a))
+- Secure GitHub client and align project configuration for CI ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([8e76ea4](https://github.com/d-o-hub/do-gist-hub/commit/8e76ea436dc24695a5d9cdfb06193e96e05c039d))
+- 🔒 implement encrypted token retrieval in GitHub client ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([6ede380](https://github.com/d-o-hub/do-gist-hub/commit/6ede380a1db41e320a2839abec89c79ade113e6b))
+- Ensure encrypted token retrieval and resolve CI issues ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([ed436c4](https://github.com/d-o-hub/do-gist-hub/commit/ed436c4ff0d6ed2c60468703f9f9211312375c52))
+- Correct dependency versions and test paths for CI ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([adeb04d](https://github.com/d-o-hub/do-gist-hub/commit/adeb04d26a33febd8bf8db97f360c67547162f8c))
+- Synchronize package.json versions and fix test paths ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([2c7fc00](https://github.com/d-o-hub/do-gist-hub/commit/2c7fc00ee7ce4ac6ba4da3189af9116c161fce39))
+- Finalize CI fixes and address PR feedback ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([5caa5c0](https://github.com/d-o-hub/do-gist-hub/commit/5caa5c033dc536b81271983b1120c5ebd67c4640))
+- *(ci)* Merge main and regenerate pnpm-lock.yaml ・ by Buffy CI Fix ([63fdb5e](https://github.com/d-o-hub/do-gist-hub/commit/63fdb5e639662c8209fc0f4998a70b1c2eb0caf0))
+- *(ci)* Merge main, resolve conflicts, regenerate pnpm-lock.yaml ・ by Buffy CI Fix ([e4073bc](https://github.com/d-o-hub/do-gist-hub/commit/e4073bcf71b2f1cb52c9e2c11ac64561198b4232))
+- Restore missing getIcon and escapeHtml methods in error-boundary ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([358cfd2](https://github.com/d-o-hub/do-gist-hub/commit/358cfd28f29765107ee55513eeeab25f84e815e8))
+- Offline test infrastructure and selectors ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([c233edd](https://github.com/d-o-hub/do-gist-hub/commit/c233edd1c831554c8b89f58e7a4fcd30a287dd8b))
+- *(eval)* Prevent memory leak in DataFetcher.tsx ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([09c5785](https://github.com/d-o-hub/do-gist-hub/commit/09c5785db22cc8a64bc62f438dc889d32db2495d))
+- *(eval)* Handle offline fetch errors in SyncService ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([04f3048](https://github.com/d-o-hub/do-gist-hub/commit/04f3048f5f5704f698c7e51a21c6d4c3e1084f40))
+- *(eval)* Handle offline fetch errors in SyncService ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([ca52b63](https://github.com/d-o-hub/do-gist-hub/commit/ca52b63d30a43c07f9974f40c56cefe55c44248f))
+- Prevent memory leak in WebSocketComponent ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([9c535dd](https://github.com/d-o-hub/do-gist-hub/commit/9c535ddc1fd3be8ed50d4eeb7577e7ea6abb30c0))
+- *(security)* Harden crypto, logging, headers, and auth session cache ・ by d.o. Agent ([6d8c64d](https://github.com/d-o-hub/do-gist-hub/commit/6d8c64df763529cb5a4d05c400ac6920308c92d3))
+- *(skills)* Add version and template_version frontmatter ・ by d.o. Agent ([29c8872](https://github.com/d-o-hub/do-gist-hub/commit/29c8872b2943d05cfb80705e778d5f65320d3206))
+- *(offline)* Statically import offline route to support offline navigation ・ by d.o. Agent ([3244b5d](https://github.com/d-o-hub/do-gist-hub/commit/3244b5dad17ff8b86c15eaf1d98c6ce5f8b4d8af))
+- *(offline)* Statically import create route for offline form tests ・ by d.o. Agent ([dee503b](https://github.com/d-o-hub/do-gist-hub/commit/dee503b5374e3a57b31c7004a1439459453b0cda))
+- *(security)* Harden crypto, logging, headers, and auth session cache ・ by d.o. Agent ([e18fef0](https://github.com/d-o-hub/do-gist-hub/commit/e18fef093a8e96649525fd81d7ed55e1a62712fc))
+- *(skills)* Add version and template_version frontmatter ・ by d.o. Agent ([aaea188](https://github.com/d-o-hub/do-gist-hub/commit/aaea188a4a4d07dbd63f499e0bfc5ded454626e8))
+- *(offline)* Statically import offline route to support offline navigation ・ by d.o. Agent ([5baaf98](https://github.com/d-o-hub/do-gist-hub/commit/5baaf98f450e5b8b9849f65e031e269f35230a28))
+- *(offline)* Statically import create route for offline form tests ・ by d.o. Agent ([1c5c425](https://github.com/d-o-hub/do-gist-hub/commit/1c5c425cd815c52be402b7e0e39b4ea80e18128d))
+- *(nav)* Resolve CI-blocking Playwright test failures ・ by d.o. Agent ([003eb84](https://github.com/d-o-hub/do-gist-hub/commit/003eb849357ed4f15b19ba0d188e9c555e9e0bf0))
+- *(ci)* Correct commit SHA for dependabot/fetch-metadata action ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([4f733a5](https://github.com/d-o-hub/do-gist-hub/commit/4f733a52daaf095c2c5e91ab66d5e903cbe5817f))
+- *(security)* Implement robust HTML sanitization ([#90](https://github.com/d-o-hub/do-gist-hub/issues/90)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([245e39b](https://github.com/d-o-hub/do-gist-hub/commit/245e39b325a2ca7bcdd48455547f484205257033))
+- Implement cleanup in evaluation files to prevent memory leaks ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([aa7597f](https://github.com/d-o-hub/do-gist-hub/commit/aa7597fe814fab33dddf50783c451e0d6ed2bea4))
+- Implement cleanup in evaluation files to prevent memory leaks ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([124405e](https://github.com/d-o-hub/do-gist-hub/commit/124405ee49482bc0d13742f9935e4a9e650a21fd))
+- Implement cleanup in evaluation files to prevent memory leaks ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([50f2eb3](https://github.com/d-o-hub/do-gist-hub/commit/50f2eb3389b3d06c19ab5e7f434cc779a8be7cf6))
+- Implement cleanup in evaluation files to prevent memory leaks ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([81e1f10](https://github.com/d-o-hub/do-gist-hub/commit/81e1f10439c5351bc83b095c4d1bb1bae6c274a9))
+- *(nav)* Resolve CI-blocking Playwright test failures ・ by d.o. Agent ([f3661b4](https://github.com/d-o-hub/do-gist-hub/commit/f3661b4a841cef8f53d15e764a095256de9db711))
+- *(tools,tests)* Stabilize analyze script and unit test runner ・ by d.o. Agent ([0c0ac62](https://github.com/d-o-hub/do-gist-hub/commit/0c0ac62c5b67bf62db6e4fc45f36eb5e78158f89))
+- Ignore automated "Update" commits in commitlint ([#116](https://github.com/d-o-hub/do-gist-hub/issues/116)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([8b923ca](https://github.com/d-o-hub/do-gist-hub/commit/8b923ca4318934aa9b7411f4acb41012aab14920))
+- Update tests for DB version 3 and gist store API changes ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([ee212a6](https://github.com/d-o-hub/do-gist-hub/commit/ee212a6796c2a1b5ff0dc5e1e6d59aec5803c947))
+- Update tests for DB version 3 and export format ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([d63f560](https://github.com/d-o-hub/do-gist-hub/commit/d63f5607ca7e2c2b6b9d6ab76deaa1e24eb15301))
+- Address DeepSource review feedback and CI Playwright failures ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([0d80842](https://github.com/d-o-hub/do-gist-hub/commit/0d80842fc80c963328ff0809f13ec4e2f022e7d2))
+- Resolve Playwright test failures by initializing IndexedDB and using context.route ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([2a7d2da](https://github.com/d-o-hub/do-gist-hub/commit/2a7d2da167a86a770ac63e123652e861730e0e97))
+- *(test)* Correct auth service unit tests with proper mocks and cache clearing ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([03f93e6](https://github.com/d-o-hub/do-gist-hub/commit/03f93e69ee3240ce1feaa581735bd667df388a85))
+- Align skills and AGENTS.md with template recommendations ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([43ab4b3](https://github.com/d-o-hub/do-gist-hub/commit/43ab4b37c826959f59755f6983f68ef7ab2d224a))
+- Cd workflow skips gracefully when github pages is not enabled ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([5f34abf](https://github.com/d-o-hub/do-gist-hub/commit/5f34abfd934c892224842f32e217ba689b15087d))
+- *(security)* Redact sensitive metadata from data export ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([6f0d730](https://github.com/d-o-hub/do-gist-hub/commit/6f0d7304a977ea2b57fb890498a9f7733de2ab95))
+- *(ci)* Bump Android build JDK from 17 to 21 for Java 21 class compatibility ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([ae2fa77](https://github.com/d-o-hub/do-gist-hub/commit/ae2fa77547ff1cc69c738aa654ec7c6d76f9a90f))
+- *(android)* Upgrade Gradle wrapper to 8.5 for Java 21 bytecode compatibility ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([9ba3549](https://github.com/d-o-hub/do-gist-hub/commit/9ba3549cbfcdcdfbc3e4abc0e5ef91cfa1049d50))
+- *(android)* Bump compileSdk and targetSdk to 35 for Capacitor 8.3.2 compatibility ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([5affeb4](https://github.com/d-o-hub/do-gist-hub/commit/5affeb42b67d387477c255b8a844d6ea8a7faebe))
+- *(android)* Exclude kotlin-stdlib-jdk7/jdk8 to resolve duplicate class conflicts ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([d3e622d](https://github.com/d-o-hub/do-gist-hub/commit/d3e622d0fd7bab2cf10623288f46837b313422ee))
+- *(ci)* Resolve all CI failures in dependabot PR 141 ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([bd30982](https://github.com/d-o-hub/do-gist-hub/commit/bd309820543a488e22379000c649e98a67cf4138))
+- *(ci)* Resolve all CI failures — TS6 deprecations, yamllint, commitlint, shellcheck ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([4e2c5a7](https://github.com/d-o-hub/do-gist-hub/commit/4e2c5a7b6eb3f1f793f651e6799b996f85e4b5b1))
+- *(ci)* Address CodeRabbit feedback — pin SHAs, harden curl, tokenize durations ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([67f62b2](https://github.com/d-o-hub/do-gist-hub/commit/67f62b244563be43a76288decd1278cdb8dbf8d3))
+- Resolve ADR-026 GOAP actions — activate global error handler, refactor ErrorBoundary/EmptyState (noStaticOnlyClass), wire AbortController lifecycle cleanup ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([7e919f0](https://github.com/d-o-hub/do-gist-hub/commit/7e919f0a8e514b60904cc595d65087f35509ea03))
+- Resolve remaining GOAP P1 items — TS6 migration, RouteBoundary, wire Skeleton, add Conflicts nav, remove dead code ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([865fad7](https://github.com/d-o-hub/do-gist-hub/commit/865fad7c61991b74e7e0f827141cc802a8a1b263))
+- Wire Skeleton.renderDetail into gist-detail route loading state ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([04bae14](https://github.com/d-o-hub/do-gist-hub/commit/04bae143862351b4e7dc07464febc1bd141e64a8))
+- Add skeleton detail CSS layout for gist-detail loading placeholder ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([fbbde4b](https://github.com/d-o-hub/do-gist-hub/commit/fbbde4ba8d5d9de0db2b9b3048851167bb5e3763))
+- Prevent footer-max-line-length CI failures and remove `any` types ([#148](https://github.com/d-o-hub/do-gist-hub/issues/148)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([b76d6a3](https://github.com/d-o-hub/do-gist-hub/commit/b76d6a37c7c9e3761c6bd0b116ed021e2b39d310))
+- Address CodeRabbit review feedback on test determinism and cleanup ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([7267e13](https://github.com/d-o-hub/do-gist-hub/commit/7267e13a084a21ba4642d582268ea70f330688ef))
+- *(test)* Resolve ReferenceError and mock leakage in gist-store tests ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([ea947dd](https://github.com/d-o-hub/do-gist-hub/commit/ea947ddb8619cff2e6c7813f0caa87df363fbae8))
+- Clean up instances to prevent event listener accumulation ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([d3a2876](https://github.com/d-o-hub/do-gist-hub/commit/d3a287618fa479846f55dd53cc2358a7188602fa))
+- Resolve CI failures and register missing plans ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([45230db](https://github.com/d-o-hub/do-gist-hub/commit/45230dbe6492737b06b49696a3cda6617e4f7dd2))
+- Target EnvironmentTeardownError root cause - conflict-detector module ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([48c2adb](https://github.com/d-o-hub/do-gist-hub/commit/48c2adb4170be61ddc7dbdd71091ed0b13f6c8e6))
+- Address CodeRabbit feedback - exact style-src matching and robust CSP meta tag replacement ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([4dd7471](https://github.com/d-o-hub/do-gist-hub/commit/4dd7471beb70ae41a8d445bfbef355f2eb19ffc7))
+- Address CodeRabbit feedback - destroyAuth, lifecycle cleanup, eventsBound/copyBound reset, debounce cleanup, test ordering ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([2de9dcf](https://github.com/d-o-hub/do-gist-hub/commit/2de9dcf5a3f7cde3dd859fdf6bccf8a1384b4a1d))
+- Pin release-please-action to valid sha ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([b6b7f30](https://github.com/d-o-hub/do-gist-hub/commit/b6b7f3042a36ee7728fa08ebb2dc821fb030aa28))
+- Quote shell variables in release changelog step for shellcheck compliance ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([dc6ca8c](https://github.com/d-o-hub/do-gist-hub/commit/dc6ca8c6e2546b521af96aedee52797ac3a9e81b))
+
+### 🛡️ Security
+
+- Implement recursive redaction and fix XSS ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([c86389d](https://github.com/d-o-hub/do-gist-hub/commit/c86389de2ba84b29231cd5b7d58cc99eab7b05a6))
+- Optimize bulk gist processing and robustify database I/O ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([d82d224](https://github.com/d-o-hub/do-gist-hub/commit/d82d22410bbc71707f4975d7893d1274a43bfb4e))
+- Optimize bulk gist processing and robustify database I/O ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([00936e0](https://github.com/d-o-hub/do-gist-hub/commit/00936e0fe031df8f9f904bd564e8025c1cb0fe1a))
+- Robustify bulk gist processing and fix CI test failures ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([d2ddd7c](https://github.com/d-o-hub/do-gist-hub/commit/d2ddd7c1c21b0561f19cdc183adb57674c9d7e69))
+- Robustify bulk gist processing and resolve PR feedback ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([135af7a](https://github.com/d-o-hub/do-gist-hub/commit/135af7a0b6d3c1de95d436a8a4386653c20b3df0))
+- Robustify bulk gist processing and resolve merge conflicts ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([58fb358](https://github.com/d-o-hub/do-gist-hub/commit/58fb35839d54c243c7322a2691ae0cf17a2e82e3))
+- Redact secrets in github api error messages ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([8867815](https://github.com/d-o-hub/do-gist-hub/commit/886781506da9eed89be9245e9eacfa3e204855ce))
+
+### 💼 Other
+
+- Initialize repository structure and core documentation ・ by qwen.ai[bot] ([@qwen-intl](https://github.com/qwen-intl)) ([f4e5903](https://github.com/d-o-hub/do-gist-hub/commit/f4e59031f0fe46b53e9c8a3b8317d72f5adfd556))
+- Implement PWA functionality and IndexedDB persistence layer ・ by qwen.ai[bot] ([@qwen-intl](https://github.com/qwen-intl)) ([02a13a6](https://github.com/d-o-hub/do-gist-hub/commit/02a13a68ae0d8b576426cfa0e1981225633f2e2c))
+- Implement GitHub authentication, API client, and offline sync services ・ by qwen.ai[bot] ([@qwen-intl](https://github.com/qwen-intl)) ([65799e0](https://github.com/d-o-hub/do-gist-hub/commit/65799e033ccb31a3871a057a440cbc95f0401a10))
+- Harden dom sanitization and enforce secure logging ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([220c332](https://github.com/d-o-hub/do-gist-hub/commit/220c3324ac67f19fc9fb8c7581af9c3d9ee554f5))
+- Optimize bulk gist processing and database I/O ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([d7b84d4](https://github.com/d-o-hub/do-gist-hub/commit/d7b84d4dc5babdf5428d1de01bcfb829ddda0272))
+- Optimize bulk gist processing and database I/O ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([b4b171a](https://github.com/d-o-hub/do-gist-hub/commit/b4b171ab43adebd6ea869c641430fa55417ca7f4))
+- Merge main and fix CI stability issues ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([195bef3](https://github.com/d-o-hub/do-gist-hub/commit/195bef3b1eacce22227c028c28bfd8aac875ef21))
+- Add swarm analysis and upstream adaptation ADRs ・ by d.o. Agent ([beb1b8b](https://github.com/d-o-hub/do-gist-hub/commit/beb1b8b02e352392508796d97fc808ec9b86bbde))
+- Add swarm analysis and upstream adaptation ADRs ・ by d.o. Agent ([bac935f](https://github.com/d-o-hub/do-gist-hub/commit/bac935f44abe1b472974cc4fd2ac0b0fe763c3d7))
+- Merge main into PR #117 ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([3d31a4b](https://github.com/d-o-hub/do-gist-hub/commit/3d31a4bb9582dc2723aa2e654b8de25e48c455b8))
+
+### 🚜 Refactor
+
+- *(skills)* Update all skills with evals, references, and remove do-gemini-ui-ux-skill refs ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([bd260ae](https://github.com/d-o-hub/do-gist-hub/commit/bd260ae87e41d83f93d7721ef416819c3bd26ce0))
+- *(skills)* Remove skill-creator, skill-evaluator, and ui-ux-optimize skills ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([d05a254](https://github.com/d-o-hub/do-gist-hub/commit/d05a254c92cd5ea2821b0abdc659ca8fd16eca39))
+- *(ui)* Modernize design system with glow effects, pill navigation, and refined dark mode ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([75f3711](https://github.com/d-o-hub/do-gist-hub/commit/75f37115c14cd0ccef5f10fc6d27d983561c5f77))
+- Update AGENTS.md with 2026 standards, add skill improvements ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([f8fd6ad](https://github.com/d-o-hub/do-gist-hub/commit/f8fd6ad098355b65c794c60df0b33f6a00905bf5))
+- Remove unused variables ・ by deepsource-autofix[bot] ([@deepsource-autofix[bot]](https://github.com/deepsource-autofix[bot])) ([16b9f6e](https://github.com/d-o-hub/do-gist-hub/commit/16b9f6e34a466577476d9e2530ab077d54b59e8c))
+- Replace any with specific types ・ by deepsource-autofix[bot] ([@deepsource-autofix[bot]](https://github.com/deepsource-autofix[bot])) ([4f75b55](https://github.com/d-o-hub/do-gist-hub/commit/4f75b55f59a0611b184589142e0ddfb262bfa362))
+- Remove unused TypeScript variables and imports ・ by deepsource-autofix[bot] ([@deepsource-autofix[bot]](https://github.com/deepsource-autofix[bot])) ([89f842e](https://github.com/d-o-hub/do-gist-hub/commit/89f842ec9df3e413ffe1afd89877d38f52065573))
+- Implement actionable empty states and event delegation ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([fe78efc](https://github.com/d-o-hub/do-gist-hub/commit/fe78efcc42ac3d2419d9c7ba7ad12e1e2c29a062))
+- Enforce strict promise handling and fix export tests ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([9a2d1b8](https://github.com/d-o-hub/do-gist-hub/commit/9a2d1b8805b9305d92155d6761f0ce5568415f95))
+- Finalize navigation delegation and CI stability ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([213b8a5](https://github.com/d-o-hub/do-gist-hub/commit/213b8a54bf8d7d353340708b046ad3d11b75c3d2))
+- Finalize micro-UX improvements and CI stability ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([513b481](https://github.com/d-o-hub/do-gist-hub/commit/513b481c80349201f7ed53dbe5e148c54b2bb3cf))
+- Implement actionable empty states and universal delegation ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([eccfb8b](https://github.com/d-o-hub/do-gist-hub/commit/eccfb8b4bd3fbc4ebb270287ece8786b2d817bee))
+- Final UX improvements and test fixes ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([c5c801c](https://github.com/d-o-hub/do-gist-hub/commit/c5c801c053afbea75c9d9cf8ff53f3cb6e852b28))
+- *(css)* Replace hardcoded values with tokens and add breakpoints ・ by d.o. Agent ([e0a7f86](https://github.com/d-o-hub/do-gist-hub/commit/e0a7f868e87ee811654150b63397f84ce2ca7e37))
+- Remove unused exportSelectedGists function ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([2c8f67d](https://github.com/d-o-hub/do-gist-hub/commit/2c8f67d574f06495f2d65cc285666bbbd46b06c6))
+- *(ui)* Remove emojis, implement 2026 token-driven button styles per ADR-022 ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([a25545e](https://github.com/d-o-hub/do-gist-hub/commit/a25545ef86f5340110b3e6cd0078fb47b932f392))
+- Rename stub test files and fix type violations ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([8631f18](https://github.com/d-o-hub/do-gist-hub/commit/8631f1855e58e5acb42953cec2cc040d71ba6283))
+
+### 📚 Documentation
+
+- *(skills)* Improve agents-md-author skill formatting and references ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([0e27467](https://github.com/d-o-hub/do-gist-hub/commit/0e274671ea709074c3cdf8d5bd31eaef38deaa1e))
+- Add comprehensive gap analysis and configuration documentation ・ by d-o-hub ([@d-o-hub](https://github.com/d-o-hub)) ([650bd7a](https://github.com/d-o-hub/do-gist-hub/commit/650bd7aa33279a043271fa6ee648588bb052a52b))
+- Minor formatting fix ・ by d-o-hub ([@d-o-hub](https://github.com/d-o-hub)) ([2a6e479](https://github.com/d-o-hub/do-gist-hub/commit/2a6e479e88eed1976c0afbfa6f2c150f7ecbf058))
+- Add CONTRIBUTING.md and PR template ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([1a42e91](https://github.com/d-o-hub/do-gist-hub/commit/1a42e917fac28cced46e15d7bf907d4a7745910b))
+- Update AGENTS.md and README.md with learnings from CI ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([169e063](https://github.com/d-o-hub/do-gist-hub/commit/169e0637a3421c1cbabf411d8fd36f2aba25cd63))
+- Update SUMMARY.md with DeepSource TOML configuration learnings ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([4d85ce4](https://github.com/d-o-hub/do-gist-hub/commit/4d85ce48124fa312c3608c0062b2057087f7b05a))
+- Add ADR plans for architecture decisions ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([ab15e5c](https://github.com/d-o-hub/do-gist-hub/commit/ab15e5c96f3a5688cd3a3f7f4527d8510d242614))
+- Remove hardcoded version from AGENTS.md header ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([afab697](https://github.com/d-o-hub/do-gist-hub/commit/afab697dc47e0bfce262a12353d824c3ab3c8fac))
+- Document pre-existing CI offline test infrastructure issue ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([998b317](https://github.com/d-o-hub/do-gist-hub/commit/998b3173d54f8d4f1fa7e44a015d67a5e0dd38a3))
+- Community workflow files ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([bb01901](https://github.com/d-o-hub/do-gist-hub/commit/bb01901b7a7a3a49b572b3333752f014c4c929a1))
+- Update AGENTS.md learning and plan statuses ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([b68cfda](https://github.com/d-o-hub/do-gist-hub/commit/b68cfdaa359c0a6c903889b90eae176cf704ec2d))
+- Add upstream template documentation, agent files, and changelogs ・ by d.o. Agent ([ced84f6](https://github.com/d-o-hub/do-gist-hub/commit/ced84f6f0da78d990a72256d0394ae73c0e7a813))
+- Add upstream template documentation, agent files, and changelogs ・ by d.o. Agent ([1f07503](https://github.com/d-o-hub/do-gist-hub/commit/1f07503717e421a903beb2cfc9380da0bb723792))
+- Add ADR-020 documenting swarm audit phase-a fixes and pre-existing issues ・ by d.o. Agent ([7ab03ca](https://github.com/d-o-hub/do-gist-hub/commit/7ab03ca207e891679af2f11c9f10e1532a59008a))
+- Add ADR-021 PR merge strategy ・ by d.o. Agent ([28e5a12](https://github.com/d-o-hub/do-gist-hub/commit/28e5a127cea9c1bf7146b21dd2a8ec7782fa3c59))
+- *(agents)* Compact learnings and add progress update ・ by d.o. Agent ([411a37c](https://github.com/d-o-hub/do-gist-hub/commit/411a37c0dbbb3269d41534d2fb707e8e70de03af))
+- *(plans)* Update progress with PR management and rescue details ・ by d.o. Agent ([b5bf5cc](https://github.com/d-o-hub/do-gist-hub/commit/b5bf5cc16216a6f23b37a58cf4d41ec5cd490aa5))
+- Update plans/ with ADR-010 and ADR-017 implementation progress ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([b3ddce5](https://github.com/d-o-hub/do-gist-hub/commit/b3ddce52747376d40e794912c7e7f2e89ed318d0))
+- Add progress update and missing v1 tasks ADR ・ by d-o-hub ([@d-o-hub](https://github.com/d-o-hub)) ([b3c166c](https://github.com/d-o-hub/do-gist-hub/commit/b3c166c62801c6adfae80eaa56fdc4db83f0db80))
+- Update ADR-015 and fix record with full Android build remediation chain ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([692bd6a](https://github.com/d-o-hub/do-gist-hub/commit/692bd6a05d7357e6a6bb2d41483a93dba6540f01))
+- Complete followups - document exceptions, update ADR with all workflow bumps, and record audit blocker status ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([98699d4](https://github.com/d-o-hub/do-gist-hub/commit/98699d4bff9d6a0e5fdbe4607c15d4185fa3135b))
+- Align documentation with current state — stack versions, data-model, audit dates, stale refs ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([ff3ced9](https://github.com/d-o-hub/do-gist-hub/commit/ff3ced958a7df841049fb48fe6db223aa9904c3f))
+- Compact AGENTS.md to 62 LOC, extract rules to reference files, add GOAP gap analysis progress update ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([6ddcd98](https://github.com/d-o-hub/do-gist-hub/commit/6ddcd98b67be323f9bc1cfbeb85ab00a9b404e18))
+- Update GOAP analysis and progress docs — all P1 items resolved, skeleton detail wired, CSS added ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([aa41ccf](https://github.com/d-o-hub/do-gist-hub/commit/aa41ccf09e82c13ffa6532bc988a072ff87ec769))
+- Mark all P0/P1 items resolved in progress update ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([0801a94](https://github.com/d-o-hub/do-gist-hub/commit/0801a944277d8c0f265a720ecb57f83c22121417))
+- Update progress and self-learning rules with UI modernization batch ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([465bacc](https://github.com/d-o-hub/do-gist-hub/commit/465bacccd1a888d12302c265fd366e06c1094f7a))
+- Update progress and self-learning rules with PR #150 learnings ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([376df92](https://github.com/d-o-hub/do-gist-hub/commit/376df9204356b18e6183fd81aad4f361648694fe))
+- Add Phase C GOAP plan for future work, strictness and production polish ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([3c8c4ed](https://github.com/d-o-hub/do-gist-hub/commit/3c8c4ed91d4430b714e62bafebd6ceb64354a3f6))
+- Update Phase C plan and self-learning rules with PR #152 completion ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([644573d](https://github.com/d-o-hub/do-gist-hub/commit/644573dfd96f77bb47b9c75be3f7f0ef9da632a4))
+- Update coverage plan, add PR #156 progress update, compact learnings ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([4111e71](https://github.com/d-o-hub/do-gist-hub/commit/4111e710dd1e1b11087673840bfa2bcdbbbe515b))
+- Update coverage plans post PR #156 merge, add swarm summary, compact learnings ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([3df4347](https://github.com/d-o-hub/do-gist-hub/commit/3df4347d548cd1519ac56407f928b642c6dbef6c))
+- Update AGENTS.md with auto-generated CSS layout rules ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([558f5ec](https://github.com/d-o-hub/do-gist-hub/commit/558f5ec52f78c0c84a59517e7b329383729ee05c))
+- Add progress update 2026-05-07 (all tasks complete) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([575df6b](https://github.com/d-o-hub/do-gist-hub/commit/575df6b4387c0f6238d92cfd54f843c8d75a8d3d))
+- Add plans/README.md and _index.md, archive completed plans ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([1795e09](https://github.com/d-o-hub/do-gist-hub/commit/1795e09f62753355d07de39ebcf3383a43699c86))
+- Compact learnings from plans completion sprint ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([a07c56f](https://github.com/d-o-hub/do-gist-hub/commit/a07c56f4df44d28a2653a32609b9371104be4be5))
+- Add 038 progress update for PR #166 merge, update plan registries ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([c213f01](https://github.com/d-o-hub/do-gist-hub/commit/c213f01749c65df8e260bb497fd44edc3f273181))
+- Register orphan 025-progress-update in plan registries ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([6bd488b](https://github.com/d-o-hub/do-gist-hub/commit/6bd488b9a610fa6c683de85d90c4e4d965deea31))
+- Update AGENTS.md reference table with 025, 038, and TRIZ analysis entries ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([47b7b45](https://github.com/d-o-hub/do-gist-hub/commit/47b7b45c2af2a0ab1f38a32e9e376c8bf773f8a5))
+- Plans audit - register TRIZ analysis, fix goap number, add missing AGENTS.md refs ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([0b00985](https://github.com/d-o-hub/do-gist-hub/commit/0b00985c818e7dc7c0cb2c47f632013b750d2503))
+- Comprehensive plans audit - ADR cross-ref, coverage report, archive 2026-07-18 progress updates ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([77c56a7](https://github.com/d-o-hub/do-gist-hub/commit/77c56a7981b62fa455a35f05ced99c85543a5780))
+- Create 043 progress update — quality gate, CI audit, coverage deep-dive ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([d48034a](https://github.com/d-o-hub/do-gist-hub/commit/d48034a2563916a3d113fbee1ba7720b0a455555))
+- Create plan 040 goap plan and progress update for phase b/c completion ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([d1109dd](https://github.com/d-o-hub/do-gist-hub/commit/d1109dde30f36268719f0f531b6f5683eea9403f))
+
+### ⚡ Performance
+
+- Optimize gist list rendering with memoization and event delegation ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([a4d9de1](https://github.com/d-o-hub/do-gist-hub/commit/a4d9de152c54ff4409b44c90ac955080b11d4c36))
+- Optimize gist loading and merging performance ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([42541c3](https://github.com/d-o-hub/do-gist-hub/commit/42541c3dd30ce90b49d391ac6e41f2aa5ba79b1c))
+- Optimize gist list processing and sorting ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([c046c95](https://github.com/d-o-hub/do-gist-hub/commit/c046c959520d1d6edf07f53a20dd6a758aa40dae))
+- Optimize gist list processing and sorting ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([e60627d](https://github.com/d-o-hub/do-gist-hub/commit/e60627d68f8162bb182dd9b1e07fe517958024c4))
+- Optimize gist processing, sorting, and responsive nav ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([0c94c17](https://github.com/d-o-hub/do-gist-hub/commit/0c94c17511bab4550d4c168735030927bda8b089))
+- Optimize gist list processing and sorting ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([c6ebe5f](https://github.com/d-o-hub/do-gist-hub/commit/c6ebe5f217d4f983f92d279c4213eb2decb69927))
+- Github API efficiency — ETags, lazy hydration, rate limit awareness ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([cbe5f95](https://github.com/d-o-hub/do-gist-hub/commit/cbe5f954fec97f8bbec495ba047ec8bc1a9a5a05))
+- Implement etags, lazy hydration, and rate limit awareness ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([820b15d](https://github.com/d-o-hub/do-gist-hub/commit/820b15df4d294093479969a32e14fa042f99869d))
+- Implement etags, lazy hydration, and rate limit awareness ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([fe78c09](https://github.com/d-o-hub/do-gist-hub/commit/fe78c09a86138082543fe9685427dcacc3efd5fd))
+- Implement etags, lazy hydration, and rate limit awareness ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([4cd7f90](https://github.com/d-o-hub/do-gist-hub/commit/4cd7f9001c329ff7cad7e6e2b36df0562c202a30))
+- Optimize html sanitization and gist sorting ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([d94639d](https://github.com/d-o-hub/do-gist-hub/commit/d94639deb164c401a781da60f0c7b43367723782))
+- Optimize gist list sorting, searching, and card rendering ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([a0921dd](https://github.com/d-o-hub/do-gist-hub/commit/a0921dd25817e778b354ca6cfece31847863b2b2))
+
+### 🧪 Testing
+
+- Revert settings button locator in export tests ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([fa96e59](https://github.com/d-o-hub/do-gist-hub/commit/fa96e59a3bb61f78074ea51c8991fdc7b7768456))
+- Add unit tests for conflict detection logic ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([1a73a27](https://github.com/d-o-hub/do-gist-hub/commit/1a73a27c1d601fb4a9235b0758d5774e89378191))
+- Add unit tests for conflict detection logic ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([da1facc](https://github.com/d-o-hub/do-gist-hub/commit/da1facc9185eed51a900f24a5d336e76f86b5ff2))
+- Address feedback and fix CI issues ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([992c87e](https://github.com/d-o-hub/do-gist-hub/commit/992c87e1169f8eaf095081406a245a6372153684))
+- Implement GitHub client auth tests and address feedback ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([4c9224f](https://github.com/d-o-hub/do-gist-hub/commit/4c9224f515971419eac492f42b8e2ecee05c2b0d))
+- Comprehensive unit tests and CI fixes ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([0bedda0](https://github.com/d-o-hub/do-gist-hub/commit/0bedda005798f4d56d552bf1e077ceab66703b96))
+- Address pr feedback and resolve ci issues ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([31f5b87](https://github.com/d-o-hub/do-gist-hub/commit/31f5b87b15fe33de744462ede7c8c3682f4ce1f4))
+- Address pr feedback and finalize testing improvements ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([d90e3ab](https://github.com/d-o-hub/do-gist-hub/commit/d90e3ab621d0238f3d905f4d3d52037f47a9a450))
+- Finalize comprehensive tests and address feedback ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([d9d5418](https://github.com/d-o-hub/do-gist-hub/commit/d9d54180e414b39b02157e422d994afac66ba6e9))
+- Finalize conflict detection and auth tests with CI fixes ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([6bc2906](https://github.com/d-o-hub/do-gist-hub/commit/6bc2906838c352779d1d853d35e82c93f5b9d547))
+- Fix cross-viewport locator strict mode violations ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([9c2f387](https://github.com/d-o-hub/do-gist-hub/commit/9c2f3879071297f7dbaaf4cfb24a65fa945548ff))
+- *(vitest)* Wire unit test runner and add crypto tests ・ by d.o. Agent ([4fc8aff](https://github.com/d-o-hub/do-gist-hub/commit/4fc8aff3b445d14d34e1baa0098bd256dac96eab))
+- *(sync)* Add sync queue unit tests and fix retry handler bug ・ by d.o. Agent ([6afa89d](https://github.com/d-o-hub/do-gist-hub/commit/6afa89dadefad0824657be4500690eddb02f47b1))
+- *(visual)* Use .first() for nav-starred to fix strict mode violation ・ by d.o. Agent ([80692c5](https://github.com/d-o-hub/do-gist-hub/commit/80692c5fa3c5cde0e07b925b96a6d2496baeddf6))
+- *(browser)* Rescue PR #106 browser integration tests + AGENTS.md updates ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([8af6600](https://github.com/d-o-hub/do-gist-hub/commit/8af6600d364e58d5eee07424a48a5b1fd4043a02))
+- Add explicit empty buffer tests for b64encode/decode ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([d476045](https://github.com/d-o-hub/do-gist-hub/commit/d476045b52665ee7019f0b618c5f925ab87bf013))
+- Fix visual test timeouts and brittle test issues ([#138](https://github.com/d-o-hub/do-gist-hub/issues/138)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([2f3fa6d](https://github.com/d-o-hub/do-gist-hub/commit/2f3fa6d6b86a34c873688b6986fdf8c1e52eaa77))
+- Add comprehensive unit test coverage for core components and services ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([8eae270](https://github.com/d-o-hub/do-gist-hub/commit/8eae270389e57068d2da6723cc7de7e470226e6b))
+- Add comprehensive unit test coverage for core components and services ([#156](https://github.com/d-o-hub/do-gist-hub/issues/156)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([fb23476](https://github.com/d-o-hub/do-gist-hub/commit/fb23476d520065473e5a667a39bc3f1a9592209b))
+- Fix review issues and add edge case coverage for unit tests ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([178bb64](https://github.com/d-o-hub/do-gist-hub/commit/178bb6451492329351da73fd3bd5602e48c7ef62))
+- Add coverage for logger and db uncovered functions ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([8489e85](https://github.com/d-o-hub/do-gist-hub/commit/8489e85012fe1b4917bef1b623be46a7d585e516))
+- Add edge case coverage for error-boundary, gist-edit, and main bootstrap ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([f39f187](https://github.com/d-o-hub/do-gist-hub/commit/f39f1879766a760c2a1277494c032d1164f83d08))
+- Implement unit tests for offline gist delete queueing ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([1fe2b84](https://github.com/d-o-hub/do-gist-hub/commit/1fe2b84409415639f6c993d51f394f526a83cdf0))
+
+### ⚙️ Miscellaneous Tasks
+
+- *(app)* Unify app identity as d.o. Gist Hub with single source of truth ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([0492bbd](https://github.com/d-o-hub/do-gist-hub/commit/0492bbd95402e2421f6bf71c8311a3d81cd0affc))
+- Audit plans, modernize UI/UX, and fix build stability ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([0585582](https://github.com/d-o-hub/do-gist-hub/commit/058558209033fde86d8c0056e086f8c63e5c9aa0))
+- Add .vscode settings for editor consistency ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([5cd0273](https://github.com/d-o-hub/do-gist-hub/commit/5cd027354da0e4fd4d1b62e9286d28e271da3f76))
+- Migrate agent-docs to agents-docs ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([28abaee](https://github.com/d-o-hub/do-gist-hub/commit/28abaee3008755501daff8c3234e52ac0f880b10))
+- Migrate agent-docs to agents-docs ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([7c86e4c](https://github.com/d-o-hub/do-gist-hub/commit/7c86e4cd6ca9398410e389d0546d03ea60e5fcef))
+- Migrate agent-docs to agents-docs ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([95a056b](https://github.com/d-o-hub/do-gist-hub/commit/95a056bfa9b0a4494145bbb0e7a6bbead9376591))
+- Migrate agent-docs to agents-docs ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([5ad707e](https://github.com/d-o-hub/do-gist-hub/commit/5ad707e2f9a83699fa196d1c01e04497914b7bef))
+- Merge main and resolve conflicts for palette-actionable-empty-states ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([286282e](https://github.com/d-o-hub/do-gist-hub/commit/286282e2be15d1c6fa7ac1659e536ba9e5607122))
+- Merge main and resolve conflicts for fix-settings-test-failure ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([9c312a2](https://github.com/d-o-hub/do-gist-hub/commit/9c312a2847bd1cf3cce74349b544f57731019dcb))
+- Merge fix-settings-test-failure into main ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([2a163a6](https://github.com/d-o-hub/do-gist-hub/commit/2a163a6d1678985866dcefc597666e6b0fc36790))
+- Merge main and resolve conflicts for bolt-optimize-bulk-gist-processing ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([d84698f](https://github.com/d-o-hub/do-gist-hub/commit/d84698f9859e68e9dfa177d1359312e647a1f36d))
+- Merge bolt-optimize-bulk-gist-processing into main ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([43d6a3e](https://github.com/d-o-hub/do-gist-hub/commit/43d6a3edd9fcf0f7d1a60390701b0402d8154caf))
+- Merge main and resolve conflicts for fix-cache-memory-leak-v3 ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([2865293](https://github.com/d-o-hub/do-gist-hub/commit/28652938817a2cfd64bc82ef6476a1b885b51cf8))
+- Merge fix-cache-memory-leak-v3 into main ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([dce9463](https://github.com/d-o-hub/do-gist-hub/commit/dce9463d82313adbb9b98abb6284ac5e05ad3a00))
+- Merge main and resolve conflicts for fix-encrypted-token-retrieval ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([fa0be5a](https://github.com/d-o-hub/do-gist-hub/commit/fa0be5aefb9baf295069de5e5a8d8fb446c2cc7d))
+- Merge fix-encrypted-token-retrieval into main ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([8806eed](https://github.com/d-o-hub/do-gist-hub/commit/8806eed6cbd333fc9fab1a2e11e8d2b556fd7b3b))
+- Merge main and resolve conflicts for fix-cache-memory-leak-v3 ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([38224dd](https://github.com/d-o-hub/do-gist-hub/commit/38224dd4cfb4d7f6d0b87a71d8cd3fd64b9d71cf))
+- Merge test-conflict-detection-logic into main ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([f405b45](https://github.com/d-o-hub/do-gist-hub/commit/f405b4510ca6e3e4bcca93e05880612d32cf0b3e))
+- *(tooling)* Add upstream template workflows, validation, and hooks ・ by d.o. Agent ([a604b45](https://github.com/d-o-hub/do-gist-hub/commit/a604b45d7fa7c0297853c0afaad74ec9eaed720f))
+- *(tooling)* Add upstream template workflows, validation, and hooks ・ by d.o. Agent ([c94ff4e](https://github.com/d-o-hub/do-gist-hub/commit/c94ff4e139950397819b5aa865ca208831bd71c6))
+- *(infra)* Upgrade GitHub Actions to Node 24 and fix issues ([#123](https://github.com/d-o-hub/do-gist-hub/issues/123)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([9dbf611](https://github.com/d-o-hub/do-gist-hub/commit/9dbf611c0e861ab9758a92af0cff60257f62ddb9))
+- *(lint)* Integrate new code quality gates ([#124](https://github.com/d-o-hub/do-gist-hub/issues/124)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([50b2127](https://github.com/d-o-hub/do-gist-hub/commit/50b2127ea65054a579e2088242f269e58a0e8c64))
+- Remove changelog-template.md ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([87d7425](https://github.com/d-o-hub/do-gist-hub/commit/87d7425e853399a123076e0c2f321bc3ccbc5695))
+- Comprehensive 2026 modernization pass ([#139](https://github.com/d-o-hub/do-gist-hub/issues/139)) the ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([26eccaf](https://github.com/d-o-hub/do-gist-hub/commit/26eccaf30f24fb3d9b3548e845ef4f91c047762e))
+- Remove redundant lint suppression for unused variable in logger ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([52c70fd](https://github.com/d-o-hub/do-gist-hub/commit/52c70fd81bf03eb44f01d227e397abe1b11ca37b))
+- Swarm coordination roundup — ADR audit, compacted learnings, AGENTS.md refresh ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([b642698](https://github.com/d-o-hub/do-gist-hub/commit/b6426981c94c6ed1c7a9003ad30c5a63da9dfcb0))
+- Enforce 70% coverage thresholds, add ADR compliance script, create 041 ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([2ec84ea](https://github.com/d-o-hub/do-gist-hub/commit/2ec84ea69532d9d01b0f858deca042798f4bb87c))
+- Refresh AGENTS.md refs, integrate ADR check in quality gate, create 042 ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([fa703a6](https://github.com/d-o-hub/do-gist-hub/commit/fa703a6e9aeb0a964cceb0ce94966558846626b6))
+- Update plan status and fix adr compliance path in quality gate ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([e2dd010](https://github.com/d-o-hub/do-gist-hub/commit/e2dd01067b73870d521884f663679f40b9d5de1c))
+- Propagate version 0.2.0-rc.1 to docs ・ by github-actions[bot] ([@github-actions[bot]](https://github.com/github-actions[bot])) ([04adf9a](https://github.com/d-o-hub/do-gist-hub/commit/04adf9a58c3ee3dac766adab63a4229972c0c49f))
+- Fix stale plan status headers and update registry for plan 040 ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([7dfa43c](https://github.com/d-o-hub/do-gist-hub/commit/7dfa43ce3a563d0fa3ff9090e5f979cf4d9b9115))
+- Bump version to 0.1.1 ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([1904a9f](https://github.com/d-o-hub/do-gist-hub/commit/1904a9fe6629c385c4c6c215b029e0c2f4d698b1))
+- Propagate version 0.1.1 to docs ・ by github-actions[bot] ([@github-actions[bot]](https://github.com/github-actions[bot])) ([42f2203](https://github.com/d-o-hub/do-gist-hub/commit/42f2203b1391c708adf0dbbb6b1bdfef739f9d97))
+- Remove release-please, use git-log-based changelog in release workflow ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([b424f59](https://github.com/d-o-hub/do-gist-hub/commit/b424f5933fcf73e5af627ed9e71319b11b326a54))
+- Reset version to 0.1.0 for fresh release test ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([899be0f](https://github.com/d-o-hub/do-gist-hub/commit/899be0f4b2350eecffc0c2ee0e8784e361f57e02))
+
+### 👷 Continuous Integration
+
+- Pre-commit workflow with lint-staged and commitlint ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([e4671ee](https://github.com/d-o-hub/do-gist-hub/commit/e4671ee0ffc0e86f24d26015369de78657001397))
+- Harden workflows with SHA-pinned actions, timeouts, permissions, audit ・ by d.o. Agent ([0de0e7c](https://github.com/d-o-hub/do-gist-hub/commit/0de0e7cbfc7e551066ca3014a16fc36d0e1260d2))
+- Fix actionlint directory path in yaml-lint workflow ・ by d.o. Agent ([f111684](https://github.com/d-o-hub/do-gist-hub/commit/f111684980a582d8d38a1844f467c575374987df))
+- Fix workflow action SHAs, shellcheck issues, commitlint config, and audit vulnerabilities ・ by d.o. Agent ([94224b9](https://github.com/d-o-hub/do-gist-hub/commit/94224b9f8b7ca9781e2440e05939cfbf6bbca600))
+- Fix pnpm audit vulnerabilities and workflow shellcheck issues ・ by d.o. Agent ([33d3eab](https://github.com/d-o-hub/do-gist-hub/commit/33d3eab11f6eb208996ea819593f89e49d818c58))
+- Fix commitlint config and shellcheck severity ・ by d.o. Agent ([bb2c9c5](https://github.com/d-o-hub/do-gist-hub/commit/bb2c9c5b9130ca6505dfdb877a712ca62a3b1491))
+- Remove tar override causing Android build failure, use audit-level critical ・ by d.o. Agent ([2967416](https://github.com/d-o-hub/do-gist-hub/commit/2967416b55884fbcb270494f0980c11988f5c686))
+- Use audit-level critical in quality gate job ・ by d.o. Agent ([de71037](https://github.com/d-o-hub/do-gist-hub/commit/de71037c16006303691a6ca0c412ef7b839a6c78))
+- Harden workflows with SHA-pinned actions, timeouts, permissions, audit ・ by d.o. Agent ([23ce8d4](https://github.com/d-o-hub/do-gist-hub/commit/23ce8d40e0f11ca33f210f8b82b8d6c3674cb715))
+- Fix actionlint directory path in yaml-lint workflow ・ by d.o. Agent ([96e1fe5](https://github.com/d-o-hub/do-gist-hub/commit/96e1fe5bb20e52c2e326937de430924563faa931))
+- Fix workflow action SHAs, shellcheck issues, commitlint config, and audit vulnerabilities ・ by d.o. Agent ([f81b0a7](https://github.com/d-o-hub/do-gist-hub/commit/f81b0a74091dc4e903843275b7af92f93ed4de86))
+- Fix pnpm audit vulnerabilities and workflow shellcheck issues ・ by d.o. Agent ([3f803e9](https://github.com/d-o-hub/do-gist-hub/commit/3f803e9ef01f51ca8c9b2035519edd70bfa7927d))
+- Fix commitlint config and shellcheck severity ・ by d.o. Agent ([de5c352](https://github.com/d-o-hub/do-gist-hub/commit/de5c352db2d63bb33bf2283a90403d859f170d2b))
+- Remove tar override causing Android build failure, use audit-level critical ・ by d.o. Agent ([6fca4f2](https://github.com/d-o-hub/do-gist-hub/commit/6fca4f2f5471e611f81ab8a45bbb4a38118e6331))
+- Use audit-level critical in quality gate job ・ by d.o. Agent ([83601e9](https://github.com/d-o-hub/do-gist-hub/commit/83601e9ab2d11a6bc4cd6c0e76cfef874c445e89))
+- Trigger fresh CI run ・ by d.o. Agent ([f8ef6f0](https://github.com/d-o-hub/do-gist-hub/commit/f8ef6f098815d53c8e6c200c67d7f70b5945a23e))
+- Trigger CI synchronize event ・ by d.o. Agent ([632de8d](https://github.com/d-o-hub/do-gist-hub/commit/632de8dec4d8788661986445a6e862293ef5b9ee))
+- Optimize Playwright test execution — parallel workers, sharding, caching ・ by d.o. Agent ([70b59c5](https://github.com/d-o-hub/do-gist-hub/commit/70b59c5c5c8e2f0bad38a699b74d4245876467ac))
+- Trigger test — minimal change ・ by d.o. Agent ([0c564eb](https://github.com/d-o-hub/do-gist-hub/commit/0c564eb62975ecf25a54d631da43268506b8d462))
+- *(playwright)* Stabilize E2E tests and environment ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([86538ea](https://github.com/d-o-hub/do-gist-hub/commit/86538ea668768678f1029022d4b713be91b9ee77))
+- *(playwright)* Stabilize E2E tests and fix artifact naming ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([21b71ad](https://github.com/d-o-hub/do-gist-hub/commit/21b71adfe43cfcce3d45abb7162c49400388bac7))
+- *(visual)* Fix visual regression test job ・ by d.o. Agent ([c76c083](https://github.com/d-o-hub/do-gist-hub/commit/c76c083d43755d0973f026cb41221e7c481d094b))
+- *(visual)* Use --project=visual instead of --project=chromium ・ by d.o. Agent ([90af16e](https://github.com/d-o-hub/do-gist-hub/commit/90af16e927ef2caf32caa4e94c42e0c30fd5b2dc))
+- Reusable configs to prevent CI issues ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([a6e6d3a](https://github.com/d-o-hub/do-gist-hub/commit/a6e6d3ac1b19befa90d58c792d1ca3261431d9e7))
+- Fix SC2086 shellcheck error in cd workflow ・ by google-labs-jules[bot] ([@google-labs-jules[bot]](https://github.com/google-labs-jules[bot])) ([ea14626](https://github.com/d-o-hub/do-gist-hub/commit/ea14626490f0c45de4c7bd62cc751a4839974e29))
+- Migrate all workflows to node24-native actions and harden Android builds ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([a1a980c](https://github.com/d-o-hub/do-gist-hub/commit/a1a980cc4c183e4d2aa7847df420061f1b8c3d79))
+- Migrate remaining workflows to node24-native actions, add audit workflow, and harden Android build ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([b45252a](https://github.com/d-o-hub/do-gist-hub/commit/b45252ad91ed36d29fa0e884bd09fbed14a9c209))
+
+<!-- generated by git-cliff -->

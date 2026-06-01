@@ -39,31 +39,19 @@ jobs:
         run: echo "VERSION=$(< VERSION)" >> "$GITHUB_OUTPUT"
       - name: Generate changelog
         id: changelog
+        uses: orhun/git-cliff-action@f50e11560dce63f7c33227798f90b924471a88b5  # pinned from v4
+        with:
+          config: cliff.toml
+          args: --latest --verbose
+        env:
+          OUTPUT: CHANGELOG_RELEASE.md
+          GITHUB_REPO: ${{ github.repository }}
+      - name: Read changelog
+        id: changelog-body
         run: |
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          if [ -z "$PREV_TAG" ]; then
-            RANGE="HEAD"
-          else
-            RANGE="${PREV_TAG}..HEAD"
-          fi
           {
             echo 'changelog<<EOFCHANGELOG'
-            echo "## What's Changed"
-            echo ""
-            echo '### Features'
-            git log "$RANGE" --oneline --grep='^feat' --format='- %s' 2>/dev/null || true
-            echo ""
-            echo '### Fixes'
-            git log "$RANGE" --oneline --grep='^fix' --format='- %s' 2>/dev/null || true
-            echo ""
-            echo '### Chores & Maintenance'
-            git log "$RANGE" --oneline --grep='^chore' --format='- %s' 2>/dev/null || true
-            echo ""
-            echo '### Documentation'
-            git log "$RANGE" --oneline --grep='^docs' --format='- %s' 2>/dev/null || true
-            echo ""
-            echo '### Other'
-            git log "$RANGE" --oneline --grep -v '^feat\|^fix\|^chore\|^docs' --format='- %s' 2>/dev/null || true
+            cat CHANGELOG_RELEASE.md
             echo 'EOFCHANGELOG'
           } >> "$GITHUB_OUTPUT"
       - name: Build Web App
@@ -114,7 +102,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ steps.version.outputs.VERSION }}
-          body: ${{ steps.changelog.outputs.changelog }}
+          body: ${{ steps.changelog-body.outputs.changelog }}
           draft: false
           prerelease: ${{ contains(github.ref_name, '-rc.') || contains(github.ref_name, '-beta.') || contains(github.ref_name, '-alpha.') }}
           fail_on_unmatched_files: false
