@@ -33,13 +33,28 @@ jobs:
           # If the first section is ## [Unreleased], update any version placeholder
           VERSION="${{ steps.version.outputs.VERSION }}"
           sed -i "0,/\[Unreleased\]/s//[$VERSION]/" CHANGELOG.md || true
+      - name: Update package.json version
+        run: |
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          node -e "
+            const fs = require('fs');
+            const pkgPath = 'package.json';
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+            if (pkg.version !== VERSION) {
+              pkg.version = VERSION;
+              fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+              console.log('Updated package.json version to ' + VERSION);
+            } else {
+              console.log('package.json version already matches: ' + VERSION);
+            }
+          "
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add README.md CHANGELOG.md
+          git add README.md CHANGELOG.md package.json
           if ! git diff --cached --quiet; then
-            git commit -m "chore: propagate version ${{ steps.version.outputs.VERSION }} to docs"
+            git commit -m "chore: propagate version ${{ steps.version.outputs.VERSION }} to docs and package.json"
             git push
           else
             echo "No version changes to propagate."

@@ -291,6 +291,11 @@
   margin-top: auto;
 }
 
+.install-app-btn {
+  border: 1px dashed var(--color-border-subtle);
+  color: var(--color-accent);
+}
+
 .sidebar-item {
   display: flex;
   align-items: center;

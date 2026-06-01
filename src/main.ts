@@ -9,6 +9,7 @@ import { initIndexedDB } from './services/db';
 import { isAuthenticated } from './services/github/auth';
 import networkMonitor from './services/network/offline-monitor';
 import { initWebVitals } from './services/perf';
+import { capabilities } from './services/pwa/capabilities';
 import { registerServiceWorker } from './services/pwa/register-sw';
 import { safeError, safeLog } from './services/security/logger';
 import syncQueue from './services/sync/queue';
@@ -49,6 +50,9 @@ void (async function init(): Promise<void> {
 
     // Log auth telemetry (local-only, no PII)
     await logAuthTelemetry();
+
+    // Initialize PWA capabilities (persistent storage, install prompt, badge)
+    capabilities.init();
 
     // Initialize network monitoring
     networkMonitor.init();

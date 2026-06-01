@@ -78,6 +78,9 @@ export function renderGistDetail(gist: GistRecord): string {
           <button class="btn btn-ghost" data-action="fork">Fork</button>
           <button class="btn btn-ghost" data-action="edit">Edit</button>
           <button class="btn btn-ghost" data-action="revisions">Revisions</button>
+          ${gist.htmlUrl ? `<a class="btn btn-ghost" data-action="open-github" href="${sanitizeHtml(gist.htmlUrl)}" target="_blank" rel="noopener noreferrer">Open in GitHub</a>` : ''}
+          ${gist.htmlUrl ? `<button class="btn btn-ghost" data-action="copy-url">Copy URL</button>` : ''}
+          <button class="btn btn-ghost" data-action="share"${typeof navigator !== 'undefined' && 'share' in navigator ? '' : ' hidden'}>Share</button>
         </div>
       </header>
 
@@ -273,38 +276,52 @@ export function bindDetailEvents(
     container.addEventListener(
       'click',
       (e) => {
-        const copyBtn = (e.target as HTMLElement).closest(
-          '[data-action="copy-content"]'
-        ) as HTMLElement;
-        if (!copyBtn || copyBtn.classList.contains('btn-success')) return;
+        const target = e.target as HTMLElement;
 
-        void (async () => {
-          const contentArea = container.querySelector('#file-content-area code');
-          if (!contentArea) return;
+        // Copy file content
+        const copyBtn = target.closest('[data-action="copy-content"]') as HTMLElement;
+        if (copyBtn && !copyBtn.classList.contains('btn-success')) {
+          void (async () => {
+            const contentArea = container.querySelector('#file-content-area code');
+            if (!contentArea) return;
 
-          const text = contentArea.textContent || '';
-          try {
-            if (!navigator.clipboard) {
-              throw new Error('Clipboard API not available');
-            }
-            await navigator.clipboard.writeText(text);
-            if (signal?.aborted) return;
-
-            const originalText = copyBtn.innerHTML;
-            copyBtn.innerHTML = '<span class="micro-label">✅ COPIED!</span>';
-            copyBtn.classList.add('btn-success');
-            toast.success('COPIED TO CLIPBOARD');
-
-            setTimeout(() => {
+            const text = contentArea.textContent || '';
+            try {
+              if (!navigator.clipboard) {
+                throw new Error('Clipboard API not available');
+              }
+              await navigator.clipboard.writeText(text);
               if (signal?.aborted) return;
-              copyBtn.innerHTML = originalText;
-              copyBtn.classList.remove('btn-success');
-            }, 2000);
-          } catch (err) {
-            safeError('Failed to copy', err);
-            toast.error('COPY FAILED');
-          }
-        })();
+
+              const originalText = copyBtn.innerHTML;
+              copyBtn.innerHTML = '<span class="micro-label">✅ COPIED!</span>';
+              copyBtn.classList.add('btn-success');
+              toast.success('COPIED TO CLIPBOARD');
+
+              setTimeout(() => {
+                if (signal?.aborted) return;
+                copyBtn.innerHTML = originalText;
+                copyBtn.classList.remove('btn-success');
+              }, 2000);
+            } catch (err) {
+              safeError('Failed to copy', err);
+              toast.error('COPY FAILED');
+            }
+          })();
+          return;
+        }
+
+        // Copy gist URL
+        if (target.closest('[data-action="copy-url"]')) {
+          void copyGistUrl(container, signal);
+          return;
+        }
+
+        // Share gist (Web Share API, with clipboard fallback)
+        if (target.closest('[data-action="share"]')) {
+          void shareGist(container, signal);
+          return;
+        }
       },
       { signal }
     );
@@ -318,6 +335,73 @@ export function bindDetailEvents(
       },
       { once: true }
     );
+  }
+}
+
+async function copyGistUrl(container: HTMLElement, signal?: AbortSignal): Promise<void> {
+  const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id');
+  if (!gistId) return;
+  const gist = await (await import('../stores/gist-store')).default.getGist(gistId);
+  if (signal?.aborted) return;
+  const url = gist?.htmlUrl;
+  if (!url) {
+    toast.error('No URL available for this gist');
+    return;
+  }
+  try {
+    if (!navigator.clipboard) {
+      throw new Error('Clipboard API not available');
+    }
+    await navigator.clipboard.writeText(url);
+    if (signal?.aborted) return;
+    toast.success('URL COPIED TO CLIPBOARD');
+  } catch (err) {
+    safeError('Failed to copy URL', err);
+    toast.error('COPY FAILED');
+  }
+}
+
+async function shareGist(container: HTMLElement, signal?: AbortSignal): Promise<void> {
+  const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id');
+  if (!gistId) return;
+  const gist = await (await import('../stores/gist-store')).default.getGist(gistId);
+  if (signal?.aborted) return;
+  if (!gist?.htmlUrl) {
+    toast.error('Nothing to share for this gist');
+    return;
+  }
+  const htmlUrl: string = gist.htmlUrl;
+  const firstFile = Object.values(gist.files)[0];
+  const shareData: ShareData = {
+    title: gist.description || 'Gist',
+    text: firstFile?.content?.slice(0, 200) || gist.description || '',
+    url: htmlUrl,
+  };
+  if (typeof navigator !== 'undefined' && 'share' in navigator) {
+    try {
+      await navigator.share(shareData);
+    } catch (err) {
+      // User cancellation throws AbortError — treat as a no-op
+      if (err instanceof Error && err.name === 'AbortError') return;
+      safeError('Share failed', err);
+      await fallbackCopy(htmlUrl, signal);
+    }
+  } else {
+    await fallbackCopy(htmlUrl, signal);
+  }
+}
+
+async function fallbackCopy(url: string, signal?: AbortSignal): Promise<void> {
+  try {
+    if (!navigator.clipboard) {
+      throw new Error('Clipboard API not available');
+    }
+    await navigator.clipboard.writeText(url);
+    if (signal?.aborted) return;
+    toast.success('URL COPIED TO CLIPBOARD');
+  } catch (err) {
+    safeError('Fallback copy failed', err);
+    toast.error('SHARE FAILED');
   }
 }
 

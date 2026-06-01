@@ -239,6 +239,7 @@ body {
   min-width: var(--spacing-11);
   background: var(--color-background-elevated);
   color: var(--color-foreground-primary);
+  text-decoration: none;
 }
 
 .btn:hover {
@@ -1075,7 +1076,7 @@ body {
 }
 
 .token-rotation {
-  color: var(--color-status-warning-fg, #f97316);
+  color: var(--color-warning);
   margin-top: var(--space-2);
 }
 

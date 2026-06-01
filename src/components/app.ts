@@ -6,6 +6,7 @@ import { APP } from '../config/app.config';
 import * as createRoute from '../routes/create';
 import { lifecycle } from '../services/lifecycle';
 import networkMonitor from '../services/network/offline-monitor';
+import { capabilities } from '../services/pwa/capabilities';
 import syncQueue from '../services/sync/queue';
 import { getThemePreference } from '../tokens/design-tokens';
 import { announcer } from '../utils/announcer';
@@ -14,6 +15,7 @@ import { bottomSheet } from './ui/bottom-sheet';
 import { commandPalette } from './ui/command-palette';
 import { type NavRailRoute, navRail } from './ui/nav-rail';
 import { RouteBoundary } from './ui/route-boundary';
+import { toast } from './ui/toast';
 
 type Route = 'home' | 'starred' | 'create' | 'settings' | 'offline' | 'detail' | 'conflicts';
 
@@ -71,6 +73,22 @@ export class App {
     );
 
     this.initializeCommandPalette();
+    this.subscribeInstallPrompt();
+  }
+
+  private subscribeInstallPrompt(): void {
+    const signal = this.abortController.signal;
+    const unsubscribe = capabilities.onInstallPromptChange((available) => {
+      const btn = this.container?.querySelector<HTMLElement>('#install-app-btn');
+      if (btn) {
+        if (available) {
+          btn.removeAttribute('hidden');
+        } else {
+          btn.setAttribute('hidden', '');
+        }
+      }
+    });
+    signal.addEventListener('abort', unsubscribe, { once: true });
   }
 
   private setupNavigation(): void {
@@ -95,11 +113,24 @@ export class App {
         if (target.closest('#mobile-menu-btn')) {
           void this.showMobileMenu();
         }
+
+        if (target.closest('#install-app-btn')) {
+          void this.handleInstallClick();
+        }
       },
       { signal }
     );
 
     this.container.dataset.navBound = 'true';
+  }
+
+  private async handleInstallClick(): Promise<void> {
+    const outcome = await capabilities.promptInstall();
+    if (outcome === 'accepted') {
+      toast.success('App installed');
+    } else if (outcome === 'dismissed') {
+      capabilities.dismissInstallPrompt();
+    }
   }
 
   private async navigate(route: Route, gistId?: string): Promise<void> {
@@ -304,6 +335,11 @@ export class App {
               <li role="none">
                 <button role="menuitem" class="sidebar-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" data-testid="settings-btn" ${this.currentRoute === 'settings' ? 'aria-current="page"' : ''}>
                   <span>Settings</span>
+                </button>
+              </li>
+              <li role="none">
+                <button role="menuitem" class="sidebar-item install-app-btn" id="install-app-btn" data-testid="install-app-btn" hidden>
+                  <span>Install App</span>
                 </button>
               </li>
             </ul>
