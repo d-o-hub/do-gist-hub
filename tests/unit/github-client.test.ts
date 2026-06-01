@@ -63,7 +63,7 @@ import {
   validateToken,
 } from '../../src/services/github/client';
 import { recordFirstApiCall } from '../../src/services/telemetry/auth-telemetry';
-import type { PaginatedResult } from '../../src/types/api';
+import type { GitHubGistListItem, PaginatedResult } from '../../src/types/api';
 
 describe('GitHub API Client', () => {
   let fetchMock: ReturnType<typeof vi.fn>;
@@ -712,7 +712,7 @@ describe('GitHub API Client', () => {
           })
         );
 
-      const result: PaginatedResult<GitHubGist> = await listGists();
+      const result: PaginatedResult<GitHubGistListItem> = await listGists();
 
       const file = result.data[0]?.files['a.js'];
       expect(file).toBeDefined();
@@ -763,7 +763,7 @@ describe('GitHub API Client', () => {
       vi.mocked(getEtag).mockResolvedValue({
         etag: '"stripped-etag"',
         data: {
-          data: [strippedCached],
+          data: [strippedCached as unknown as GitHubGistListItem],
           pagination: { nextPage: 2, prevPage: null, firstPage: 1, lastPage: 5, totalPages: 5 },
         },
       });
@@ -826,6 +826,89 @@ describe('GitHub API Client', () => {
       expect(result.pagination?.lastPage).toBe(10);
       expect(result.pagination?.totalPages).toBe(10);
       expect(result.data[0]?.files['a.js']?.content).toBeUndefined();
+    });
+
+    it('does not corrupt Object.prototype when a file is named "__proto__"', async () => {
+      // JSON.parse preserves "__proto__" as a regular own property, unlike
+      // the object-literal syntax `{ __proto__: ... }` which would set the
+      // prototype. This simulates a real API response that contains a
+      // "__proto__" key.
+      const protoGist = JSON.parse(
+        '{"id":"gist-proto","description":"Proto pollution attempt","public":true,"files":{"__proto__":{"filename":"__proto__","type":"text/plain","language":"Plain Text","raw_url":"https://gist.githubusercontent.com/raw/gist-proto/__proto__","size":0,"truncated":false,"content":"polluted"}},"html_url":"https://gist.github.com/gist-proto","git_pull_url":"https://gist.github.com/gist-proto.git","git_push_url":"https://gist.github.com/gist-proto.git","created_at":"2024-01-01T00:00:00Z","updated_at":"2024-01-01T00:00:00Z","owner":{"login":"attacker","id":2,"avatar_url":"...","html_url":"..."}}'
+      );
+
+      // Snapshot a known-trustworthy Object.prototype.polluted before the call
+      const beforeProto = (Object.prototype as Record<string, unknown>).polluted;
+
+      fetchMock
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify([protoGist]), { status: 200 }));
+
+      const result = await listGists();
+
+      // The __proto__ key must be a real own property of the files record,
+      // not a poisoned prototype chain entry.
+      const filesRecord = result.data[0]?.files as Record<string, unknown>;
+      expect(Object.hasOwn(filesRecord, '__proto__')).toBe(true);
+      expect(Object.keys(filesRecord)).toEqual(['__proto__']);
+
+      // Object.prototype must not have been polluted
+      expect((Object.prototype as Record<string, unknown>).polluted).toBe(beforeProto);
+      expect(({} as { polluted?: boolean }).polluted).toBeUndefined();
+    });
+
+    it('does not let a "constructor" filename affect Object.constructor', async () => {
+      const originalConstructor = Object.constructor;
+      const constructorGist = {
+        id: 'gist-ctor',
+        description: 'Constructor key attempt',
+        public: true,
+        files: {
+          constructor: {
+            filename: 'constructor',
+            type: 'text/plain',
+            language: 'Plain Text',
+            raw_url: 'https://gist.githubusercontent.com/raw/gist-ctor/constructor',
+            size: 0,
+            truncated: false,
+            content: 'not-a-real-constructor',
+          },
+        },
+        html_url: 'https://gist.github.com/gist-ctor',
+        git_pull_url: 'https://gist.github.com/gist-ctor.git',
+        git_push_url: 'https://gist.github.com/gist-ctor.git',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+        owner: { login: 'attacker', id: 3, avatar_url: '...', html_url: '...' },
+      } as unknown as GitHubGist;
+
+      fetchMock
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify([constructorGist]), { status: 200 }));
+
+      const result = await listGists();
+
+      // The constructor key must be a real own property, not a poisoned prototype entry
+      const filesRecord = result.data[0]?.files as Record<string, unknown>;
+      expect(Object.hasOwn(filesRecord, 'constructor')).toBe(true);
+
+      // Object.constructor must remain the built-in Function constructor
+      expect(Object.constructor).toBe(originalConstructor);
+    });
+
+    it('returns files with content=undefined at runtime (type-accuracy contract)', async () => {
+      const fullGist = makeGistWithContent('gist-type', 'a.js', 'should-be-stripped', true);
+
+      fetchMock
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify([fullGist]), { status: 200 }));
+
+      const result = await listGists();
+
+      const file = result.data[0]?.files['a.js'];
+      // Runtime contract mirrors the type: GitHubGistListItem files have no `content`
+      expect(file?.content).toBeUndefined();
+      expect(file?.truncated).toBeUndefined();
     });
   });
 });

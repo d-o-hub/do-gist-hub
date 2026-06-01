@@ -7,10 +7,11 @@
 
 import type {
   CreateGistRequest,
-  GistFile,
+  GistListFile,
   GistRevision,
   GitHubError,
   GitHubGist,
+  GitHubGistListItem,
   PaginatedResult,
   PaginationInfo,
   TokenInfo,
@@ -139,12 +140,14 @@ function parseLinkHeader(linkHeader: string | null): PaginationInfo {
   return result;
 }
 
-function stripFileContent<T extends GitHubGist>(gists: T[]): T[] {
+function stripFileContent<T extends GitHubGist>(
+  gists: T[]
+): Array<Omit<T, 'files'> & { files: Record<string, GistListFile> }> {
   return gists.map((g) => {
-    const strippedFiles: Record<string, GistFile> = {};
+    const strippedFiles: Record<string, GistListFile> = Object.create(null);
     for (const [name, f] of Object.entries(g.files)) {
       const { content: _content, truncated: _truncated, ...rest } = f;
-      strippedFiles[name] = rest as GistFile;
+      strippedFiles[name] = rest as GistListFile;
     }
     return { ...g, files: strippedFiles };
   });
@@ -286,7 +289,7 @@ function fetchWithEtag<T>(url: string, context: string): Promise<T> {
  */
 export async function listGists(
   options: { page?: number; perPage?: number; since?: string } = {}
-): Promise<PaginatedResult<GitHubGist>> {
+): Promise<PaginatedResult<GitHubGistListItem>> {
   const { page = 1, perPage = 30, since } = options;
 
   const params = new URLSearchParams({
@@ -296,7 +299,7 @@ export async function listGists(
   });
 
   const url = `${BASE_URL}/users/${await getCurrentUsername()}/gists?${params}`;
-  return fetchWithEtag<PaginatedResult<GitHubGist>>(url, 'listGists');
+  return fetchWithEtag<PaginatedResult<GitHubGistListItem>>(url, 'listGists');
 }
 
 /**
@@ -304,7 +307,7 @@ export async function listGists(
  */
 export function listStarredGists(
   options: { page?: number; perPage?: number } = {}
-): Promise<PaginatedResult<GitHubGist>> {
+): Promise<PaginatedResult<GitHubGistListItem>> {
   const { page = 1, perPage = 30 } = options;
 
   const params = new URLSearchParams({
@@ -313,7 +316,7 @@ export function listStarredGists(
   });
 
   const url = `${BASE_URL}/gists/starred?${params}`;
-  return fetchWithEtag<PaginatedResult<GitHubGist>>(url, 'listStarredGists');
+  return fetchWithEtag<PaginatedResult<GitHubGistListItem>>(url, 'listStarredGists');
 }
 
 /**

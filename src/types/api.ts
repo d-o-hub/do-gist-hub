@@ -102,6 +102,26 @@ export interface PaginationInfo {
 }
 
 /**
+ * Gist file as returned in list responses (content stripped for lazy hydration per ADR-016).
+ * Use GistFile for the detail view (getGist) which still returns full content.
+ */
+export interface GistListFile {
+  filename: string;
+  type?: string;
+  language?: string;
+  raw_url?: string;
+  size?: number;
+}
+
+/**
+ * GitHub Gist in list responses (files stripped of content per ADR-016).
+ * Use GitHubGist for the detail view (getGist) which still returns full content.
+ */
+export type GitHubGistListItem = Omit<GitHubGist, 'files'> & {
+  files: Record<string, GistListFile>;
+};
+
+/**
  * Paginated API result wrapper
  */
 export interface PaginatedResult<T> {
