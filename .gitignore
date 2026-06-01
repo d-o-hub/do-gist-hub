@@ -57,6 +57,16 @@ htmlcov/
 *.bak
 *.backup
 
+# Android signing material — keystores and base64 exports must never
+# enter the repo. The CI workflow decodes the keystore from
+# ANDROID_KEYSTORE_BASE64 at build time and discards it on runner
+# teardown (adr-029). Local copies live in keystore/ alongside this
+# gitignore exclusion.
+keystore/
+*.jks
+*.keystore
+*.b64
+
 # Compressed files
 *.zip
 *.gz
