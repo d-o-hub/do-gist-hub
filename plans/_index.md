@@ -129,10 +129,11 @@ These numbered plans document the project's foundation and are considered stable
 | `059-goap-resolve-pre-existing-ci-issues.md`              | GOAP          | Complete ✅ | Fix vitest EnvironmentTeardownError and WebKit flaky star-toggle test |
 | `060-goap-plain-text-paste-llm-gist-creation.md`          | GOAP          | Active      | Plain text paste parser, LLM-assisted gist creation, drag-and-drop file import |
 | `061-progress-update-2026-05-30-implementation-gaps.md`    | Progress      | Complete ✅ | Implementation gaps audit: ADR-016 lazy hydration missing, F-Droid MR not submitted, GOAP 060 zero implementation |
+| `063-pre-existing-ci-issues-2026-06-01.md`                | Analysis      | Active      | Pre-existing CI issues: html-escaper CJS fix, commitlint failures, F-Droid APK build failure |
 
 ## Quick reference: ADR numbers in use
 
 `adr-001` through `adr-033` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-034`
-**Next available plan/GOAP number**: `062`
-**Next available GOAP action number**: New GOAP plan = `062`
+**Next available plan/GOAP number**: `064`
+**Next available GOAP action number**: New GOAP plan = `064`

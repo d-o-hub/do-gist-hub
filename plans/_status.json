@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "lastUpdated": "2026-05-30T12:00:00Z",
+  "lastUpdated": "2026-06-01T19:57:00Z",
   "sprintComplete": {
     "038-sprint1": "2026-05-16",
     "038-sprint2": "2026-05-16",
@@ -326,6 +326,11 @@
       "status": "complete",
       "summary": "Plain text paste parser, LLM-assisted gist creation, drag-and-drop file import"
     },
+    "063-pre-existing-ci-issues-2026-06-01.md": {
+      "type": "analysis",
+      "status": "active",
+      "summary": "Pre-existing CI issues: html-escaper CJS fix, commitlint failures, F-Droid APK build failure"
+    },
     "062-progress-update-2026-05-30-plan060-completion.md": {
       "type": "progress",
       "status": "complete",
@@ -368,7 +373,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-034",
-    "plan": "062",
-    "goap": "062"
+    "plan": "064",
+    "goap": "064"
   }
 }
