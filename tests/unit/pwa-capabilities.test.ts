@@ -57,6 +57,55 @@ describe('PWA capabilities service', () => {
     expect(capabilities.hasPersistentStorage()).toBe(true);
   });
 
+  it('returns false and does not set the granted flag when persist is denied', async () => {
+    const persisted = vi.fn().mockResolvedValue(false);
+    const persist = vi.fn().mockResolvedValue(false);
+    Object.defineProperty(navigator, 'storage', {
+      configurable: true,
+      value: { persist, persisted },
+    });
+
+    const granted = await capabilities.requestPersistentStorage();
+    expect(granted).toBe(false);
+    expect(capabilities.hasPersistentStorage()).toBe(false);
+  });
+
+  it('returns false when persist() throws', async () => {
+    const persisted = vi.fn().mockResolvedValue(false);
+    const persist = vi.fn().mockRejectedValue(new Error('denied'));
+    Object.defineProperty(navigator, 'storage', {
+      configurable: true,
+      value: { persist, persisted },
+    });
+
+    const granted = await capabilities.requestPersistentStorage();
+    expect(granted).toBe(false);
+  });
+
+  it('swallows errors thrown by setAppBadge', async () => {
+    const setAppBadge = vi.fn().mockRejectedValue(new Error('not-allowed'));
+    Object.defineProperty(navigator, 'setAppBadge', {
+      configurable: true,
+      value: setAppBadge,
+    });
+    Object.defineProperty(navigator, 'clearAppBadge', {
+      configurable: true,
+      value: undefined,
+    });
+
+    await expect(capabilities.setSyncBadge(2)).resolves.toBeUndefined();
+  });
+
+  it('notifies listeners when the app is installed', () => {
+    capabilities.init();
+    const listener = vi.fn();
+    capabilities.onInstallPromptChange(listener);
+    window.dispatchEvent(new Event('appinstalled'));
+    // last call should have reported unavailability
+    const lastCall = listener.mock.calls[listener.mock.calls.length - 1];
+    expect(lastCall?.[0]).toBe(false);
+  });
+
   it('clears the app badge when count is zero or negative', async () => {
     const clearAppBadge = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'setAppBadge', {
