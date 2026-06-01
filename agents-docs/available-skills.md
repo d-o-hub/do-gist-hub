@@ -17,7 +17,7 @@
 | `memory-leak-prevention` | Cleanup patterns                       |
 | `offline-indexeddb`      | IndexedDB schema & operations          |
 | `github-gist-api`        | Gist API client with pagination        |
-| `pwa-shell`              | Service worker & offline caching       |
+| `pwa-shell`              | Service worker, install prompt, persistent storage, app badge, share API |
 | `capacitor-android`      | Android packaging                      |
 | `playwright-quality`     | Cross-browser/mobile testing           |
 | `reviewer-evaluator`     | Code review quality gates              |

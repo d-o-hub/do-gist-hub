@@ -19,6 +19,8 @@ All significant updates and improvements
 - Add keyboard activation for Gist cards ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([8bc6214](https://github.com/d-o-hub/do-gist-hub/commit/8bc6214e2ac4553721f71fa1e20f21cadc05a88e))
 - Implement plan 060 - paste parser, LLM integration, drag-and-drop ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([6ee35ef](https://github.com/d-o-hub/do-gist-hub/commit/6ee35ef3d1b35463d0976be4b095f5febc764aac))
 - Resolve issues 214, 215, 216 - F-Droid CI, telemetry wiring, lazy hydration ([#218](https://github.com/d-o-hub/do-gist-hub/issues/218)) ・ by d.o. ([@d-o-hub](https://github.com/d-o-hub)) ([e99b25a](https://github.com/d-o-hub/do-gist-hub/commit/e99b25a6879a08230bc0af8fd45fda19c2fe8c27))
+- Adopt git-cliff for automated, categorized changelog generation ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([e9d6677](https://github.com/d-o-hub/do-gist-hub/commit/e9d667758866f0e0f559c86d1d5baad28c2f5229))
+- Pwa install prompt, persistent storage, app badge, share, copy url ・ by d.o. ([@do-ops885](https://github.com/do-ops885)) ([589e4af](https://github.com/d-o-hub/do-gist-hub/commit/589e4af4ce14cef5fcd25275c5563449f3427345))
 
 ### 🐛 Bug Fixes
 

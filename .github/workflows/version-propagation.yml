@@ -34,18 +34,19 @@ jobs:
           VERSION="${{ steps.version.outputs.VERSION }}"
           sed -i "0,/\[Unreleased\]/s//[$VERSION]/" CHANGELOG.md || true
       - name: Update package.json version
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          VERSION="${{ steps.version.outputs.VERSION }}"
           node -e "
             const fs = require('fs');
             const pkgPath = 'package.json';
             const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-            if (pkg.version !== VERSION) {
-              pkg.version = VERSION;
+            if (pkg.version !== process.env.VERSION) {
+              pkg.version = process.env.VERSION;
               fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-              console.log('Updated package.json version to ' + VERSION);
+              console.log('Updated package.json version to ' + process.env.VERSION);
             } else {
-              console.log('package.json version already matches: ' + VERSION);
+              console.log('package.json version already matches: ' + process.env.VERSION);
             }
           "
       - name: Commit and push changes

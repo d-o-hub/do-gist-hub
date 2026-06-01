@@ -222,9 +222,89 @@ npx lighthouse http://localhost:4173 --output=json
 npm run test:offline
 ```
 
+## Modern Web API Integrations
+
+Beyond the service worker, a 2026 PWA can adopt several browser APIs to feel native. Reference implementation: `src/services/pwa/capabilities.ts` in this repo.
+
+### Install Prompt (`beforeinstallprompt`)
+
+Capture the event at app init and surface a deferred install CTA. Honor a 7-day dismissal cooldown.
+
+```typescript
+let deferredPrompt: BeforeInstallPromptEvent | null = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e as BeforeInstallPromptEvent;
+  // Show install CTA in your nav
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  // Hide install CTA
+});
+
+async function promptInstall(): Promise<'accepted' | 'dismissed' | 'unavailable'> {
+  if (!deferredPrompt) return 'unavailable';
+  await deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  return outcome;
+}
+```
+
+### Persistent Storage (`navigator.storage.persist`)
+
+Critical for offline-first apps so IndexedDB isn't evicted under storage pressure. Request after first IndexedDB write.
+
+```typescript
+async function requestPersistentStorage(): Promise<boolean> {
+  if (!navigator.storage?.persist) return false;
+  if (await navigator.storage.persisted()) return true;
+  return navigator.storage.persist();
+}
+```
+
+### App Badge (`navigator.setAppBadge`)
+
+Mirror pending operation counts (sync queue, notifications) to the PWA app icon.
+
+```typescript
+async function setSyncBadge(count: number): Promise<void> {
+  if (!('setAppBadge' in navigator)) return;
+  if (count <= 0) {
+    await navigator.clearAppBadge?.();
+  } else {
+    await navigator.setAppBadge(count);
+  }
+}
+```
+
+### Web Share (`navigator.share`)
+
+Mobile share-sheet integration. Always provide a clipboard fallback for unsupported browsers.
+
+```typescript
+async function share(data: ShareData): Promise<void> {
+  if ('share' in navigator) {
+    try {
+      await navigator.share(data);
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      await navigator.clipboard.writeText(data.url ?? '');
+    }
+  } else {
+    await navigator.clipboard.writeText(data.url ?? '');
+  }
+}
+```
+
 ## References
 
 - https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Best_practices
 - https://capacitorjs.com/docs/web/progressive-web-apps - PWA + Capacitor
+- https://developer.mozilla.org/en-US/docs/Web/API/Window/beforeinstallprompt_event
+- https://developer.mozilla.org/en-US/docs/Web/API/Storage_API - persistent storage
+- https://developer.mozilla.org/en-US/docs/Web/API/Badging_API
 - `AGENTS.md` - PWA and offline-first rules
 - `offline-indexeddb` skill - Primary offline storage

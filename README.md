@@ -32,6 +32,12 @@
   - **ETags**: Conditional GETs using IndexedDB-cached ETags to skip 304 payloads.
   - **Lazy Hydration**: Fetches metadata first, loads full gist content only on demand.
   - **Rate Limit Awareness**: Pauses background sync when API limits are critically low.
+- ✓ **PWA Capabilities**:
+  - **Install Prompt**: Captures `beforeinstallprompt` and surfaces a one-click install CTA in the sidebar (7-day dismissal cooldown).
+  - **Persistent Storage**: Requests `navigator.storage.persist()` to keep IndexedDB-resident gists available under storage pressure.
+  - **App Badge**: Mirrors the pending sync queue length to the PWA icon via the Badging API.
+  - **Native Share**: Gist detail uses the Web Share API on supported browsers with a clipboard fallback.
+- ✓ **Discoverability**: Open in GitHub, Copy URL, and Share actions on the gist detail header — every gist is one tap from the web version.
 
 ---
 
