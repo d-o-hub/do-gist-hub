@@ -1,5 +1,7 @@
 # F-Droid Deployment Guide
 
+> ⚠️ **Historical / pre-2026 reference.** The canonical, up-to-date F-Droid guide is **[`FDROID_GUIDE.md`](./FDROID_GUIDE.md)**. This file is preserved for context only — do not edit it without also updating the canonical guide.
+
 > **Free alternative to Google Play Store** — no developer account fee required.
 > Publish d.o. Gist Hub to the F-Droid open-source app store.
 

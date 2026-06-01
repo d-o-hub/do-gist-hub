@@ -1,5 +1,7 @@
 # F-Droid Submission Checklist
 
+> ⚠️ **Historical / pre-2026 reference.** The canonical, up-to-date F-Droid guide is **[`FDROID_GUIDE.md`](./FDROID_GUIDE.md)**. This checklist is preserved for context only — do not edit it without also updating the canonical guide.
+
 > **Goal**: Publish d.o. Gist Hub on F-Droid — the free open-source app store.
 > **Cost**: $0 (no developer account fee).
 > **Track in**: `plans/047-v0.3.0-scope.md` — Goal 1 (F-Droid Publication).

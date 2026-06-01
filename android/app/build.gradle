@@ -45,10 +45,18 @@ android {
          *
          * Build:  ./gradlew assembleFdroid
          * Output: app/build/outputs/apk/fdroid/app-fdroid-unsigned.apk
+         *
+         * `matchingFallbacks ['release']` is required because the Capacitor
+         * library modules (:capacitor-android, :capacitor-cordova-android-plugins)
+         * only publish debug and release variants. Without this, AGP fails to
+         * resolve :app:fdroidCompileClasspath with:
+         *   "No matching variant of project :capacitor-android was found. ...
+         *    the consumer needed ... BuildTypeAttr with value 'fdroid'"
          */
         fdroid {
             initWith release
             signingConfig null
+            matchingFallbacks ['release']
         }
     }
 }
