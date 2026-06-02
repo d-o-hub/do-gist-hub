@@ -374,7 +374,7 @@ export function render(container: HTMLElement): void {
           submitBtn.disabled = true;
           submitBtn.setAttribute('aria-busy', 'true');
           submitBtn.innerHTML =
-            '<span class="btn-spinner" aria-hidden="true"></span><span class="btn-label">CREATING...</span>';
+            '<span class="btn-spinner" aria-hidden="true"></span><span class="btn-label">Creating...</span>';
         }
 
         try {

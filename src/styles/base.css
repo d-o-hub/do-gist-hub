@@ -518,6 +518,13 @@ body {
 
 /* Gist card title: prevent overflow with long descriptions */
 .gist-card-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-top: var(--space-1);
   word-break: break-word;
   overflow-wrap: anywhere;
   min-width: 0;
@@ -545,16 +552,6 @@ body {
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
-}
-
-.gist-card-title {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-  color: var(--color-text);
-  margin-top: var(--space-1);
 }
 
 .micro-label {

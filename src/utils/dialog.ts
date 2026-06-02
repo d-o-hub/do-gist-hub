@@ -60,7 +60,7 @@ export function showConfirmDialog(
   return new Promise((resolve) => {
     const overlay = document.createElement('div');
     overlay.className = 'confirm-overlay';
-    const dialogId = `dialog-${Date.now()}`;
+    const dialogId = `dialog-${crypto.randomUUID()}`;
 
     const confirmClass = variant === 'danger' ? 'btn btn-danger' : 'btn btn-primary';
 

@@ -155,7 +155,7 @@ export function bindEditEvents(
           submitBtn.disabled = true;
           submitBtn.setAttribute('aria-busy', 'true');
           submitBtn.innerHTML =
-            '<span class="btn-spinner" aria-hidden="true"></span><span class="btn-label">SAVING...</span>';
+            '<span class="btn-spinner" aria-hidden="true"></span><span class="btn-label">Saving...</span>';
         }
 
         try {
