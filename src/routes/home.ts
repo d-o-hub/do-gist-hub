@@ -37,6 +37,16 @@ export function render(container: HTMLElement, params?: Record<string, string>):
   container.innerHTML = getHomeHtml(currentFilter, currentSort, searchQuery);
   updateList();
 
+  // After the first successful render, mark the list as arrived so
+  // subsequent re-renders (filter / sort / search) don't re-trigger
+  // the entrance animation. The CSS keyframe `card-enter` is suppressed
+  // for [data-arrived="true"] children. This keeps the choreographed
+  // reveal as a one-time arrival signal.
+  requestAnimationFrame(() => {
+    const list = container.querySelector('#gist-list');
+    if (list) (list as HTMLElement).dataset.arrived = 'true';
+  });
+
   bindEvents(signal);
 
   function getHomeHtml(filter: Filter, sort: Sort, query: string): string {

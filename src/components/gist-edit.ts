@@ -7,6 +7,7 @@ import type { GistRecord } from '../services/db';
 import { getGist } from '../services/db';
 import { sanitizeHtml } from '../services/security/dom';
 import gistStore from '../stores/gist-store';
+import { EmptyState } from './ui/empty-state';
 import { toast } from './ui/toast';
 // import { customConfirm } from './app';
 
@@ -38,7 +39,7 @@ export function renderEditForm(gist: GistRecord): string {
         <h1 class="detail-title">EDIT GIST</h1>
       </header>
 
-      <form id="edit-gist-form" class="gist-form edit-form-p">
+      <form id="edit-gist-form" class="gist-form edit-form-p form-stagger">
         <div class="form-group">
           <label class="form-label">DESCRIPTION</label>
           <input type="text" id="edit-description" name="description" class="form-input" value="${sanitizeHtml(gist.description || '')}" />
@@ -149,6 +150,14 @@ export function bindEditEvents(
           container.querySelector('#edit-description') as HTMLInputElement
         )?.value.trim();
 
+        const submitBtn = container.querySelector('#edit-submit-btn') as HTMLButtonElement;
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.setAttribute('aria-busy', 'true');
+          submitBtn.innerHTML =
+            '<span class="btn-spinner" aria-hidden="true"></span><span class="btn-label">SAVING...</span>';
+        }
+
         try {
           const result = await gistStore.updateGist(gistId, { description, files });
           if (signal?.aborted) return;
@@ -158,6 +167,12 @@ export function bindEditEvents(
           }
         } catch {
           toast.error('FAILED TO UPDATE GIST');
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.removeAttribute('aria-busy');
+            submitBtn.innerHTML = '<span class="btn-label">SAVE CHANGES</span>';
+          }
         }
       })();
     },
@@ -175,9 +190,12 @@ export async function loadEditForm(
     const gist = await getGist(gistId);
     if (signal?.aborted) return;
     if (!gist) {
-      container.innerHTML =
-        '<div class="error-state"><p>GIST NOT FOUND</p><button class="btn btn-ghost" id="edit-back-btn">← BACK</button></div>';
-      container.querySelector('#edit-back-btn')?.addEventListener('click', onBack, { signal });
+      container.innerHTML = EmptyState.render({
+        title: 'Gist Not Found',
+        description: 'This gist may have been deleted or you do not have permission to edit it.',
+        actionLabel: 'Go Back',
+      });
+      container.querySelector('.empty-state-action')?.addEventListener('click', onBack, { signal });
       return;
     }
     container.innerHTML = renderEditForm(gist);

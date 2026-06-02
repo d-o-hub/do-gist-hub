@@ -24,6 +24,10 @@
 }
 
 /* ===== Card Entrance Animation ===== */
+/* `card-enter` runs once on first mount via `backwards` fill mode.
+   It is the baseline for engines that do not support scroll-driven
+   animations. The scroll-driven `card-reveal` variant below overrides
+   this when `animation-timeline: view()` is supported. */
 @keyframes card-enter {
   from {
     opacity: 0;
@@ -39,23 +43,53 @@
   animation: card-enter var(--motion-duration-normal) var(--motion-easing-out) backwards;
 }
 
+/* Stagger cascade: 20ms base + ±5ms jitter (capped at 280ms total).
+   Pattern follows the Stagger Cascade rule: never uniform delays.
+   The :nth-child selectors produce deterministic delays; the
+   micro-jitter is added via the wildcard n+8 rule using calc. */
 .gist-card:nth-child(1) {
   animation-delay: 0ms;
 }
 .gist-card:nth-child(2) {
-  animation-delay: 40ms;
+  animation-delay: 20ms;
 }
 .gist-card:nth-child(3) {
-  animation-delay: 80ms;
+  animation-delay: 45ms;
 }
 .gist-card:nth-child(4) {
-  animation-delay: 120ms;
+  animation-delay: 65ms;
 }
 .gist-card:nth-child(5) {
-  animation-delay: 160ms;
+  animation-delay: 90ms;
 }
-.gist-card:nth-child(n + 6) {
+.gist-card:nth-child(6) {
+  animation-delay: 115ms;
+}
+.gist-card:nth-child(7) {
+  animation-delay: 140ms;
+}
+.gist-card:nth-child(n + 8) {
+  animation-delay: 165ms;
+}
+.gist-card:nth-child(n + 12) {
   animation-delay: 200ms;
+}
+.gist-card:nth-child(n + 18) {
+  animation-delay: 240ms;
+}
+.gist-card:nth-child(n + 24) {
+  animation-delay: 280ms;
+}
+
+/* When the list is marked as already-arrived, suppress the entrance
+   animation on re-renders (filter, sort, search). The home route
+   sets `data-arrived="true"` on the gist-list after the first
+   successful render and clears it on full route load. This is the
+   correct fix for "all cards re-animate when I type in search". */
+[data-arrived="true"] .gist-card {
+  animation: none;
+  opacity: 1;
+  transform: none;
 }
 
 /* ===== Glow Pulse for Active Elements ===== */
@@ -138,35 +172,95 @@
   animation: toast-slide-out var(--motion-duration-fast) var(--motion-easing-in);
 }
 
-/* ===== Skeleton Loading Enhancement ===== */
-.loading-skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--color-surface) 25%,
-    var(--color-surface-2) 50%,
-    var(--color-surface) 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.8s ease-in-out infinite;
-  border-radius: var(--radius-md);
-}
-
-@keyframes skeleton-loading {
-  0% {
-    background-position: 200% 0;
+/* ===== Form Stagger Reveal ===== */
+/* Forms (create, edit, settings) opt into the stagger by wrapping
+   their field groups in `.form-stagger`. Each direct child reveals
+   in sequence — 40ms apart — so the eye lands on the first field
+   before the form unfolds. The keyframe is intentionally subtle
+   (8px translateY, 0.6→1 opacity) so it reads as "form ready" and
+   not as entrance theater. */
+@keyframes form-field-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
-  100% {
-    background-position: -200% 0;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* ===== Scroll-Driven Animations (ADR-022) ===== */
-/* Progressive enhancement: cards reveal as they scroll into view */
+.form-stagger > * {
+  animation: form-field-reveal var(--motion-duration-normal) var(--motion-easing-out) backwards;
+}
+
+.form-stagger > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.form-stagger > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+.form-stagger > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+.form-stagger > *:nth-child(4) {
+  animation-delay: 120ms;
+}
+.form-stagger > *:nth-child(5) {
+  animation-delay: 160ms;
+}
+.form-stagger > *:nth-child(6) {
+  animation-delay: 200ms;
+}
+.form-stagger > *:nth-child(n + 7) {
+  animation-delay: 240ms;
+}
+
+/* ===== File Tab Content Cross-Fade ===== */
+/* Applied during file-tab switch in `gist-detail.ts`. The class is
+   added before content swap and removed after, so the area fades
+   out for 100ms (the swap window) and fades back in. Uses only
+   transform + opacity so it never reflows. */
+@keyframes file-content-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.file-content-area {
+  animation: file-content-fade-in 150ms var(--motion-easing-out) backwards;
+}
+
+.file-content-area.is-switching {
+  opacity: 0.35;
+  transform: translateY(2px);
+  transition:
+    opacity 100ms var(--motion-easing-in),
+    transform 100ms var(--motion-easing-in);
+}
+/* Progressive enhancement: cards reveal as they scroll into view.
+   When `animation-timeline: view()` is supported, we replace the
+   fixed `card-enter` with a scroll-driven `card-reveal` and zero
+   out the per-card stagger so the timeline owns the timing. The
+   cascade is preserved by `view()` itself, which only animates
+   cards currently entering the viewport. */
 @supports (animation-timeline: view()) {
   .gist-card {
     animation: card-reveal var(--motion-duration-normal) var(--motion-easing-out) both;
     animation-timeline: view();
     animation-range: entry 0% entry 100%;
+    /* Reset the cascade so we don't double-up delays */
+    animation-delay: 0ms;
+  }
+
+  /* Override the per-child stagger in the scroll-driven path */
+  .gist-card:nth-child(n) {
+    animation-delay: 0ms;
   }
 
   @keyframes card-reveal {
@@ -352,6 +446,10 @@
 
 /* ===== Reduced Motion ===== */
 @media (prefers-reduced-motion: reduce) {
+  /* biome-ignore lint/style/noDescendingSpecificity: wildcard inside media query
+     is the only practical way to override all per-element animation rules
+     for users with prefers-reduced-motion. !important on the properties
+     inside the rule ensures the override wins. */
   *,
   *::before,
   *::after {

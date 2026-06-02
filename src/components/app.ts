@@ -391,13 +391,30 @@ export class App {
 
   private async updateSyncIndicator(): Promise<void> {
     const el = this.container?.querySelector('#sync-indicator');
+    if (!el) return;
     const online = networkMonitor.isOnline();
     const len = await syncQueue.getQueueLength();
     const status = online ? (len > 0 ? 'syncing' : 'online') : 'offline';
-    if (el) {
-      el.setAttribute('data-status', status);
-      el.innerHTML = `<span class="sync-dot" aria-hidden="true"></span><span class="sr-only">${status}</span>`;
-    }
+    const previousStatus = el.getAttribute('data-status');
+    if (previousStatus === status) return;
+
+    el.setAttribute('data-status', status);
+    el.innerHTML = `<span class="sync-dot" aria-hidden="true"></span><span class="sr-only">${status}</span>`;
+
+    // Single-shot state-change pulse so the indicator reads as motion
+    // when the status flips, not just when it stays. The class is
+    // removed on animationend so the next change can fire it again.
+    el.classList.remove('sync-status-changed');
+    // Force a reflow so re-adding the class restarts the animation.
+    void (el as HTMLElement).offsetWidth;
+    el.classList.add('sync-status-changed');
+    el.addEventListener(
+      'animationend',
+      () => {
+        el.classList.remove('sync-status-changed');
+      },
+      { once: true }
+    );
   }
 
   private async showMobileMenu(): Promise<void> {

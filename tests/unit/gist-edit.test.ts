@@ -1,7 +1,7 @@
 /**
  * Unit tests for Gist Edit Component
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -34,7 +34,7 @@ vi.mock('../../src/components/ui/toast', () => ({
 
 // ── Imports (after mocks) ───────────────────────────────────────────
 
-import { renderEditForm, bindEditEvents, loadEditForm } from '../../src/components/gist-edit';
+import { bindEditEvents, loadEditForm, renderEditForm } from '../../src/components/gist-edit';
 import { getGist } from '../../src/services/db';
 import gistStore from '../../src/stores/gist-store';
 
@@ -45,7 +45,11 @@ function makeGist(id = 'gist-1', overrides: Record<string, unknown> = {}) {
     id,
     description: 'Test Gist',
     files: {
-      'example.js': { filename: 'example.js', content: 'console.log("hello");', language: 'JavaScript' },
+      'example.js': {
+        filename: 'example.js',
+        content: 'console.log("hello");',
+        language: 'JavaScript',
+      },
     },
     htmlUrl: `https://gist.github.com/${id}`,
     gitPullUrl: `https://api.github.com/gists/${id}/git/pull`,
@@ -247,8 +251,8 @@ describe('Gist Edit', () => {
       const onBack = vi.fn();
       await loadEditForm('non-existent', container, onBack);
 
-      expect(container.innerHTML).toContain('GIST NOT FOUND');
-      expect(container.innerHTML).toContain('← BACK');
+      expect(container.innerHTML).toContain('Gist Not Found');
+      expect(container.innerHTML).toContain('Go Back');
     });
 
     it('calls getGist with the correct gistId', async () => {
@@ -265,7 +269,7 @@ describe('Gist Edit', () => {
       const onBack = vi.fn();
       await loadEditForm('not-found', container, onBack);
 
-      const backBtn = container.querySelector('#edit-back-btn') as HTMLElement;
+      const backBtn = container.querySelector('.empty-state-action') as HTMLElement;
       expect(backBtn).not.toBeNull();
       backBtn?.click();
 
@@ -372,7 +376,8 @@ describe('Gist Edit', () => {
 
     it('does nothing when add-file section is missing', () => {
       const onBack = vi.fn();
-      container.innerHTML = '<div class="route-edit" data-gist-id="gist-x"><form id="edit-gist-form">';
+      container.innerHTML =
+        '<div class="route-edit" data-gist-id="gist-x"><form id="edit-gist-form">';
       bindEditEvents(container, onBack);
 
       // Click add file button — no section, should not throw
@@ -400,7 +405,6 @@ describe('Gist Edit', () => {
 
   describe('updateGist with changed filename', () => {
     it('uses new filename as key when creating a new file without fileKey', async () => {
-      const { toast } = await import('../../src/components/ui/toast');
       vi.mocked(gistStore.updateGist).mockResolvedValue(true as never);
 
       const onBack = vi.fn();

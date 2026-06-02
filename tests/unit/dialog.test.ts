@@ -1,7 +1,7 @@
 /**
  * Unit tests for Confirm Dialog utility
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -11,8 +11,8 @@ vi.mock('../../src/services/security/dom', () => ({
 
 // ── Imports (after mocks) ───────────────────────────────────────────
 
-import { showConfirmDialog } from '../../src/utils/dialog';
 import { sanitizeHtml } from '../../src/services/security/dom';
+import { showConfirmDialog } from '../../src/utils/dialog';
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
@@ -31,20 +31,20 @@ describe('showConfirmDialog', () => {
     vi.useRealTimers();
     vi.restoreAllMocks();
     // Clean up any leftover overlays
-    document.querySelectorAll('.confirm-overlay').forEach((el) => el.remove());
+    document.querySelectorAll('.confirm-overlay').forEach((el) => void el.remove());
   });
 
   // ── DOM Creation ──────────────────────────────────────────────────
 
   describe('DOM creation', () => {
     it('creates overlay with correct class', () => {
-      showConfirmDialog('Test message');
+      void showConfirmDialog('Test message');
       const overlay = document.querySelector('.confirm-overlay');
       expect(overlay).not.toBeNull();
     });
 
     it('creates dialog with role and aria-modal attributes', () => {
-      showConfirmDialog('Test message');
+      void showConfirmDialog('Test message');
       const dialog = document.querySelector('[role="alertdialog"]');
       expect(dialog).not.toBeNull();
       expect(dialog?.getAttribute('aria-modal')).toBe('true');
@@ -54,40 +54,40 @@ describe('showConfirmDialog', () => {
       expect(describedBy).toBeTruthy();
       const titleEl = labelledBy ? document.getElementById(labelledBy) : null;
       const descEl = describedBy ? document.getElementById(describedBy) : null;
-      expect(titleEl?.textContent).toBe('CONFIRM');
+      expect(titleEl?.textContent).toBe('Are you sure?');
       expect(descEl?.textContent).toBe('Test message');
     });
 
     it('renders title inside dialog', () => {
-      showConfirmDialog('Are you sure?', 'DELETE GIST');
+      void showConfirmDialog('Are you sure?', 'DELETE GIST');
       const title = document.querySelector('.confirm-title');
       expect(title?.textContent).toBe('DELETE GIST');
     });
 
     it('renders message inside dialog', () => {
-      showConfirmDialog('This action cannot be undone');
+      void showConfirmDialog('This action cannot be undone');
       const message = document.querySelector('.confirm-message');
       expect(message?.textContent).toBe('This action cannot be undone');
     });
 
-    it('renders CANCEL and CONFIRM buttons', () => {
-      showConfirmDialog('Test');
+    it('renders Cancel and Confirm buttons', () => {
+      void showConfirmDialog('Test');
       const cancelBtn = document.querySelector('[data-action="cancel"]');
       const confirmBtn = document.querySelector('[data-action="confirm"]');
-      expect(cancelBtn?.textContent).toBe('CANCEL');
-      expect(confirmBtn?.textContent).toBe('CONFIRM');
+      expect(cancelBtn?.textContent).toBe('Cancel');
+      expect(confirmBtn?.textContent).toBe('Confirm');
     });
   });
 
   // ── Sanitization ─────────────────────────────────────────────────
 
   it('sanitizes the title', () => {
-    showConfirmDialog('Message', '<script>alert("xss")</script>');
+    void showConfirmDialog('Message', '<script>alert("xss")</script>');
     expect(sanitizeHtml).toHaveBeenCalledWith('<script>alert("xss")</script>');
   });
 
   it('sanitizes the message', () => {
-    showConfirmDialog('<img onerror="alert(1)" src=x>');
+    void showConfirmDialog('<img onerror="alert(1)" src=x>');
     expect(sanitizeHtml).toHaveBeenCalledWith('<img onerror="alert(1)" src=x>');
   });
 
@@ -121,7 +121,7 @@ describe('showConfirmDialog', () => {
   // ── Animation ────────────────────────────────────────────────────
 
   it('adds visible class via requestAnimationFrame', () => {
-    showConfirmDialog('Animated');
+    void showConfirmDialog('Animated');
     const overlay = document.querySelector('.confirm-overlay');
     expect(overlay?.classList.contains('visible')).toBe(true);
   });
@@ -156,9 +156,9 @@ describe('showConfirmDialog', () => {
 
   // ── Default title ───────────────────────────────────────────────
 
-  it('uses default title "CONFIRM" when title is not provided', () => {
-    showConfirmDialog('Default title');
+  it('uses default title "Are you sure?" when title is not provided', () => {
+    void showConfirmDialog('Default title');
     const title = document.querySelector('.confirm-title');
-    expect(title?.textContent).toBe('CONFIRM');
+    expect(title?.textContent).toBe('Are you sure?');
   });
 });

@@ -68,7 +68,7 @@ export function render(container: HTMLElement): void {
       <header class="detail-header">
         <h2 class="detail-title">Create New Gist</h2>
       </header>
-      <form id="create-gist-form" class="glass-card create-form-p">
+      <form id="create-gist-form" class="glass-card create-form-p form-stagger">
         <div class="form-group">
           <label class="form-label" for="gist-description">Description</label>
           <input type="text" id="gist-description" class="form-input" placeholder="Gist description..." required>
@@ -369,13 +369,29 @@ export function render(container: HTMLElement): void {
       }
 
       void (async () => {
-        const result = await gistStore.createGist(desc, isPublic, files);
-        if (result) {
-          toast.success('GIST CREATED');
-        } else {
-          toast.success('GIST QUEUED FOR SYNC');
+        const submitBtn = container.querySelector('[type="submit"]') as HTMLButtonElement;
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.setAttribute('aria-busy', 'true');
+          submitBtn.innerHTML =
+            '<span class="btn-spinner" aria-hidden="true"></span><span class="btn-label">CREATING...</span>';
         }
-        window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'home' } }));
+
+        try {
+          const result = await gistStore.createGist(desc, isPublic, files);
+          if (result) {
+            toast.success('GIST CREATED');
+          } else {
+            toast.success('GIST QUEUED FOR SYNC');
+          }
+          window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'home' } }));
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.removeAttribute('aria-busy');
+            submitBtn.innerHTML = '<span class="btn-label">CREATE GIST</span>';
+          }
+        }
       })();
     },
     { signal }

@@ -136,5 +136,11 @@ These numbered plans document the project's foundation and are considered stable
 
 `adr-001` through `adr-033` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-034`
+**Next available plan/GOAP number**: `067`
+**Next available GOAP action number**: New GOAP plan = `067`
+: ADR numbers in use
+
+`adr-001` through `adr-033` (gaps: 017-019 reserved)
+**Next available ADR**: `adr-034`
 **Next available plan/GOAP number**: `064`
 **Next available GOAP action number**: New GOAP plan = `064`
