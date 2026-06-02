@@ -91,7 +91,11 @@ jobs:
         run: |
           echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/keystore.jks
           cd android
-          ANDROID_KEYSTORE_PATH=app/keystore.jks \
+          # ANDROID_KEYSTORE_PATH is resolved by app/build.gradle's
+          # `file()` call relative to the app module directory
+          # (android/app/), so the value must be just the basename
+          # when the file is placed at android/app/keystore.jks.
+          ANDROID_KEYSTORE_PATH=keystore.jks \
           ANDROID_KEYSTORE_PASSWORD="$ANDROID_KEYSTORE_PASSWORD" \
           ANDROID_KEY_ALIAS="$ANDROID_KEY_ALIAS" \
           ANDROID_KEY_PASSWORD="$ANDROID_KEY_PASSWORD" \
