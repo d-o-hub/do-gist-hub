@@ -3,8 +3,6 @@
  * Accessible, non-blocking user feedback with success/error/info variants
  */
 
-import { sanitizeHtml } from '../../services/security';
-
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 export interface ToastAction {
@@ -57,23 +55,18 @@ export class ToastManager {
     toast.classList.add('toast', `toast-${type}`, 'toast-enter');
     toast.style.pointerEvents = 'auto';
 
-    const actionHtml = action
-      ? `<button class="toast-action btn btn-ghost" type="button">${sanitizeHtml(action.label)}</button>`
-      : '';
+    const msgSpan = document.createElement('span');
+    msgSpan.className = 'toast-message';
+    msgSpan.textContent = message;
+    toast.appendChild(msgSpan);
 
-    toast.innerHTML = `
-      <span class="toast-message">${sanitizeHtml(message)}</span>
-      ${actionHtml}
-      <button class="toast-close" aria-label="Dismiss notification" type="button">×</button>
-    `;
-
-    container.appendChild(toast);
-    this.toasts.set(id, toast);
-
-    // Action handler
     if (action) {
-      const actionBtn = toast.querySelector('.toast-action');
-      actionBtn?.addEventListener(
+      const actionBtn = document.createElement('button');
+      actionBtn.className = 'toast-action btn btn-ghost';
+      actionBtn.type = 'button';
+      actionBtn.textContent = action.label;
+      toast.appendChild(actionBtn);
+      actionBtn.addEventListener(
         'click',
         () => {
           action.onClick();
@@ -83,9 +76,18 @@ export class ToastManager {
       );
     }
 
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'toast-close';
+    closeBtn.setAttribute('aria-label', 'Dismiss notification');
+    closeBtn.type = 'button';
+    closeBtn.textContent = '×';
+    toast.appendChild(closeBtn);
+
+    container.appendChild(toast);
+    this.toasts.set(id, toast);
+
     // Close handler
-    const closeBtn = toast.querySelector('.toast-close');
-    closeBtn?.addEventListener('click', () => this.dismiss(id), {
+    closeBtn.addEventListener('click', () => this.dismiss(id), {
       signal: this.abortController.signal,
     });
 
