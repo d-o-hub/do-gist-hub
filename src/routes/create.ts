@@ -163,7 +163,7 @@ export function render(container: HTMLElement): void {
     }
 
     // Clear existing files and populate with parsed results
-    filesContainer.innerHTML = '';
+    filesContainer.replaceChildren();
     for (const file of result.files) {
       const id = nextFileId++;
       const row = createFileRow(id, container, signal);
@@ -258,7 +258,7 @@ export function render(container: HTMLElement): void {
       }
 
       // Clear existing files and populate with dropped files
-      filesContainer.innerHTML = '';
+      filesContainer.replaceChildren();
 
       for (const file of textFiles) {
         const id = nextFileId++;
@@ -315,7 +315,7 @@ export function render(container: HTMLElement): void {
                 }
 
                 // Clear existing files and populate with LLM results
-                filesContainer.innerHTML = '';
+                filesContainer.replaceChildren();
                 for (const file of result.files) {
                   const id = nextFileId++;
                   const row = createFileRow(id, container, signal);
