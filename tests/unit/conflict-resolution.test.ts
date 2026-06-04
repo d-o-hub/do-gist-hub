@@ -1,7 +1,7 @@
 /**
  * Unit tests for Conflict Resolution Component
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -41,9 +41,17 @@ vi.mock('../../src/utils/view-transitions', () => ({
 
 vi.mock('../../src/components/ui/empty-state', () => ({
   EmptyState: {
-    render: vi.fn(
-      () => '<div class="empty-state"><h2>No Conflicts</h2></div>'
-    ),
+    render: vi.fn(() => '<div class="empty-state"><h2>No Conflicts</h2></div>'),
+    renderToFragment: vi.fn(() => {
+      const frag = document.createDocumentFragment();
+      const div = document.createElement('div');
+      div.className = 'empty-state';
+      const h2 = document.createElement('h2');
+      h2.textContent = 'No Conflicts';
+      div.appendChild(h2);
+      frag.appendChild(div);
+      return frag;
+    }),
   },
 }));
 
@@ -57,7 +65,14 @@ vi.mock('../../src/components/ui/toast', () => ({
 
 // ── Imports (after mocks) ───────────────────────────────────────────
 
-import { renderConflictList, renderConflictDetail, bindConflictEvents, loadConflictResolution } from '../../src/components/conflict-resolution';
+import {
+  bindConflictEvents,
+  buildConflictDetail,
+  buildConflictList,
+  loadConflictResolution,
+  renderConflictDetail,
+  renderConflictList,
+} from '../../src/components/conflict-resolution';
 import { getConflicts } from '../../src/services/sync/conflict-detector';
 import gistStore from '../../src/stores/gist-store';
 import { announcer } from '../../src/utils/announcer';
@@ -104,32 +119,38 @@ describe('Conflict Resolution', () => {
 
   // ── renderConflictList ──────────────────────────────────────────────
 
-  describe('renderConflictList', () => {
-    it('returns empty state when no conflicts', () => {
-      const html = renderConflictList([]);
+  describe('buildConflictList', () => {
+    /** Helper: render to a wrapper div and return it for querying. */
+    function renderToWrapper(conflicts: ReturnType<typeof makeConflict>[]): HTMLElement {
+      const w = document.createElement('div');
+      w.appendChild(buildConflictList(conflicts as never));
+      return w;
+    }
 
-      // EmptyState.render should be called for the no-conflicts case
-      expect(html).toContain('No Conflicts');
+    it('returns empty state when no conflicts', () => {
+      const w = renderToWrapper([]);
+      expect(w.textContent).toContain('No Conflicts');
     });
 
     it('renders conflict items for active conflicts', () => {
       const conflicts = [makeConflict(), makeConflict({ gistId: 'conflict-2' })];
-      const html = renderConflictList(conflicts);
+      const w = renderToWrapper(conflicts);
 
-      expect(html).toContain('conflict-list');
-      expect(html).toContain('conflict-1');
-      expect(html).toContain('conflict-2');
-      expect(html).toContain('Local description');
-      expect(html).toContain('RESOLVE');
+      expect(w.querySelector('.conflict-list')).not.toBeNull();
+      // gistId stored in dataset (XSS-safe), not textContent
+      const items = w.querySelectorAll('.conflict-item');
+      expect(items.length).toBe(2);
+      expect((items[0] as HTMLElement).dataset.id).toBe('conflict-1');
+      expect((items[1] as HTMLElement).dataset.id).toBe('conflict-2');
+      expect(w.textContent).toContain('Local description');
+      expect(w.textContent).toContain('RESOLVE');
     });
 
     it('renders conflicting fields in the detail chip', () => {
-      const conflicts = [
-        makeConflict({ conflictingFields: ['description', 'content'] }),
-      ];
-      const html = renderConflictList(conflicts);
+      const conflicts = [makeConflict({ conflictingFields: ['description', 'content'] })];
+      const w = renderToWrapper(conflicts);
 
-      expect(html).toContain('description, content');
+      expect(w.textContent).toContain('description, content');
     });
 
     it('renders UNTITLED GIST when description is null', () => {
@@ -142,42 +163,60 @@ describe('Conflict Resolution', () => {
           },
         }),
       ];
-      const html = renderConflictList(conflicts);
+      const w = renderToWrapper(conflicts);
 
-      expect(html).toContain('UNTITLED GIST');
+      expect(w.textContent).toContain('UNTITLED GIST');
     });
   });
 
-  // ── renderConflictDetail ───────────────────────────────────────────
+  // ── buildConflictDetail ───────────────────────────────────────────
 
-  describe('renderConflictDetail', () => {
+  describe('buildConflictDetail', () => {
+    /** Helper: render to a wrapper div and return it for querying. */
+    function renderToWrapper(conflict: ReturnType<typeof makeConflict>): HTMLElement {
+      const w = document.createElement('div');
+      w.appendChild(buildConflictDetail(conflict as never));
+      return w;
+    }
+
     it('renders side-by-side comparison view', () => {
       const conflict = makeConflict();
-      const html = renderConflictDetail(conflict);
+      const w = renderToWrapper(conflict);
 
-      expect(html).toContain('conflict-detail');
-      expect(html).toContain('LOCAL VERSION');
-      expect(html).toContain('REMOTE VERSION');
-      expect(html).toContain('BACK TO LIST');
-      expect(html).toContain('KEEP LOCAL VERSION');
-      expect(html).toContain('USE REMOTE VERSION');
+      expect(w.querySelector('.conflict-detail')).not.toBeNull();
+      expect(w.textContent).toContain('LOCAL VERSION');
+      expect(w.textContent).toContain('REMOTE VERSION');
+      expect(w.textContent).toContain('BACK TO LIST');
+      expect(w.textContent).toContain('KEEP LOCAL VERSION');
+      expect(w.textContent).toContain('USE REMOTE VERSION');
     });
 
     it('marks conflicting fields with has-conflict class', () => {
       const conflict = makeConflict({ conflictingFields: ['description'] });
-      const html = renderConflictDetail(conflict);
+      const w = renderToWrapper(conflict);
 
-      expect(html).toContain('has-conflict');
+      expect(w.querySelector('.has-conflict')).not.toBeNull();
     });
 
-    it('shows <i>No description</i> for missing descriptions', () => {
+    it('shows "No description" text for missing descriptions', () => {
       const conflict = makeConflict({
         localVersion: { description: null, public: true, files: {} },
         remoteVersion: { description: null, public: false, files: {} },
       });
-      const html = renderConflictDetail(conflict);
+      const w = renderToWrapper(conflict);
 
-      expect(html).toContain('<i>No description</i>');
+      // textContent is XSS-safe — no HTML parsing, so <i> is rendered as text
+      const noDescs = w.querySelectorAll('i');
+      expect(noDescs.length).toBe(2);
+      expect(noDescs[0]?.textContent).toBe('No description');
+    });
+
+    it('sets gistId via textContent (XSS-safe)', () => {
+      const conflict = makeConflict({ gistId: 'test" onerror="alert(1)' });
+      const w = renderToWrapper(conflict);
+
+      expect(w.querySelector('[onerror]')).toBeNull();
+      expect(w.textContent).toContain('test" onerror="alert(1)');
     });
   });
 
@@ -195,7 +234,7 @@ describe('Conflict Resolution', () => {
 
     it('handles missing strategy buttons gracefully', () => {
       const onResolve = vi.fn();
-      container.innerHTML = renderConflictDetail(makeConflict());
+      container.replaceChildren(buildConflictDetail(makeConflict() as never));
       bindConflictEvents(container, onResolve);
 
       // Back button should be clickable
@@ -210,9 +249,9 @@ describe('Conflict Resolution', () => {
       ]);
 
       // Render conflict list with resolve button
-      container.innerHTML = renderConflictList([
-        makeConflict({ gistId: 'resolve-test' }),
-      ]);
+      container.replaceChildren(
+        buildConflictList([makeConflict({ gistId: 'resolve-test' })] as never)
+      );
       const onResolve = vi.fn();
       bindConflictEvents(container, onResolve);
 
@@ -225,22 +264,18 @@ describe('Conflict Resolution', () => {
       vi.mocked(getConflicts).mockResolvedValue([
         makeConflict({ gistId: 'resolve-test' }) as never,
       ]);
-      const detail = renderConflictDetail(makeConflict({ gistId: 'resolve-test' }));
-      container.innerHTML = detail;
+      container.replaceChildren(
+        buildConflictDetail(makeConflict({ gistId: 'resolve-test' }) as never)
+      );
       bindConflictEvents(container, onResolve);
 
       // Click local-wins strategy button
-      const localBtn = container.querySelector(
-        '[data-strategy="local-wins"]'
-      ) as HTMLElement;
+      const localBtn = container.querySelector('[data-strategy="local-wins"]') as HTMLElement;
       expect(localBtn).not.toBeNull();
       localBtn?.click();
 
       await vi.waitFor(() => {
-        expect(gistStore.resolveGistConflict).toHaveBeenCalledWith(
-          'resolve-test',
-          'local-wins'
-        );
+        expect(gistStore.resolveGistConflict).toHaveBeenCalledWith('resolve-test', 'local-wins');
       });
     });
   });
@@ -254,17 +289,14 @@ describe('Conflict Resolution', () => {
       await loadConflictResolution(container);
 
       expect(getConflicts).toHaveBeenCalled();
+      expect(container.textContent).toContain('SYNC CONFLICTS');
     });
 
     it('renders conflict detail when currentConflictId matches', async () => {
       // First render the list to set currentConflictId via event binding
-      vi.mocked(getConflicts).mockResolvedValue([
-        makeConflict({ gistId: 'test-id' }) as never,
-      ]);
+      vi.mocked(getConflicts).mockResolvedValue([makeConflict({ gistId: 'test-id' }) as never]);
 
-      container.innerHTML = renderConflictList([
-        makeConflict({ gistId: 'test-id' }),
-      ]);
+      container.replaceChildren(buildConflictList([makeConflict({ gistId: 'test-id' })] as never));
       const onResolve = vi.fn();
       bindConflictEvents(container, onResolve);
 
@@ -273,9 +305,10 @@ describe('Conflict Resolution', () => {
       resolveBtn?.click();
 
       // Now loadConflictResolution should find the conflict and render detail
-      const detail = renderConflictDetail(makeConflict({ gistId: 'test-id' }));
-      expect(detail).toContain('LOCAL VERSION');
-      expect(detail).toContain('REMOTE VERSION');
+      const w = document.createElement('div');
+      w.appendChild(buildConflictDetail(makeConflict({ gistId: 'test-id' }) as never));
+      expect(w.textContent).toContain('LOCAL VERSION');
+      expect(w.textContent).toContain('REMOTE VERSION');
     });
   });
 });
