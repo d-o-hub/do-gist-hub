@@ -418,6 +418,10 @@ export async function exportData(): Promise<string> {
   const metadata = await db.getAll('metadata');
   const logs = await db.getAll('logs');
 
+  // Sentinel: Redact secrets from logs during export as defense-in-depth
+  const { redactAny } = await import('./security/logger');
+  const safeLogs = logs.map((log) => redactAny(log) as LogEntry);
+
   // Sentinel: Sensitive secrets (PATs and encryption keys) are excluded from
   // standard exports. This ensures that a compromised backup file does not
   // leak credentials, although it requires re-authentication on restore.
@@ -438,7 +442,7 @@ export async function exportData(): Promise<string> {
     gists,
     pendingWrites,
     metadata: safeMetadata,
-    logs,
+    logs: safeLogs,
   };
 
   return JSON.stringify(data);

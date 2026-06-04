@@ -1,7 +1,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import 'fake-indexeddb/auto';
-import { exportData, initIndexedDB, setMetadata } from '../../src/services/db';
+import { exportData, getDB, initIndexedDB, setMetadata } from '../../src/services/db';
 
 // Mock app config
 vi.mock('@/config/app.config', () => ({
@@ -39,5 +39,23 @@ describe('exportData security', () => {
     expect(keys).not.toContain('github-refresh-expires');
     expect(keys).not.toContain('github-username');
     expect(keys).not.toContain('llm-config');
+  });
+
+  it('should redact secrets from logs in exportData', async () => {
+    const db = getDB();
+    await db.add('logs', {
+      timestamp: Date.now(),
+      level: 'info',
+      message: 'Fetching gist with ghp_000000000000000000000000000000000000',
+      data: { token: 'github_pat_11AAAAAAA000000000000000000000000000000000000000000000' },
+    });
+
+    const exportedJson = await exportData();
+    const data = JSON.parse(exportedJson);
+
+    const log = data.logs[0];
+    expect(log.message).toContain('[REDACTED]');
+    expect(log.message).not.toContain('ghp_secret');
+    expect(log.data.token).toBe('[REDACTED]');
   });
 });
