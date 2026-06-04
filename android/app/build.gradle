@@ -56,7 +56,7 @@ android {
         fdroid {
             initWith release
             signingConfig null
-            matchingFallbacks ['release']
+            matchingFallbacks = ['release']
         }
     }
 }
