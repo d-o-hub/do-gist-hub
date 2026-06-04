@@ -25,6 +25,17 @@ function formatRelativeTime(dateStr: string): string {
   return `${diffDay}d ago`;
 }
 
+export function buildFileContent(content: string, language?: string): DocumentFragment {
+  const frag = document.createDocumentFragment();
+  const pre = document.createElement('pre');
+  pre.className = `code-block language-${language?.replace(/[^a-z0-9-]/gi, '') || 'text'}`;
+  const code = document.createElement('code');
+  code.textContent = content;
+  pre.appendChild(code);
+  frag.appendChild(pre);
+  return frag;
+}
+
 export function renderFileContent(content: string, language?: string): string {
   return `<pre class="code-block language-${sanitizeHtml(language || 'text')}"><code>${sanitizeHtml(content)}</code></pre>`;
 }
@@ -128,13 +139,24 @@ export async function loadGistDetail(
   } catch (err) {
     safeError('[GistDetail] Failed to load gist', err);
     toast.error('Failed to load gist details');
-    container.innerHTML = `
-      <div class="empty-state-container" role="alert">
-        <h3 class="empty-state-title">Gist Not Found</h3>
-        <p class="empty-state-description">This gist may have been deleted or you do not have permission to view it.</p>
-        <button class="btn btn-primary" id="gist-back-btn">Go Back</button>
-      </div>
-    `;
+    const errWrapper = document.createElement('div');
+    errWrapper.className = 'empty-state-container';
+    errWrapper.setAttribute('role', 'alert');
+    const errTitle = document.createElement('h3');
+    errTitle.className = 'empty-state-title';
+    errTitle.textContent = 'Gist Not Found';
+    errWrapper.appendChild(errTitle);
+    const errDesc = document.createElement('p');
+    errDesc.className = 'empty-state-description';
+    errDesc.textContent =
+      'This gist may have been deleted or you do not have permission to view it.';
+    errWrapper.appendChild(errDesc);
+    const errBtn = document.createElement('button');
+    errBtn.className = 'btn btn-primary';
+    errBtn.id = 'gist-back-btn';
+    errBtn.textContent = 'Go Back';
+    errWrapper.appendChild(errBtn);
+    container.replaceChildren(errWrapper);
     container.querySelector('#gist-back-btn')?.addEventListener('click', onBack, { signal });
   }
 }
@@ -263,7 +285,7 @@ export function bindDetailEvents(
             contentArea.classList.add('is-switching');
             window.setTimeout(() => {
               if (signal?.aborted) return;
-              contentArea.innerHTML = renderFileContent(file.content || '', file.language);
+              contentArea.replaceChildren(buildFileContent(file.content || '', file.language));
               contentArea.setAttribute('aria-labelledby', tab.id);
               contentArea.classList.remove('is-switching');
             }, 100);
@@ -271,15 +293,33 @@ export function bindDetailEvents(
 
           const infoArea = container.querySelector('#file-info');
           if (infoArea) {
-            infoArea.innerHTML = `
-            <div class="file-info-left">
-              <span class="micro-label">Language: ${sanitizeHtml(file.language || 'Unknown')}</span>
-              <span class="micro-label">Raw URL: <a href="${sanitizeHtml(file.rawUrl || '')}" target="_blank" rel="noopener noreferrer">Link</a></span>
-            </div>
-            <button class="btn btn-ghost btn-copy-sm" data-action="copy-content" aria-label="Copy file content">
-              <span class="micro-label">COPY</span>
-            </button>
-          `;
+            infoArea.replaceChildren();
+            const infoLeft = document.createElement('div');
+            infoLeft.className = 'file-info-left';
+            const langSpan = document.createElement('span');
+            langSpan.className = 'micro-label';
+            langSpan.textContent = `Language: ${file.language || 'Unknown'}`;
+            infoLeft.appendChild(langSpan);
+            const rawSpan = document.createElement('span');
+            rawSpan.className = 'micro-label';
+            rawSpan.textContent = 'Raw URL: ';
+            const rawLink = document.createElement('a');
+            rawLink.href = file.rawUrl || '';
+            rawLink.target = '_blank';
+            rawLink.rel = 'noopener noreferrer';
+            rawLink.textContent = 'Link';
+            rawSpan.appendChild(rawLink);
+            infoLeft.appendChild(rawSpan);
+            infoArea.appendChild(infoLeft);
+            const copyContentBtn = document.createElement('button');
+            copyContentBtn.className = 'btn btn-ghost btn-copy-sm';
+            copyContentBtn.dataset.action = 'copy-content';
+            copyContentBtn.setAttribute('aria-label', 'Copy file content');
+            const copyLabel = document.createElement('span');
+            copyLabel.className = 'micro-label';
+            copyLabel.textContent = 'COPY';
+            copyContentBtn.appendChild(copyLabel);
+            infoArea.appendChild(copyContentBtn);
           }
         })();
       },
@@ -309,14 +349,18 @@ export function bindDetailEvents(
               await navigator.clipboard.writeText(text);
               if (signal?.aborted) return;
 
-              const originalText = copyBtn.innerHTML;
-              copyBtn.innerHTML = '<span class="micro-label">✅ COPIED!</span>';
+              const originalChildren = Array.from(copyBtn.childNodes).map((n) => n.cloneNode(true));
+              copyBtn.replaceChildren();
+              const copiedSpan = document.createElement('span');
+              copiedSpan.className = 'micro-label';
+              copiedSpan.textContent = '✅ COPIED!';
+              copyBtn.appendChild(copiedSpan);
               copyBtn.classList.add('btn-success');
               toast.success('COPIED TO CLIPBOARD');
 
               setTimeout(() => {
                 if (signal?.aborted) return;
-                copyBtn.innerHTML = originalText;
+                copyBtn.replaceChildren(...originalChildren);
                 copyBtn.classList.remove('btn-success');
               }, 2000);
             } catch (err) {
