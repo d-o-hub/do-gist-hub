@@ -263,7 +263,10 @@ export class App {
             main as HTMLElement,
             'conflicts',
             async () => {
-              (main as HTMLElement).innerHTML = '<div id="conflict-resolution-container"></div>';
+              (main as HTMLElement).replaceChildren();
+              const conflictDiv = document.createElement('div');
+              conflictDiv.id = 'conflict-resolution-container';
+              (main as HTMLElement).appendChild(conflictDiv);
               const conflictContainer = (main as HTMLElement).querySelector(
                 '#conflict-resolution-container'
               );
@@ -399,7 +402,15 @@ export class App {
     if (previousStatus === status) return;
 
     el.setAttribute('data-status', status);
-    el.innerHTML = `<span class="sync-dot" aria-hidden="true"></span><span class="sr-only">${status}</span>`;
+    el.replaceChildren();
+    const syncDot = document.createElement('span');
+    syncDot.className = 'sync-dot';
+    syncDot.setAttribute('aria-hidden', 'true');
+    el.appendChild(syncDot);
+    const srOnly = document.createElement('span');
+    srOnly.className = 'sr-only';
+    srOnly.textContent = status;
+    el.appendChild(srOnly);
 
     // Single-shot state-change pulse so the indicator reads as motion
     // when the status flips, not just when it stays. The class is
@@ -418,37 +429,7 @@ export class App {
   }
 
   private async showMobileMenu(): Promise<void> {
-    const content = `
-      <nav class="mobile-menu" role="navigation" aria-label="Mobile menu">
-        <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">Navigation</div>
-          <button class="mobile-menu-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" role="menuitem" ${this.currentRoute === 'home' ? 'aria-current="page"' : ''}>
-            Home
-          </button>
-          <button class="mobile-menu-item ${this.currentRoute === 'starred' ? 'active' : ''}" data-route="starred" role="menuitem" ${this.currentRoute === 'starred' ? 'aria-current="page"' : ''}>
-            Starred Gists
-          </button>
-          <button class="mobile-menu-item ${this.currentRoute === 'create' ? 'active' : ''}" data-route="create" role="menuitem" ${this.currentRoute === 'create' ? 'aria-current="page"' : ''}>
-            Create New Gist
-          </button>
-        </div>
-        <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">Offline</div>
-          <button class="mobile-menu-item ${this.currentRoute === 'offline' ? 'active' : ''}" data-route="offline" role="menuitem" ${this.currentRoute === 'offline' ? 'aria-current="page"' : ''}>
-            Sync Status
-          </button>
-          <button class="mobile-menu-item ${this.currentRoute === 'conflicts' ? 'active' : ''}" data-route="conflicts" role="menuitem" ${this.currentRoute === 'conflicts' ? 'aria-current="page"' : ''}>
-            Conflicts
-          </button>
-        </div>
-        <div class="mobile-menu-section">
-          <div class="mobile-menu-section-title">System</div>
-          <button class="mobile-menu-item ${this.currentRoute === 'settings' ? 'active' : ''}" data-route="settings" role="menuitem" ${this.currentRoute === 'settings' ? 'aria-current="page"' : ''}>
-            Settings
-          </button>
-        </div>
-      </nav>
-    `;
+    const content = this.buildMobileMenu();
     await bottomSheet.open(content, 'MENU');
 
     const menu = document.querySelector('.mobile-menu');
@@ -466,6 +447,57 @@ export class App {
       },
       { signal: this.abortController.signal }
     );
+  }
+
+  private buildMobileMenu(): DocumentFragment {
+    const nav = document.createElement('nav');
+    nav.className = 'mobile-menu';
+    nav.setAttribute('role', 'navigation');
+    nav.setAttribute('aria-label', 'Mobile menu');
+
+    const sections: { title: string; items: { label: string; route: Route }[] }[] = [
+      {
+        title: 'Navigation',
+        items: [
+          { label: 'Home', route: 'home' },
+          { label: 'Starred Gists', route: 'starred' },
+          { label: 'Create New Gist', route: 'create' },
+        ],
+      },
+      {
+        title: 'Offline',
+        items: [
+          { label: 'Sync Status', route: 'offline' },
+          { label: 'Conflicts', route: 'conflicts' },
+        ],
+      },
+      {
+        title: 'System',
+        items: [{ label: 'Settings', route: 'settings' }],
+      },
+    ];
+
+    for (const section of sections) {
+      const sectionDiv = document.createElement('div');
+      sectionDiv.className = 'mobile-menu-section';
+      const titleDiv = document.createElement('div');
+      titleDiv.className = 'mobile-menu-section-title';
+      titleDiv.textContent = section.title;
+      sectionDiv.appendChild(titleDiv);
+      for (const item of section.items) {
+        const btn = document.createElement('button');
+        btn.className = `mobile-menu-item${this.currentRoute === item.route ? ' active' : ''}`;
+        btn.dataset.route = item.route;
+        btn.setAttribute('role', 'menuitem');
+        if (this.currentRoute === item.route) btn.setAttribute('aria-current', 'page');
+        btn.textContent = item.label;
+        sectionDiv.appendChild(btn);
+      }
+      nav.appendChild(sectionDiv);
+    }
+    const frag = document.createDocumentFragment();
+    frag.appendChild(nav);
+    return frag;
   }
 
   private initializeCommandPalette(): void {

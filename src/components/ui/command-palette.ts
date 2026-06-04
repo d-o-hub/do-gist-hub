@@ -3,7 +3,6 @@
  * Cmd+K searchable action interface.
  */
 
-import { sanitizeHtml } from '../../services/security';
 import { announcer } from '../../utils/announcer';
 import { focusTrap } from '../../utils/focus-trap';
 import { withViewTransition } from '../../utils/view-transitions';
@@ -118,59 +117,90 @@ export class CommandPalette {
   private render(): void {
     if (!this.container) return;
 
-    this.container.innerHTML = `
-      <div class="command-palette-search">
-        <input type="text" placeholder="Search commands..." spellcheck="false" autofocus />
-      </div>
-      <div class="command-palette-results" role="listbox">
-        ${this.renderResults()}
-      </div>
-      <div class="command-palette-footer">
-        <span><kbd>↑↓</kbd> to navigate</span>
-        <span><kbd>↵</kbd> to select</span>
-        <span><kbd>esc</kbd> to close</span>
-      </div>
-    `;
+    this.container.replaceChildren();
 
-    const input = this.container.querySelector('input');
-    input?.addEventListener(
+    const searchDiv = document.createElement('div');
+    searchDiv.className = 'command-palette-search';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Search commands...';
+    input.spellcheck = false;
+    input.autofocus = true;
+    searchDiv.appendChild(input);
+    this.container.appendChild(searchDiv);
+
+    const resultsDiv = document.createElement('div');
+    resultsDiv.className = 'command-palette-results';
+    resultsDiv.setAttribute('role', 'listbox');
+    resultsDiv.appendChild(this.buildResults());
+    this.container.appendChild(resultsDiv);
+
+    const footer = document.createElement('div');
+    footer.className = 'command-palette-footer';
+    for (const label of ['↑↓ to navigate', '↵ to select', 'esc to close']) {
+      const span = document.createElement('span');
+      span.textContent = label;
+      footer.appendChild(span);
+    }
+    this.container.appendChild(footer);
+
+    input.addEventListener(
       'input',
       (e) => this.handleSearch((e.target as HTMLInputElement).value),
       { signal: this.abortController.signal }
     );
-    input?.addEventListener('keydown', (e) => this.handleKeyDown(e), {
+    input.addEventListener('keydown', (e) => this.handleKeyDown(e), {
       signal: this.abortController.signal,
     });
   }
 
-  private renderResults(): string {
+  private buildResults(): DocumentFragment {
+    const frag = document.createDocumentFragment();
+
     if (this.filteredCommands.length === 0) {
-      return '<div class="no-results">No commands found</div>';
+      const noResults = document.createElement('div');
+      noResults.className = 'no-results';
+      noResults.textContent = 'No commands found';
+      frag.appendChild(noResults);
+      return frag;
     }
 
     let lastCategory = '';
-    return this.filteredCommands
-      .map((cmd, index) => {
-        let categoryHeader = '';
-        if (cmd.category && cmd.category !== lastCategory) {
-          categoryHeader = `<div class="category-header">${sanitizeHtml(cmd.category)}</div>`;
-          lastCategory = cmd.category;
-        }
+    for (let index = 0; index < this.filteredCommands.length; index++) {
+      const cmd = this.filteredCommands[index];
+      if (!cmd) continue;
 
-        return `
-        ${categoryHeader}
-        <div class="command-item ${index === this.selectedIndex ? 'selected' : ''}"
-             role="option"
-             aria-selected="${index === this.selectedIndex}"
-             data-index="${index}">
-          <div class="command-info">
-            <div class="command-title">${sanitizeHtml(cmd.title)}</div>
-            ${cmd.description ? `<div class="command-desc">${sanitizeHtml(cmd.description)}</div>` : ''}
-          </div>
-        </div>
-      `;
-      })
-      .join('');
+      if (cmd.category && cmd.category !== lastCategory) {
+        const catHeader = document.createElement('div');
+        catHeader.className = 'category-header';
+        catHeader.textContent = cmd.category;
+        frag.appendChild(catHeader);
+        lastCategory = cmd.category;
+      }
+
+      const item = document.createElement('div');
+      item.className = `command-item${index === this.selectedIndex ? ' selected' : ''}`;
+      item.setAttribute('role', 'option');
+      item.setAttribute('aria-selected', String(index === this.selectedIndex));
+      item.dataset.index = String(index);
+
+      const info = document.createElement('div');
+      info.className = 'command-info';
+      const title = document.createElement('div');
+      title.className = 'command-title';
+      title.textContent = cmd.title;
+      info.appendChild(title);
+      if (cmd.description) {
+        const desc = document.createElement('div');
+        desc.className = 'command-desc';
+        desc.textContent = cmd.description;
+        info.appendChild(desc);
+      }
+      item.appendChild(info);
+      frag.appendChild(item);
+    }
+
+    return frag;
   }
 
   private handleSearch(query: string): void {
@@ -208,7 +238,7 @@ export class CommandPalette {
   private updateResults(): void {
     const resultsContainer = this.container?.querySelector('.command-palette-results');
     if (resultsContainer) {
-      resultsContainer.innerHTML = this.renderResults();
+      resultsContainer.replaceChildren(this.buildResults());
     }
   }
 

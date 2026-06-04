@@ -3,7 +3,6 @@
  * Accessible mobile-first sheet for navigation and actions.
  */
 
-import { sanitizeHtml } from '../../services/security/dom';
 import { announcer } from '../../utils/announcer';
 import { focusTrap } from '../../utils/focus-trap';
 import { withViewTransition } from '../../utils/view-transitions';
@@ -31,7 +30,6 @@ export class BottomSheet {
     this.container.setAttribute('aria-modal', 'true');
     this.container.setAttribute('aria-hidden', 'true');
 
-    // Handle for dragging
     const handle = document.createElement('div');
     handle.className = 'bottom-sheet-handle';
     this.container.appendChild(handle);
@@ -40,20 +38,29 @@ export class BottomSheet {
     document.body.appendChild(this.container);
   }
 
-  async open(content: string, title?: string): Promise<void> {
+  async open(content: DocumentFragment, title?: string): Promise<void> {
     if (!this.container || !this.backdrop || this.isOpen) return;
 
     this.isOpen = true;
 
-    // Set content
-    const header = title ? `<h2 class="bottom-sheet-title">${sanitizeHtml(title)}</h2>` : '';
-    this.container.innerHTML = `
-      <div class="bottom-sheet-handle"></div>
-      ${header}
-      <div class="bottom-sheet-content">${content}</div>
-    `;
+    this.container.replaceChildren();
 
-    // Escape key to close
+    const handleDiv = document.createElement('div');
+    handleDiv.className = 'bottom-sheet-handle';
+    this.container.appendChild(handleDiv);
+
+    if (title) {
+      const h2 = document.createElement('h2');
+      h2.className = 'bottom-sheet-title';
+      h2.textContent = title;
+      this.container.appendChild(h2);
+    }
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'bottom-sheet-content';
+    contentDiv.appendChild(content);
+    this.container.appendChild(contentDiv);
+
     const handleKeydown = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
         e.preventDefault();
