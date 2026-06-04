@@ -90,7 +90,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699  # pinned from v4
         with:
-          packages: 'tools platform-tools platforms;android-35 build-tools;35.0.0'
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build Web App and Sync Android
@@ -142,7 +142,7 @@ jobs:
         uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699  # pinned from v4
         if: steps.filter.outputs.fdroid == 'true'
         with:
-          packages: 'tools platform-tools platforms;android-35 build-tools;35.0.0'
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
       - name: Install dependencies
         if: steps.filter.outputs.fdroid == 'true'
         run: pnpm install --frozen-lockfile
