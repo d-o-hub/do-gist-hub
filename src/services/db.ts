@@ -426,6 +426,9 @@ export async function exportData(): Promise<string> {
     'github-pat-enc',
     'github-pat',
     'github-refresh-token',
+    'github-refresh-expires',
+    'github-username',
+    'llm-config',
   ];
   const safeMetadata = metadata.filter((m) => !SENSITIVE_METADATA_KEYS.includes(m.key));
 
