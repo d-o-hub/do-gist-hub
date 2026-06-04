@@ -327,7 +327,7 @@ export function bindDetailEvents(
         const copyBtn = target.closest('[data-action="copy-content"]') as HTMLElement;
         if (copyBtn && !copyBtn.classList.contains('btn-success')) {
           void (async () => {
-            const contentArea = container.querySelector('#file-content-area code');
+            const contentArea = container.querySelector('[id^="file-content-area-"] code');
             if (!contentArea) return;
 
             const text = contentArea.textContent || '';
