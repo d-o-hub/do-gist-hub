@@ -243,23 +243,23 @@ export function bindDetailEvents(
         )
           return;
 
-        const tabsArray = Array.from(tabs) as HTMLElement[];
-        const index = tabsArray.indexOf(currentTabElem);
+        const tabsElems = Array.from(tabs) as HTMLElement[];
+        const index = tabsElems.indexOf(currentTabElem);
 
         let nextIndex = -1;
         if (event.key === 'ArrowRight') {
-          nextIndex = (index + 1) % tabsArray.length;
+          nextIndex = (index + 1) % tabsElems.length;
         } else if (event.key === 'ArrowLeft') {
-          nextIndex = (index - 1 + tabsArray.length) % tabsArray.length;
+          nextIndex = (index - 1 + tabsElems.length) % tabsElems.length;
         } else if (event.key === 'Home') {
           nextIndex = 0;
         } else if (event.key === 'End') {
-          nextIndex = tabsArray.length - 1;
+          nextIndex = tabsElems.length - 1;
         }
 
         if (nextIndex !== -1) {
           event.preventDefault();
-          const nextTab = tabsArray[nextIndex];
+          const nextTab = tabsElems[nextIndex];
           if (nextTab) {
             nextTab.focus();
             nextTab.click();
@@ -354,7 +354,7 @@ export function bindDetailEvents(
               }, 2000);
             } catch (err) {
               safeError('Failed to copy', err);
-              toast.error('COPY FAILED');
+              toast.error('Copy failed');
             }
           })();
           return;
@@ -403,10 +403,10 @@ async function copyGistUrl(container: HTMLElement, signal?: AbortSignal): Promis
     }
     await navigator.clipboard.writeText(url);
     if (signal?.aborted) return;
-    toast.success('URL COPIED TO CLIPBOARD');
+    toast.success('URL copied to clipboard');
   } catch (err) {
     safeError('Failed to copy URL', err);
-    toast.error('COPY FAILED');
+    toast.error('Copy failed');
   }
 }
 
@@ -447,10 +447,10 @@ async function fallbackCopy(url: string, signal?: AbortSignal): Promise<void> {
     }
     await navigator.clipboard.writeText(url);
     if (signal?.aborted) return;
-    toast.success('URL COPIED TO CLIPBOARD');
+    toast.success('URL copied to clipboard');
   } catch (err) {
     safeError('Fallback copy failed', err);
-    toast.error('SHARE FAILED');
+    toast.error('Share failed');
   }
 }
 
