@@ -86,6 +86,15 @@ configurations.all {
 
 apply from: 'capacitor.build.gradle'
 
+// Disable lintVital for the fdroid build type: capacitor-android only publishes
+// debug/release variants, so lintVitalReportFdroid fails at configuration time
+// when resolving fdroidCompileClasspath. F-Droid handles its own lint checks.
+tasks.configureEach { task ->
+    if (task.name.contains('LintVital') && task.name.contains('Fdroid', false)) {
+        task.enabled = false
+    }
+}
+
 // Note: google-services plugin intentionally omitted.
 // No Firebase/Google Play features are used.
 // F-Droid compatibility requires zero proprietary dependencies.
