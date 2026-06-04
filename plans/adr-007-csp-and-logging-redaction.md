@@ -1,5 +1,7 @@
-<!-- Last Audit: 2024-05-15 -->
+<!-- Last Audit: 2026-06-03 -->
 # ADR-007: CSP and Logging Redaction
+
+> **Note**: See also [`adr-007-ui-ux-modernization.md`](adr-007-ui-ux-modernization.md) for UI/UX modernization decisions.
 
 **Status**: Accepted  
 **Date**: 2026  

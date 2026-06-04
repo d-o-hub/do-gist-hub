@@ -1,5 +1,7 @@
-<!-- Last Audit: 2026-04-25 -->
+<!-- Last Audit: 2026-06-03 -->
 # ADR-007: UI/UX Modernization with 2026 Best Practices v2
+
+> **Note**: See also [`adr-007-csp-and-logging-redaction.md`](adr-007-csp-and-logging-redaction.md) for CSP and logging redaction decisions.
 
 ## Status
 

@@ -63,7 +63,6 @@ import {
   validateToken,
 } from '../../src/services/github/client';
 import { recordFirstApiCall } from '../../src/services/telemetry/auth-telemetry';
-import type { GitHubGistListItem, PaginatedResult } from '../../src/types/api';
 
 describe('GitHub API Client', () => {
   let fetchMock: ReturnType<typeof vi.fn>;
@@ -666,45 +665,14 @@ describe('GitHub API Client', () => {
     });
   });
 
-  // ── list-mode file content stripping (issue #216, ADR-016) ─────────
+  // ── ADR-016: lazy content hydration (files=false) ────────────────
 
-  describe('list-mode file content stripping (issue #216, ADR-016)', () => {
-    const makeGistWithContent = (
-      id: string,
-      filename: string,
-      content: string,
-      truncated: boolean
-    ): GitHubGist =>
-      ({
-        id,
-        description: 'Test Gist',
-        public: true,
-        files: {
-          [filename]: {
-            filename,
-            type: 'text/plain',
-            language: 'Plain Text',
-            raw_url: `https://gist.githubusercontent.com/raw/${id}/${filename}`,
-            size: content.length,
-            truncated,
-            content,
-          },
-        },
-        html_url: `https://gist.github.com/${id}`,
-        git_pull_url: `https://gist.github.com/${id}.git`,
-        git_push_url: `https://gist.github.com/${id}.git`,
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z',
-        owner: { login: 'testuser', id: 1, avatar_url: '...', html_url: '...' },
-      }) as unknown as GitHubGist;
-
-    it('listGists strips content and truncated but preserves metadata fields', async () => {
-      const fullGist = makeGistWithContent('gist-1', 'a.js', 'console.log("big body")', true);
-
+  describe('ADR-016: lazy content hydration', () => {
+    it('listGists does NOT include unsupported files param (GitHub API ignores it)', async () => {
       fetchMock
         .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
         .mockResolvedValueOnce(
-          new Response(JSON.stringify([fullGist]), {
+          new Response(JSON.stringify([makeGitHubGist('gist-1')]), {
             status: 200,
             headers: {
               Link: '<https://api.github.com/user/gists?page=2>; rel="next", <https://api.github.com/user/gists?page=5>; rel="last"',
@@ -712,60 +680,84 @@ describe('GitHub API Client', () => {
           })
         );
 
-      const result: PaginatedResult<GitHubGistListItem> = await listGists();
+      await listGists();
 
-      const file = result.data[0]?.files['a.js'];
-      expect(file).toBeDefined();
-      expect(file?.content).toBeUndefined();
-      expect(file?.truncated).toBeUndefined();
-      expect(file?.filename).toBe('a.js');
-      expect(file?.language).toBe('Plain Text');
-      expect(file?.size).toBe(23);
-      expect(file?.raw_url).toBe('https://gist.githubusercontent.com/raw/gist-1/a.js');
+      const calledUrl = fetchMock.mock.calls[1]?.[0] as string;
+      expect(calledUrl).not.toContain('files=false');
     });
 
-    it('listStarredGists strips content and truncated but preserves metadata fields', async () => {
-      const fullGist = makeGistWithContent('starred-1', 'b.py', 'print("hello")', false);
+    it('listStarredGists does NOT include unsupported files param', async () => {
+      fetchMock.mockResolvedValueOnce(
+        new Response(JSON.stringify([makeGitHubGist('starred-1')]), { status: 200 })
+      );
 
-      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify([fullGist]), { status: 200 }));
+      await listStarredGists();
 
-      const result = await listStarredGists();
-
-      const file = result.data[0]?.files['b.py'];
-      expect(file).toBeDefined();
-      expect(file?.content).toBeUndefined();
-      expect(file?.truncated).toBeUndefined();
-      expect(file?.filename).toBe('b.py');
-      expect(file?.language).toBe('Plain Text');
-      expect(file?.size).toBe(14);
-      expect(file?.raw_url).toBe('https://gist.githubusercontent.com/raw/starred-1/b.py');
+      const calledUrl = fetchMock.mock.calls[0]?.[0] as string;
+      expect(calledUrl).not.toContain('files=false');
     });
 
-    it('getGist still returns full file content (regression guard)', async () => {
-      const fullGist = makeGistWithContent('gist-1', 'a.js', 'console.log("body")', false);
+    it('getGist does NOT include files param (full content needed)', async () => {
+      const gist = makeGitHubGist('gist-1');
+      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(gist), { status: 200 }));
 
-      fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(fullGist), { status: 200 }));
+      await getGist('gist-1');
 
-      const result = await getGist('gist-1');
-
-      const file = result.files['a.js'];
-      expect(file?.content).toBe('console.log("body")');
-      expect(file?.truncated).toBe(false);
-      expect(file?.filename).toBe('a.js');
+      const calledUrl = fetchMock.mock.calls[0]?.[0] as string;
+      expect(calledUrl).not.toContain('files=false');
     });
 
-    it('304 cached response returns stripped payload (not original full content)', async () => {
-      const strippedCached = makeGistWithContent('gist-1', 'a.js', '', false);
-      delete strippedCached.files['a.js']?.content;
-      delete strippedCached.files['a.js']?.truncated;
+    it('listGists custom pagination does NOT include files param', async () => {
+      fetchMock
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
+
+      await listGists({ page: 2, perPage: 50 });
+
+      const calledUrl = fetchMock.mock.calls[1]?.[0] as string;
+      expect(calledUrl).not.toContain('files=false');
+      expect(calledUrl).toContain('page=2&per_page=50');
+    });
+
+    it('listGists preserves pagination metadata', async () => {
+      fetchMock
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify([makeGitHubGist('gist-1')]), {
+            status: 200,
+            headers: {
+              Link: '<https://api.github.com/user/gists?page=2>; rel="next", <https://api.github.com/user/gists?page=5>; rel="last"',
+            },
+          })
+        );
+
+      const result = await listGists();
+
+      expect(result.pagination?.nextPage).toBe(2);
+      expect(result.pagination?.lastPage).toBe(5);
+    });
+
+    it('listGists handles empty response', async () => {
+      fetchMock
+        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
+
+      const result = await listGists();
+
+      expect(result.data).toHaveLength(0);
+      expect(result.pagination?.nextPage).toBeNull();
+    });
+
+    it('304 cached response returns cached payload', async () => {
+      const cachedData = {
+        data: [makeGitHubGist('gist-1')],
+        pagination: { nextPage: 2, prevPage: null, firstPage: 1, lastPage: 5, totalPages: 5 },
+      };
 
       const { getEtag } = await import('../../src/services/db');
       vi.mocked(getEtag).mockResolvedValue({
-        etag: '"stripped-etag"',
-        data: {
-          data: [strippedCached as unknown as GitHubGistListItem],
-          pagination: { nextPage: 2, prevPage: null, firstPage: 1, lastPage: 5, totalPages: 5 },
-        },
+        etag: '"cached-etag"',
+        data: cachedData,
       });
 
       fetchMock
@@ -774,141 +766,8 @@ describe('GitHub API Client', () => {
 
       const result = await listGists();
 
-      const file = result.data[0]?.files['a.js'];
-      expect(file?.content).toBeUndefined();
-      expect(file?.truncated).toBeUndefined();
-      expect(file?.filename).toBe('a.js');
-      expect(result.pagination?.nextPage).toBe(2);
-    });
-
-    it('handles empty files object without error', async () => {
-      const emptyGist = {
-        id: 'gist-empty',
-        description: 'Empty',
-        public: true,
-        files: {},
-        html_url: '...',
-        git_pull_url: '...',
-        git_push_url: '...',
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z',
-      } as unknown as GitHubGist;
-
-      fetchMock
-        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify([emptyGist]), { status: 200 }));
-
-      const result = await listGists();
-
       expect(result.data).toHaveLength(1);
-      expect(result.data[0]?.id).toBe('gist-empty');
-      expect(result.data[0]?.files).toEqual({});
-    });
-
-    it('preserves pagination metadata through the strip', async () => {
-      const fullGist = makeGistWithContent('gist-1', 'a.js', 'body', true);
-
-      fetchMock
-        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify([fullGist]), {
-            status: 200,
-            headers: {
-              Link: '<https://api.github.com/user/gists?page=3>; rel="next", <https://api.github.com/user/gists?page=1>; rel="prev", <https://api.github.com/user/gists?page=10>; rel="last"',
-            },
-          })
-        );
-
-      const result = await listGists();
-
-      expect(result.pagination?.nextPage).toBe(3);
-      expect(result.pagination?.prevPage).toBe(1);
-      expect(result.pagination?.lastPage).toBe(10);
-      expect(result.pagination?.totalPages).toBe(10);
-      expect(result.data[0]?.files['a.js']?.content).toBeUndefined();
-    });
-
-    it('does not corrupt Object.prototype when a file is named "__proto__"', async () => {
-      // JSON.parse preserves "__proto__" as a regular own property, unlike
-      // the object-literal syntax `{ __proto__: ... }` which would set the
-      // prototype. This simulates a real API response that contains a
-      // "__proto__" key.
-      const protoGist = JSON.parse(
-        '{"id":"gist-proto","description":"Proto pollution attempt","public":true,"files":{"__proto__":{"filename":"__proto__","type":"text/plain","language":"Plain Text","raw_url":"https://gist.githubusercontent.com/raw/gist-proto/__proto__","size":0,"truncated":false,"content":"polluted"}},"html_url":"https://gist.github.com/gist-proto","git_pull_url":"https://gist.github.com/gist-proto.git","git_push_url":"https://gist.github.com/gist-proto.git","created_at":"2024-01-01T00:00:00Z","updated_at":"2024-01-01T00:00:00Z","owner":{"login":"attacker","id":2,"avatar_url":"...","html_url":"..."}}'
-      );
-
-      // Snapshot a known-trustworthy Object.prototype.polluted before the call
-      const beforeProto = (Object.prototype as Record<string, unknown>).polluted;
-
-      fetchMock
-        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify([protoGist]), { status: 200 }));
-
-      const result = await listGists();
-
-      // The __proto__ key must be a real own property of the files record,
-      // not a poisoned prototype chain entry.
-      const filesRecord = result.data[0]?.files as Record<string, unknown>;
-      expect(Object.hasOwn(filesRecord, '__proto__')).toBe(true);
-      expect(Object.keys(filesRecord)).toEqual(['__proto__']);
-
-      // Object.prototype must not have been polluted
-      expect((Object.prototype as Record<string, unknown>).polluted).toBe(beforeProto);
-      expect(({} as { polluted?: boolean }).polluted).toBeUndefined();
-    });
-
-    it('does not let a "constructor" filename affect Object.constructor', async () => {
-      const originalConstructor = Object.constructor;
-      const constructorGist = {
-        id: 'gist-ctor',
-        description: 'Constructor key attempt',
-        public: true,
-        files: {
-          constructor: {
-            filename: 'constructor',
-            type: 'text/plain',
-            language: 'Plain Text',
-            raw_url: 'https://gist.githubusercontent.com/raw/gist-ctor/constructor',
-            size: 0,
-            truncated: false,
-            content: 'not-a-real-constructor',
-          },
-        },
-        html_url: 'https://gist.github.com/gist-ctor',
-        git_pull_url: 'https://gist.github.com/gist-ctor.git',
-        git_push_url: 'https://gist.github.com/gist-ctor.git',
-        created_at: '2024-01-01T00:00:00Z',
-        updated_at: '2024-01-01T00:00:00Z',
-        owner: { login: 'attacker', id: 3, avatar_url: '...', html_url: '...' },
-      } as unknown as GitHubGist;
-
-      fetchMock
-        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify([constructorGist]), { status: 200 }));
-
-      const result = await listGists();
-
-      // The constructor key must be a real own property, not a poisoned prototype entry
-      const filesRecord = result.data[0]?.files as Record<string, unknown>;
-      expect(Object.hasOwn(filesRecord, 'constructor')).toBe(true);
-
-      // Object.constructor must remain the built-in Function constructor
-      expect(Object.constructor).toBe(originalConstructor);
-    });
-
-    it('returns files with content=undefined at runtime (type-accuracy contract)', async () => {
-      const fullGist = makeGistWithContent('gist-type', 'a.js', 'should-be-stripped', true);
-
-      fetchMock
-        .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
-        .mockResolvedValueOnce(new Response(JSON.stringify([fullGist]), { status: 200 }));
-
-      const result = await listGists();
-
-      const file = result.data[0]?.files['a.js'];
-      // Runtime contract mirrors the type: GitHubGistListItem files have no `content`
-      expect(file?.content).toBeUndefined();
-      expect(file?.truncated).toBeUndefined();
+      expect(result.pagination?.nextPage).toBe(2);
     });
   });
 });

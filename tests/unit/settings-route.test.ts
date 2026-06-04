@@ -41,6 +41,15 @@ vi.mock('../../src/services/db', () => ({
   setMetadata: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock('../../src/services/llm/client', () => ({
+  loadLLMConfig: vi.fn().mockResolvedValue({
+    provider: 'none',
+    apiKey: undefined,
+    model: undefined,
+  }),
+  saveLLMConfig: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('../../src/stores/gist-store', () => ({
   default: {
     getGists: vi.fn(() => []),
@@ -71,6 +80,11 @@ vi.mock('../../src/utils/dialog', () => ({
   showConfirmDialog: vi.fn(),
 }));
 
+const mockAuthenticateWithDeviceFlow = vi.fn();
+vi.mock('../../src/services/github/device-flow', () => ({
+  authenticateWithDeviceFlow: mockAuthenticateWithDeviceFlow,
+}));
+
 // ── Imports (after mocks) ───────────────────────────────────────────
 
 import {
@@ -81,7 +95,7 @@ import { toast } from '../../src/components/ui/toast';
 import { render } from '../../src/routes/settings';
 import { getToken, removeToken, saveToken } from '../../src/services/github/auth';
 import networkMonitor from '../../src/services/network/offline-monitor';
-import { getThemePreference, initTheme } from '../../src/tokens/design-tokens';
+import { getThemePreference } from '../../src/tokens/design-tokens';
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
@@ -383,6 +397,234 @@ describe('Settings Route', () => {
       await vi.waitFor(() => {
         expect(cleanupAmbientLightSensor).toHaveBeenCalled();
       });
+    });
+  });
+
+  // ── token rotation boundary ────────────────────────────────────────
+
+  describe('token rotation reminder', () => {
+    it('does NOT show rotation warning when token is exactly 60 days old', async () => {
+      const sixtyDaysMs = 60 * 24 * 60 * 60 * 1000;
+      const savedAt = Date.now() - sixtyDaysMs + 1000;
+      const db = await import('../../src/services/db');
+      vi.mocked(db.getMetadata).mockImplementation((key: string) => {
+        if (key === 'token-saved-at') return Promise.resolve(savedAt);
+        return Promise.resolve(null);
+      });
+      vi.mocked(getToken).mockResolvedValue('ghp_test12345678');
+      await render(container);
+
+      expect(container.innerHTML).toContain('Token active');
+      expect(container.innerHTML).not.toContain('days old');
+      expect(container.innerHTML).not.toContain('Consider rotating');
+    });
+
+    it('shows rotation warning when token is 61 days old', async () => {
+      const sixtyOneDaysMs = 61 * 24 * 60 * 60 * 1000;
+      const savedAt = Date.now() - sixtyOneDaysMs;
+      const db = await import('../../src/services/db');
+      vi.mocked(db.getMetadata).mockImplementation((key: string) => {
+        if (key === 'token-saved-at') return Promise.resolve(savedAt);
+        return Promise.resolve(null);
+      });
+      vi.mocked(getToken).mockResolvedValue('ghp_test12345678');
+      await render(container);
+
+      expect(container.innerHTML).toContain('Token is');
+      expect(container.innerHTML).toContain('Consider rotating it for security');
+    });
+  });
+
+  // ── accent hue boundary ───────────────────────────────────────────
+
+  describe('accent hue boundary', () => {
+    it('accepts hue value of 0', async () => {
+      localStorage.setItem('accent-hue', '0');
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      const input = container.querySelector('#accent-hue-input') as HTMLInputElement;
+      expect(input.value).toBe('0');
+    });
+
+    it('accepts hue value of 360', async () => {
+      localStorage.setItem('accent-hue', '360');
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      const input = container.querySelector('#accent-hue-input') as HTMLInputElement;
+      expect(input.value).toBe('360');
+    });
+
+    it('falls back to default (220) when hue is 361', async () => {
+      localStorage.setItem('accent-hue', '361');
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      const input = container.querySelector('#accent-hue-input') as HTMLInputElement;
+      expect(input.value).toBe('220');
+    });
+
+    it('falls back to default (220) when hue is -1', async () => {
+      localStorage.setItem('accent-hue', '-1');
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      const input = container.querySelector('#accent-hue-input') as HTMLInputElement;
+      expect(input.value).toBe('220');
+    });
+
+    it('falls back to default (220) when localStorage contains malformed value', async () => {
+      localStorage.setItem('accent-hue', 'abc');
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      const input = container.querySelector('#accent-hue-input') as HTMLInputElement;
+      expect(input.value).toBe('220');
+    });
+
+    it('falls back to default (220) when localStorage accent-hue is empty', async () => {
+      localStorage.setItem('accent-hue', '');
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      const input = container.querySelector('#accent-hue-input') as HTMLInputElement;
+      expect(input.value).toBe('220');
+    });
+  });
+
+  // ── LLM provider visibility ───────────────────────────────────────
+
+  describe('LLM provider field visibility', () => {
+    it('shows API key field when provider is openai', async () => {
+      const { loadLLMConfig } = await import('../../src/services/llm/client');
+      vi.mocked(loadLLMConfig).mockResolvedValue({
+        provider: 'openai',
+        apiKey: 'sk-test',
+        model: 'gpt-4o-mini',
+      });
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      const apiKeyGroup = container.querySelector('#llm-api-key-group') as HTMLElement;
+      expect(apiKeyGroup.style.display).not.toBe('none');
+    });
+
+    it('hides API key field when provider is github-models', async () => {
+      const { loadLLMConfig } = await import('../../src/services/llm/client');
+      vi.mocked(loadLLMConfig).mockResolvedValue({
+        provider: 'github-models',
+        apiKey: undefined,
+        model: 'gpt-4o',
+      });
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      const apiKeyGroup = container.querySelector('#llm-api-key-group') as HTMLElement;
+      expect(apiKeyGroup.style.display).toBe('none');
+    });
+
+    it('hides API key and model fields when provider is none', async () => {
+      const { loadLLMConfig } = await import('../../src/services/llm/client');
+      vi.mocked(loadLLMConfig).mockResolvedValue({
+        provider: 'none',
+        apiKey: undefined,
+        model: undefined,
+      });
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      const apiKeyGroup = container.querySelector('#llm-api-key-group') as HTMLElement;
+      const modelGroup = container.querySelector('#llm-model-group') as HTMLElement;
+      expect(apiKeyGroup.style.display).toBe('none');
+      expect(modelGroup.style.display).toBe('none');
+    });
+
+    it('shows model field for openai provider', async () => {
+      const { loadLLMConfig } = await import('../../src/services/llm/client');
+      vi.mocked(loadLLMConfig).mockResolvedValue({
+        provider: 'openai',
+        apiKey: 'sk-test',
+        model: 'gpt-4o',
+      });
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      const modelGroup = container.querySelector('#llm-model-group') as HTMLElement;
+      expect(modelGroup.style.display).not.toBe('none');
+    });
+  });
+
+  // ── device flow error messages ─────────────────────────────────────
+
+  describe('device flow error message mapping', () => {
+    async function triggerDeviceFlowWithMock(errorCode: string) {
+      vi.mocked(getToken).mockResolvedValue(null);
+      mockAuthenticateWithDeviceFlow.mockReset();
+      await render(container);
+
+      const loginBtn = container.querySelector('#device-flow-login-btn') as HTMLButtonElement;
+      mockAuthenticateWithDeviceFlow.mockResolvedValue({
+        success: false,
+        error: errorCode,
+        errorDescription: `raw desc for ${errorCode}`,
+      } as never);
+
+      loginBtn.click();
+      await vi.waitFor(() => {
+        expect(mockAuthenticateWithDeviceFlow).toHaveBeenCalled();
+      });
+      return container.querySelector('#device-flow-status') as HTMLElement;
+    }
+
+    it('maps expired_token to correct message', async () => {
+      const statusEl = await triggerDeviceFlowWithMock('expired_token');
+      expect(statusEl.textContent).toBe(
+        'The device code expired. Please click "SIGN IN WITH GITHUB" to try again.'
+      );
+    });
+
+    it('maps access_denied to correct message', async () => {
+      const statusEl = await triggerDeviceFlowWithMock('access_denied');
+      expect(statusEl.textContent).toBe(
+        'You denied the authorization request. Click "SIGN IN WITH GITHUB" to try again.'
+      );
+    });
+
+    it('maps slow_down to correct message', async () => {
+      const statusEl = await triggerDeviceFlowWithMock('slow_down');
+      expect(statusEl.textContent).toBe(
+        'GitHub rate-limited the request. Please wait a moment and try again.'
+      );
+    });
+
+    it('maps network_error to correct message', async () => {
+      const statusEl = await triggerDeviceFlowWithMock('network_error');
+      expect(statusEl.textContent).toBe(
+        'A network error occurred. Check your connection and try again.'
+      );
+    });
+
+    it('maps timeout to correct message', async () => {
+      const statusEl = await triggerDeviceFlowWithMock('timeout');
+      expect(statusEl.textContent).toBe(
+        'Authentication timed out. Please click "SIGN IN WITH GITHUB" to start over.'
+      );
+    });
+
+    it('maps save_error to correct message', async () => {
+      const statusEl = await triggerDeviceFlowWithMock('save_error');
+      expect(statusEl.textContent).toBe('Failed to save the token. Please try again.');
+    });
+
+    it('falls back to raw error for unknown error code', async () => {
+      const statusEl = await triggerDeviceFlowWithMock('unknown_code');
+      expect(statusEl.textContent).toBe('raw desc for unknown_code');
+    });
+
+    it('shows generic message when error is empty', async () => {
+      const statusEl = await triggerDeviceFlowWithMock('');
+      expect(statusEl.textContent).toBe('Authentication failed. Please try again.');
     });
   });
 

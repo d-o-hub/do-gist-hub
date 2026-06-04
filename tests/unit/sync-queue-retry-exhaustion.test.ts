@@ -184,7 +184,9 @@ describe('SyncQueue retry exhaustion and dedup', () => {
       await queue.processQueue();
 
       vi.mocked(db.getPendingWrites).mockResolvedValue([]);
+      db.getPendingWrites.mockClear();
       await queue.processQueue();
+      // Called twice: once in processQueue main flow, once in updateBadge→getQueueLength
       expect(db.getPendingWrites).toHaveBeenCalledTimes(2);
     });
   });
