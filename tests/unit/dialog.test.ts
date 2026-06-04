@@ -5,13 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks (hoisted) ───────────────────────────────────────────
 
-vi.mock('../../src/services/security/dom', () => ({
-  sanitizeHtml: vi.fn((s: string) => s),
-}));
-
-// ── Imports (after mocks) ───────────────────────────────────────────
-
-import { sanitizeHtml } from '../../src/services/security/dom';
 import { showConfirmDialog } from '../../src/utils/dialog';
 
 // ── Tests ─────────────────────────────────────────────────────────────
@@ -79,16 +72,20 @@ describe('showConfirmDialog', () => {
     });
   });
 
-  // ── Sanitization ─────────────────────────────────────────────────
+  // ── XSS safety (textContent is safe by construction) ────────────
 
-  it('sanitizes the title', () => {
+  it('sets title as text content, not HTML (XSS safe)', () => {
     void showConfirmDialog('Message', '<script>alert("xss")</script>');
-    expect(sanitizeHtml).toHaveBeenCalledWith('<script>alert("xss")</script>');
+    const title = document.querySelector('.confirm-title');
+    expect(title?.textContent).toBe('<script>alert("xss")</script>');
+    expect(title?.innerHTML).not.toContain('<script>');
   });
 
-  it('sanitizes the message', () => {
+  it('sets message as text content, not HTML (XSS safe)', () => {
     void showConfirmDialog('<img onerror="alert(1)" src=x>');
-    expect(sanitizeHtml).toHaveBeenCalledWith('<img onerror="alert(1)" src=x>');
+    const message = document.querySelector('.confirm-message');
+    expect(message?.textContent).toBe('<img onerror="alert(1)" src=x>');
+    expect(message?.innerHTML).not.toContain('<img');
   });
 
   // ── Confirmation ────────────────────────────────────────────────

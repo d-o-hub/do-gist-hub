@@ -2,7 +2,6 @@
  * Shared dialog utilities — avoids circular imports between components.
  */
 
-import { sanitizeHtml } from '../services/security/dom';
 import { focusTrap } from './focus-trap';
 
 export interface ConfirmDialogOptions {
@@ -64,19 +63,43 @@ export function showConfirmDialog(
 
     const confirmClass = variant === 'danger' ? 'btn btn-danger' : 'btn btn-primary';
 
-    overlay.innerHTML = `
-      <div class="confirm-dialog glass-card" role="alertdialog" aria-modal="true" aria-labelledby="${dialogId}-title" aria-describedby="${dialogId}-desc">
-        <h2 class="confirm-title" id="${dialogId}-title">${sanitizeHtml(title)}</h2>
-        <p class="confirm-message" id="${dialogId}-desc">${sanitizeHtml(message)}</p>
-        <div class="confirm-actions">
-          <button class="btn btn-ghost" data-action="cancel">${sanitizeHtml(cancelLabel)}</button>
-          <button class="${confirmClass}" data-action="confirm">${sanitizeHtml(confirmLabel)}</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
+    const dialog = document.createElement('div');
+    dialog.className = 'confirm-dialog glass-card';
+    dialog.setAttribute('role', 'alertdialog');
+    dialog.setAttribute('aria-modal', 'true');
+    dialog.setAttribute('aria-labelledby', `${dialogId}-title`);
+    dialog.setAttribute('aria-describedby', `${dialogId}-desc`);
 
-    const dialog = overlay.querySelector('.confirm-dialog') as HTMLElement;
+    const h2 = document.createElement('h2');
+    h2.className = 'confirm-title';
+    h2.id = `${dialogId}-title`;
+    h2.textContent = title;
+    dialog.appendChild(h2);
+
+    const p = document.createElement('p');
+    p.className = 'confirm-message';
+    p.id = `${dialogId}-desc`;
+    p.textContent = message;
+    dialog.appendChild(p);
+
+    const actions = document.createElement('div');
+    actions.className = 'confirm-actions';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn btn-ghost';
+    cancelBtn.dataset.action = 'cancel';
+    cancelBtn.textContent = cancelLabel;
+    actions.appendChild(cancelBtn);
+
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = confirmClass;
+    confirmBtn.dataset.action = 'confirm';
+    confirmBtn.textContent = confirmLabel;
+    actions.appendChild(confirmBtn);
+
+    dialog.appendChild(actions);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
 
     const controller = new AbortController();
     const { signal } = controller;

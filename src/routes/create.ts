@@ -2,6 +2,7 @@
  * Create Gist Route
  */
 
+import { setButtonLoading, setButtonText } from '../components/ui/button';
 import { toast } from '../components/ui/toast';
 import { parsePasteText } from '../services/gist-paste-parser';
 import { lifecycle } from '../services/lifecycle';
@@ -13,24 +14,52 @@ let nextFileId = 0;
 function createFileRow(id: number, container: HTMLElement, signal: AbortSignal): HTMLElement {
   const div = document.createElement('div');
   div.className = 'file-entry';
-  div.innerHTML = `
-    <div class="flex-row gap-2 flex-end">
-      <div class="form-group flex-1 mb-0">
-        <label class="form-label" for="gist-filename-${id}">Filename</label>
-        <input type="text" id="gist-filename-${id}" class="form-input gist-filename" placeholder="e.g. index.js" required>
-      </div>
-      <button type="button" class="btn btn-ghost btn-remove-file remove-file-minh remove-file-p" data-file-id="${id}">
-          REMOVE
-        </button>
-    </div>
-    <div class="form-group mb-0">
-      <label class="form-label" for="gist-content-${id}">Content</label>
-      <textarea id="gist-content-${id}" class="form-textarea gist-content gist-content-minh" placeholder="File content..." required></textarea>
-    </div>
-  `;
 
-  const removeBtn = div.querySelector('.btn-remove-file');
-  removeBtn?.addEventListener(
+  // --- Header row: filename + remove button ---
+  const headerRow = document.createElement('div');
+  headerRow.className = 'flex-row gap-2 flex-end';
+
+  const filenameGroup = document.createElement('div');
+  filenameGroup.className = 'form-group flex-1 mb-0';
+  const filenameLabel = document.createElement('label');
+  filenameLabel.className = 'form-label';
+  filenameLabel.setAttribute('for', `gist-filename-${id}`);
+  filenameLabel.textContent = 'Filename';
+  filenameGroup.appendChild(filenameLabel);
+  const filenameInput = document.createElement('input');
+  filenameInput.type = 'text';
+  filenameInput.id = `gist-filename-${id}`;
+  filenameInput.className = 'form-input gist-filename';
+  filenameInput.placeholder = 'e.g. index.js';
+  filenameInput.required = true;
+  filenameGroup.appendChild(filenameInput);
+  headerRow.appendChild(filenameGroup);
+
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'btn btn-ghost btn-remove-file remove-file-minh remove-file-p';
+  removeBtn.dataset.fileId = String(id);
+  removeBtn.textContent = 'REMOVE';
+  headerRow.appendChild(removeBtn);
+  div.appendChild(headerRow);
+
+  // --- Content textarea ---
+  const contentGroup = document.createElement('div');
+  contentGroup.className = 'form-group mb-0';
+  const contentLabel = document.createElement('label');
+  contentLabel.className = 'form-label';
+  contentLabel.setAttribute('for', `gist-content-${id}`);
+  contentLabel.textContent = 'Content';
+  contentGroup.appendChild(contentLabel);
+  const contentTextarea = document.createElement('textarea');
+  contentTextarea.id = `gist-content-${id}`;
+  contentTextarea.className = 'form-textarea gist-content gist-content-minh';
+  contentTextarea.placeholder = 'File content...';
+  contentTextarea.required = true;
+  contentGroup.appendChild(contentTextarea);
+  div.appendChild(contentGroup);
+
+  removeBtn.addEventListener(
     'click',
     () => {
       const filesContainer = container.querySelector('#files-container') as HTMLElement;
@@ -369,12 +398,11 @@ export function render(container: HTMLElement): void {
       }
 
       void (async () => {
-        const submitBtn = container.querySelector('[type="submit"]') as HTMLButtonElement;
+        const submitBtn = container.querySelector<HTMLButtonElement>('[type="submit"]');
         if (submitBtn) {
           submitBtn.disabled = true;
           submitBtn.setAttribute('aria-busy', 'true');
-          submitBtn.innerHTML =
-            '<span class="btn-spinner" aria-hidden="true"></span><span class="btn-label">Creating...</span>';
+          setButtonLoading(submitBtn, 'Creating...');
         }
 
         try {
@@ -389,7 +417,7 @@ export function render(container: HTMLElement): void {
           if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.removeAttribute('aria-busy');
-            submitBtn.innerHTML = '<span class="btn-label">CREATE GIST</span>';
+            setButtonText(submitBtn, 'CREATE GIST');
           }
         }
       })();

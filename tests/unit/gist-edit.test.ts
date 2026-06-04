@@ -9,10 +9,6 @@ vi.mock('../../src/services/db', () => ({
   getGist: vi.fn(),
 }));
 
-vi.mock('../../src/services/security/dom', () => ({
-  sanitizeHtml: vi.fn((s: string) => s),
-}));
-
 vi.mock('../../src/services/security/logger', () => ({
   safeLog: vi.fn(),
   safeError: vi.fn(),
@@ -81,16 +77,25 @@ describe('Gist Edit', () => {
   // ── renderEditForm ─────────────────────────────────────────────────
 
   describe('renderEditForm', () => {
+    /** Helper: render to a wrapper div and return it for querying. */
+    function renderToWrapper(gist: ReturnType<typeof makeGist>): HTMLElement {
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(renderEditForm(gist));
+      return wrapper;
+    }
+
     it('renders edit form with description and file editor', () => {
       const gist = makeGist();
-      const html = renderEditForm(gist);
+      const wrapper = renderToWrapper(gist);
 
-      expect(html).toContain('EDIT GIST');
-      expect(html).toContain('Test Gist');
-      expect(html).toContain('example.js');
-      expect(html).toContain('console.log("hello");');
-      expect(html).toContain('SAVE CHANGES');
-      expect(html).toContain('+ ADD FILE');
+      expect(wrapper.textContent).toContain('EDIT GIST');
+      expect(wrapper.querySelector<HTMLInputElement>('#edit-description')?.value).toBe('Test Gist');
+      expect(wrapper.querySelector<HTMLInputElement>('.filename-input')?.value).toBe('example.js');
+      expect(wrapper.querySelector<HTMLTextAreaElement>('.content-editor')?.value).toContain(
+        'console.log("hello")'
+      );
+      expect(wrapper.textContent).toContain('SAVE CHANGES');
+      expect(wrapper.textContent).toContain('+ ADD FILE');
     });
 
     it('renders multiple file editors for multi-file gists', () => {
@@ -101,26 +106,32 @@ describe('Gist Edit', () => {
           'c.js': { filename: 'c.js', content: '3' },
         },
       });
-      const html = renderEditForm(gist);
+      const wrapper = renderToWrapper(gist);
 
-      expect(html).toContain('a.js');
-      expect(html).toContain('b.js');
-      expect(html).toContain('c.js');
+      const editors = wrapper.querySelectorAll('.file-editor');
+      expect(editors.length).toBe(3);
+      const filenames = Array.from(
+        wrapper.querySelectorAll<HTMLInputElement>('.filename-input')
+      ).map((i) => i.value);
+      expect(filenames).toContain('a.js');
+      expect(filenames).toContain('b.js');
+      expect(filenames).toContain('c.js');
     });
 
     it('renders back button', () => {
       const gist = makeGist();
-      const html = renderEditForm(gist);
+      const wrapper = renderToWrapper(gist);
 
-      expect(html).toContain('← BACK');
+      expect(wrapper.querySelector('#edit-back-btn')?.textContent).toContain('← BACK');
     });
 
     it('renders hidden remove button for single-file gists', () => {
       const gist = makeGist();
-      const html = renderEditForm(gist);
+      const wrapper = renderToWrapper(gist);
 
-      // Single file gist should have hidden remove button
-      expect(html).toContain('hidden');
+      const removeBtn = wrapper.querySelector('.remove-file-btn') as HTMLButtonElement;
+      expect(removeBtn).not.toBeNull();
+      expect(removeBtn.hidden).toBe(true);
     });
 
     it('renders visible remove buttons for multi-file gists', () => {
@@ -130,12 +141,13 @@ describe('Gist Edit', () => {
           'f2.js': { filename: 'f2.js' },
         },
       });
-      const html = renderEditForm(gist);
+      const wrapper = renderToWrapper(gist);
 
-      // Remove buttons should not be hidden (no hidden attr)
-      expect(html).toContain('×');
-      // But they appear twice (one per file)
-      expect((html.match(/×/g) || []).length).toBe(2);
+      const removeBtns = wrapper.querySelectorAll('.remove-file-btn');
+      expect(removeBtns.length).toBe(2);
+      for (const btn of removeBtns) {
+        expect((btn as HTMLButtonElement).hidden).toBe(false);
+      }
     });
   });
 
@@ -144,7 +156,7 @@ describe('Gist Edit', () => {
   describe('bindEditEvents', () => {
     it('calls onBack when back button is clicked', () => {
       const onBack = vi.fn();
-      container.innerHTML = renderEditForm(makeGist());
+      container.replaceChildren(renderEditForm(makeGist()));
       bindEditEvents(container, onBack);
 
       const backBtn = container.querySelector('#edit-back-btn') as HTMLElement;
@@ -156,7 +168,7 @@ describe('Gist Edit', () => {
 
     it('calls onBack when cancel button is clicked', () => {
       const onBack = vi.fn();
-      container.innerHTML = renderEditForm(makeGist());
+      container.replaceChildren(renderEditForm(makeGist()));
       bindEditEvents(container, onBack);
 
       const cancelBtn = container.querySelector('#edit-cancel-btn') as HTMLElement;
@@ -168,7 +180,7 @@ describe('Gist Edit', () => {
 
     it('adds file editor when add file button is clicked', () => {
       const onBack = vi.fn();
-      container.innerHTML = renderEditForm(makeGist());
+      container.replaceChildren(renderEditForm(makeGist()));
       bindEditEvents(container, onBack);
 
       const addBtn = container.querySelector('#edit-add-file-btn') as HTMLElement;
@@ -193,7 +205,7 @@ describe('Gist Edit', () => {
       vi.mocked(gistStore.updateGist).mockResolvedValue(true as never);
 
       const onBack = vi.fn();
-      container.innerHTML = renderEditForm(makeGist('gist-update-1'));
+      container.replaceChildren(renderEditForm(makeGist('gist-update-1')));
       bindEditEvents(container, onBack);
 
       const form = container.querySelector('#edit-gist-form') as HTMLFormElement;
@@ -218,7 +230,7 @@ describe('Gist Edit', () => {
           'f2.js': { filename: 'f2.js', content: 'b' },
         },
       });
-      container.innerHTML = renderEditForm(gist);
+      container.replaceChildren(renderEditForm(gist));
       bindEditEvents(container, onBack);
 
       const removeBtns = container.querySelectorAll('.remove-file-btn');
@@ -241,8 +253,10 @@ describe('Gist Edit', () => {
       const onBack = vi.fn();
       await loadEditForm('gist-load-1', container, onBack);
 
-      expect(container.innerHTML).toContain('EDIT GIST');
-      expect(container.innerHTML).toContain('Test Gist');
+      expect(container.textContent).toContain('EDIT GIST');
+      expect(container.querySelector<HTMLInputElement>('#edit-description')?.value).toBe(
+        'Test Gist'
+      );
     });
 
     it('renders error state when gist is not found', async () => {
@@ -251,8 +265,8 @@ describe('Gist Edit', () => {
       const onBack = vi.fn();
       await loadEditForm('non-existent', container, onBack);
 
-      expect(container.innerHTML).toContain('Gist Not Found');
-      expect(container.innerHTML).toContain('Go Back');
+      expect(container.textContent).toContain('Gist Not Found');
+      expect(container.textContent).toContain('Go Back');
     });
 
     it('calls getGist with the correct gistId', async () => {
@@ -284,7 +298,7 @@ describe('Gist Edit', () => {
       vi.mocked(gistStore.updateGist).mockResolvedValue(true as never);
 
       const onBack = vi.fn();
-      container.innerHTML = renderEditForm(makeGist('validate-1'));
+      container.replaceChildren(renderEditForm(makeGist('validate-1')));
       bindEditEvents(container, onBack);
 
       // Clear the filename
@@ -305,7 +319,7 @@ describe('Gist Edit', () => {
       vi.mocked(gistStore.updateGist).mockResolvedValue(true as never);
 
       const onBack = vi.fn();
-      container.innerHTML = renderEditForm(makeGist('validate-2'));
+      container.replaceChildren(renderEditForm(makeGist('validate-2')));
       bindEditEvents(container, onBack);
 
       // Clear filename and content
@@ -327,7 +341,7 @@ describe('Gist Edit', () => {
       vi.mocked(gistStore.updateGist).mockRejectedValue(new Error('API error'));
 
       const onBack = vi.fn();
-      container.innerHTML = renderEditForm(makeGist('update-fail-1'));
+      container.replaceChildren(renderEditForm(makeGist('update-fail-1')));
       bindEditEvents(container, onBack);
 
       const form = container.querySelector('#edit-gist-form') as HTMLFormElement;
@@ -343,7 +357,7 @@ describe('Gist Edit', () => {
       vi.mocked(gistStore.updateGist).mockResolvedValue(true as never);
 
       const onBack = vi.fn();
-      container.innerHTML = renderEditForm(makeGist('update-ok-1'));
+      container.replaceChildren(renderEditForm(makeGist('update-ok-1')));
       bindEditEvents(container, onBack);
 
       const form = container.querySelector('#edit-gist-form') as HTMLFormElement;
@@ -362,7 +376,7 @@ describe('Gist Edit', () => {
     it('shows error when removing last file from dynamically added editor', async () => {
       const { toast } = await import('../../src/components/ui/toast');
       const onBack = vi.fn();
-      container.innerHTML = renderEditForm(makeGist('edge-1'));
+      container.replaceChildren(renderEditForm(makeGist('edge-1')));
       bindEditEvents(container, onBack);
 
       // Click remove on the only file editor
@@ -409,7 +423,7 @@ describe('Gist Edit', () => {
 
       const onBack = vi.fn();
       // Render with an existing file that has a known key
-      container.innerHTML = renderEditForm(makeGist('rename-1'));
+      container.replaceChildren(renderEditForm(makeGist('rename-1')));
       bindEditEvents(container, onBack);
 
       // Remove the data-file-key attribute so the code falls through to the input value

@@ -525,7 +525,6 @@ body {
   text-transform: uppercase;
   color: var(--color-text);
   margin-top: var(--space-1);
-  word-break: break-word;
   overflow-wrap: anywhere;
   min-width: 0;
   flex: 1 1 auto;
@@ -732,7 +731,6 @@ body {
   letter-spacing: -0.02em;
   text-transform: uppercase;
   color: var(--color-text);
-  word-break: break-word;
   overflow-wrap: anywhere;
   hyphens: auto;
   text-wrap: balance;

@@ -25,9 +25,18 @@ export function createButton(options: {
   // Render the label inside a `.btn-label` span so the CSS can dim
   // it during the busy state. The optional `loadingLabel` lets the
   // consumer surface what's actually happening ("Saving…" vs "Save").
+  // Uses DOM APIs (textContent + appendChild) to avoid innerHTML.
   const labelText = options.loading && options.loadingLabel ? options.loadingLabel : options.label;
-  const spinnerHtml = options.loading ? '<span class="btn-spinner" aria-hidden="true"></span>' : '';
-  button.innerHTML = `${spinnerHtml}<span class="btn-label">${escapeHtml(labelText)}</span>`;
+  if (options.loading) {
+    const spinner = document.createElement('span');
+    spinner.className = 'btn-spinner';
+    spinner.setAttribute('aria-hidden', 'true');
+    button.appendChild(spinner);
+  }
+  const labelSpan = document.createElement('span');
+  labelSpan.className = 'btn-label';
+  labelSpan.textContent = labelText;
+  button.appendChild(labelSpan);
 
   button.addEventListener('click', options.onClick);
 
@@ -63,8 +72,31 @@ export function createButton(options: {
   return button;
 }
 
-function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+/**
+ * Set an existing button element to its busy/loading state.
+ * Clears children, appends a spinner + label span using DOM APIs.
+ * Use this for buttons created outside createButton() (e.g. from innerHTML).
+ */
+export function setButtonLoading(btn: Element, label: string): void {
+  btn.replaceChildren();
+  const spinner = document.createElement('span');
+  spinner.className = 'btn-spinner';
+  spinner.setAttribute('aria-hidden', 'true');
+  btn.appendChild(spinner);
+  const labelSpan = document.createElement('span');
+  labelSpan.className = 'btn-label';
+  labelSpan.textContent = label;
+  btn.appendChild(labelSpan);
+}
+
+/**
+ * Reset an existing button element to a plain text label.
+ * Clears children and appends a single label span via DOM APIs.
+ */
+export function setButtonText(btn: Element, label: string): void {
+  btn.replaceChildren();
+  const labelSpan = document.createElement('span');
+  labelSpan.className = 'btn-label';
+  labelSpan.textContent = label;
+  btn.appendChild(labelSpan);
 }
