@@ -37,12 +37,18 @@ export function renderGistDetail(gist: GistRecord): string {
   const fileTabs =
     fileCount > 1
       ? `
-    <div class="file-tabs scroll-x" role="tablist">
+    <div class="file-tabs scroll-x" role="tablist" aria-label="Gist files">
       ${Object.entries(gist.files)
         .map(
           ([key, file], index) => `
-        <button class="chip file-tab ${index === 0 ? 'active' : ''}" data-file-key="${sanitizeHtml(key)}" id="tab-${index}" role="tab" aria-selected="${index === 0}" aria-controls="file-content-area">
-          ${sanitizeHtml(file.filename.toUpperCase())}
+        <button class="chip file-tab ${index === 0 ? 'active' : ''}"
+                data-file-key="${sanitizeHtml(key)}"
+                id="tab-${gist.id}-${index}"
+                role="tab"
+                tabindex="${index === 0 ? '0' : '-1'}"
+                aria-selected="${index === 0}"
+                aria-controls="file-content-area-${gist.id}">
+          ${sanitizeHtml(file.filename)}
         </button>
       `
         )
@@ -86,7 +92,7 @@ export function renderGistDetail(gist: GistRecord): string {
 
       ${fileTabs}
 
-      <div class="file-content-area" id="file-content-area" role="tabpanel" aria-labelledby="tab-0">
+      <div class="file-content-area" id="file-content-area-${gist.id}" role="tabpanel" aria-labelledby="tab-${gist.id}-0">
         ${content}
       </div>
 
@@ -99,7 +105,7 @@ export function renderGistDetail(gist: GistRecord): string {
             <span class="micro-label">Raw URL: <a href="${sanitizeHtml(firstFile.rawUrl || '')}" target="_blank" rel="noopener noreferrer">Link</a></span>
           </div>
           <button class="btn btn-ghost btn-copy-sm" data-action="copy-content" aria-label="Copy file content">
-            <span class="micro-label">COPY</span>
+            <span class="micro-label">Copy</span>
           </button>
         `
             : ''
@@ -222,7 +228,44 @@ export function bindDetailEvents(
   );
 
   // File Tabs
+  const tabList = container.querySelector('.file-tabs');
   const tabs = container.querySelectorAll('.file-tab');
+
+  if (tabList) {
+    tabList.addEventListener(
+      'keydown',
+      (e) => {
+        const event = e as KeyboardEvent;
+        const currentTab = document.activeElement as HTMLElement;
+        if (!currentTab?.classList.contains('file-tab')) return;
+
+        const tabsArray = Array.from(tabs) as HTMLElement[];
+        const index = tabsArray.indexOf(currentTab);
+
+        let nextIndex = -1;
+        if (event.key === 'ArrowRight') {
+          nextIndex = (index + 1) % tabsArray.length;
+        } else if (event.key === 'ArrowLeft') {
+          nextIndex = (index - 1 + tabsArray.length) % tabsArray.length;
+        } else if (event.key === 'Home') {
+          nextIndex = 0;
+        } else if (event.key === 'End') {
+          nextIndex = tabsArray.length - 1;
+        }
+
+        if (nextIndex !== -1) {
+          event.preventDefault();
+          const nextTab = tabsArray[nextIndex];
+          if (nextTab) {
+            nextTab.focus();
+            nextTab.click();
+          }
+        }
+      },
+      { signal }
+    );
+  }
+
   tabs.forEach((tab) => {
     tab.addEventListener(
       'click',
@@ -234,9 +277,11 @@ export function bindDetailEvents(
         tabs.forEach((t) => {
           t.classList.remove('active');
           t.setAttribute('aria-selected', 'false');
+          t.setAttribute('tabindex', '-1');
         });
         tab.classList.add('active');
         tab.setAttribute('aria-selected', 'true');
+        tab.setAttribute('tabindex', '0');
 
         // Update content
         void (async () => {
@@ -247,7 +292,7 @@ export function bindDetailEvents(
           const file = gist.files[fileKey];
           if (!file) return;
 
-          const contentArea = container.querySelector('#file-content-area');
+          const contentArea = container.querySelector(`[id^="file-content-area-"]`);
           if (contentArea) {
             contentArea.innerHTML = renderFileContent(file.content || '', file.language);
             contentArea.setAttribute('aria-labelledby', tab.id);
@@ -261,7 +306,7 @@ export function bindDetailEvents(
               <span class="micro-label">Raw URL: <a href="${sanitizeHtml(file.rawUrl || '')}" target="_blank" rel="noopener noreferrer">Link</a></span>
             </div>
             <button class="btn btn-ghost btn-copy-sm" data-action="copy-content" aria-label="Copy file content">
-              <span class="micro-label">COPY</span>
+              <span class="micro-label">Copy</span>
             </button>
           `;
           }
@@ -294,9 +339,9 @@ export function bindDetailEvents(
               if (signal?.aborted) return;
 
               const originalText = copyBtn.innerHTML;
-              copyBtn.innerHTML = '<span class="micro-label">✅ COPIED!</span>';
+              copyBtn.innerHTML = '<span class="micro-label">✅ Copied!</span>';
               copyBtn.classList.add('btn-success');
-              toast.success('COPIED TO CLIPBOARD');
+              toast.success('Copied to clipboard');
 
               setTimeout(() => {
                 if (signal?.aborted) return;

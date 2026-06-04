@@ -93,8 +93,8 @@ describe('GistDetail', () => {
     it('renders file tabs for multi-file gists', () => {
       const html = renderGistDetail(mockGist);
       expect(html).toContain('file-tabs');
-      expect(html).toContain('TEST.TS');
-      expect(html).toContain('README.MD');
+      expect(html).toContain('test.ts');
+      expect(html).toContain('readme.md');
     });
 
     it('does not render file tabs for single-file gists', () => {
@@ -145,7 +145,7 @@ describe('GistDetail', () => {
     it('renders copy button', () => {
       const html = renderGistDetail(mockGist);
       expect(html).toContain('data-action="copy-content"');
-      expect(html).toContain('COPY');
+      expect(html).toContain('Copy');
     });
   });
 
@@ -276,15 +276,15 @@ describe('GistDetail', () => {
             </div>
           </header>
           <div class="file-tabs scroll-x" role="tablist">
-            <button class="chip file-tab active" data-file-key="test.ts" id="tab-0" role="tab" aria-selected="true">TEST.TS</button>
-            <button class="chip file-tab" data-file-key="readme.md" id="tab-1" role="tab" aria-selected="false">README.MD</button>
+            <button class="chip file-tab active" data-file-key="test.ts" id="tab-0" role="tab" aria-selected="true" tabindex="0">test.ts</button>
+            <button class="chip file-tab" data-file-key="readme.md" id="tab-1" role="tab" aria-selected="false" tabindex="-1">readme.md</button>
           </div>
           <div class="file-content-area" id="file-content-area" role="tabpanel" aria-labelledby="tab-0">
             <pre><code>content</code></pre>
           </div>
           <div class="file-info" id="file-info">
             <button class="btn btn-ghost btn-copy-sm" data-action="copy-content">
-              <span class="micro-label">COPY</span>
+              <span class="micro-label">Copy</span>
             </button>
           </div>
         </div>
@@ -451,7 +451,7 @@ describe('GistDetail', () => {
 
       // Let the async handler run
       await vi.waitFor(() => {
-        expect(copyBtn.innerHTML).toContain('COPIED!');
+        expect(copyBtn.innerHTML).toContain('Copied!');
       });
 
       expect(copyBtn.classList.contains('btn-success')).toBe(true);
@@ -459,7 +459,7 @@ describe('GistDetail', () => {
       // Advance timers to reset
       vi.advanceTimersByTime(2000);
 
-      expect(copyBtn.innerHTML).toContain('COPY');
+      expect(copyBtn.innerHTML).toContain('Copy');
       expect(copyBtn.classList.contains('btn-success')).toBe(false);
 
       // Restore original clipboard
