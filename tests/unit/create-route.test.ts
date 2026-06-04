@@ -1,7 +1,7 @@
 /**
  * Unit tests for Create Gist Route
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -19,15 +19,28 @@ vi.mock('../../src/stores/gist-store', () => ({
   },
 }));
 
-vi.mock('../../src/services/security/dom', () => ({
-  sanitizeHtml: vi.fn((s: string) => s),
+vi.mock('../../src/services/gist-paste-parser', () => ({
+  parsePasteText: vi.fn(),
+}));
+
+vi.mock('../../src/services/llm/client', () => ({
+  generateDescription: vi.fn(),
+  loadLLMConfig: vi.fn().mockResolvedValue({ enabled: false }),
+  splitIntoFiles: vi.fn(),
+}));
+
+vi.mock('../../src/services/lifecycle', () => ({
+  lifecycle: {
+    getRouteSignal: vi.fn(() => new AbortController().signal),
+  },
 }));
 
 // ── Imports (after mocks) ───────────────────────────────────────────
 
-import { render } from '../../src/routes/create';
-import gistStore from '../../src/stores/gist-store';
 import { toast } from '../../src/components/ui/toast';
+import { render } from '../../src/routes/create';
+import { parsePasteText } from '../../src/services/gist-paste-parser';
+import gistStore from '../../src/stores/gist-store';
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
@@ -266,6 +279,119 @@ describe('Create Route', () => {
       const submitBtn = container.querySelector('button[type="submit"]') as HTMLElement;
       expect(submitBtn).not.toBeNull();
       expect(submitBtn?.textContent).toContain('CREATE GIST');
+    });
+  });
+
+  // ── paste zone ──────────────────────────────────────────────────────
+
+  describe('paste zone', () => {
+    it('shows error when parse paste is clicked with empty input', () => {
+      render(container);
+
+      const parseBtn = container.querySelector('#parse-paste-btn') as HTMLElement;
+      parseBtn?.click();
+
+      expect(toast.error).toHaveBeenCalledWith('PASTE TEXT FIRST');
+    });
+
+    it('parses paste text and populates file entries', () => {
+      vi.mocked(parsePasteText).mockReturnValue({
+        files: [
+          { filename: 'a.js', content: 'aaa' },
+          { filename: 'b.js', content: 'bbb' },
+        ],
+        suggestedDescription: 'My Gist',
+      });
+
+      render(container);
+
+      const pasteInput = container.querySelector('#paste-input') as HTMLTextAreaElement;
+      pasteInput.value = '--- a.js ---\naaa\n--- b.js ---\nbbb';
+
+      const parseBtn = container.querySelector('#parse-paste-btn') as HTMLElement;
+      parseBtn?.click();
+
+      const entries = container.querySelectorAll('.file-entry');
+      expect(entries.length).toBe(2);
+
+      const filenames = Array.from(
+        container.querySelectorAll<HTMLInputElement>('.gist-filename')
+      ).map((i) => i.value);
+      expect(filenames).toEqual(['a.js', 'b.js']);
+
+      const descInput = container.querySelector('#gist-description') as HTMLInputElement;
+      expect(descInput.value).toBe('My Gist');
+
+      expect(toast.success).toHaveBeenCalledWith('PARSED 2 FILES');
+    });
+
+    it('shows error when paste parser finds no files', () => {
+      vi.mocked(parsePasteText).mockReturnValue({
+        files: [],
+      });
+
+      render(container);
+
+      const pasteInput = container.querySelector('#paste-input') as HTMLTextAreaElement;
+      pasteInput.value = 'random text';
+
+      const parseBtn = container.querySelector('#parse-paste-btn') as HTMLElement;
+      parseBtn?.click();
+
+      expect(toast.error).toHaveBeenCalledWith('NO FILES DETECTED IN PASTE');
+    });
+
+    it('does not overwrite existing description on paste parse', () => {
+      vi.mocked(parsePasteText).mockReturnValue({
+        files: [{ filename: 'x.js', content: 'x' }],
+        suggestedDescription: 'Suggested',
+      });
+
+      render(container);
+
+      const descInput = container.querySelector('#gist-description') as HTMLInputElement;
+      descInput.value = 'My Description';
+
+      const pasteInput = container.querySelector('#paste-input') as HTMLTextAreaElement;
+      pasteInput.value = '--- x.js ---\nx';
+
+      const parseBtn = container.querySelector('#parse-paste-btn') as HTMLElement;
+      parseBtn?.click();
+
+      expect(descInput.value).toBe('My Description');
+    });
+  });
+
+  // ── loading state ──────────────────────────────────────────────────
+
+  describe('loading state', () => {
+    it('sets submit button to busy state during creation', async () => {
+      let resolveCreate: (v: boolean) => void;
+      vi.mocked(gistStore.createGist).mockReturnValue(
+        new Promise((r) => {
+          resolveCreate = r;
+        }) as never
+      );
+
+      render(container);
+
+      const filenameInput = container.querySelector('.gist-filename') as HTMLInputElement;
+      filenameInput.value = 'test.js';
+      const contentInput = container.querySelector('.gist-content') as HTMLTextAreaElement;
+      contentInput.value = 'data';
+
+      const form = container.querySelector('#create-gist-form') as HTMLFormElement;
+      form?.dispatchEvent(new Event('submit'));
+
+      // Wait a tick for the async handler
+      await vi.waitFor(() => {
+        const submitBtn = container.querySelector<HTMLButtonElement>('[type="submit"]');
+        expect(submitBtn?.disabled).toBe(true);
+        expect(submitBtn?.getAttribute('aria-busy')).toBe('true');
+      });
+
+      // Resolve to avoid hanging
+      resolveCreate!(true);
     });
   });
 });
