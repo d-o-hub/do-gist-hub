@@ -6,7 +6,6 @@
 import type { GistRecord } from '../services/db';
 import { sanitizeHtml } from '../services/security/dom';
 import gistStore from '../stores/gist-store';
-import { formatRelativeTime, parseIsoDate } from '../utils/date';
 import { showConfirmDialog } from '../utils/dialog';
 import { toast } from './ui/toast';
 
@@ -14,6 +13,21 @@ const cardCache = new Map<
   string,
   { html: string; updatedAt: string; starred: boolean; syncStatus: string; lastSyncedAt?: string }
 >();
+
+function formatRelativeTime(dateStr: string): string {
+  const now = Date.now();
+  const dateTs = Date.parse(dateStr);
+  if (Number.isNaN(dateTs)) return '';
+  const diffMs = now - dateTs;
+  const diffSec = Math.floor(diffMs / 1000);
+  if (diffSec < 60) return 'JUST NOW';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}M AGO`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}H AGO`;
+  const diffDay = Math.floor(diffHr / 24);
+  return `${diffDay}D AGO`;
+}
 
 const SYNC_BADGE_LOOKUP: Record<string, string> = {
   pending: '<div class="sync-status-badge sync-status-pending">PENDING</div>',
@@ -43,8 +57,8 @@ function escapeViewTransitionName(id: string): string {
 
 function renderStalenessTooltip(updatedAt: string, lastSyncedAt?: string): string {
   if (!lastSyncedAt) return '';
-  const updatedTs = parseIsoDate(updatedAt);
-  const syncedTs = parseIsoDate(lastSyncedAt);
+  const updatedTs = Date.parse(updatedAt);
+  const syncedTs = Date.parse(lastSyncedAt);
   if (Number.isNaN(updatedTs) || Number.isNaN(syncedTs)) return '';
 
   const staleMs = updatedTs - syncedTs;

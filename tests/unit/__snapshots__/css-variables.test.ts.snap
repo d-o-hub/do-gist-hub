@@ -206,15 +206,7 @@ exports[`generateCSSVariables > matches the full CSS output snapshot 1`] = `
 
   /* ===== Component Tokens (2026) ===== */
   --nav-bottom-height: 64px;
-  --nav-bottom-height-large: 72px;
   --nav-sidebar-width: 240px;
-  --nav-sidebar-width-large: 260px;
-  --nav-sidebar-width-wide: 280px;
-  --nav-rail-width: 72px;
-  --nav-header-actions-gap: 0.5rem;
-  --nav-header-actions-gap-narrow: 0.25rem;
-  --nav-header-padding: 0.75rem 1rem;
-  --nav-header-padding-narrow: 0.5rem 0.75rem;
   --ui-backdrop-bg: rgba(0, 0, 0, 0.7);
   --ui-backdrop-blur: 8px;
   --ui-glass-bg: rgba(255, 255, 255, 0.05);

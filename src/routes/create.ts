@@ -2,7 +2,6 @@
  * Create Gist Route
  */
 
-import { setButtonLoading, setButtonText } from '../components/ui/button';
 import { toast } from '../components/ui/toast';
 import { parsePasteText } from '../services/gist-paste-parser';
 import { lifecycle } from '../services/lifecycle';
@@ -14,52 +13,24 @@ let nextFileId = 0;
 function createFileRow(id: number, container: HTMLElement, signal: AbortSignal): HTMLElement {
   const div = document.createElement('div');
   div.className = 'file-entry';
+  div.innerHTML = `
+    <div class="flex-row gap-2 flex-end">
+      <div class="form-group flex-1 mb-0">
+        <label class="form-label" for="gist-filename-${id}">Filename</label>
+        <input type="text" id="gist-filename-${id}" class="form-input gist-filename" placeholder="e.g. index.js" required>
+      </div>
+      <button type="button" class="btn btn-ghost btn-remove-file remove-file-minh remove-file-p" data-file-id="${id}">
+          REMOVE
+        </button>
+    </div>
+    <div class="form-group mb-0">
+      <label class="form-label" for="gist-content-${id}">Content</label>
+      <textarea id="gist-content-${id}" class="form-textarea gist-content gist-content-minh" placeholder="File content..." required></textarea>
+    </div>
+  `;
 
-  // --- Header row: filename + remove button ---
-  const headerRow = document.createElement('div');
-  headerRow.className = 'flex-row gap-2 flex-end';
-
-  const filenameGroup = document.createElement('div');
-  filenameGroup.className = 'form-group flex-1 mb-0';
-  const filenameLabel = document.createElement('label');
-  filenameLabel.className = 'form-label';
-  filenameLabel.setAttribute('for', `gist-filename-${id}`);
-  filenameLabel.textContent = 'Filename';
-  filenameGroup.appendChild(filenameLabel);
-  const filenameInput = document.createElement('input');
-  filenameInput.type = 'text';
-  filenameInput.id = `gist-filename-${id}`;
-  filenameInput.className = 'form-input gist-filename';
-  filenameInput.placeholder = 'e.g. index.js';
-  filenameInput.required = true;
-  filenameGroup.appendChild(filenameInput);
-  headerRow.appendChild(filenameGroup);
-
-  const removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'btn btn-ghost btn-remove-file remove-file-minh remove-file-p';
-  removeBtn.dataset.fileId = String(id);
-  removeBtn.textContent = 'REMOVE';
-  headerRow.appendChild(removeBtn);
-  div.appendChild(headerRow);
-
-  // --- Content textarea ---
-  const contentGroup = document.createElement('div');
-  contentGroup.className = 'form-group mb-0';
-  const contentLabel = document.createElement('label');
-  contentLabel.className = 'form-label';
-  contentLabel.setAttribute('for', `gist-content-${id}`);
-  contentLabel.textContent = 'Content';
-  contentGroup.appendChild(contentLabel);
-  const contentTextarea = document.createElement('textarea');
-  contentTextarea.id = `gist-content-${id}`;
-  contentTextarea.className = 'form-textarea gist-content gist-content-minh';
-  contentTextarea.placeholder = 'File content...';
-  contentTextarea.required = true;
-  contentGroup.appendChild(contentTextarea);
-  div.appendChild(contentGroup);
-
-  removeBtn.addEventListener(
+  const removeBtn = div.querySelector('.btn-remove-file');
+  removeBtn?.addEventListener(
     'click',
     () => {
       const filesContainer = container.querySelector('#files-container') as HTMLElement;
@@ -97,7 +68,7 @@ export function render(container: HTMLElement): void {
       <header class="detail-header">
         <h2 class="detail-title">Create New Gist</h2>
       </header>
-      <form id="create-gist-form" class="glass-card create-form-p form-stagger">
+      <form id="create-gist-form" class="glass-card create-form-p">
         <div class="form-group">
           <label class="form-label" for="gist-description">Description</label>
           <input type="text" id="gist-description" class="form-input" placeholder="Gist description..." required>
@@ -163,7 +134,7 @@ export function render(container: HTMLElement): void {
     }
 
     // Clear existing files and populate with parsed results
-    filesContainer.replaceChildren();
+    filesContainer.innerHTML = '';
     for (const file of result.files) {
       const id = nextFileId++;
       const row = createFileRow(id, container, signal);
@@ -258,7 +229,7 @@ export function render(container: HTMLElement): void {
       }
 
       // Clear existing files and populate with dropped files
-      filesContainer.replaceChildren();
+      filesContainer.innerHTML = '';
 
       for (const file of textFiles) {
         const id = nextFileId++;
@@ -315,7 +286,7 @@ export function render(container: HTMLElement): void {
                 }
 
                 // Clear existing files and populate with LLM results
-                filesContainer.replaceChildren();
+                filesContainer.innerHTML = '';
                 for (const file of result.files) {
                   const id = nextFileId++;
                   const row = createFileRow(id, container, signal);
@@ -398,28 +369,13 @@ export function render(container: HTMLElement): void {
       }
 
       void (async () => {
-        const submitBtn = container.querySelector<HTMLButtonElement>('[type="submit"]');
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.setAttribute('aria-busy', 'true');
-          setButtonLoading(submitBtn, 'Creating...');
+        const result = await gistStore.createGist(desc, isPublic, files);
+        if (result) {
+          toast.success('GIST CREATED');
+        } else {
+          toast.success('GIST QUEUED FOR SYNC');
         }
-
-        try {
-          const result = await gistStore.createGist(desc, isPublic, files);
-          if (result) {
-            toast.success('GIST CREATED');
-          } else {
-            toast.success('GIST QUEUED FOR SYNC');
-          }
-          window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'home' } }));
-        } finally {
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.removeAttribute('aria-busy');
-            setButtonText(submitBtn, 'CREATE GIST');
-          }
-        }
+        window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'home' } }));
       })();
     },
     { signal }

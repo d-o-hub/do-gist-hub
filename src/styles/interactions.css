@@ -63,10 +63,6 @@ html {
     transform: translateY(0);
   }
 
-  .gist-card:active {
-    transform: scale(0.985);
-  }
-
   /* Prevent double-tap zoom on interactive elements */
   button,
   a,

@@ -416,7 +416,17 @@ describe('GistDetail', () => {
       expect(container.querySelector('#file-content-area-gist-1')?.innerHTML).toContain('c2');
     });
 
-    it('navigates and cycles tabs with ArrowRight/ArrowLeft', () => {
+    it('navigates and cycles tabs with ArrowRight/ArrowLeft and updates content', async () => {
+      const gistStoreModule = await import('../../src/stores/gist-store');
+      vi.mocked(gistStoreModule.default.getGist).mockReturnValue({
+        id: 'gist-1',
+        files: {
+          'test.ts': { content: 'c1' },
+          'readme.md': { content: 'c2' },
+          'other.ts': { content: 'c3' },
+        },
+      } as any);
+
       bindDetailEvents(container, { onBack, onEdit, onViewRevision });
 
       const tabs = container.querySelectorAll('.file-tab');
@@ -424,23 +434,53 @@ describe('GistDetail', () => {
       firstTab.focus();
 
       // ArrowRight to second tab
-      container.querySelector('.file-tabs')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      container
+        .querySelector('.file-tabs')
+        ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
       expect(document.activeElement).toBe(tabs[1]);
+      await vi.waitFor(() => {
+        expect(container.querySelector('#file-content-area-gist-1')?.innerHTML).toContain('c2');
+      });
 
       // ArrowRight to third tab
-      container.querySelector('.file-tabs')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      container
+        .querySelector('.file-tabs')
+        ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
       expect(document.activeElement).toBe(tabs[2]);
+      await vi.waitFor(() => {
+        expect(container.querySelector('#file-content-area-gist-1')?.innerHTML).toContain('c3');
+      });
 
       // ArrowRight cycles to first tab
-      container.querySelector('.file-tabs')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      container
+        .querySelector('.file-tabs')
+        ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
       expect(document.activeElement).toBe(tabs[0]);
+      await vi.waitFor(() => {
+        expect(container.querySelector('#file-content-area-gist-1')?.innerHTML).toContain('c1');
+      });
 
       // ArrowLeft cycles to last tab
-      container.querySelector('.file-tabs')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+      container
+        .querySelector('.file-tabs')
+        ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
       expect(document.activeElement).toBe(tabs[2]);
+      await vi.waitFor(() => {
+        expect(container.querySelector('#file-content-area-gist-1')?.innerHTML).toContain('c3');
+      });
     });
 
-    it('moves focus with Home and End keys', () => {
+    it('moves focus and updates content with Home and End keys', async () => {
+      const gistStoreModule = await import('../../src/stores/gist-store');
+      vi.mocked(gistStoreModule.default.getGist).mockReturnValue({
+        id: 'gist-1',
+        files: {
+          'test.ts': { content: 'c1' },
+          'readme.md': { content: 'c2' },
+          'other.ts': { content: 'c3' },
+        },
+      } as any);
+
       bindDetailEvents(container, { onBack, onEdit, onViewRevision });
 
       const tabs = container.querySelectorAll('.file-tab');
@@ -448,12 +488,22 @@ describe('GistDetail', () => {
       secondTab.focus();
 
       // End
-      container.querySelector('.file-tabs')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+      container
+        .querySelector('.file-tabs')
+        ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
       expect(document.activeElement).toBe(tabs[2]);
+      await vi.waitFor(() => {
+        expect(container.querySelector('#file-content-area-gist-1')?.innerHTML).toContain('c3');
+      });
 
       // Home
-      container.querySelector('.file-tabs')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+      container
+        .querySelector('.file-tabs')
+        ?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
       expect(document.activeElement).toBe(tabs[0]);
+      await vi.waitFor(() => {
+        expect(container.querySelector('#file-content-area-gist-1')?.innerHTML).toContain('c1');
+      });
     });
 
     it('copies content to clipboard when copy button is clicked', async () => {

@@ -257,59 +257,6 @@ body {
   transition-duration: 100ms;
 }
 
-/* Disabled: not-allowed cursor, reduced opacity, no hover lift.
-   Press feedback suppressed so the button doesn't appear interactive. */
-.btn:disabled,
-.btn[aria-disabled="true"] {
-  cursor: not-allowed;
-  opacity: 0.55;
-  transform: none;
-  pointer-events: none;
-}
-
-/* Press feedback scale (transform-only, GPU-cheap).
-   The 0.97 scale is the visible "pressed" cue; spring physics on the
-   transition make it feel responsive without overshoot. */
-@media (hover: hover) and (pointer: fine) {
-  .btn:active:not(:disabled):not([aria-disabled="true"]):not([aria-busy="true"]) {
-    transform: translateY(0) scale(0.97);
-    transition-duration: 80ms;
-  }
-}
-
-/* Loading state: the `aria-busy="true"` button shows an inline
-   spinner. The spinner is a child element rendered by the consumer
-   (or by `createButton()` in the future) and styled via the
-   `.btn-spinner` class. The button label stays visible — we just
-   add the spinner beside it — so the user never loses context. */
-.btn[aria-busy="true"] {
-  cursor: progress;
-  pointer-events: none;
-  position: relative;
-}
-
-.btn[aria-busy="true"] .btn-label {
-  opacity: 0.7;
-  transition: opacity 150ms var(--motion-easing-out);
-}
-
-.btn-spinner {
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  border-radius: var(--radius-full);
-  animation: spin 800ms linear infinite;
-  flex-shrink: 0;
-}
-
-/* Disable hover lift on busy buttons */
-.btn[aria-busy="true"]:hover {
-  transform: none;
-  background: var(--color-background-elevated);
-}
-
 .btn-ghost {
   background: transparent;
   color: var(--color-foreground-muted);
@@ -368,8 +315,7 @@ body {
   border-radius: var(--radius-md);
   color: var(--color-text);
   font-family: var(--font-body);
-  /* Minimum 16px to prevent iOS Safari auto-zoom on focus */
-  font-size: max(1rem, var(--text-sm));
+  font-size: var(--text-sm);
   line-height: var(--line-height-normal);
   transition: all var(--motion-duration-fast) var(--motion-easing);
 }
@@ -477,10 +423,8 @@ body {
   container-type: inline-size;
   container-name: gist-card;
   transition:
-    transform var(--motion-duration-fast) var(--motion-easing-spring),
-    background-color var(--motion-duration-fast) var(--motion-easing-out),
-    box-shadow var(--motion-duration-fast) var(--motion-easing-out);
-  will-change: transform;
+    transform var(--motion-duration-base) var(--motion-easing),
+    background-color var(--motion-duration-base) var(--motion-easing);
 }
 
 /* Container Query: Larger card layout for wider containers */
@@ -516,34 +460,13 @@ body {
   }
 }
 
-/* Gist card title: prevent overflow with long descriptions */
-.gist-card-title {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-  color: var(--color-text);
-  margin-top: var(--space-1);
-  overflow-wrap: anywhere;
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-/* Hover effects only on devices that support hover */
-@media (hover: hover) and (pointer: fine) {
-  .gist-card:hover {
-    transform: translateY(-2px) scale(1.005);
-  }
-}
-
+.gist-card:hover,
 .gist-card:focus-visible {
-  transform: translateY(-2px) scale(1.005);
+  transform: translateY(-2px);
 }
 
 .gist-card:active {
-  transform: translateY(0) scale(0.985);
-  transition-duration: 80ms;
+  transform: translateY(0);
 }
 
 .gist-card-header {
@@ -553,11 +476,21 @@ body {
   gap: var(--space-4);
 }
 
+.gist-card-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-top: var(--space-1);
+}
+
 .micro-label {
   font-family: var(--font-body);
   font-size: var(--text-micro);
   font-weight: 700;
-  letter-spacing: var(--letter-spacing-widest, 0.1em);
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--color-text-faint);
 }
@@ -712,17 +645,6 @@ body {
   gap: var(--space-3);
 }
 
-/* Narrow phones: tighter detail header padding */
-@media (max-width: 480px) {
-  .detail-header {
-    padding: var(--space-6) var(--space-4) var(--space-4);
-  }
-
-  .header-top {
-    gap: var(--space-2);
-  }
-}
-
 .detail-title {
   font-family: var(--font-display);
   font-size: clamp(2rem, 1rem + 3vw, 4rem);
@@ -731,9 +653,6 @@ body {
   letter-spacing: -0.02em;
   text-transform: uppercase;
   color: var(--color-text);
-  overflow-wrap: anywhere;
-  hyphens: auto;
-  text-wrap: balance;
 }
 
 .detail-meta-row {
@@ -753,56 +672,6 @@ body {
   text-transform: uppercase;
   color: var(--color-accent-text);
   background: var(--color-accent-subtle);
-  white-space: nowrap;
-}
-
-.detail-chip:last-child:not(:first-child) {
-  min-width: 0;
-}
-
-/* Detail action row (Star, Fork, Edit, Revisions, Open in GitHub, Copy URL, Share) */
-.gist-detail-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-top: var(--space-4);
-}
-
-/* Narrow phones: stack into 2-column grid, primary action full width */
-@media (max-width: 480px) {
-  .gist-detail-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-2);
-  }
-
-  .gist-detail-actions .btn {
-    min-width: 0;
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--font-size-xs);
-    justify-content: center;
-  }
-
-  /* Primary (star) button spans the full row */
-  .gist-detail-actions .btn[data-action="star"] {
-    grid-column: 1 / -1;
-  }
-}
-
-/* Tablet and up: single-row layout with breathing room */
-@media (min-width: 768px) {
-  .gist-detail-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
-  }
-}
-
-/* Desktop: actions on a single row */
-@media (min-width: 1280px) {
-  .gist-detail-actions {
-    flex-wrap: nowrap;
-  }
 }
 
 .file-tabs {
@@ -811,24 +680,11 @@ body {
   padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--color-border);
   overflow-x: auto;
-  overscroll-behavior-x: contain;
   scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.file-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-@media (max-width: 480px) {
-  .file-tabs {
-    padding: var(--space-3) var(--space-4);
-  }
 }
 
 .file-tab {
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .file-content-area {
@@ -836,16 +692,6 @@ body {
   background: var(--color-surface-overlay);
   border-radius: var(--radius-card);
   margin: var(--space-4) var(--space-6);
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-}
-
-@media (max-width: 480px) {
-  .file-content-area {
-    padding: var(--space-4);
-    margin: var(--space-3) var(--space-4);
-    border-radius: var(--radius-md);
-  }
 }
 
 .file-content-area pre {
@@ -855,7 +701,6 @@ body {
   line-height: 1.6;
   overflow-x: auto;
   white-space: pre;
-  -webkit-overflow-scrolling: touch;
 }
 
 .file-info {
@@ -865,28 +710,12 @@ body {
   gap: var(--space-4);
   padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--color-border);
-  flex-wrap: wrap;
-}
-
-@media (max-width: 480px) {
-  .file-info {
-    padding: var(--space-3) var(--space-4);
-    gap: var(--space-2);
-  }
 }
 
 .file-info-left {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
-  min-width: 0;
-  flex: 1 1 auto;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
-
-.file-info-left a {
-  word-break: break-all;
 }
 
 .btn-copy-sm {
@@ -945,30 +774,6 @@ body {
     opacity: 0.4;
     transform: scale(1.5);
   }
-}
-
-/* One-shot state-change pulse. Fired by app.ts when the sync
-   status flips (online ↔ syncing ↔ offline). A short radial burst
-   draws the eye to the indicator without leaving a permanent
-   animation near the header. The class is removed on
-   animationend so the next status flip can fire it again. */
-@keyframes sync-status-burst {
-  0% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 currentColor;
-  }
-  60% {
-    transform: scale(1.4);
-    box-shadow: 0 0 0 8px transparent;
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 transparent;
-  }
-}
-
-.sync-indicator.sync-status-changed .sync-dot {
-  animation: sync-status-burst 500ms var(--motion-easing-out);
 }
 
 /* ===== Skeleton Layout Classes ===== */
@@ -1124,52 +929,12 @@ body {
   color: var(--color-text);
   font-family: var(--font-body);
   transition: all var(--motion-duration-fast) var(--motion-easing);
-  min-height: var(--spacing-11);
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--color-accent);
   box-shadow: 0 0 0 var(--spacing-1) var(--color-accent-subtle);
-}
-
-/* Filter header: chips on left, sort select on right.
-   On narrow phones, stack vertically to avoid overflow. */
-.filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
-.filter-header .filter-chips {
-  flex: 1 1 auto;
-  min-width: 0;
-  margin-bottom: 0;
-}
-
-.filter-header #sort-select {
-  flex: 0 0 auto;
-  min-width: 120px;
-  max-width: 100%;
-}
-
-@media (max-width: 480px) {
-  .filter-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-2);
-  }
-
-  .filter-header .filter-chips {
-    width: 100%;
-  }
-
-  .filter-header #sort-select {
-    width: 100%;
-    min-width: 0;
-  }
 }
 
 /* ===== Icon Button (Header Actions) ===== */
@@ -1271,26 +1036,8 @@ body {
 
 .edit-actions {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-3);
   margin-top: var(--space-4);
-}
-
-/* Narrow phones: stack edit actions, primary action sticky at bottom for thumb reach */
-@media (max-width: 767px) {
-  .edit-actions {
-    flex-direction: column-reverse;
-    gap: var(--space-2);
-  }
-
-  .edit-actions .btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .edit-actions #edit-submit-btn {
-    order: -1;
-  }
 }
 
 /* Create form utilities */
@@ -1378,22 +1125,6 @@ body {
   text-align: left;
 }
 
-/* Rail item: vertically stacked icon + label, full width of rail */
-.rail-item {
-  flex-direction: column;
-  gap: var(--spacing-1);
-  width: 100%;
-  padding: var(--space-2) var(--space-1);
-  font-size: var(--font-size-xs);
-  line-height: 1.1;
-  text-align: center;
-  white-space: normal;
-  word-break: break-word;
-  hyphens: auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .nav-item:hover,
 .rail-item:hover,
 .sidebar-item:hover,
@@ -1470,36 +1201,17 @@ body {
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
   background: var(--color-surface-overlay);
-  min-width: 0;
 }
 
 .file-entry-header {
   display: flex;
   gap: var(--spacing-2);
   align-items: flex-end;
-  flex-wrap: wrap;
 }
 
 .file-entry-header .form-group {
-  flex: 1 1 200px;
+  flex: 1;
   margin-bottom: 0;
-  min-width: 0;
-}
-
-@media (max-width: 480px) {
-  .file-entry {
-    padding: var(--spacing-3);
-  }
-
-  .file-entry-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .file-entry-header .btn-remove-file {
-    width: 100%;
-    justify-content: center;
-  }
 }
 
 .checkbox-label {
@@ -1518,25 +1230,11 @@ body {
 
 .form-actions {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--spacing-3);
 }
 
 .form-actions .btn-primary {
   flex: 1;
-  min-width: 120px;
-}
-
-@media (max-width: 480px) {
-  .form-actions {
-    flex-direction: column-reverse;
-    gap: var(--space-2);
-  }
-
-  .form-actions .btn {
-    width: 100%;
-    justify-content: center;
-  }
 }
 
 textarea.form-textarea {
