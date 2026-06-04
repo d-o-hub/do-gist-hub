@@ -14,6 +14,7 @@ android {
         versionCode System.getenv('CI') ? Integer.parseInt(System.getenv('GITHUB_RUN_NUMBER') ?: '1') : 1
         versionName System.getenv('VERSION') ?: "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        missingDimensionStrategy 'buildType', 'release'
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
@@ -36,6 +37,27 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        /**
+         * F-Droid build variant.
+         *
+         * Identical to release (minification, resource shrinking, ProGuard)
+         * but produces an UNSIGNED APK. F-Droid signs APKs with its own key.
+         *
+         * Build:  ./gradlew assembleFdroid
+         * Output: app/build/outputs/apk/fdroid/app-fdroid-unsigned.apk
+         *
+         * `matchingFallbacks ['release']` is required because the Capacitor
+         * library modules (:capacitor-android, :capacitor-cordova-android-plugins)
+         * only publish debug and release variants. Without this, AGP fails to
+         * resolve :app:fdroidCompileClasspath with:
+         *   "No matching variant of project :capacitor-android was found. ...
+         *    the consumer needed ... BuildTypeAttr with value 'fdroid'"
+         */
+        fdroid {
+            initWith release
+            signingConfig null
+            matchingFallbacks = ['release']
         }
     }
 }

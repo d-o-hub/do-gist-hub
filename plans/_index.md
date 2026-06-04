@@ -12,8 +12,6 @@
 | `052-goap-ui-ux-modernization-completion.md`  | GOAP Plan   | Complete ✅   | Popover API command palette, Anchor Positioned tooltips, skeleton CSS extraction, hex codes → tokens, JSDOM polyfill           |
 | `047-v0.3.0-scope.md`                         | Plan        | Complete ✅ | v0.3.0 scope: all code actions complete (auth telemetry, UX polish, DevEx/CI); F-Droid MR submission tracked externally |
 | `053-progress-update-2026-05-21-playwright-cache-fix.md` | Progress | Complete ✅ | Playwright WebKit cache deps fix — system libs missing on cache hit |
-| File                                          | Type        | Status      | Summary                                                                                                                      |
-| --------------------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `050-goap-plans-completion-v2.md`             | GOAP Plan   | Complete ✅ | Complete remaining deep audit: CI/CD fixes (6 workflows), CSS consolidation (command-palette, OKLCH shadows, unused classes), SW cache, token expiry UI, Retry-After header, 640px breakpoint, color-scheme, responsive nav fix, skill evals |
 | `045-v0.2.0-release-and-auth-modernization.md` | GOAP Plan   | Complete ✅ | v0.2.0-rc.1 release, OAuth Device Flow, audit gaps completed |
 | `046-post-release-and-v0.2.0-stable.md`       | GOAP Plan   | Complete ✅ | v0.2.0 stable promoted, F-Droid metadata, release CI hardened, v0.3.0 scoped |

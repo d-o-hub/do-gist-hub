@@ -667,8 +667,8 @@ describe('GitHub API Client', () => {
 
   // ── ADR-016: lazy content hydration (files=false) ────────────────
 
-  describe('ADR-016: lazy content hydration (files=false)', () => {
-    it('listGists includes files=false in the request URL', async () => {
+  describe('ADR-016: lazy content hydration', () => {
+    it('listGists does NOT include unsupported files param (GitHub API ignores it)', async () => {
       fetchMock
         .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
         .mockResolvedValueOnce(
@@ -682,26 +682,22 @@ describe('GitHub API Client', () => {
 
       await listGists();
 
-      expect(fetchMock).toHaveBeenCalledWith(
-        expect.stringContaining('files=false'),
-        expect.any(Object)
-      );
+      const calledUrl = fetchMock.mock.calls[1]?.[0] as string;
+      expect(calledUrl).not.toContain('files=false');
     });
 
-    it('listStarredGists includes files=false in the request URL', async () => {
+    it('listStarredGists does NOT include unsupported files param', async () => {
       fetchMock.mockResolvedValueOnce(
         new Response(JSON.stringify([makeGitHubGist('starred-1')]), { status: 200 })
       );
 
       await listStarredGists();
 
-      expect(fetchMock).toHaveBeenCalledWith(
-        expect.stringContaining('files=false'),
-        expect.any(Object)
-      );
+      const calledUrl = fetchMock.mock.calls[0]?.[0] as string;
+      expect(calledUrl).not.toContain('files=false');
     });
 
-    it('getGist does NOT include files=false (full content)', async () => {
+    it('getGist does NOT include files param (full content needed)', async () => {
       const gist = makeGitHubGist('gist-1');
       fetchMock.mockResolvedValueOnce(new Response(JSON.stringify(gist), { status: 200 }));
 
@@ -711,7 +707,7 @@ describe('GitHub API Client', () => {
       expect(calledUrl).not.toContain('files=false');
     });
 
-    it('listGists custom pagination still includes files=false', async () => {
+    it('listGists custom pagination does NOT include files param', async () => {
       fetchMock
         .mockResolvedValueOnce(new Response(JSON.stringify({ login: 'testuser' }), { status: 200 }))
         .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
@@ -719,7 +715,7 @@ describe('GitHub API Client', () => {
       await listGists({ page: 2, perPage: 50 });
 
       const calledUrl = fetchMock.mock.calls[1]?.[0] as string;
-      expect(calledUrl).toContain('files=false');
+      expect(calledUrl).not.toContain('files=false');
       expect(calledUrl).toContain('page=2&per_page=50');
     });
 

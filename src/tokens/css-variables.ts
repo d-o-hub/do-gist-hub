@@ -227,7 +227,15 @@ export function generateCSSVariables(): string {
 
   /* ===== Component Tokens (2026) ===== */
   --nav-bottom-height: ${navTokens.bottomNav.height};
+  --nav-bottom-height-large: ${navTokens.bottomNav.heightLarge};
   --nav-sidebar-width: ${navTokens.sidebar.width};
+  --nav-sidebar-width-large: ${navTokens.sidebar.widthLarge};
+  --nav-sidebar-width-wide: ${navTokens.sidebar.widthWide};
+  --nav-rail-width: ${navTokens.railNav.width};
+  --nav-header-actions-gap: ${navTokens.header.actionsGap};
+  --nav-header-actions-gap-narrow: ${navTokens.header.actionsGapNarrow};
+  --nav-header-padding: ${navTokens.header.padding};
+  --nav-header-padding-narrow: ${navTokens.header.paddingNarrow};
   --ui-backdrop-bg: rgba(0, 0, 0, 0.7);
   --ui-backdrop-blur: ${uiTokens.backdrop.blur};
   --ui-glass-bg: ${uiTokens.glass.background};

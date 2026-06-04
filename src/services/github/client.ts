@@ -281,7 +281,6 @@ export async function listGists(
   const params = new URLSearchParams({
     page: String(page),
     per_page: String(perPage),
-    files: 'false',
     ...(since ? { since } : {}),
   });
 
@@ -300,7 +299,6 @@ export function listStarredGists(
   const params = new URLSearchParams({
     page: String(page),
     per_page: String(perPage),
-    files: 'false',
   });
 
   const url = `${BASE_URL}/gists/starred?${params}`;

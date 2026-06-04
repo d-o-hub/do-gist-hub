@@ -32,7 +32,7 @@ export class ToastManager {
       this.container.setAttribute('aria-atomic', 'true');
       this.container.style.cssText = `
         position: fixed;
-        bottom: var(--spacing-4, 1rem);
+        bottom: calc(var(--spacing-4, 1rem) + var(--nav-bottom-height, 0px) + env(safe-area-inset-bottom, 0px));
         right: var(--spacing-4, 1rem);
         z-index: var(--z-index-modal, 1050);
         display: flex;

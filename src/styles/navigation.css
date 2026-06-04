@@ -84,6 +84,31 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* Narrow phones (320px): trim title and tighten header */
+@media (max-width: 389px) {
+  .app-header {
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    padding-top: calc(var(--space-2) + env(safe-area-inset-top, 0px));
+    padding-left: calc(var(--space-3) + env(safe-area-inset-left, 0px));
+    padding-right: calc(var(--space-3) + env(safe-area-inset-right, 0px));
+  }
+
+  .app-title {
+    font-size: var(--text-base);
+  }
+
+  .header-right {
+    gap: var(--space-1);
+  }
+
+  .icon-button {
+    padding: var(--space-1);
+  }
 }
 
 /* ===== Filter Chips ===== */
@@ -215,11 +240,15 @@
     border-right: 1px solid var(--color-border-default);
     padding: var(--space-4) var(--space-2);
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-2);
     position: sticky;
     top: 0;
     height: 100dvh;
+    min-height: 100dvh;
     padding-top: calc(var(--space-4) + env(safe-area-inset-top));
+    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 }
 
