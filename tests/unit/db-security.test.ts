@@ -21,6 +21,9 @@ describe('exportData security', () => {
     await setMetadata('github-pat-enc', { secret: 'token' });
     await setMetadata('github-pat', 'legacy-token');
     await setMetadata('github-refresh-token', { secret: 'refresh' });
+    await setMetadata('github-refresh-expires', 123456789);
+    await setMetadata('github-username', 'testuser');
+    await setMetadata('llm-config', { apiKey: 'secret' });
     await setMetadata('theme-preference', 'dark');
 
     const exportedJson = await exportData();
@@ -33,5 +36,8 @@ describe('exportData security', () => {
     expect(keys).not.toContain('github-pat-enc');
     expect(keys).not.toContain('github-pat');
     expect(keys).not.toContain('github-refresh-token');
+    expect(keys).not.toContain('github-refresh-expires');
+    expect(keys).not.toContain('github-username');
+    expect(keys).not.toContain('llm-config');
   });
 });
