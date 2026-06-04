@@ -4,7 +4,6 @@
  */
 
 import * as GitHub from '../services/github/client';
-import { sanitizeHtml } from '../services/security/dom';
 import { safeError } from '../services/security/logger';
 import gistStore from '../stores/gist-store';
 import type { GistRecord } from '../types';
@@ -36,88 +35,180 @@ export function buildFileContent(content: string, language?: string): DocumentFr
   return frag;
 }
 
-export function renderFileContent(content: string, language?: string): string {
-  return `<pre class="code-block language-${sanitizeHtml(language || 'text')}"><code>${sanitizeHtml(content)}</code></pre>`;
-}
-
-export function renderGistDetail(gist: GistRecord): string {
+export function renderGistDetail(gist: GistRecord): DocumentFragment {
   const title = gist.description || 'Untitled Gist';
   const fileCount = Object.keys(gist.files).length;
   const visibility = gist.public ? 'Public' : 'Secret';
+  const frag = document.createDocumentFragment();
 
-  const fileTabs =
-    fileCount > 1
-      ? `
-    <div class="file-tabs scroll-x" role="tablist">
-      ${Object.entries(gist.files)
-        .map(
-          ([key, file], index) => `
-        <button class="chip file-tab ${index === 0 ? 'active' : ''}" data-file-key="${sanitizeHtml(key)}" id="tab-${index}" role="tab" aria-selected="${index === 0}" aria-controls="file-content-area">
-          ${sanitizeHtml(file.filename.toUpperCase())}
-        </button>
-      `
-        )
-        .join('')}
-    </div>`
-      : '';
+  const wrapper = document.createElement('div');
+  wrapper.className = 'gist-detail';
+  wrapper.dataset.gistId = gist.id;
 
+  // ── Header ───────────────────────────────────────────────────────
+  const header = document.createElement('header');
+  header.className = 'detail-header';
+  header.style.viewTransitionName = 'detail-header';
+
+  const headerTop = document.createElement('div');
+  headerTop.className = 'header-top';
+  const backBtn = document.createElement('button');
+  backBtn.className = 'btn btn-ghost';
+  backBtn.id = 'gist-back-btn';
+  backBtn.setAttribute('aria-label', 'Go back');
+  backBtn.textContent = '← Back';
+  headerTop.appendChild(backBtn);
+  const detailLabel = document.createElement('span');
+  detailLabel.className = 'micro-label';
+  detailLabel.textContent = 'Gist Detail';
+  headerTop.appendChild(detailLabel);
+  header.appendChild(headerTop);
+
+  const h1 = document.createElement('h1');
+  h1.className = 'detail-title';
+  h1.textContent = title;
+  header.appendChild(h1);
+
+  const metaRow = document.createElement('div');
+  metaRow.className = 'detail-meta-row';
+  const filesChip = document.createElement('span');
+  filesChip.className = 'detail-chip';
+  filesChip.textContent = `${fileCount} Files`;
+  metaRow.appendChild(filesChip);
+  const visChip = document.createElement('span');
+  visChip.className = 'detail-chip';
+  visChip.textContent = visibility;
+  metaRow.appendChild(visChip);
+  const timeEl = document.createElement('time');
+  timeEl.className = 'micro-label';
+  timeEl.dateTime = gist.updatedAt;
+  timeEl.textContent = `Updated ${formatRelativeTime(gist.updatedAt)}`;
+  metaRow.appendChild(timeEl);
+  header.appendChild(metaRow);
+
+  const actions = document.createElement('div');
+  actions.className = 'gist-detail-actions';
+  const starBtn = document.createElement('button');
+  starBtn.className = `btn ${gist.starred ? 'btn-danger' : 'btn-primary'}`;
+  starBtn.dataset.action = 'star';
+  starBtn.textContent = gist.starred ? 'Unstar' : 'Star';
+  actions.appendChild(starBtn);
+  const forkBtn = document.createElement('button');
+  forkBtn.className = 'btn btn-ghost';
+  forkBtn.dataset.action = 'fork';
+  forkBtn.textContent = 'Fork';
+  actions.appendChild(forkBtn);
+  const editBtn = document.createElement('button');
+  editBtn.className = 'btn btn-ghost';
+  editBtn.dataset.action = 'edit';
+  editBtn.textContent = 'Edit';
+  actions.appendChild(editBtn);
+  const revisionsBtn = document.createElement('button');
+  revisionsBtn.className = 'btn btn-ghost';
+  revisionsBtn.dataset.action = 'revisions';
+  revisionsBtn.textContent = 'Revisions';
+  actions.appendChild(revisionsBtn);
+  if (gist.htmlUrl) {
+    const githubLink = document.createElement('a');
+    githubLink.className = 'btn btn-ghost';
+    githubLink.dataset.action = 'open-github';
+    githubLink.href = gist.htmlUrl;
+    githubLink.target = '_blank';
+    githubLink.rel = 'noopener noreferrer';
+    githubLink.textContent = 'Open in GitHub';
+    actions.appendChild(githubLink);
+    const copyUrlBtn = document.createElement('button');
+    copyUrlBtn.className = 'btn btn-ghost';
+    copyUrlBtn.dataset.action = 'copy-url';
+    copyUrlBtn.textContent = 'Copy URL';
+    actions.appendChild(copyUrlBtn);
+  }
+  const shareBtn = document.createElement('button');
+  shareBtn.className = 'btn btn-ghost';
+  shareBtn.dataset.action = 'share';
+  shareBtn.textContent = 'Share';
+  if (typeof navigator === 'undefined' || !('share' in navigator)) {
+    shareBtn.hidden = true;
+  }
+  actions.appendChild(shareBtn);
+  header.appendChild(actions);
+  wrapper.appendChild(header);
+
+  // ── File tabs ────────────────────────────────────────────────────
+  if (fileCount > 1) {
+    const tabsDiv = document.createElement('div');
+    tabsDiv.className = 'file-tabs scroll-x';
+    tabsDiv.setAttribute('role', 'tablist');
+    let idx = 0;
+    for (const [key, file] of Object.entries(gist.files)) {
+      const tab = document.createElement('button');
+      tab.className = `chip file-tab${idx === 0 ? ' active' : ''}`;
+      tab.dataset.fileKey = key;
+      tab.id = `tab-${idx}`;
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-selected', idx === 0 ? 'true' : 'false');
+      tab.setAttribute('aria-controls', 'file-content-area');
+      tab.textContent = file.filename.toUpperCase();
+      tabsDiv.appendChild(tab);
+      idx++;
+    }
+    wrapper.appendChild(tabsDiv);
+  }
+
+  // ── File content area ────────────────────────────────────────────
+  const contentArea = document.createElement('div');
+  contentArea.className = 'file-content-area';
+  contentArea.id = 'file-content-area';
+  contentArea.setAttribute('role', 'tabpanel');
+  contentArea.setAttribute('aria-labelledby', 'tab-0');
   const firstFileKey = Object.keys(gist.files)[0];
   const firstFile = firstFileKey ? gist.files[firstFileKey] : null;
-  const content = firstFile?.content
-    ? renderFileContent(firstFile.content, firstFile.language)
-    : '<p class="empty-content">No content available</p>';
+  if (firstFile?.content) {
+    contentArea.appendChild(buildFileContent(firstFile.content, firstFile.language));
+  } else {
+    const emptyP = document.createElement('p');
+    emptyP.className = 'empty-content';
+    emptyP.textContent = 'No content available';
+    contentArea.appendChild(emptyP);
+  }
+  wrapper.appendChild(contentArea);
 
-  return `
-    <div class="gist-detail" data-gist-id="${sanitizeHtml(gist.id)}">
-      <header class="detail-header" style="view-transition-name: detail-header">
-        <div class="header-top">
-          <button class="btn btn-ghost" id="gist-back-btn" aria-label="Go back">← Back</button>
-          <span class="micro-label">Gist Detail</span>
-        </div>
-        <h1 class="detail-title">${sanitizeHtml(title)}</h1>
-        <div class="detail-meta-row">
-          <span class="detail-chip">${fileCount} Files</span>
-          <span class="detail-chip">${visibility}</span>
-          <time class="micro-label" datetime="${gist.updatedAt}">
-            Updated ${formatRelativeTime(gist.updatedAt)}
-          </time>
-        </div>
-        <div class="gist-detail-actions">
-          <button class="btn ${gist.starred ? 'btn-danger' : 'btn-primary'}" data-action="star">
-            ${gist.starred ? 'Unstar' : 'Star'}
-          </button>
-          <button class="btn btn-ghost" data-action="fork">Fork</button>
-          <button class="btn btn-ghost" data-action="edit">Edit</button>
-          <button class="btn btn-ghost" data-action="revisions">Revisions</button>
-          ${gist.htmlUrl ? `<a class="btn btn-ghost" data-action="open-github" href="${sanitizeHtml(gist.htmlUrl)}" target="_blank" rel="noopener noreferrer">Open in GitHub</a>` : ''}
-          ${gist.htmlUrl ? `<button class="btn btn-ghost" data-action="copy-url">Copy URL</button>` : ''}
-          <button class="btn btn-ghost" data-action="share"${typeof navigator !== 'undefined' && 'share' in navigator ? '' : ' hidden'}>Share</button>
-        </div>
-      </header>
+  // ── File info area ───────────────────────────────────────────────
+  const infoArea = document.createElement('div');
+  infoArea.className = 'file-info';
+  infoArea.id = 'file-info';
+  if (firstFile) {
+    const infoLeft = document.createElement('div');
+    infoLeft.className = 'file-info-left';
+    const langSpan = document.createElement('span');
+    langSpan.className = 'micro-label';
+    langSpan.textContent = `Language: ${firstFile.language || 'Unknown'}`;
+    infoLeft.appendChild(langSpan);
+    const rawSpan = document.createElement('span');
+    rawSpan.className = 'micro-label';
+    rawSpan.textContent = 'Raw URL: ';
+    const rawLink = document.createElement('a');
+    rawLink.href = firstFile.rawUrl || '';
+    rawLink.target = '_blank';
+    rawLink.rel = 'noopener noreferrer';
+    rawLink.textContent = 'Link';
+    rawSpan.appendChild(rawLink);
+    infoLeft.appendChild(rawSpan);
+    infoArea.appendChild(infoLeft);
+    const copyContentBtn = document.createElement('button');
+    copyContentBtn.className = 'btn btn-ghost btn-copy-sm';
+    copyContentBtn.dataset.action = 'copy-content';
+    copyContentBtn.setAttribute('aria-label', 'Copy file content');
+    const copyLabel = document.createElement('span');
+    copyLabel.className = 'micro-label';
+    copyLabel.textContent = 'COPY';
+    copyContentBtn.appendChild(copyLabel);
+    infoArea.appendChild(copyContentBtn);
+  }
+  wrapper.appendChild(infoArea);
 
-      ${fileTabs}
-
-      <div class="file-content-area" id="file-content-area" role="tabpanel" aria-labelledby="tab-0">
-        ${content}
-      </div>
-
-      <div class="file-info" id="file-info">
-        ${
-          firstFile
-            ? `
-          <div class="file-info-left">
-            <span class="micro-label">Language: ${sanitizeHtml(firstFile.language || 'Unknown')}</span>
-            <span class="micro-label">Raw URL: <a href="${sanitizeHtml(firstFile.rawUrl || '')}" target="_blank" rel="noopener noreferrer">Link</a></span>
-          </div>
-          <button class="btn btn-ghost btn-copy-sm" data-action="copy-content" aria-label="Copy file content">
-            <span class="micro-label">COPY</span>
-          </button>
-        `
-            : ''
-        }
-      </div>
-    </div>
-  `;
+  frag.appendChild(wrapper);
+  return frag;
 }
 
 export async function loadGistDetail(
@@ -134,7 +225,7 @@ export async function loadGistDetail(
     if (!gist) {
       throw new Error('Gist not found');
     }
-    container.innerHTML = renderGistDetail(gist);
+    container.replaceChildren(renderGistDetail(gist));
     bindDetailEvents(container, { onBack, onEdit, onViewRevision }, signal);
   } catch (err) {
     safeError('[GistDetail] Failed to load gist', err);
@@ -161,31 +252,56 @@ export async function loadGistDetail(
   }
 }
 
-export function renderRevisions(gistId: string, revisions: GistRevision[]): string {
-  const revisionsHtml = revisions
-    .map((rev) => {
-      const date = new Date(rev.committed_at).toLocaleString();
-      return `
-      <div class="revision-item glass-card" data-version="${sanitizeHtml(rev.version)}">
-        <div class="revision-meta">
-          <span class="stat-number">${date}</span>
-          <span class="micro-label">By ${sanitizeHtml(rev.user?.login || 'Unknown')}</span>
-        </div>
-        <button class="btn btn-ghost btn-sm" data-action="view-revision" data-version="${sanitizeHtml(rev.version)}">View</button>
-      </div>
-    `;
-    })
-    .join('');
+export function renderRevisions(gistId: string, revisions: GistRevision[]): DocumentFragment {
+  const frag = document.createDocumentFragment();
+  const wrapper = document.createElement('div');
+  wrapper.className = 'revisions-list';
+  wrapper.dataset.gistId = gistId;
 
-  return `
-    <div class="revisions-list" data-gist-id="${sanitizeHtml(gistId)}">
-      <header class="detail-header">
-        <button class="btn btn-ghost" id="gist-back-btn">← Back</button>
-        <h1 class="detail-title">Revisions (${revisions.length})</h1>
-      </header>
-      <div class="revisions-container">${revisionsHtml}</div>
-    </div>
-  `;
+  const header = document.createElement('header');
+  header.className = 'detail-header';
+  const backBtn = document.createElement('button');
+  backBtn.className = 'btn btn-ghost';
+  backBtn.id = 'gist-back-btn';
+  backBtn.textContent = '← Back';
+  header.appendChild(backBtn);
+  const h1 = document.createElement('h1');
+  h1.className = 'detail-title';
+  h1.textContent = `Revisions (${revisions.length})`;
+  header.appendChild(h1);
+  wrapper.appendChild(header);
+
+  const container = document.createElement('div');
+  container.className = 'revisions-container';
+  for (const rev of revisions) {
+    const item = document.createElement('div');
+    item.className = 'revision-item glass-card';
+    item.dataset.version = rev.version;
+
+    const meta = document.createElement('div');
+    meta.className = 'revision-meta';
+    const dateSpan = document.createElement('span');
+    dateSpan.className = 'stat-number';
+    dateSpan.textContent = new Date(rev.committed_at).toLocaleString();
+    meta.appendChild(dateSpan);
+    const userSpan = document.createElement('span');
+    userSpan.className = 'micro-label';
+    userSpan.textContent = `By ${rev.user?.login || 'Unknown'}`;
+    meta.appendChild(userSpan);
+    item.appendChild(meta);
+
+    const viewBtn = document.createElement('button');
+    viewBtn.className = 'btn btn-ghost btn-sm';
+    viewBtn.dataset.action = 'view-revision';
+    viewBtn.dataset.version = rev.version;
+    viewBtn.textContent = 'View';
+    item.appendChild(viewBtn);
+
+    container.appendChild(item);
+  }
+  wrapper.appendChild(container);
+  frag.appendChild(wrapper);
+  return frag;
 }
 
 export function bindDetailEvents(
@@ -219,7 +335,7 @@ export function bindDetailEvents(
         try {
           const revisions = await GitHub.listGistRevisions(gistId);
           if (signal?.aborted) return;
-          container.innerHTML = renderRevisions(gistId, revisions);
+          container.replaceChildren(renderRevisions(gistId, revisions));
           bindRevisionEvents(
             container,
             {

@@ -2,7 +2,7 @@
  * Unit tests for src/components/gist-detail.ts
  * Covers renderFileContent, renderGistDetail, renderRevisions, formatRelativeTime, loadGistDetail, bindDetailEvents
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock gistStore so loadGistDetail can use hydrateGist
 vi.mock('../../src/stores/gist-store', () => ({
@@ -33,33 +33,55 @@ vi.mock('../../src/services/security/logger', () => ({
 }));
 
 import {
-  renderFileContent,
+  bindDetailEvents,
+  buildFileContent,
+  loadGistDetail,
   renderGistDetail,
   renderRevisions,
-  loadGistDetail,
-  bindDetailEvents,
 } from '../../src/components/gist-detail';
 import type { GistRecord } from '../../src/types';
 import type { GistRevision } from '../../src/types/api';
 
 describe('GistDetail', () => {
-  describe('renderFileContent', () => {
-    it('renders code in a pre tag', () => {
-      const html = renderFileContent('const x = 1;', 'javascript');
-      expect(html).toContain('<pre');
-      expect(html).toContain('<code>');
-      expect(html).toContain('const x = 1;');
+  describe('buildFileContent', () => {
+    it('returns a DocumentFragment with pre > code structure', () => {
+      const frag = buildFileContent('const x = 1;', 'javascript');
+      expect(frag).toBeInstanceOf(DocumentFragment);
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(frag);
+      const pre = wrapper.querySelector('pre');
+      expect(pre).not.toBeNull();
+      expect(pre?.className).toContain('code-block');
+      expect(pre?.className).toContain('language-javascript');
+      const code = wrapper.querySelector('code');
+      expect(code?.textContent).toBe('const x = 1;');
     });
 
-    it('sanitizes content', () => {
-      const html = renderFileContent('<script>alert("xss")</script>', 'html');
-      expect(html).not.toContain('<script>');
-      expect(html).toContain('&lt;script&gt;');
+    it('sanitizes language param in class name (strips quotes and special chars)', () => {
+      const frag = buildFileContent('safe', 'text" onload="alert(1)');
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(frag);
+      const pre = wrapper.querySelector('pre');
+      // Quotes and equals are stripped, preventing attribute injection
+      expect(pre?.className).not.toContain('"');
+      expect(pre?.className).not.toContain('=');
+      expect(pre?.className).toContain('code-block');
     });
 
     it('defaults to text language when not provided', () => {
-      const html = renderFileContent('hello');
-      expect(html).toContain('language-text');
+      const frag = buildFileContent('hello');
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(frag);
+      expect(wrapper.querySelector('pre')?.className).toContain('language-text');
+    });
+
+    it('uses textContent (XSS-safe by construction)', () => {
+      const frag = buildFileContent('<script>alert("xss")</script>');
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(frag);
+      const code = wrapper.querySelector('code');
+      expect(code?.innerHTML).not.toContain('<script>');
+      expect(code?.textContent).toBe('<script>alert("xss")</script>');
     });
   });
 
@@ -68,8 +90,20 @@ describe('GistDetail', () => {
       id: 'gist-1',
       description: 'Test Gist',
       files: {
-        'test.ts': { filename: 'test.ts', language: 'typescript', content: 'const x = 1;', rawUrl: 'http://example.com/test.ts', size: 100 },
-        'readme.md': { filename: 'readme.md', language: 'markdown', content: '# Hello', rawUrl: 'http://example.com/readme.md', size: 50 },
+        'test.ts': {
+          filename: 'test.ts',
+          language: 'typescript',
+          content: 'const x = 1;',
+          rawUrl: 'http://example.com/test.ts',
+          size: 100,
+        },
+        'readme.md': {
+          filename: 'readme.md',
+          language: 'markdown',
+          content: '# Hello',
+          rawUrl: 'http://example.com/readme.md',
+          size: 50,
+        },
       },
       public: true,
       starred: false,
@@ -83,69 +117,78 @@ describe('GistDetail', () => {
       lastSyncedAt: '2026-01-15T12:00:00Z',
     } as GistRecord;
 
+    /** Helper: render to a wrapper div and return it for querying. */
+    function renderToWrapper(gist: GistRecord): HTMLElement {
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(renderGistDetail(gist));
+      return wrapper;
+    }
+
     it('renders gist title and metadata', () => {
-      const html = renderGistDetail(mockGist);
-      expect(html).toContain('Test Gist');
-      expect(html).toContain('2 Files');
-      expect(html).toContain('Public');
+      const w = renderToWrapper(mockGist);
+      expect(w.textContent).toContain('Test Gist');
+      expect(w.textContent).toContain('2 Files');
+      expect(w.textContent).toContain('Public');
     });
 
     it('renders file tabs for multi-file gists', () => {
-      const html = renderGistDetail(mockGist);
-      expect(html).toContain('file-tabs');
-      expect(html).toContain('TEST.TS');
-      expect(html).toContain('README.MD');
+      const w = renderToWrapper(mockGist);
+      expect(w.querySelector('.file-tabs')).not.toBeNull();
+      expect(w.textContent).toContain('TEST.TS');
+      expect(w.textContent).toContain('README.MD');
     });
 
     it('does not render file tabs for single-file gists', () => {
       const singleFileGist = { ...mockGist, files: { 'test.ts': mockGist.files['test.ts'] } };
-      const html = renderGistDetail(singleFileGist);
-      expect(html).not.toContain('file-tabs');
+      const w = renderToWrapper(singleFileGist);
+      expect(w.querySelector('.file-tabs')).toBeNull();
     });
 
     it('renders star and fork buttons', () => {
-      const html = renderGistDetail(mockGist);
-      expect(html).toContain('data-action="star"');
-      expect(html).toContain('data-action="fork"');
-      expect(html).toContain('data-action="edit"');
+      const w = renderToWrapper(mockGist);
+      expect(w.querySelector('[data-action="star"]')).not.toBeNull();
+      expect(w.querySelector('[data-action="fork"]')).not.toBeNull();
+      expect(w.querySelector('[data-action="edit"]')).not.toBeNull();
     });
 
     it('shows Unstar for starred gists', () => {
       const starredGist = { ...mockGist, starred: true };
-      const html = renderGistDetail(starredGist);
-      expect(html).toContain('Unstar');
-      expect(html).toContain('btn-danger');
+      const w = renderToWrapper(starredGist);
+      expect(w.textContent).toContain('Unstar');
+      expect(w.querySelector('.btn-danger')).not.toBeNull();
     });
 
     it('shows Star for unstarred gists', () => {
-      const html = renderGistDetail(mockGist);
-      expect(html).toContain('Star');
-      expect(html).toContain('btn-primary');
+      const w = renderToWrapper(mockGist);
+      expect(w.textContent).toContain('Star');
+      expect(w.querySelector('.btn-primary')).not.toBeNull();
     });
 
-    it('sanitizes gist description', () => {
+    it('sanitizes gist description (XSS-safe via textContent)', () => {
       const xssGist = { ...mockGist, description: '<img onerror="alert(1)" src=x>' };
-      const html = renderGistDetail(xssGist);
-      expect(html).not.toContain('<img');
-      expect(html).toContain('&lt;img');
+      const w = renderToWrapper(xssGist);
+      const title = w.querySelector('.detail-title');
+      // textContent is XSS-safe by construction — no HTML parsing
+      expect(title?.textContent).toBe('<img onerror="alert(1)" src=x>');
+      expect(title?.innerHTML).not.toContain('<img');
     });
 
     it('shows Untitled Gist when description is empty', () => {
       const noDescGist = { ...mockGist, description: '' };
-      const html = renderGistDetail(noDescGist);
-      expect(html).toContain('Untitled Gist');
+      const w = renderToWrapper(noDescGist);
+      expect(w.textContent).toContain('Untitled Gist');
     });
 
     it('renders back button and detail label', () => {
-      const html = renderGistDetail(mockGist);
-      expect(html).toContain('gist-back-btn');
-      expect(html).toContain('Gist Detail');
+      const w = renderToWrapper(mockGist);
+      expect(w.querySelector('#gist-back-btn')).not.toBeNull();
+      expect(w.textContent).toContain('Gist Detail');
     });
 
     it('renders copy button', () => {
-      const html = renderGistDetail(mockGist);
-      expect(html).toContain('data-action="copy-content"');
-      expect(html).toContain('COPY');
+      const w = renderToWrapper(mockGist);
+      expect(w.querySelector('[data-action="copy-content"]')).not.toBeNull();
+      expect(w.textContent).toContain('COPY');
     });
   });
 
@@ -169,36 +212,42 @@ describe('GistDetail', () => {
       },
     ] as GistRevision[];
 
+    /** Helper: render to a wrapper div and return it for querying. */
+    function renderToWrapper(gistId: string, revs: GistRevision[]): HTMLElement {
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(renderRevisions(gistId, revs));
+      return wrapper;
+    }
+
     it('renders revision list with back button', () => {
-      const html = renderRevisions('gist-1', revisions);
-      expect(html).toContain('Revisions (2)');
-      expect(html).toContain('gist-back-btn');
-      expect(html).toContain('data-action="view-revision"');
+      const w = renderToWrapper('gist-1', revisions);
+      expect(w.textContent).toContain('Revisions (2)');
+      expect(w.querySelector('#gist-back-btn')).not.toBeNull();
+      expect(w.querySelectorAll('[data-action="view-revision"]').length).toBe(2);
     });
 
     it('renders each revision with user and date', () => {
-      const html = renderRevisions('gist-1', revisions);
-      expect(html).toContain('user1');
-      expect(html).toContain('user2');
+      const w = renderToWrapper('gist-1', revisions);
+      expect(w.textContent).toContain('user1');
+      expect(w.textContent).toContain('user2');
     });
 
-    it('sanitizes gistId in data attribute', () => {
-      const html = renderRevisions('gist-1" onerror="alert(1)', revisions);
-      // sanitizeHtml escapes quotes, so the attribute value is properly encoded
-      // onerror= is still in the string but the quotes around it are escaped
-      expect(html).not.toContain('onerror="');
-      expect(html).toContain('onerror=&quot;');
+    it('sets gistId via dataset (XSS-safe, no data attribute injection)', () => {
+      const w = renderToWrapper('gist-1" onerror="alert(1)', revisions);
+      const list = w.querySelector('.revisions-list') as HTMLElement;
+      // dataset assignment is XSS-safe — no attribute injection possible
+      expect(list?.dataset.gistId).toBe('gist-1" onerror="alert(1)');
+      expect(w.querySelector('[onerror]')).toBeNull();
     });
   });
 
   describe('loadGistDetail', () => {
     let gistStoreModule: typeof import('../../src/stores/gist-store');
-    let toastModule: typeof import('../../src/components/ui/toast');
 
     beforeEach(async () => {
       // Fresh imports for each test
       gistStoreModule = await import('../../src/stores/gist-store');
-      toastModule = await import('../../src/components/ui/toast');
+      await import('../../src/components/ui/toast');
     });
 
     it('renders gist detail and shows error when gist not found', async () => {
@@ -226,7 +275,13 @@ describe('GistDetail', () => {
         id: 'gist-1',
         description: 'Test Gist',
         files: {
-          'test.ts': { filename: 'test.ts', language: 'typescript', content: 'const x = 1;', rawUrl: 'http://example.com/test.ts', size: 100 },
+          'test.ts': {
+            filename: 'test.ts',
+            language: 'typescript',
+            content: 'const x = 1;',
+            rawUrl: 'http://example.com/test.ts',
+            size: 100,
+          },
         },
         public: true,
         starred: false,
@@ -377,8 +432,20 @@ describe('GistDetail', () => {
         id: 'gist-1',
         description: 'Test',
         files: {
-          'test.ts': { filename: 'test.ts', language: 'typescript', content: 'const x = 1;', rawUrl: 'http://example.com/test.ts', size: 100 },
-          'readme.md': { filename: 'readme.md', language: 'markdown', content: '# Hello', rawUrl: 'http://example.com/readme.md', size: 50 },
+          'test.ts': {
+            filename: 'test.ts',
+            language: 'typescript',
+            content: 'const x = 1;',
+            rawUrl: 'http://example.com/test.ts',
+            size: 100,
+          },
+          'readme.md': {
+            filename: 'readme.md',
+            language: 'markdown',
+            content: '# Hello',
+            rawUrl: 'http://example.com/readme.md',
+            size: 50,
+          },
         },
         public: true,
         starred: false,
