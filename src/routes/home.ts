@@ -7,7 +7,6 @@ import { bindCardEvents, renderCard } from '../components/gist-card';
 import { EmptyState } from '../components/ui/empty-state';
 import { Skeleton } from '../components/ui/skeleton';
 import { lifecycle } from '../services/lifecycle';
-import { sanitizeHtml } from '../services/security';
 import gistStore from '../stores/gist-store';
 import { parseIsoDate } from '../utils/date';
 
@@ -32,7 +31,7 @@ export function render(container: HTMLElement, params?: Record<string, string>):
   });
   lifecycle.onRouteCleanup(() => unsubscribe());
 
-  container.innerHTML = getHomeHtml(currentFilter, currentSort, searchQuery);
+  buildHomeShell(currentFilter, currentSort, searchQuery, container);
   updateList();
 
   // After the first successful render, mark the list as arrived so
@@ -47,29 +46,63 @@ export function render(container: HTMLElement, params?: Record<string, string>):
 
   bindEvents(signal);
 
-  function getHomeHtml(filter: Filter, sort: Sort, query: string): string {
-    return `
-      <div class="route-home">
-        <div class="search-container">
-          <input type="text" id="gist-search" class="search-input" placeholder="Search gists..." value="${sanitizeHtml(query)}">
-        </div>
-        <div class="filter-header flex-between mb-4">
-            <div class="filter-buttons filter-chips">
-              <button class="chip ${filter === 'all' ? 'active' : ''}" data-filter="all">All</button>
-              <button class="chip ${filter === 'mine' ? 'active' : ''}" data-filter="mine">Mine</button>
-              <button class="chip ${filter === 'starred' ? 'active' : ''}" data-filter="starred">Starred</button>
-            </div>
-            <select id="sort-select" class="form-input w-auto mb-0">
-                <option value="updated-desc" ${sort === 'updated-desc' ? 'selected' : ''}>Recent</option>
-                <option value="created-desc" ${sort === 'created-desc' ? 'selected' : ''}>Newest</option>
-                <option value="updated-asc" ${sort === 'updated-asc' ? 'selected' : ''}>Oldest</option>
-            </select>
-        </div>
-        <div id="gist-list" class="gist-list gist-grid">
-          ${renderGistList()}
-        </div>
-      </div>
-    `;
+  function buildHomeShell(filter: Filter, sort: Sort, query: string, target: HTMLElement): void {
+    target.replaceChildren();
+
+    const routeHome = document.createElement('div');
+    routeHome.className = 'route-home';
+
+    // Search container
+    const searchContainer = document.createElement('div');
+    searchContainer.className = 'search-container';
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.id = 'gist-search';
+    searchInput.className = 'search-input';
+    searchInput.placeholder = 'Search gists...';
+    searchInput.value = query;
+    searchContainer.appendChild(searchInput);
+    routeHome.appendChild(searchContainer);
+
+    // Filter header
+    const filterHeader = document.createElement('div');
+    filterHeader.className = 'filter-header flex-between mb-4';
+
+    const filterButtons = document.createElement('div');
+    filterButtons.className = 'filter-buttons filter-chips';
+    for (const f of ['all', 'mine', 'starred'] as const) {
+      const chip = document.createElement('button');
+      chip.className = `chip${filter === f ? ' active' : ''}`;
+      chip.dataset.filter = f;
+      chip.textContent = f === 'all' ? 'All' : f === 'mine' ? 'Mine' : 'Starred';
+      filterButtons.appendChild(chip);
+    }
+    filterHeader.appendChild(filterButtons);
+
+    const sortSelect = document.createElement('select');
+    sortSelect.id = 'sort-select';
+    sortSelect.className = 'form-input w-auto mb-0';
+    for (const [value, label] of [
+      ['updated-desc', 'Recent'],
+      ['created-desc', 'Newest'],
+      ['updated-asc', 'Oldest'],
+    ] as const) {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = label;
+      if (sort === value) option.selected = true;
+      sortSelect.appendChild(option);
+    }
+    filterHeader.appendChild(sortSelect);
+    routeHome.appendChild(filterHeader);
+
+    // Gist list placeholder (populated by updateList)
+    const gistList = document.createElement('div');
+    gistList.id = 'gist-list';
+    gistList.className = 'gist-list gist-grid';
+    routeHome.appendChild(gistList);
+
+    target.appendChild(routeHome);
   }
 
   function renderGistList(): string {
@@ -109,7 +142,7 @@ export function render(container: HTMLElement, params?: Record<string, string>):
       if (searchQuery) {
         return EmptyState.render({
           title: 'No Matches Found',
-          description: `We couldn't find any gists matching "${sanitizeHtml(searchQuery)}"`,
+          description: `We couldn't find any gists matching "${searchQuery}"`,
           actionLabel: 'Clear Search',
           actionType: 'clear-search',
         });

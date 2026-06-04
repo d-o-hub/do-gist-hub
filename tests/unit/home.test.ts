@@ -1,7 +1,7 @@
 /**
  * Unit tests for Home Route
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mock data factory ──────────────────────────────────────────────
 
@@ -44,7 +44,9 @@ vi.mock('../../src/stores/gist-store', () => {
       loading = v;
     },
     notify: () => {
-      subscribers.forEach((cb) => cb());
+      for (const cb of subscribers) {
+        cb();
+      }
     },
   };
 
@@ -54,10 +56,6 @@ vi.mock('../../src/stores/gist-store', () => {
 vi.mock('../../src/components/gist-card', () => ({
   renderCard: vi.fn((gist: { id: string }) => `<div class="gist-card" data-id="${gist.id}"></div>`),
   bindCardEvents: vi.fn(),
-}));
-
-vi.mock('../../src/services/security', () => ({
-  sanitizeHtml: vi.fn((s: string) => s),
 }));
 
 vi.mock('../../src/components/ui/empty-state', () => ({
@@ -74,11 +72,11 @@ vi.mock('../../src/components/ui/skeleton', () => ({
 
 // ── Imports (after mocks) ───────────────────────────────────────────
 
-import { render } from '../../src/routes/home';
-import gistStore from '../../src/stores/gist-store';
-import { renderCard, bindCardEvents } from '../../src/components/gist-card';
+import { renderCard } from '../../src/components/gist-card';
 import { EmptyState } from '../../src/components/ui/empty-state';
 import { Skeleton } from '../../src/components/ui/skeleton';
+import { render } from '../../src/routes/home';
+import gistStore from '../../src/stores/gist-store';
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
@@ -148,20 +146,15 @@ describe('Home Route', () => {
     });
 
     it('renders gist cards from store', () => {
-      const testGists = [
-        makeStoreGist('gist-1'),
-        makeStoreGist('gist-2'),
-      ];
+      const testGists = [makeStoreGist('gist-1'), makeStoreGist('gist-2')];
       vi.mocked(gistStore.getGists).mockReturnValue(testGists as never[]);
       vi.mocked(gistStore.getLoading).mockReturnValue(false);
       vi.mocked(gistStore.filterGists).mockReturnValue(testGists as never[]);
 
       render(container);
 
-      // renderCard is called twice: once from getHomeHtml -> renderGistList()
-      // during the initial innerHTML assignment, and once from updateList()
-      // which also calls renderGistList(). For 2 gists, that's 4 calls.
-      expect(renderCard).toHaveBeenCalledTimes(4);
+      // renderCard is called twice: once per gist from updateList()
+      expect(renderCard).toHaveBeenCalledTimes(2);
     });
 
     it('renders empty state when no gists found', () => {
@@ -238,7 +231,7 @@ describe('Home Route', () => {
   // ── Search Interaction ────────────────────────────────────────────────
 
   describe('search interaction', () => {
-    it('updates gist list on search input with debounce', async () => {
+    it('updates gist list on search input with debounce', () => {
       vi.useFakeTimers();
 
       const testGists = [makeStoreGist('gist-1'), makeStoreGist('gist-2')];
@@ -399,9 +392,18 @@ describe('Home Route', () => {
 
     it('sorts by createdAt descending when sort is created-desc', () => {
       const testGists = [
-        makeStoreGist('old-create', { createdAt: '2024-01-01T00:00:00Z', updatedAt: '2026-03-01T00:00:00Z' }),
-        makeStoreGist('new-create', { createdAt: '2026-01-01T00:00:00Z', updatedAt: '2024-01-01T00:00:00Z' }),
-        makeStoreGist('mid-create', { createdAt: '2025-06-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' }),
+        makeStoreGist('old-create', {
+          createdAt: '2024-01-01T00:00:00Z',
+          updatedAt: '2026-03-01T00:00:00Z',
+        }),
+        makeStoreGist('new-create', {
+          createdAt: '2026-01-01T00:00:00Z',
+          updatedAt: '2024-01-01T00:00:00Z',
+        }),
+        makeStoreGist('mid-create', {
+          createdAt: '2025-06-01T00:00:00Z',
+          updatedAt: '2025-01-01T00:00:00Z',
+        }),
       ];
       vi.mocked(gistStore.getGists).mockReturnValue(testGists as never[]);
       vi.mocked(gistStore.getLoading).mockReturnValue(false);
@@ -410,7 +412,9 @@ describe('Home Route', () => {
       render(container, { filter: 'all', sort: 'created-desc', searchQuery: '' });
 
       const calls = vi.mocked(renderCard).mock.calls.map((c) => (c[0] as { id: string }).id);
-      const relevant = calls.filter((id) => ['old-create', 'new-create', 'mid-create'].includes(id));
+      const relevant = calls.filter((id) =>
+        ['old-create', 'new-create', 'mid-create'].includes(id)
+      );
       // Newest created first: new-create > mid-create > old-create
       expect(relevant.indexOf('new-create')).toBeLessThan(relevant.indexOf('mid-create'));
       expect(relevant.indexOf('mid-create')).toBeLessThan(relevant.indexOf('old-create'));
@@ -466,9 +470,7 @@ describe('Home Route', () => {
 
       // The store order should be preserved as-is (no sort applied)
       const calls = vi.mocked(renderCard).mock.calls.map((c) => (c[0] as { id: string }).id);
-      const relevant = calls.filter((id) =>
-        ['out-of-order-a', 'out-of-order-b'].includes(id)
-      );
+      const relevant = calls.filter((id) => ['out-of-order-a', 'out-of-order-b'].includes(id));
       // 'a' appears first in the store, so it should appear first in output
       expect(relevant.indexOf('out-of-order-a')).toBeLessThan(relevant.indexOf('out-of-order-b'));
     });
