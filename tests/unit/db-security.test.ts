@@ -23,7 +23,7 @@ describe('exportData security', () => {
     await setMetadata('github-refresh-token', { secret: 'refresh' });
     await setMetadata('github-refresh-expires', 123456789);
     await setMetadata('github-username', 'testuser');
-    await setMetadata('llm-config', { apiKey: 'secret' });
+    await setMetadata('llm-config', { apiKey: 'secret', model: 'gpt-4o' });
     await setMetadata('theme-preference', 'dark');
 
     const exportedJson = await exportData();
@@ -32,13 +32,17 @@ describe('exportData security', () => {
     const keys = data.metadata.map((m: any) => m.key);
 
     expect(keys).toContain('theme-preference');
+    expect(keys).toContain('llm-config'); // Now included but partially redacted
     expect(keys).not.toContain('gist-hub-master-key');
     expect(keys).not.toContain('github-pat-enc');
     expect(keys).not.toContain('github-pat');
     expect(keys).not.toContain('github-refresh-token');
     expect(keys).not.toContain('github-refresh-expires');
     expect(keys).not.toContain('github-username');
-    expect(keys).not.toContain('llm-config');
+
+    const llmConfig = data.metadata.find((m: any) => m.key === 'llm-config').value;
+    expect(llmConfig.apiKey).toBe('[REDACTED]');
+    expect(llmConfig.model).toBe('gpt-4o');
   });
 
   it('should redact secrets from logs in exportData', async () => {
