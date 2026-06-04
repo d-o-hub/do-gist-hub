@@ -11,3 +11,7 @@
 ## 2026-05-08 - Schwartzian Transform & Cache Coherency
 **Learning:** Even with timestamp caching, $O(N \log N)$ sorting still performs $N \log N$ Map lookups. Implementing a Schwartzian Transform reduces this to exactly $N$ lookups. Also, UI component caches (like gist cards) must include ALL mutable state (e.g., `starred`) in the cache key, as local optimistic updates might change state without updating the `updatedAt` timestamp.
 **Action:** Use Schwartzian Transform for all critical-path sort operations. Ensure UI cache keys represent the full visual state, not just server timestamps.
+
+## 2026-05-09 - Cross-Component Cache Consolidation
+**Learning:** Duplicate caches for the same data (e.g., ISO date timestamps) across different modules (store, route, component) waste memory and redundant 'first-miss' parsing. Consolidating into a single utility utility utility utility with a shared cache ensures maximum efficiency app-wide.
+**Action:** Identify shared data transformation patterns and centralize them in a utility with a shared cache to eliminate redundant processing across different layers of the application.

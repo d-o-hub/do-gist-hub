@@ -134,6 +134,14 @@ export async function loadGistDetail(
   } catch (err) {
     safeError('[GistDetail] Failed to load gist', err);
     toast.error('Failed to load gist details');
+    container.innerHTML = `
+      <div class="empty-state-container" role="alert">
+        <h3 class="empty-state-title">Gist Not Found</h3>
+        <p class="empty-state-description">This gist may have been deleted or you do not have permission to view it.</p>
+        <button class="btn btn-primary" id="gist-back-btn">Go Back</button>
+      </div>
+    `;
+    container.querySelector('#gist-back-btn')?.addEventListener('click', onBack, { signal });
   }
 }
 
@@ -298,8 +306,16 @@ export function bindDetailEvents(
 
           const contentArea = container.querySelector(`[id^="file-content-area-"]`);
           if (contentArea) {
-            contentArea.innerHTML = renderFileContent(file.content || '', file.language);
-            contentArea.setAttribute('aria-labelledby', tab.id);
+            // Brief cross-fade so the content swap reads as motion, not a
+            // snap. 100ms exit + 150ms enter = 250ms total. The exit half
+            // is shorter than the enter half so arriving content "wins".
+            contentArea.classList.add('is-switching');
+            window.setTimeout(() => {
+              if (signal?.aborted) return;
+              contentArea.innerHTML = renderFileContent(file.content || '', file.language);
+              contentArea.setAttribute('aria-labelledby', tab.id);
+              contentArea.classList.remove('is-switching');
+            }, 100);
           }
 
           const infoArea = container.querySelector('#file-info');
