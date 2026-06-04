@@ -2,7 +2,7 @@
  * Unit tests for src/components/gist-detail.ts
  * Covers renderFileContent, renderGistDetail, renderRevisions, formatRelativeTime, loadGistDetail, bindDetailEvents
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock gistStore so loadGistDetail can use hydrateGist
 vi.mock('../../src/stores/gist-store', () => ({
@@ -33,11 +33,11 @@ vi.mock('../../src/services/security/logger', () => ({
 }));
 
 import {
+  bindDetailEvents,
+  loadGistDetail,
   renderFileContent,
   renderGistDetail,
   renderRevisions,
-  loadGistDetail,
-  bindDetailEvents,
 } from '../../src/components/gist-detail';
 import type { GistRecord } from '../../src/types';
 import type { GistRevision } from '../../src/types/api';
@@ -68,8 +68,20 @@ describe('GistDetail', () => {
       id: 'gist-1',
       description: 'Test Gist',
       files: {
-        'test.ts': { filename: 'test.ts', language: 'typescript', content: 'const x = 1;', rawUrl: 'http://example.com/test.ts', size: 100 },
-        'readme.md': { filename: 'readme.md', language: 'markdown', content: '# Hello', rawUrl: 'http://example.com/readme.md', size: 50 },
+        'test.ts': {
+          filename: 'test.ts',
+          language: 'typescript',
+          content: 'const x = 1;',
+          rawUrl: 'http://example.com/test.ts',
+          size: 100,
+        },
+        'readme.md': {
+          filename: 'readme.md',
+          language: 'markdown',
+          content: '# Hello',
+          rawUrl: 'http://example.com/readme.md',
+          size: 50,
+        },
       },
       public: true,
       starred: false,
@@ -136,6 +148,29 @@ describe('GistDetail', () => {
       expect(html).toContain('Untitled Gist');
     });
 
+    it('shows Untitled Gist when description is undefined', () => {
+      const noDescGist = { ...mockGist, description: undefined as unknown as string };
+      const html = renderGistDetail(noDescGist);
+      expect(html).toContain('Untitled Gist');
+    });
+
+    it('renders fallback when file content is undefined', () => {
+      const noContentGist = {
+        ...mockGist,
+        files: {
+          'empty.ts': {
+            filename: 'empty.ts',
+            language: 'typescript',
+            content: undefined as unknown as string,
+            rawUrl: '',
+            size: 0,
+          },
+        },
+      };
+      const html = renderGistDetail(noContentGist);
+      expect(html).toContain('No content available');
+    });
+
     it('renders back button and detail label', () => {
       const html = renderGistDetail(mockGist);
       expect(html).toContain('gist-back-btn');
@@ -146,6 +181,32 @@ describe('GistDetail', () => {
       const html = renderGistDetail(mockGist);
       expect(html).toContain('data-action="copy-content"');
       expect(html).toContain('COPY');
+    });
+
+    it('hides share button when navigator.share is unavailable', () => {
+      const html = renderGistDetail(mockGist);
+      expect(html).toContain('data-action="share"');
+      expect(html).toMatch(/data-action="share"[^>]*hidden/);
+    });
+
+    it('shows share button when navigator.share is available', () => {
+      const origShare = navigator.share;
+      Object.defineProperty(navigator, 'share', { value: vi.fn(), configurable: true });
+      try {
+        const html = renderGistDetail(mockGist);
+        expect(html).toContain('data-action="share"');
+        expect(html).not.toMatch(/data-action="share"[^>]*hidden/);
+      } finally {
+        Object.defineProperty(navigator, 'share', { value: origShare, configurable: true });
+      }
+    });
+
+    it('does not give second tab active class on initial render', () => {
+      const html = renderGistDetail(mockGist);
+      const tabMatches = [...html.matchAll(/class="chip file-tab([^"]*)"/g)];
+      expect(tabMatches.length).toBeGreaterThanOrEqual(2);
+      expect(tabMatches[0][1]).toContain('active');
+      expect(tabMatches[1][1]).not.toContain('active');
     });
   });
 
@@ -189,16 +250,31 @@ describe('GistDetail', () => {
       expect(html).not.toContain('onerror="');
       expect(html).toContain('onerror=&quot;');
     });
+
+    it('renders Unknown when revision user is null', () => {
+      const anonRevisions = [
+        {
+          version: 'abc123',
+          committed_at: '2026-01-15T12:00:00Z',
+          user: null as unknown as GistRevision['user'],
+          change_summary: {},
+          node_id: '1',
+          url: '',
+        },
+      ] as GistRevision[];
+      const html = renderRevisions('gist-1', anonRevisions);
+      expect(html).toContain('Unknown');
+    });
   });
 
   describe('loadGistDetail', () => {
     let gistStoreModule: typeof import('../../src/stores/gist-store');
-    let toastModule: typeof import('../../src/components/ui/toast');
+    let _toastModule: typeof import('../../src/components/ui/toast');
 
     beforeEach(async () => {
       // Fresh imports for each test
       gistStoreModule = await import('../../src/stores/gist-store');
-      toastModule = await import('../../src/components/ui/toast');
+      _toastModule = await import('../../src/components/ui/toast');
     });
 
     it('renders gist detail and shows error when gist not found', async () => {
@@ -226,7 +302,13 @@ describe('GistDetail', () => {
         id: 'gist-1',
         description: 'Test Gist',
         files: {
-          'test.ts': { filename: 'test.ts', language: 'typescript', content: 'const x = 1;', rawUrl: 'http://example.com/test.ts', size: 100 },
+          'test.ts': {
+            filename: 'test.ts',
+            language: 'typescript',
+            content: 'const x = 1;',
+            rawUrl: 'http://example.com/test.ts',
+            size: 100,
+          },
         },
         public: true,
         starred: false,
@@ -377,8 +459,20 @@ describe('GistDetail', () => {
         id: 'gist-1',
         description: 'Test',
         files: {
-          'test.ts': { filename: 'test.ts', language: 'typescript', content: 'const x = 1;', rawUrl: 'http://example.com/test.ts', size: 100 },
-          'readme.md': { filename: 'readme.md', language: 'markdown', content: '# Hello', rawUrl: 'http://example.com/readme.md', size: 50 },
+          'test.ts': {
+            filename: 'test.ts',
+            language: 'typescript',
+            content: 'const x = 1;',
+            rawUrl: 'http://example.com/test.ts',
+            size: 100,
+          },
+          'readme.md': {
+            filename: 'readme.md',
+            language: 'markdown',
+            content: '# Hello',
+            rawUrl: 'http://example.com/readme.md',
+            size: 50,
+          },
         },
         public: true,
         starred: false,

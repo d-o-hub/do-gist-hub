@@ -154,22 +154,19 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleFdroid --stacktrace
+          ./gradlew assembleRelease --stacktrace
       - name: Verify F-Droid APK exists
         if: steps.filter.outputs.fdroid == 'true'
         run: |
-          # The fdroid variant is declared as a buildType (not a productFlavor) in
-          # android/app/build.gradle, so AGP emits the APK directly to
-          # apk/fdroid/ — no flavor subfolder, no build-type subfolder.
-          # The expected path is also pinned in .fdroid.yml (output:).
-          APK=android/app/build/outputs/apk/fdroid/app-fdroid-unsigned.apk
+          # No keystore is configured in CI, so assembleRelease produces an unsigned APK.
+          APK=android/app/build/outputs/apk/release/app-release-unsigned.apk
           ls -la "$APK"
           file "$APK"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # pinned from v7
         if: always() && steps.filter.outputs.fdroid == 'true'
         with:
           name: app-fdroid-unsigned-apk
-          path: android/app/build/outputs/apk/fdroid/app-fdroid-unsigned.apk
+          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
           retention-days: 7
 
   bundle-budget:

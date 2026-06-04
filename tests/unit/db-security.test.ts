@@ -1,12 +1,11 @@
-
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import 'fake-indexeddb/auto';
 import { exportData, getDB, initIndexedDB, setMetadata } from '../../src/services/db';
 
 // Mock app config
 vi.mock('@/config/app.config', () => ({
   APP: {
-    dbName: 'test-db-' + Math.random(),
+    dbName: `test-db-${Math.random()}`,
   },
 }));
 
@@ -29,7 +28,7 @@ describe('exportData security', () => {
     const exportedJson = await exportData();
     const data = JSON.parse(exportedJson);
 
-    const keys = data.metadata.map((m: any) => m.key);
+    const keys = data.metadata.map((m: { key: string; value: unknown }) => m.key);
 
     expect(keys).toContain('theme-preference');
     expect(keys).toContain('llm-config'); // Now included but partially redacted
@@ -40,7 +39,9 @@ describe('exportData security', () => {
     expect(keys).not.toContain('github-refresh-expires');
     expect(keys).not.toContain('github-username');
 
-    const llmConfig = data.metadata.find((m: any) => m.key === 'llm-config').value;
+    const llmConfig = data.metadata.find(
+      (m: { key: string; value: Record<string, unknown> }) => m.key === 'llm-config'
+    )?.value as Record<string, unknown> | undefined;
     expect(llmConfig.apiKey).toBe('[REDACTED]');
     expect(llmConfig.model).toBe('gpt-4o');
   });

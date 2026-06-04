@@ -1,11 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { recordAuthMethod } from '../../src/services/telemetry/auth-telemetry';
+
+vi.mock('../../src/services/telemetry/auth-telemetry', () => ({
+  recordAuthMethod: vi.fn(async () => {}),
+  recordAuthCompleted: vi.fn(async () => {}),
+}));
+
 const metadataStore = new Map<string, unknown>();
 
 vi.mock('../../src/services/db', () => ({
+  // biome-ignore lint/suspicious/useAwait: mock factory must be async to return Promise
   getMetadata: vi.fn(async <T>(key: string): Promise<T | undefined> => {
     return metadataStore.get(key) as T | undefined;
   }),
+  // biome-ignore lint/suspicious/useAwait: mock factory must be async to return Promise
   setMetadata: vi.fn(async (key: string, value: unknown): Promise<void> => {
     if (value === null || value === undefined) {
       metadataStore.delete(key);
@@ -144,6 +153,38 @@ describe('device-flow', () => {
 
       await expect(requestDeviceCode()).rejects.toThrow('unauthorized_client');
     });
+
+    it('defaults interval to 5 when response interval is 0', async () => {
+      fetchSpy.mockResolvedValue(
+        mockJsonResponse({
+          device_code: 'dc1',
+          user_code: 'ABC-123',
+          verification_uri: 'https://github.com/login/device',
+          interval: 0,
+          expires_in: 900,
+        })
+      );
+
+      const code = await requestDeviceCode();
+
+      expect(code.interval).toBe(5);
+    });
+
+    it('defaults expiresIn to 900 when response expires_in is 0', async () => {
+      fetchSpy.mockResolvedValue(
+        mockJsonResponse({
+          device_code: 'dc1',
+          user_code: 'ABC-123',
+          verification_uri: 'https://github.com/login/device',
+          interval: 5,
+          expires_in: 0,
+        })
+      );
+
+      const code = await requestDeviceCode();
+
+      expect(code.expiresIn).toBe(900);
+    });
   });
 
   describe('pollForToken', () => {
@@ -226,6 +267,29 @@ describe('device-flow', () => {
       expect(result.success).toBe(true);
       expect(result.accessToken).toBe('gho_slow_token');
       expect(onProgress).toHaveBeenCalledWith('Slowing down polling...');
+    });
+
+    it('slow_down doubles the poll interval (pollIntervalMs * 2)', async () => {
+      vi.useFakeTimers();
+      const onProgress = vi.fn();
+
+      fetchSpy
+        .mockResolvedValueOnce(mockJsonResponse({ error: 'slow_down' }))
+        .mockResolvedValueOnce(mockJsonResponse({ access_token: 'gho_token' }));
+
+      const promise = pollForToken('dc-slow', 30, 3, onProgress);
+
+      // First poll after 3s interval → slow_down
+      await vi.advanceTimersByTimeAsync(3000);
+      // slow_down adds delay(pollIntervalMs * 2) = delay(6000)
+      // Advance 6s → extra delay fires
+      await vi.advanceTimersByTimeAsync(6000);
+      // Next poll fires after 3s interval
+      await vi.advanceTimersByTimeAsync(3000);
+      const result = await promise;
+
+      expect(result.success).toBe(true);
+      expect(fetchSpy).toHaveBeenCalledTimes(2);
     });
 
     it('tolerates authorization_pending then succeeds on next poll', async () => {
@@ -414,6 +478,99 @@ describe('device-flow', () => {
       expect(result.success).toBe(false);
       expect(result.error).toBe('unexpected_error');
       expect(result.errorDescription).toBe('Network is down');
+    });
+
+    it('calls recordAuthMethod("device-flow") after successful auth', async () => {
+      vi.useFakeTimers();
+      vi.mocked(validateToken).mockResolvedValue({ isValid: true, username: 'testuser' });
+
+      fetchSpy
+        .mockResolvedValueOnce(
+          mockJsonResponse({
+            device_code: 'dc-telemetry',
+            user_code: 'TEL-001',
+            verification_uri: 'https://github.com/login/device',
+            interval: 5,
+            expires_in: 900,
+          })
+        )
+        .mockResolvedValueOnce(mockJsonResponse({ access_token: 'gho_tel_token' }));
+
+      const flowPromise = authenticateWithDeviceFlow();
+      await vi.advanceTimersByTimeAsync(5000);
+      await flowPromise;
+
+      expect(recordAuthMethod).toHaveBeenCalledWith('device-flow');
+    });
+
+    it('stores refresh token when response includes refreshToken and expiresIn', async () => {
+      vi.useFakeTimers();
+      vi.mocked(validateToken).mockResolvedValue({ isValid: true, username: 'testuser' });
+
+      const storeRefreshTokenMock = vi.fn(async () => {});
+
+      fetchSpy
+        .mockResolvedValueOnce(
+          mockJsonResponse({
+            device_code: 'dc-refresh',
+            user_code: 'REF-001',
+            verification_uri: 'https://github.com/login/device',
+            interval: 5,
+            expires_in: 900,
+          })
+        )
+        .mockResolvedValueOnce(
+          mockJsonResponse({
+            access_token: 'gho_refresh_token',
+            refresh_token: 'ghr_refresh123',
+            expires_in: 1800,
+          })
+        );
+
+      vi.doMock('../../src/services/github/auth', async () => {
+        const actual = await vi.importActual<typeof import('../../src/services/github/auth')>(
+          '../../src/services/github/auth'
+        );
+        return {
+          ...actual,
+          storeRefreshToken: storeRefreshTokenMock,
+        };
+      });
+
+      const flowPromise = authenticateWithDeviceFlow();
+      await vi.advanceTimersByTimeAsync(5000);
+      const result = await flowPromise;
+
+      expect(result.success).toBe(true);
+      expect(storeRefreshTokenMock).toHaveBeenCalledWith('ghr_refresh123', 1800);
+
+      vi.doUnmock('../../src/services/github/auth');
+    });
+  });
+
+  describe('getProxyUrl', () => {
+    it('uses window.__AUTH_PROXY_URL when set', async () => {
+      const customUrl = 'https://my-custom-proxy.example.com';
+      (window as { __AUTH_PROXY_URL?: string }).__AUTH_PROXY_URL = customUrl;
+
+      fetchSpy.mockResolvedValue(
+        mockJsonResponse({
+          device_code: 'dc-proxy',
+          user_code: 'PRO-001',
+          verification_uri: 'https://github.com/login/device',
+          interval: 5,
+          expires_in: 900,
+        })
+      );
+
+      await requestDeviceCode();
+
+      expect(fetchSpy).toHaveBeenCalledWith(
+        `${customUrl}/login/device/code`,
+        expect.objectContaining({ method: 'POST' })
+      );
+
+      delete (window as { __AUTH_PROXY_URL?: string }).__AUTH_PROXY_URL;
     });
   });
 });
