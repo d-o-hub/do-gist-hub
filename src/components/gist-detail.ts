@@ -236,11 +236,15 @@ export function bindDetailEvents(
       'keydown',
       (e) => {
         const event = e as KeyboardEvent;
-        const currentTab = document.activeElement as HTMLElement;
-        if (!currentTab?.classList.contains('file-tab')) return;
+        const currentTabElem = document.activeElement;
+        if (
+          !(currentTabElem instanceof HTMLElement) ||
+          !currentTabElem.classList.contains('file-tab')
+        )
+          return;
 
         const tabsArray = Array.from(tabs) as HTMLElement[];
-        const index = tabsArray.indexOf(currentTab);
+        const index = tabsArray.indexOf(currentTabElem);
 
         let nextIndex = -1;
         if (event.key === 'ArrowRight') {
