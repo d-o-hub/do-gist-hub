@@ -219,22 +219,29 @@ export async function loadConflictResolution(
       container.innerHTML = renderConflictDetail(conflict);
     } else {
       currentConflictId = null;
-      container.innerHTML = `
-        <header class="detail-header">
-          <h1 class="detail-title">SYNC CONFLICTS</h1>
-        </header>
-        ${renderConflictList(conflicts)}
-      `;
+      container.replaceChildren();
+      const header = document.createElement('header');
+      header.className = 'detail-header';
+      const h1 = document.createElement('h1');
+      h1.className = 'detail-title';
+      h1.textContent = 'SYNC CONFLICTS';
+      header.appendChild(h1);
+      container.appendChild(header);
+      container.insertAdjacentHTML('beforeend', renderConflictList(conflicts));
     }
   } else {
-    container.innerHTML = `
-      <header class="detail-header">
-        <h1 class="detail-title">SYNC CONFLICTS</h1>
-      </header>
-      <div class="px-6">
-        ${renderConflictList(conflicts)}
-      </div>
-    `;
+    container.replaceChildren();
+    const header = document.createElement('header');
+    header.className = 'detail-header';
+    const h1 = document.createElement('h1');
+    h1.className = 'detail-title';
+    h1.textContent = 'SYNC CONFLICTS';
+    header.appendChild(h1);
+    container.appendChild(header);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'px-6';
+    wrapper.innerHTML = renderConflictList(conflicts);
+    container.appendChild(wrapper);
   }
 
   bindConflictEvents(container, onResolve, signal);

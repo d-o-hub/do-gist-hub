@@ -4,31 +4,13 @@
 
 import { EmptyState } from '../components/ui/empty-state';
 import { lifecycle } from '../services/lifecycle';
-import { sanitizeHtml } from '../services/security/dom';
 import { getConflicts } from '../services/sync/conflict-detector';
 import syncQueue from '../services/sync/queue';
 
 export async function render(container: HTMLElement): Promise<void> {
   const signal = lifecycle.getRouteSignal();
 
-  container.innerHTML = `
-    <div class="route-offline">
-      <header class="detail-header">
-          <h2 class="detail-title">Offline Status</h2>
-      </header>
-        <div class="offline-stats">
-            <div class="stat-card">
-                <div class="stat-label">PENDING WRITES</div>
-                <div class="stat-value" id="pending-count">0</div>
-            </div>
-            <div class="stat-card clickable" id="conflicts-stat-card" data-testid="conflicts-stat-card">
-                <div class="stat-label">SYNC CONFLICTS</div>
-                <div class="stat-value" id="conflict-count" data-testid="conflict-count">0</div>
-            </div>
-        </div>
-      <div class="pending-operations pending-ops-mt" id="pending-ops"></div>
-    </div>
-  `;
+  container.replaceChildren(buildOfflineShell());
 
   await updateOfflineStatus(container);
 
@@ -51,6 +33,62 @@ export async function render(container: HTMLElement): Promise<void> {
   );
 }
 
+function buildOfflineShell(): DocumentFragment {
+  const frag = document.createDocumentFragment();
+  const wrapper = document.createElement('div');
+  wrapper.className = 'route-offline';
+
+  const header = document.createElement('header');
+  header.className = 'detail-header';
+  const h2 = document.createElement('h2');
+  h2.className = 'detail-title';
+  h2.textContent = 'Offline Status';
+  header.appendChild(h2);
+  wrapper.appendChild(header);
+
+  const stats = document.createElement('div');
+  stats.className = 'offline-stats';
+
+  const pendingCard = document.createElement('div');
+  pendingCard.className = 'stat-card';
+  const pendingLabel = document.createElement('div');
+  pendingLabel.className = 'stat-label';
+  pendingLabel.textContent = 'PENDING WRITES';
+  pendingCard.appendChild(pendingLabel);
+  const pendingValue = document.createElement('div');
+  pendingValue.className = 'stat-value';
+  pendingValue.id = 'pending-count';
+  pendingValue.textContent = '0';
+  pendingCard.appendChild(pendingValue);
+  stats.appendChild(pendingCard);
+
+  const conflictCard = document.createElement('div');
+  conflictCard.className = 'stat-card clickable';
+  conflictCard.id = 'conflicts-stat-card';
+  conflictCard.dataset.testid = 'conflicts-stat-card';
+  const conflictLabel = document.createElement('div');
+  conflictLabel.className = 'stat-label';
+  conflictLabel.textContent = 'SYNC CONFLICTS';
+  conflictCard.appendChild(conflictLabel);
+  const conflictValue = document.createElement('div');
+  conflictValue.className = 'stat-value';
+  conflictValue.id = 'conflict-count';
+  conflictValue.dataset.testid = 'conflict-count';
+  conflictValue.textContent = '0';
+  conflictCard.appendChild(conflictValue);
+  stats.appendChild(conflictCard);
+
+  wrapper.appendChild(stats);
+
+  const ops = document.createElement('div');
+  ops.className = 'pending-operations pending-ops-mt';
+  ops.id = 'pending-ops';
+  wrapper.appendChild(ops);
+
+  frag.appendChild(wrapper);
+  return frag;
+}
+
 async function updateOfflineStatus(container: HTMLElement): Promise<void> {
   const pendingEl = container.querySelector('#pending-count');
   const count = await syncQueue.getQueueLength();
@@ -58,19 +96,31 @@ async function updateOfflineStatus(container: HTMLElement): Promise<void> {
 
   const opsEl = container.querySelector('#pending-ops');
   if (opsEl) {
-    const content =
-      count > 0
-        ? `<div class="glass-card p-6 text-center">
-             <p class="micro-label">${sanitizeHtml(String(count))} operation${count !== 1 ? 's' : ''} waiting for connection</p>
-           </div>`
-        : EmptyState.render({
-            title: 'All Synced',
-            description: 'Your local changes are fully synced with GitHub',
-            actionLabel: 'Go Home',
-            actionRoute: 'home',
-          });
+    opsEl.replaceChildren();
 
-    opsEl.innerHTML = `<h3 class="form-label mb-4">Pending Operations</h3>${content}`;
+    const heading = document.createElement('h3');
+    heading.className = 'form-label mb-4';
+    heading.textContent = 'Pending Operations';
+    opsEl.appendChild(heading);
+
+    if (count > 0) {
+      const card = document.createElement('div');
+      card.className = 'glass-card p-6 text-center';
+      const p = document.createElement('p');
+      p.className = 'micro-label';
+      p.textContent = `${count} operation${count !== 1 ? 's' : ''} waiting for connection`;
+      card.appendChild(p);
+      opsEl.appendChild(card);
+    } else {
+      opsEl.appendChild(
+        EmptyState.renderToFragment({
+          title: 'All Synced',
+          description: 'Your local changes are fully synced with GitHub',
+          actionLabel: 'Go Home',
+          actionRoute: 'home',
+        })
+      );
+    }
   }
 
   const conflicts = await getConflicts();

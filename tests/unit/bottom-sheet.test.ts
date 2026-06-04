@@ -1,13 +1,12 @@
 /**
  * Unit tests for Bottom Sheet Component
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// skipcq: JS-0010
+void 0; // Ensure module scope is valid
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
-
-vi.mock('../../src/services/security/dom', () => ({
-  sanitizeHtml: vi.fn((s: string) => s),
-}));
 
 vi.mock('../../src/utils/announcer', () => ({
   announcer: {
@@ -33,7 +32,15 @@ vi.mock('../../src/utils/view-transitions', () => ({
 import { BottomSheet, bottomSheet } from '../../src/components/ui/bottom-sheet';
 import { announcer } from '../../src/utils/announcer';
 import { focusTrap } from '../../src/utils/focus-trap';
-import { withViewTransition } from '../../src/utils/view-transitions';
+
+/** Helper: create a DocumentFragment from a text string for test convenience. */
+function textFrag(text: string): DocumentFragment {
+  const frag = document.createDocumentFragment();
+  const p = document.createElement('p');
+  p.textContent = text;
+  frag.appendChild(p);
+  return frag;
+}
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
@@ -43,15 +50,15 @@ describe('BottomSheet', () => {
   });
 
   afterEach(() => {
-    document.querySelectorAll('.bottom-sheet').forEach(el => el.remove());
-    document.querySelectorAll('.bottom-sheet-backdrop').forEach(el => el.remove());
+    for (const el of document.querySelectorAll('.bottom-sheet')) el.remove();
+    for (const el of document.querySelectorAll('.bottom-sheet-backdrop')) el.remove();
   });
 
   // ── Constructor ─────────────────────────────────────────────────────
 
   describe('constructor', () => {
     it('creates backdrop and container elements', () => {
-      const sheet = new BottomSheet();
+      new BottomSheet();
 
       const backdrops = document.querySelectorAll('.bottom-sheet-backdrop');
       const containers = document.querySelectorAll('.bottom-sheet');
@@ -60,7 +67,7 @@ describe('BottomSheet', () => {
     });
 
     it('creates sheet with correct ARIA attributes', () => {
-      const sheet = new BottomSheet();
+      new BottomSheet();
 
       const container = document.querySelector('.bottom-sheet');
       expect(container?.getAttribute('role')).toBe('dialog');
@@ -69,7 +76,7 @@ describe('BottomSheet', () => {
     });
 
     it('creates handle element inside container', () => {
-      const sheet = new BottomSheet();
+      new BottomSheet();
 
       const container = document.querySelector('.bottom-sheet');
       const handle = container?.querySelector('.bottom-sheet-handle');
@@ -82,7 +89,7 @@ describe('BottomSheet', () => {
   describe('open', () => {
     it('adds open and visible classes', async () => {
       const sheet = new BottomSheet();
-      await sheet.open('<p>Test content</p>', 'Test Title');
+      await sheet.open(textFrag('Test content'), 'Test Title');
 
       const container = document.querySelector('.bottom-sheet');
       const backdrop = document.querySelector('.bottom-sheet-backdrop');
@@ -92,7 +99,7 @@ describe('BottomSheet', () => {
 
     it('sets aria-hidden to false', async () => {
       const sheet = new BottomSheet();
-      await sheet.open('content');
+      await sheet.open(textFrag('content'));
 
       const container = document.querySelector('.bottom-sheet');
       expect(container?.getAttribute('aria-hidden')).toBe('false');
@@ -100,48 +107,48 @@ describe('BottomSheet', () => {
 
     it('renders title when provided', async () => {
       const sheet = new BottomSheet();
-      await sheet.open('<p>Body</p>', 'My Title');
+      await sheet.open(textFrag('Body'), 'My Title');
 
       const container = document.querySelector('.bottom-sheet');
-      expect(container?.innerHTML).toContain('My Title');
+      expect(container?.textContent).toContain('My Title');
     });
 
     it('renders content when no title', async () => {
       const sheet = new BottomSheet();
-      await sheet.open('<p>Body only</p>');
+      await sheet.open(textFrag('Body only'));
 
       const container = document.querySelector('.bottom-sheet');
-      expect(container?.innerHTML).toContain('Body only');
+      expect(container?.textContent).toContain('Body only');
     });
 
     it('activates focus trap after opening', async () => {
       const sheet = new BottomSheet();
-      await sheet.open('content', 'Title');
+      await sheet.open(textFrag('content'), 'Title');
 
       expect(focusTrap.activate).toHaveBeenCalled();
     });
 
     it('announces sheet open', async () => {
       const sheet = new BottomSheet();
-      await sheet.open('content', 'Menu');
+      await sheet.open(textFrag('content'), 'Menu');
 
       expect(announcer.announce).toHaveBeenCalledWith('Opened Menu sheet');
     });
 
     it('is idempotent — does nothing when already open', async () => {
       const sheet = new BottomSheet();
-      await sheet.open('content1', 'First');
-      await sheet.open('content2', 'Second');
+      await sheet.open(textFrag('content1'), 'First');
+      await sheet.open(textFrag('content2'), 'Second');
 
       // Should still show "First" content since second open was ignored
       const container = document.querySelector('.bottom-sheet');
-      expect(container?.innerHTML).toContain('First');
-      expect(container?.innerHTML).not.toContain('Second');
+      expect(container?.textContent).toContain('content1');
+      expect(container?.textContent).not.toContain('content2');
     });
 
     it('handles Escape keydown to close', async () => {
       const sheet = new BottomSheet();
-      await sheet.open('content');
+      await sheet.open(textFrag('content'));
 
       const container = document.querySelector('.bottom-sheet');
       container?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
@@ -155,7 +162,7 @@ describe('BottomSheet', () => {
   describe('close', () => {
     it('removes open and visible classes', async () => {
       const sheet = new BottomSheet();
-      await sheet.open('content');
+      await sheet.open(textFrag('content'));
       await sheet.close();
 
       const container = document.querySelector('.bottom-sheet');
@@ -166,7 +173,7 @@ describe('BottomSheet', () => {
 
     it('sets aria-hidden to true', async () => {
       const sheet = new BottomSheet();
-      await sheet.open('content');
+      await sheet.open(textFrag('content'));
       await sheet.close();
 
       const container = document.querySelector('.bottom-sheet');
@@ -175,7 +182,7 @@ describe('BottomSheet', () => {
 
     it('deactivates focus trap', async () => {
       const sheet = new BottomSheet();
-      await sheet.open('content');
+      await sheet.open(textFrag('content'));
       await sheet.close();
 
       expect(focusTrap.deactivate).toHaveBeenCalled();
@@ -193,7 +200,7 @@ describe('BottomSheet', () => {
   describe('backdrop click', () => {
     it('closes sheet when backdrop is clicked', async () => {
       const sheet = new BottomSheet();
-      await sheet.open('content');
+      await sheet.open(textFrag('content'));
 
       const backdrop = document.querySelector('.bottom-sheet-backdrop') as HTMLElement;
       backdrop?.click();

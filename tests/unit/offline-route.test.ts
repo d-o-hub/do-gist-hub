@@ -2,9 +2,9 @@
  * Unit tests for src/routes/offline.ts
  * Covers render, updateOfflineStatus, pending operations, conflicts
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import syncQueue from '../../src/services/sync/queue';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getConflicts } from '../../src/services/sync/conflict-detector';
+import syncQueue from '../../src/services/sync/queue';
 
 // Mock the imports used by offline route
 vi.mock('../../src/services/sync/queue', () => ({
@@ -20,6 +20,14 @@ vi.mock('../../src/services/sync/conflict-detector', () => ({
 vi.mock('../../src/components/ui/empty-state', () => ({
   EmptyState: {
     render: vi.fn(({ title }) => `<div class="empty-state">${title}</div>`),
+    renderToFragment: vi.fn(({ title }) => {
+      const frag = document.createDocumentFragment();
+      const div = document.createElement('div');
+      div.className = 'empty-state';
+      div.textContent = title;
+      frag.appendChild(div);
+      return frag;
+    }),
   },
 }));
 
@@ -43,11 +51,11 @@ describe('OfflineRoute', () => {
     const { render } = await import('../../src/routes/offline');
     await render(container);
 
-    expect(container.innerHTML).toContain('Offline Status');
-    expect(container.innerHTML).toContain('PENDING WRITES');
-    expect(container.innerHTML).toContain('SYNC CONFLICTS');
-    expect(container.innerHTML).toContain('pending-count');
-    expect(container.innerHTML).toContain('conflict-count');
+    expect(container.textContent).toContain('Offline Status');
+    expect(container.textContent).toContain('PENDING WRITES');
+    expect(container.textContent).toContain('SYNC CONFLICTS');
+    expect(container.querySelector('#pending-count')).not.toBeNull();
+    expect(container.querySelector('#conflict-count')).not.toBeNull();
   });
 
   it('shows pending count from sync queue', async () => {
@@ -68,7 +76,7 @@ describe('OfflineRoute', () => {
 
     // With no pending ops, should show synced state
     const opsEl = container.querySelector('#pending-ops');
-    expect(opsEl?.innerHTML).toContain('All Synced');
+    expect(opsEl?.textContent).toContain('All Synced');
   });
 
   it('shows pending operation count when operations are queued', async () => {
@@ -78,7 +86,7 @@ describe('OfflineRoute', () => {
     await render(container);
 
     const opsEl = container.querySelector('#pending-ops');
-    expect(opsEl?.innerHTML).toContain('5 operations waiting');
+    expect(opsEl?.textContent).toContain('5 operations waiting');
   });
 
   it('displays conflict count', async () => {

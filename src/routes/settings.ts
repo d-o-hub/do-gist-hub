@@ -11,7 +11,7 @@ import { getToken, getTokenInfo, removeToken, saveToken } from '../services/gith
 import { lifecycle } from '../services/lifecycle';
 import { loadLLMConfig, saveLLMConfig } from '../services/llm/client';
 import networkMonitor from '../services/network/offline-monitor';
-import { redactToken, sanitizeHtml } from '../services/security';
+import { redactToken } from '../services/security';
 import { safeError } from '../services/security/logger';
 import {
   readTelemetry,
@@ -162,20 +162,33 @@ async function loadTokenInfo(container: HTMLElement): Promise<void> {
     if (token) {
       // Check token age for rotation reminder
       const savedAt = await (await import('../services/db')).getMetadata<number>('token-saved-at');
-      let rotationHtml = '';
+      const tokenInfo = await getTokenInfo();
+      el.replaceChildren();
+      const activeP = document.createElement('p');
+      activeP.className = 'micro-label token-saved';
+      activeP.textContent = `Token active: ${redactToken(token)}`;
+      el.appendChild(activeP);
+      if (tokenInfo?.tokenExpiry) {
+        const expiryP = document.createElement('p');
+        expiryP.className = 'micro-label token-saved';
+        expiryP.textContent = `Token expires: ${new Date(tokenInfo.tokenExpiry).toLocaleDateString()}`;
+        el.appendChild(expiryP);
+      }
       if (savedAt) {
         const ageDays = (Date.now() - savedAt) / (1000 * 60 * 60 * 24);
         if (ageDays > 60) {
-          rotationHtml = `<p class="micro-label token-rotation">⚠️ Token is ${Math.floor(ageDays)} days old. Consider rotating it for security.</p>`;
+          const rotationP = document.createElement('p');
+          rotationP.className = 'micro-label token-rotation';
+          rotationP.textContent = `⚠️ Token is ${Math.floor(ageDays)} days old. Consider rotating it for security.`;
+          el.appendChild(rotationP);
         }
       }
-      const tokenInfo = await getTokenInfo();
-      const expiryHtml = tokenInfo?.tokenExpiry
-        ? `<p class="micro-label token-saved">Token expires: ${new Date(tokenInfo.tokenExpiry).toLocaleDateString()}</p>`
-        : '';
-      el.innerHTML = `<p class="micro-label token-saved">Token active: ${sanitizeHtml(redactToken(token))}</p>${expiryHtml}${rotationHtml}`;
     } else {
-      el.innerHTML = '<p class="micro-label token-missing">No token saved. Add one above.</p>';
+      el.replaceChildren();
+      const missingP = document.createElement('p');
+      missingP.className = 'micro-label token-missing';
+      missingP.textContent = 'No token saved. Add one above.';
+      el.appendChild(missingP);
     }
   }
 }
@@ -200,13 +213,19 @@ async function loadDiagnostics(container: HTMLElement): Promise<void> {
     })(),
   };
 
-  diagnosticsContainer.innerHTML = `
-    <div class="diagnostics-content micro-label">
-      <p>Online: ${info.online ? 'Yes' : 'No'}</p>
-      <p>Gists: ${info.gistsCount}</p>
-      <p>Theme: ${sanitizeHtml(info.theme || 'auto')}</p>
-    </div>
-  `;
+  diagnosticsContainer.replaceChildren();
+  const diagDiv = document.createElement('div');
+  diagDiv.className = 'diagnostics-content micro-label';
+  const onlineP = document.createElement('p');
+  onlineP.textContent = `Online: ${info.online ? 'Yes' : 'No'}`;
+  diagDiv.appendChild(onlineP);
+  const gistsP = document.createElement('p');
+  gistsP.textContent = `Gists: ${info.gistsCount}`;
+  diagDiv.appendChild(gistsP);
+  const themeP = document.createElement('p');
+  themeP.textContent = `Theme: ${info.theme || 'auto'}`;
+  diagDiv.appendChild(themeP);
+  diagnosticsContainer.appendChild(diagDiv);
 
   if (info.telemetry) {
     const telemetryRow = document.createElement('p');

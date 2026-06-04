@@ -1,13 +1,9 @@
 /**
  * Unit tests for RouteBoundary Component
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
-
-vi.mock('../../src/services/security/dom', () => ({
-  sanitizeHtml: vi.fn((s: string) => s),
-}));
 
 vi.mock('../../src/services/security/logger', () => ({
   safeLog: vi.fn(),
@@ -52,9 +48,9 @@ describe('RouteBoundary', () => {
         '[RouteBoundary] Route "test-route" failed to render',
         renderError
       );
-      expect(container.innerHTML).toContain('Page Load Error');
-      expect(container.innerHTML).toContain('Render failure');
-      expect(container.innerHTML).toContain('test-route');
+      expect(container.textContent).toContain('Page Load Error');
+      expect(container.textContent).toContain('Render failure');
+      expect(container.textContent).toContain('test-route');
     });
 
     it('handles non-Error thrown values', async () => {
@@ -62,8 +58,8 @@ describe('RouteBoundary', () => {
 
       await RouteBoundary.wrap(container, 'home', renderFn);
 
-      expect(container.innerHTML).toContain('Page Load Error');
-      expect(container.innerHTML).toContain('string error');
+      expect(container.textContent).toContain('Page Load Error');
+      expect(container.textContent).toContain('string error');
     });
 
     it('handles synchronous render errors', async () => {
@@ -73,8 +69,8 @@ describe('RouteBoundary', () => {
 
       await RouteBoundary.wrap(container, 'sync-route', renderFn);
 
-      expect(container.innerHTML).toContain('Sync error');
-      expect(container.innerHTML).toContain('sync-route');
+      expect(container.textContent).toContain('Sync error');
+      expect(container.textContent).toContain('sync-route');
     });
   });
 
@@ -82,25 +78,31 @@ describe('RouteBoundary', () => {
 
   describe('renderFallback', () => {
     it('renders error message and route', () => {
-      const html = RouteBoundary.renderFallback('settings', new Error('Something broke'));
+      const frag = RouteBoundary.renderFallback('settings', new Error('Something broke'));
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(frag);
 
-      expect(html).toContain('Page Load Error');
-      expect(html).toContain('Something broke');
-      expect(html).toContain('settings');
-      expect(html).toContain('Try Again');
-      expect(html).toContain('Go Home');
+      expect(wrapper.textContent).toContain('Page Load Error');
+      expect(wrapper.textContent).toContain('Something broke');
+      expect(wrapper.textContent).toContain('settings');
+      expect(wrapper.textContent).toContain('Try Again');
+      expect(wrapper.textContent).toContain('Go Home');
     });
 
     it('uses default message when error has no message', () => {
-      const html = RouteBoundary.renderFallback('test', new Error());
+      const frag = RouteBoundary.renderFallback('test', new Error());
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(frag);
 
-      expect(html).toContain('Failed to load this page');
+      expect(wrapper.textContent).toContain('Failed to load this page');
     });
 
     it('sets role="alert" for accessibility', () => {
-      const html = RouteBoundary.renderFallback('test', new Error('err'));
+      const frag = RouteBoundary.renderFallback('test', new Error('err'));
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(frag);
 
-      expect(html).toContain('role="alert"');
+      expect(wrapper.querySelector('[role="alert"]')).not.toBeNull();
     });
   });
 
@@ -109,7 +111,7 @@ describe('RouteBoundary', () => {
   describe('bindRetry', () => {
     it('dispatches app:navigate on retry button click', () => {
       const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
-      container.innerHTML = RouteBoundary.renderFallback('settings', new Error('err'));
+      container.replaceChildren(RouteBoundary.renderFallback('settings', new Error('err')));
       RouteBoundary.bindRetry(container, 'settings');
 
       const retryBtn = container.querySelector('[data-action="route-retry"]') as HTMLElement;
@@ -125,7 +127,7 @@ describe('RouteBoundary', () => {
 
     it('dispatches home navigation on Go Home button click', () => {
       const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
-      container.innerHTML = RouteBoundary.renderFallback('settings', new Error('err'));
+      container.replaceChildren(RouteBoundary.renderFallback('settings', new Error('err')));
       RouteBoundary.bindRetry(container, 'settings');
 
       const homeBtn = container.querySelector('[data-action="route-home"]') as HTMLElement;

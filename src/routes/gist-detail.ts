@@ -11,8 +11,13 @@ export function render(container: HTMLElement, params?: Record<string, string>):
 
   const gistId = params?.gistId;
   if (!gistId) {
-    container.innerHTML =
-      '<div class="empty-state-container"><p class="empty-state-description">No gist selected</p></div>';
+    const wrapper = document.createElement('div');
+    wrapper.className = 'empty-state-container';
+    const p = document.createElement('p');
+    p.className = 'empty-state-description';
+    p.textContent = 'No gist selected';
+    wrapper.appendChild(p);
+    container.replaceChildren(wrapper);
     return;
   }
 
