@@ -21,20 +21,6 @@ allprojects {
         google()
         mavenCentral()
     }
-
-    // Inject fdroid build type into all subprojects (capacitor-android, etc)
-    // so that :app:assembleFdroid can resolve dependencies.
-    afterEvaluate { project ->
-        if (project.plugins.hasPlugin('com.android.library')) {
-            project.android {
-                buildTypes {
-                    fdroid {
-                        matchingFallbacks = ['release']
-                    }
-                }
-            }
-        }
-    }
 }
 
 task clean(type: Delete) {

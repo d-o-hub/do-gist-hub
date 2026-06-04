@@ -1,11 +1,10 @@
-
 :root {
   /* ===== Theme Color Scheme ===== */
   color-scheme: dark;
 
   /* ===== Color Primitives ===== */
   --color-black: #000000;
-  --color-white: #FFFFFF;
+  --color-white: #ffffff;
 
   --color-gray-50: #f9fafb;
   --color-gray-100: #f3f4f6;
@@ -21,40 +20,40 @@
 
   /* ===== Semantic Colors (Dark Mode) ===== */
   --color-background-primary: #030712;
-  --color-background-secondary: #0A0F1A;
+  --color-background-secondary: #0a0f1a;
   --color-background-tertiary: #111827;
-  --color-background-elevated: #1A2332;
+  --color-background-elevated: #1a2332;
 
-  --color-foreground-primary: #F8FAFC;
-  --color-foreground-secondary: #CBD5E1;
-  --color-foreground-muted: #64748B;
+  --color-foreground-primary: #f8fafc;
+  --color-foreground-secondary: #cbd5e1;
+  --color-foreground-muted: #64748b;
   --color-foreground-inverse: #030712;
 
-  --color-accent-primary: #60A5FA;
-  --color-accent-hover: #93C5FD;
-  --color-accent-active: #BFDBFE;
-  --color-accent-subtle: rgba(96, 165, 250, 0.10);
+  --color-accent-primary: #60a5fa;
+  --color-accent-hover: #93c5fd;
+  --color-accent-active: #bfdbfe;
+  --color-accent-subtle: rgba(96, 165, 250, 0.1);
   --color-accent-glow: rgba(96, 165, 250, 0.35);
 
-  --color-border-default: #1E293B;
+  --color-border-default: #1e293b;
   --color-border-emphasis: #334155;
   --color-border-strong: #475569;
 
-  --color-status-success-bg: rgba(34, 197, 94, 0.10);
-  --color-status-success-fg: #4ADE80;
-  --color-status-success-border: #22C55E;
+  --color-status-success-bg: rgba(34, 197, 94, 0.1);
+  --color-status-success-fg: #4ade80;
+  --color-status-success-border: #22c55e;
 
-  --color-status-error-bg: rgba(239, 68, 68, 0.10);
-  --color-status-error-fg: #F87171;
-  --color-status-error-border: #EF4444;
+  --color-status-error-bg: rgba(239, 68, 68, 0.1);
+  --color-status-error-fg: #f87171;
+  --color-status-error-border: #ef4444;
 
-  --color-status-warning-bg: rgba(234, 179, 8, 0.10);
-  --color-status-warning-fg: #FACC15;
-  --color-status-warning-border: #EAB308;
+  --color-status-warning-bg: rgba(234, 179, 8, 0.1);
+  --color-status-warning-fg: #facc15;
+  --color-status-warning-border: #eab308;
 
-  --color-status-info-bg: rgba(59, 130, 246, 0.10);
-  --color-status-info-fg: #60A5FA;
-  --color-status-info-border: #3B82F6;
+  --color-status-info-bg: rgba(59, 130, 246, 0.1);
+  --color-status-info-fg: #60a5fa;
+  --color-status-info-border: #3b82f6;
 
   --color-interactive-hover: rgba(255, 255, 255, 0.05);
   --color-interactive-active: rgba(255, 255, 255, 0.08);
@@ -99,14 +98,24 @@
   --spacing-100: 25rem;
 
   /* ===== Typography Tokens ===== */
-  --font-family-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-family-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   --font-family-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-family-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-family-mono:
+    "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
 
   /* 2026: Semantic font aliases for self-hosted variable fonts (ADR-022) */
-  --font-body: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  --font-display: 'Anton', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  --font-mono: 'JetBrains Mono Variable', "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-body:
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-display:
+    "Anton", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-mono:
+    "JetBrains Mono Variable", "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo,
+    Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
   --font-size-xs: clamp(0.6875rem, 0.625rem + 0.25vw, 0.75rem);
   --font-size-sm: clamp(0.75rem, 0.6875rem + 0.3125vw, 0.875rem);
@@ -172,7 +181,23 @@
   --motion-easing-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --motion-easing-in-expo: cubic-bezier(0.7, 0, 0.84, 0);
   --motion-easing-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  --motion-easing-spring: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938, 1.058, 1.072, 1.074, 1.065, 1.048, 1.026, 1.007, 0.995, 0.988);
+  --motion-easing-spring: linear(
+    0,
+    0.009,
+    0.035 2.1%,
+    0.141 4.4%,
+    0.723 12.9%,
+    0.938,
+    1.058,
+    1.072,
+    1.074,
+    1.065,
+    1.048,
+    1.026,
+    1.007,
+    0.995,
+    0.988
+  );
 
   /* Legacy aliases for backward compatibility */
   --motion-easing-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
@@ -268,44 +293,44 @@
 /* ===== Light Theme Override ===== */
 [data-theme="light"] {
   color-scheme: light;
-  --color-background-primary: #FAFAFA;
-  --color-background-secondary: #F3F4F6;
-  --color-background-tertiary: #E5E7EB;
-  --color-background-elevated: #FFFFFF;
+  --color-background-primary: #fafafa;
+  --color-background-secondary: #f3f4f6;
+  --color-background-tertiary: #e5e7eb;
+  --color-background-elevated: #ffffff;
 
-  --color-foreground-primary: #0F172A;
+  --color-foreground-primary: #0f172a;
   --color-foreground-secondary: #475569;
-  --color-foreground-muted: #64748B;
-  --color-foreground-inverse: #FFFFFF;
+  --color-foreground-muted: #64748b;
+  --color-foreground-inverse: #ffffff;
 
-  --color-accent-primary: #2563EB;
-  --color-accent-hover: #1D4ED8;
-  --color-accent-active: #1E40AF;
+  --color-accent-primary: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-accent-active: #1e40af;
   --color-accent-subtle: rgba(37, 99, 235, 0.08);
   --color-accent-glow: rgba(37, 99, 235, 0.25);
 
-  --color-border-default: #E2E8F0;
-  --color-border-emphasis: #CBD5E1;
-  --color-border-strong: #94A3B8;
+  --color-border-default: #e2e8f0;
+  --color-border-emphasis: #cbd5e1;
+  --color-border-strong: #94a3b8;
 
-  --color-status-success-bg: #F0FDF4;
-  --color-status-success-fg: #15803D;
-  --color-status-success-border: #86EFAC;
+  --color-status-success-bg: #f0fdf4;
+  --color-status-success-fg: #15803d;
+  --color-status-success-border: #86efac;
 
-  --color-status-error-bg: #FEF2F2;
-  --color-status-error-fg: #B91C1C;
-  --color-status-error-border: #FCA5A5;
+  --color-status-error-bg: #fef2f2;
+  --color-status-error-fg: #b91c1c;
+  --color-status-error-border: #fca5a5;
 
-  --color-status-warning-bg: #FFFBEB;
-  --color-status-warning-fg: #B45309;
-  --color-status-warning-border: #FDE047;
+  --color-status-warning-bg: #fffbeb;
+  --color-status-warning-fg: #b45309;
+  --color-status-warning-border: #fde047;
 
-  --color-status-info-bg: #EFF6FF;
-  --color-status-info-fg: #2563EB;
-  --color-status-info-border: #93C5FD;
+  --color-status-info-bg: #eff6ff;
+  --color-status-info-fg: #2563eb;
+  --color-status-info-border: #93c5fd;
 
-  --color-interactive-hover: #F1F5F9;
-  --color-interactive-active: #E2E8F0;
+  --color-interactive-hover: #f1f5f9;
+  --color-interactive-active: #e2e8f0;
   --color-interactive-focus: rgba(37, 99, 235, 0.15);
 
   /* Light mode shadows */

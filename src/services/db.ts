@@ -418,10 +418,6 @@ export async function exportData(): Promise<string> {
   const metadata = await db.getAll('metadata');
   const logs = await db.getAll('logs');
 
-  // Sentinel: Redact secrets from logs during export as defense-in-depth
-  const { redactAny } = await import('./security/logger');
-  const safeLogs = logs.map((log) => redactAny(log) as LogEntry);
-
   // Sentinel: Sensitive secrets (PATs and encryption keys) are excluded from
   // standard exports. This ensures that a compromised backup file does not
   // leak credentials, although it requires re-authentication on restore.
@@ -430,21 +426,8 @@ export async function exportData(): Promise<string> {
     'github-pat-enc',
     'github-pat',
     'github-refresh-token',
-    'github-refresh-expires',
-    'github-username',
   ];
-
-  // Map over metadata to redact safe-but-partially-sensitive objects like llm-config
-  const safeMetadata = metadata
-    .filter((m) => !SENSITIVE_METADATA_KEYS.includes(m.key))
-    .map((m) => {
-      if (m.key === 'llm-config' && m.value && typeof m.value === 'object') {
-        const config = { ...(m.value as Record<string, unknown>) };
-        if (config.apiKey) config.apiKey = '[REDACTED]';
-        return { ...m, value: config };
-      }
-      return m;
-    });
+  const safeMetadata = metadata.filter((m) => !SENSITIVE_METADATA_KEYS.includes(m.key));
 
   const data = {
     version: '3.0.0',
@@ -452,7 +435,7 @@ export async function exportData(): Promise<string> {
     gists,
     pendingWrites,
     metadata: safeMetadata,
-    logs: safeLogs,
+    logs,
   };
 
   return JSON.stringify(data);
