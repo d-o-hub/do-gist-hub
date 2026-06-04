@@ -203,6 +203,266 @@ const desktopGrid = `
 `;
 ```
 
+## Narrow-Viewport Composition Patterns
+
+These patterns were added in plan 066 (responsive recomposition) to fix
+desktop layouts that were being squished or amputated at 320–480px viewports
+instead of being recomposed.
+
+### Pattern 1: Long content word-break on user input
+
+Any element that can receive user input (titles, descriptions, file names,
+URLs) must declare a wrapping strategy. The default browser behavior is to
+allow overflow, which is a bug for app UI.
+
+```css
+.title,
+.description,
+.file-name {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* URL cells: break at any character to prevent horizontal overflow */
+.file-info-left a {
+  word-break: break-all;
+}
+```
+
+### Pattern 2: Narrow-phone (≤389.98px) trim
+
+The 480px breakpoint is too generous for iPhone SE (320px). Any row that
+contains a flex-shrink candidate (title) plus right-aligned actions needs
+a `(max-width: 389.98px)` block that tightens gap, padding, and font-size.
+
+```css
+/* Default: 480px+ gets larger padding */
+@media (min-width: 480px) {
+  .app-header { padding: var(--space-3) var(--space-4); }
+  .app-title { font-size: var(--text-lg); }
+}
+
+/* Narrow phone: trim for 320-389px viewports */
+@media (max-width: 389.98px) {
+  .app-header {
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    /* Safe-area insets preserved at every width */
+    padding-top: calc(var(--space-2) + env(safe-area-inset-top, 0px));
+  }
+  .app-title { font-size: var(--text-base); }
+  .header-right { gap: var(--space-1); }
+}
+```
+
+### Pattern 3: Action button rows collapse to 2-col grid
+
+Action rows (detail actions, form actions, edit actions) must collapse to
+a 2-column grid at ≤480px, with the primary action spanning full width.
+On phones ≤767px, flip to `flex-direction: column-reverse` so the primary
+action appears first (thumb-zone reachable, no need to scroll to the
+bottom of a 3-row form to submit).
+
+```css
+.gist-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ≤480px: 2-col grid, primary spans full row */
+@media (max-width: 480px) {
+  .gist-detail-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .gist-detail-actions .btn[data-action="star"] {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Form actions: column-reverse for thumb reach */
+@media (max-width: 767px) {
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+  .form-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+```
+
+### Pattern 4: Sticky rail nav with safe-area bottom
+
+`position: sticky; top: 0; height: 100dvh` must be paired with
+`min-height: 100dvh`, `padding-bottom: calc(var(--space-N) + env(safe-area-inset-bottom))`,
+and `overflow-y: auto` so content never clips under the iOS home
+indicator. Rail items use `flex-direction: column` with `word-break: break-word`
+so labels wrap or truncate consistently inside the 72px column.
+
+```css
+.rail-nav {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  min-height: 100dvh;
+  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.rail-item {
+  flex-direction: column;
+  gap: var(--spacing-1);
+  width: 100%;
+  text-align: center;
+  white-space: normal;
+  word-break: break-word;
+  hyphens: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+```
+
+### Pattern 5: Viewport-aware comparison grid
+
+Conflict comparison grids and similar side-by-side surfaces should have
+viewport-aware padding and gap values, not single values at all sizes.
+Long filenames need `min-width: 0; flex: 1 1 auto` on the filename cell
+and `flex-shrink: 0` on the secondary stat (file size, timestamp).
+
+```css
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+@media (min-width: 768px) {
+  .comparison-grid { gap: var(--space-6); padding: var(--space-6); }
+}
+@media (min-width: 1024px) {
+  .comparison-grid {
+    grid-template-columns: 1fr 1fr;
+    padding: var(--space-6) var(--space-8);
+  }
+}
+@media (min-width: 1280px) {
+  .comparison-grid {
+    padding: var(--space-8) var(--space-10);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+}
+
+.file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.file-size {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+```
+
+### Pattern 6: Filter header stacks on narrow phones
+
+Any flex row that contains a flex-shrink candidate (filter chips) plus
+a fixed-width control (sort select) must stack vertically at ≤480px so
+neither element overflows.
+
+```css
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+@media (max-width: 480px) {
+  .filter-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+  .filter-header #sort-select {
+    width: 100%;
+    min-width: 0;
+  }
+}
+```
+
+## Token-Driven Responsive Components
+
+When adding a new component with responsive behavior, follow this order:
+
+1. Add the breakpoint values to `src/tokens/responsive/breakpoints.ts` (only
+   if the new breakpoint doesn't exist; 7 are already defined).
+2. Add component dimensions to `src/tokens/component/<category>.ts` (e.g.
+   `navigation.ts` for nav surfaces, `cards.ts` for cards).
+3. Wire the token to a CSS custom property in `src/tokens/css-variables.ts`.
+4. Reference the CSS custom property from your stylesheet. Never hardcode
+   the breakpoint value or the component dimension in the stylesheet.
+5. Run `pnpm run build` to regenerate `public/design-tokens.css`.
+6. Run `pnpm exec vitest run tests/unit/css-variables.test.ts -u` to
+   update the snapshot.
+
+Example: adding a new responsive filter input
+
+```typescript
+// src/tokens/component/filter.ts (new file or existing)
+export const filterTokens = {
+  input: {
+    minHeight: '44px',       // touch target
+    minWidth: '120px',       // prevent squish at any viewport
+    fullWidthBreakpoint: 480, // stack below this
+  },
+} as const;
+```
+
+```typescript
+// src/tokens/css-variables.ts — add to the existing :root block
+--filter-input-min-height: ${filterTokens.input.minHeight};
+--filter-input-min-width: ${filterTokens.input.minWidth};
+```
+
+```css
+/* src/styles/filter.css — no hardcoded values */
+.filter-input {
+  min-height: var(--filter-input-min-height);
+  min-width: var(--filter-input-min-width);
+}
+
+@media (max-width: 480px) {
+  .filter-input { width: 100%; }
+}
+```
+
+## Project-Specific Breakpoint Reference
+
+The breakpoint scale used by this project (`src/tokens/responsive/breakpoints.ts`):
+
+| Name             | px  | Use case                                                |
+| ---------------- | --- | ------------------------------------------------------- |
+| `phone-small`    | 320 | iPhone SE — narrowest target viewport                   |
+| `phone`          | 390 | Modern iPhone baseline                                  |
+| `phone-large`    | 480 | Large phones — last narrow-column layout                |
+| `tablet-small`   | 640 | Small tablets, phone landscape                          |
+| `tablet-portrait`| 768 | iPad portrait — nav rail starts here                    |
+| `tablet-landscape` | 1024 | iPad landscape — sidebar starts here                |
+| `desktop`        | 1280 | Laptop — three-column gist grid                     |
+| `desktop-wide`   | 1536 | Ultrawide — max container width                    |
+
+CSS custom properties are generated as `--bp-{name}` in `public/design-tokens.css`
+and exposed at runtime via `getComputedStyle(document.documentElement)`.
+
+
 ## Gotchas
 
 - **Mobile First**: Design for 320px first, then scale up

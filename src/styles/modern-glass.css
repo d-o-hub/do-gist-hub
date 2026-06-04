@@ -15,9 +15,11 @@
     box-shadow var(--motion-duration-base) var(--motion-easing);
 }
 
-.glass-card:hover {
-  background: var(--color-surface-2);
-  box-shadow: var(--shadow-glass-hover);
+@media (hover: hover) and (pointer: fine) {
+  .glass-card:hover {
+    background: var(--color-surface-2);
+    box-shadow: var(--shadow-glass-hover);
+  }
 }
 
 /* Stat/KPI card */
@@ -109,6 +111,7 @@
   font-size: var(--text-sm);
   color: var(--color-text-muted);
   line-height: 1.5;
+  text-wrap: pretty;
 }
 
 .confirm-actions {
