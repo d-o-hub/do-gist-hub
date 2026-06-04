@@ -1,15 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks ─────────────────────────────────────────────────────────
-
-const mockDbLogStore = {
-  add: vi.fn().mockResolvedValue(undefined),
-  count: vi.fn().mockResolvedValue(0),
-  getAllKeysFromIndex: vi.fn().mockResolvedValue([]),
-  getAllFromIndex: vi.fn().mockResolvedValue([]),
-  clear: vi.fn().mockResolvedValue(undefined),
-  delete: vi.fn().mockResolvedValue(undefined),
-};
 
 const mockDb = {
   add: vi.fn().mockResolvedValue(undefined),
@@ -30,18 +21,18 @@ vi.mock('../../src/services/db', () => ({
   isDBReady: vi.fn(() => true),
 }));
 
+import { getDB, isDBReady } from '../../src/services/db';
 import {
+  clearOfflineLogs,
+  getOfflineLogs,
+  persistLog,
   redactAny,
   redactSecrets,
   redactToken,
-  persistLog,
-  safeLog,
   safeError,
+  safeLog,
   safeWarn,
-  getOfflineLogs,
-  clearOfflineLogs,
 } from '../../src/services/security/logger.ts';
-import { getDB, isDBReady } from '../../src/services/db';
 
 describe('security logger', () => {
   beforeEach(() => {
@@ -71,9 +62,15 @@ describe('security logger', () => {
     });
 
     it('should redact ghr, ghu, ghs token patterns', () => {
-      expect(redactSecrets('refresh: ghr_1234567890abcdefghijklmnopqrstuvwxyzvalid')).toBe('refresh: [REDACTED]');
-      expect(redactSecrets('user: ghu_1234567890abcdefghijklmnopqrstuvwxyzvalid')).toBe('user: [REDACTED]');
-      expect(redactSecrets('install: ghs_1234567890abcdefghijklmnopqrstuvwxyzvalid')).toBe('install: [REDACTED]');
+      expect(redactSecrets('refresh: ghr_1234567890abcdefghijklmnopqrstuvwxyzvalid')).toBe(
+        'refresh: [REDACTED]'
+      );
+      expect(redactSecrets('user: ghu_1234567890abcdefghijklmnopqrstuvwxyzvalid')).toBe(
+        'user: [REDACTED]'
+      );
+      expect(redactSecrets('install: ghs_1234567890abcdefghijklmnopqrstuvwxyzvalid')).toBe(
+        'install: [REDACTED]'
+      );
     });
 
     it('should handle strings', () => {
@@ -90,7 +87,11 @@ describe('security logger', () => {
         },
         safe: 123,
       };
-      const redacted = redactAny(obj) as { token: string; nested: { secret: string }; safe: number };
+      const redacted = redactAny(obj) as {
+        token: string;
+        nested: { secret: string };
+        safe: number;
+      };
       expect(redacted.token).toBe('[REDACTED]');
       expect(redacted.nested.secret).toBe('[REDACTED]');
       expect(redacted.safe).toBe(123);
@@ -138,6 +139,20 @@ describe('security logger', () => {
       expect(redactAny(undefined)).toBeUndefined();
     });
 
+    it('does not trigger DEPTH_EXCEEDED at depth 10 boundary', () => {
+      // depth 9 start, nested 1 level: outer at 9, inner at 10 (not >10), passes
+      const obj = { a: 'secret' };
+      const result = redactAny(obj, 9);
+      expect(result).toEqual({ a: 'secret' });
+    });
+
+    it('triggers DEPTH_EXCEEDED at depth 11 (mutation >10 boundary)', () => {
+      // depth 9 start, nested 2 levels: outer at 9, mid at 10, leaf at 11 (>10) → DEPTH_EXCEEDED
+      const obj = { a: { b: 'secret' } };
+      const result = redactAny(obj, 9);
+      expect(result).toEqual({ a: { b: '[DEPTH_EXCEEDED]' } });
+    });
+
     it('handles depth limit exceeded', () => {
       // Build a deeply nested object dynamically to avoid parser nesting limits.
       // At depth 10, the first level processes normally, then nested property hits depth 11
@@ -163,7 +178,9 @@ describe('security logger', () => {
     });
 
     it('redacts Bearer token pattern in strings', () => {
-      const result = redactSecrets('Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0');
+      const result = redactSecrets(
+        'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0'
+      );
       expect(result).toBe('Authorization: [REDACTED]');
     });
 
@@ -203,19 +220,34 @@ describe('security logger', () => {
 
     it('persists log entry when DB is ready', async () => {
       await persistLog('info', 'test message', { key: 'value' });
-      expect(mockDb.add).toHaveBeenCalledWith('logs', expect.objectContaining({
-        level: 'info',
-        message: 'test message',
-        data: { key: 'value' },
-      }));
+      expect(mockDb.add).toHaveBeenCalledWith(
+        'logs',
+        expect.objectContaining({
+          level: 'info',
+          message: 'test message',
+          data: { key: 'value' },
+        })
+      );
     });
 
     it('persists error level logs', async () => {
       await persistLog('error', 'error message', new Error('test'));
-      expect(mockDb.add).toHaveBeenCalledWith('logs', expect.objectContaining({
-        level: 'error',
-        message: 'error message',
-      }));
+      expect(mockDb.add).toHaveBeenCalledWith(
+        'logs',
+        expect.objectContaining({
+          level: 'error',
+          message: 'error message',
+        })
+      );
+    });
+
+    it('does not rotate when count equals exactly MAX_LOGS (1000)', async () => {
+      vi.mocked(mockDb.count).mockResolvedValue(1000);
+
+      await persistLog('info', 'at limit');
+
+      expect(mockDb.transaction).not.toHaveBeenCalled();
+      expect(mockDb.getAllKeysFromIndex).not.toHaveBeenCalled();
     });
 
     it('rotates logs when exceeding MAX_LOGS (1000)', async () => {
@@ -227,16 +259,31 @@ describe('security logger', () => {
       expect(mockDb.transaction).toHaveBeenCalledWith('logs', 'readwrite');
     });
 
+    it('deletes exactly count - MAX_LOGS entries on rotation', async () => {
+      vi.mocked(mockDb.count).mockResolvedValue(1005);
+      const keys = Array.from({ length: 1005 }, (_, i) => `key${i}`);
+      vi.mocked(mockDb.getAllKeysFromIndex).mockResolvedValue(keys);
+
+      const storeDelete = vi.fn().mockResolvedValue(undefined);
+      vi.mocked(mockDb.transaction).mockReturnValue({
+        objectStore: vi.fn(() => ({ delete: storeDelete })),
+        done: Promise.resolve(),
+      } as never);
+
+      await persistLog('info', 'rotation test');
+
+      expect(storeDelete).toHaveBeenCalledTimes(5);
+      expect(storeDelete).toHaveBeenCalledWith('key0');
+      expect(storeDelete).toHaveBeenCalledWith('key4');
+    });
+
     it('handles DB errors gracefully during persistence', async () => {
       vi.mocked(mockDb.add).mockRejectedValueOnce(new Error('DB write error'));
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       await persistLog('info', 'failing message');
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        '[Logger] Failed to persist log',
-        expect.any(Error)
-      );
+      expect(consoleSpy).toHaveBeenCalledWith('[Logger] Failed to persist log', expect.any(Error));
       consoleSpy.mockRestore();
     });
   });
@@ -259,9 +306,38 @@ describe('security logger', () => {
       safeLog('Token used', { token: 'ghp_1234567890abcdefghijklmnopqrstuvwxyz' });
 
       await vi.waitFor(() => {
-        expect(mockDb.add).toHaveBeenCalledWith('logs', expect.objectContaining({
-          data: { token: '[REDACTED]' },
-        }));
+        expect(mockDb.add).toHaveBeenCalledWith(
+          'logs',
+          expect.objectContaining({
+            data: { token: '[REDACTED]' },
+          })
+        );
+      });
+    });
+
+    it('packages multiple args as array in data field', async () => {
+      safeLog('multi', 'msg1', 'msg2');
+
+      await vi.waitFor(() => {
+        expect(mockDb.add).toHaveBeenCalledWith(
+          'logs',
+          expect.objectContaining({
+            data: ['msg1', 'msg2'],
+          })
+        );
+      });
+    });
+
+    it('wraps single arg directly (not in array)', async () => {
+      safeLog('single', { val: 42 });
+
+      await vi.waitFor(() => {
+        expect(mockDb.add).toHaveBeenCalledWith(
+          'logs',
+          expect.objectContaining({
+            data: { val: 42 },
+          })
+        );
       });
     });
   });
@@ -274,9 +350,7 @@ describe('security logger', () => {
 
       safeError('Failed: ghp_1234567890abcdefghijklmnopqrstuvwxyz');
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Failed: [REDACTED]'
-      );
+      expect(consoleSpy).toHaveBeenCalledWith('Failed: [REDACTED]');
       consoleSpy.mockRestore();
     });
 
@@ -284,10 +358,13 @@ describe('security logger', () => {
       safeError('Critical failure', { code: 500 });
 
       await vi.waitFor(() => {
-        expect(mockDb.add).toHaveBeenCalledWith('logs', expect.objectContaining({
-          level: 'error',
-          message: 'Critical failure',
-        }));
+        expect(mockDb.add).toHaveBeenCalledWith(
+          'logs',
+          expect.objectContaining({
+            level: 'error',
+            message: 'Critical failure',
+          })
+        );
       });
     });
 
@@ -309,9 +386,7 @@ describe('security logger', () => {
 
       safeWarn('Deprecated: token abcdefghijklmnopqrstuvwxyz');
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        'Deprecated: [REDACTED]'
-      );
+      expect(consoleSpy).toHaveBeenCalledWith('Deprecated: [REDACTED]');
       consoleSpy.mockRestore();
     });
 
@@ -319,9 +394,12 @@ describe('security logger', () => {
       safeWarn('Warning message');
 
       await vi.waitFor(() => {
-        expect(mockDb.add).toHaveBeenCalledWith('logs', expect.objectContaining({
-          level: 'warn',
-        }));
+        expect(mockDb.add).toHaveBeenCalledWith(
+          'logs',
+          expect.objectContaining({
+            level: 'warn',
+          })
+        );
       });
     });
   });
@@ -330,9 +408,7 @@ describe('security logger', () => {
 
   describe('getOfflineLogs', () => {
     it('retrieves logs from IndexedDB', async () => {
-      const mockLogs = [
-        { id: 1, timestamp: Date.now(), level: 'info', message: 'test' },
-      ];
+      const mockLogs = [{ id: 1, timestamp: Date.now(), level: 'info', message: 'test' }];
       vi.mocked(mockDb.getAllFromIndex).mockResolvedValue(mockLogs);
 
       const result = await getOfflineLogs();

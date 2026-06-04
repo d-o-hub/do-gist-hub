@@ -7,7 +7,6 @@
 
 import type {
   CreateGistRequest,
-  GistListFile,
   GistRevision,
   GitHubError,
   GitHubGist,
@@ -140,19 +139,6 @@ function parseLinkHeader(linkHeader: string | null): PaginationInfo {
   return result;
 }
 
-function stripFileContent<T extends GitHubGist>(
-  gists: T[]
-): Array<Omit<T, 'files'> & { files: Record<string, GistListFile> }> {
-  return gists.map((g) => {
-    const strippedFiles: Record<string, GistListFile> = Object.create(null);
-    for (const [name, f] of Object.entries(g.files)) {
-      const { content: _content, truncated: _truncated, ...rest } = f;
-      strippedFiles[name] = rest as GistListFile;
-    }
-    return { ...g, files: strippedFiles };
-  });
-}
-
 /**
  * Handle API errors with proper typing.
  * Attempts token revalidation on 401 before propagating the error.
@@ -269,7 +255,7 @@ function fetchWithEtag<T>(url: string, context: string): Promise<T> {
       let result = data;
       if (context === 'listGists' || context === 'listStarredGists') {
         const pagination = parseLinkHeader(response.headers.get('Link'));
-        result = { data: stripFileContent(data as GitHubGist[]), pagination };
+        result = { data: data as GitHubGistListItem[], pagination };
       }
 
       const etag = response.headers.get('ETag');
@@ -295,6 +281,7 @@ export async function listGists(
   const params = new URLSearchParams({
     page: String(page),
     per_page: String(perPage),
+    files: 'false',
     ...(since ? { since } : {}),
   });
 
@@ -313,6 +300,7 @@ export function listStarredGists(
   const params = new URLSearchParams({
     page: String(page),
     per_page: String(perPage),
+    files: 'false',
   });
 
   const url = `${BASE_URL}/gists/starred?${params}`;

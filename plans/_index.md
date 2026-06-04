@@ -1,6 +1,6 @@
 # plans/\_index.md — Active Plan Registry
 
-> **Last updated**: 2026-05-30T12:00
+> **Last updated**: 2026-06-03T00:00
 > Agents: read this before starting any task. Update it when you change plan status.
 
 ---
@@ -127,7 +127,8 @@ These numbered plans document the project's foundation and are considered stable
 | `056-goap-upstream-sync-phase-a.md`              | GOAP          | Complete ✅ | Shell injection hardening, ShellCheck zero-tolerance, .shellcheckrc, CI integration, pre-commit shfmt hook |
 | `058-goap-cross-browser-webkit-fix.md`              | GOAP          | Complete ✅ | Fix WebKit 58-test failure: add --with-deps to playwright install step |
 | `059-goap-resolve-pre-existing-ci-issues.md`              | GOAP          | Complete ✅ | Fix vitest EnvironmentTeardownError and WebKit flaky star-toggle test |
-| `060-goap-plain-text-paste-llm-gist-creation.md`          | GOAP          | Active      | Plain text paste parser, LLM-assisted gist creation, drag-and-drop file import |
+| `060-goap-plain-text-paste-llm-gist-creation.md`          | GOAP          | Complete ✅ | Plain text paste parser, LLM-assisted gist creation, drag-and-drop file import |
+| `066-goap-comprehensive-ci-fixes-and-feature-gaps.md`     | GOAP          | Active      | CI fixes (F-Droid, keystore), coverage/mutation thresholds, ADR-016 lazy hydration, PWA install, multi-select, tags, syntax highlighting |
 | `061-progress-update-2026-05-30-implementation-gaps.md`    | Progress      | Complete ✅ | Implementation gaps audit: ADR-016 lazy hydration missing, F-Droid MR not submitted, GOAP 060 zero implementation |
 | `063-pre-existing-ci-issues-2026-06-01.md`                | Analysis      | Active      | Pre-existing CI issues: html-escaper CJS fix, commitlint failures, F-Droid APK build failure |
 | `064-audit-2026-06-01-improvements-and-new-features.md`  | Analysis      | Active      | Forward-looking audit: 7 bugs, 13 feature gaps, modern Web API opportunities; recommends v0.3.0 patch + v0.3.x minor batches |
@@ -136,5 +137,5 @@ These numbered plans document the project's foundation and are considered stable
 
 `adr-001` through `adr-033` (gaps: 017-019 reserved)
 **Next available ADR**: `adr-034`
-**Next available plan/GOAP number**: `064`
-**Next available GOAP action number**: New GOAP plan = `064`
+**Next available plan/GOAP number**: `067`
+**Next available GOAP action number**: New GOAP plan = `067`

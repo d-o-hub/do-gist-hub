@@ -340,6 +340,11 @@
       "type": "progress",
       "status": "complete",
       "summary": "Implementation gaps audit: ADR-016 lazy hydration missing, F-Droid MR not submitted, GOAP 060 zero implementation, recordFirstApiCall hook may be missing"
+    },
+    "066-goap-comprehensive-ci-fixes-and-feature-gaps.md": {
+      "type": "goap",
+      "status": "active",
+      "summary": "Comprehensive CI fixes (F-Droid build, keystore path), coverage/mutation thresholds, plan 064 bug triage, ADR-016 lazy hydration, PWA install prompt, multi-select bulk ops, tags system, syntax highlighting"
     }
   },
   "archive": [
@@ -373,7 +378,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-034",
-    "plan": "064",
-    "goap": "064"
+    "plan": "067",
+    "goap": "067"
   }
 }

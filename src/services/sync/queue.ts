@@ -26,6 +26,7 @@ import {
 } from '../github';
 import { getRetryAfterMs, isSafeToRequest } from '../github/rate-limiter';
 import networkMonitor from '../network/offline-monitor';
+import { capabilities } from '../pwa/capabilities';
 import { safeError, safeLog } from '../security/logger';
 import { detectConflict, storeConflict } from './conflict-detector';
 
@@ -79,6 +80,7 @@ export class SyncQueue {
     };
     const id = await dbQueueWrite(write);
     safeLog(`[SyncQueue] Queued ${action} for gist ${gistId}, queue ID: ${id}`);
+    this.updateBadge().catch(() => {});
     if (networkMonitor.isOnline()) {
       void this.processQueue();
     }
@@ -105,6 +107,7 @@ export class SyncQueue {
         if (result.success) {
           await removePendingWrite(write.id);
           safeLog(`[SyncQueue] Successfully synced operation ${write.id}`);
+          this.updateBadge().catch(() => {});
         } else {
           if (result.shouldRetry && write.retryCount < MAX_RETRIES) {
             await updatePendingWriteError(write.id, result.error || 'Unknown error');
@@ -124,6 +127,7 @@ export class SyncQueue {
       safeError('[SyncQueue] Error processing queue:', error);
     } finally {
       this.isSyncing = false;
+      this.updateBadge().catch(() => {});
     }
   }
 
@@ -284,6 +288,11 @@ export class SyncQueue {
   async getQueueLength(): Promise<number> {
     const writes = await getPendingWrites();
     return writes.length;
+  }
+
+  private async updateBadge(): Promise<void> {
+    const count = await this.getQueueLength();
+    await capabilities.setSyncBadge(count);
   }
 
   destroy(): void {
