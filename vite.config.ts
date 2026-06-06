@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -236,6 +237,14 @@ function performanceBudgetPlugin(): Plugin {
 function designTokensBuildPlugin(): Plugin {
   return {
     name: 'design-tokens-build',
+    buildStart() {
+      console.log('Building design tokens...');
+      try {
+        execSync('pnpm run tokens:build', { stdio: 'inherit' });
+      } catch (err) {
+        console.error('Failed to build tokens:', err);
+      }
+    },
     closeBundle() {
       const css = generateCSSVariables();
       const publicDir = path.resolve(__dirname, 'public');

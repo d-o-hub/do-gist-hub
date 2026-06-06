@@ -1,37 +1,35 @@
 /**
  * Component Tokens: Navigation & Layout
  * 2026: Tokens for nav bars, sidebars, and layout components
- *
- * Token-driven width/height for nav surfaces so CSS never hardcodes
- * nav dimensions. Safe-area tokens cover the bottom-nav so the
- * `100dvh` + iOS home indicator gap stays consistent across surfaces.
  */
+
+import * as tokens from '../generated/tokens';
 
 export const navTokens = {
   // Bottom nav (mobile ≤767px)
   bottomNav: {
-    height: '64px',
-    heightLarge: '72px', // at >=480px viewport
-    padding: '0.5rem',
-    paddingLarge: '0.75rem', // at >=480px viewport
+    height: tokens.NavBottomHeight,
+    heightLarge: tokens.NavBottomHeightLarge,
+    padding: tokens.NavBottomPadding,
+    paddingLarge: tokens.NavBottomPaddingLarge,
   },
 
   // Rail nav (tablet 768-1023px)
   railNav: {
-    width: '72px',
-    padding: '1rem 0.5rem',
-    gap: '0.5rem',
-    itemPadding: '0.5rem 0.25rem',
+    width: tokens.NavRailWidth,
+    padding: tokens.NavRailPadding,
+    gap: tokens.NavRailGap,
+    itemPadding: tokens.NavRailItemPadding,
     itemFontSize: 'var(--font-size-xs)',
   },
 
   // Sidebar (desktop >=1024px)
   sidebar: {
-    width: '240px',
-    widthLarge: '260px', // at >=1280px
-    widthWide: '280px', // at >=1536px
-    padding: '1.5rem',
-    paddingLarge: '1.5rem 2rem', // at >=1280px
+    width: tokens.NavSidebarWidth,
+    widthLarge: tokens.NavSidebarWidthLarge,
+    widthWide: tokens.NavSidebarWidthWide,
+    padding: tokens.NavSidebarPadding,
+    paddingLarge: tokens.NavSidebarPaddingLarge,
   },
 
   // Nav items
@@ -42,16 +40,15 @@ export const navTokens = {
 
   // Header
   header: {
-    actionsGap: '0.5rem',
-    actionsGapNarrow: '0.25rem', // at <=389px viewport
-    syncIndicatorSize: '32px',
+    actionsGap: tokens.NavHeaderActionsGap,
+    actionsGapNarrow: tokens.NavHeaderActionsGapNarrow,
+    syncIndicatorSize: tokens.NavHeaderSyncIndicatorSize,
     syncDotSize: '0.5rem',
-    padding: '0.75rem 1rem',
-    paddingNarrow: '0.5rem 0.75rem', // at <=389px viewport
+    padding: tokens.NavHeaderPadding,
+    paddingNarrow: tokens.NavHeaderPaddingNarrow,
   },
 
   // Safe-area insets for fixed/sticky nav surfaces
-  // (iOS notch, Android display cutout, home indicator)
   safeArea: {
     top: 'env(safe-area-inset-top, 0px)',
     bottom: 'env(safe-area-inset-bottom, 0px)',

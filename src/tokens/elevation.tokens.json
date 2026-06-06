@@ -1,0 +1,80 @@
+{
+  "shadow": {
+    "none": { "$type": "shadow", "$value": "none" },
+    "sm": { "$type": "shadow", "$value": "0 1px 2px rgba(0, 0, 0, 0.05)" },
+    "md": {
+      "$type": "shadow",
+      "$value": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+    },
+    "lg": {
+      "$type": "shadow",
+      "$value": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"
+    },
+    "xl": {
+      "$type": "shadow",
+      "$value": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+    },
+    "2xl": { "$type": "shadow", "$value": "0 25px 50px -12px rgba(0, 0, 0, 0.25)" },
+    "inner": { "$type": "shadow", "$value": "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)" },
+    "sm-dark": { "$type": "shadow", "$value": "0 1px 2px rgba(255, 255, 255, 0.04)" },
+    "md-dark": {
+      "$type": "shadow",
+      "$value": "0 4px 6px -1px rgba(255, 255, 255, 0.06), 0 2px 4px -1px rgba(255, 255, 255, 0.04)"
+    },
+    "lg-dark": {
+      "$type": "shadow",
+      "$value": "0 10px 15px -3px rgba(255, 255, 255, 0.08), 0 4px 6px -2px rgba(255, 255, 255, 0.04)"
+    },
+    "oklch": {
+      "xs": { "$type": "shadow", "$value": "0 1px 2px oklch(0 0 0 / 0.06)" },
+      "sm": {
+        "$type": "shadow",
+        "$value": "0 1px 3px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04)"
+      },
+      "md": {
+        "$type": "shadow",
+        "$value": "0 4px 6px oklch(0 0 0 / 0.1), 0 2px 4px oklch(0 0 0 / 0.06)"
+      },
+      "lg": {
+        "$type": "shadow",
+        "$value": "0 10px 15px oklch(0 0 0 / 0.12), 0 4px 6px oklch(0 0 0 / 0.08)"
+      },
+      "xl": {
+        "$type": "shadow",
+        "$value": "0 20px 25px oklch(0 0 0 / 0.14), 0 8px 10px oklch(0 0 0 / 0.1)"
+      },
+      "2xl": { "$type": "shadow", "$value": "0 30px 40px oklch(0 0 0 / 0.16)" },
+      "xs-light": { "$type": "shadow", "$value": "0 1px 2px oklch(0 0 0 / 0.04)" },
+      "sm-light": {
+        "$type": "shadow",
+        "$value": "0 1px 3px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.03)"
+      },
+      "md-light": {
+        "$type": "shadow",
+        "$value": "0 4px 6px oklch(0 0 0 / 0.08), 0 2px 4px oklch(0 0 0 / 0.04)"
+      },
+      "lg-light": {
+        "$type": "shadow",
+        "$value": "0 10px 15px oklch(0 0 0 / 0.08), 0 4px 6px oklch(0 0 0 / 0.04)"
+      },
+      "xl-light": {
+        "$type": "shadow",
+        "$value": "0 20px 25px oklch(0 0 0 / 0.1), 0 8px 10px oklch(0 0 0 / 0.06)"
+      },
+      "2xl-light": { "$type": "shadow", "$value": "0 30px 40px oklch(0 0 0 / 0.12)" }
+    }
+  },
+  "zIndex": {
+    "hide": { "$type": "number", "$value": -1 },
+    "base": { "$type": "number", "$value": 0 },
+    "dropdown": { "$type": "number", "$value": 1000 },
+    "sticky": { "$type": "number", "$value": 1100 },
+    "fixed": { "$type": "number", "$value": 1200 },
+    "modalBackdrop": { "$type": "number", "$value": 1300 },
+    "modal": { "$type": "number", "$value": 1400 },
+    "popover": { "$type": "number", "$value": 1500 },
+    "skipLink": { "$type": "number", "$value": 1600 },
+    "toast": { "$type": "number", "$value": 1700 },
+    "tooltip": { "$type": "number", "$value": 1800 }
+  }
+}

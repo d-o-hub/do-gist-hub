@@ -1,0 +1,22 @@
+{
+  "breakpoint": {
+    "phone-small": { "$type": "dimension", "$value": "320px" },
+    "phone": { "$type": "dimension", "$value": "390px" },
+    "phone-large": { "$type": "dimension", "$value": "480px" },
+    "tablet-small": { "$type": "dimension", "$value": "640px" },
+    "tablet-portrait": { "$type": "dimension", "$value": "768px" },
+    "tablet-landscape": { "$type": "dimension", "$value": "1024px" },
+    "desktop": { "$type": "dimension", "$value": "1280px" },
+    "desktop-wide": { "$type": "dimension", "$value": "1536px" }
+  },
+  "containerWidth": {
+    "phone-small": { "$type": "dimension", "$value": "100%" },
+    "phone": { "$type": "dimension", "$value": "100%" },
+    "phone-large": { "$type": "dimension", "$value": "100%" },
+    "tablet-small": { "$type": "dimension", "$value": "600px" },
+    "tablet-portrait": { "$type": "dimension", "$value": "720px" },
+    "tablet-landscape": { "$type": "dimension", "$value": "960px" },
+    "desktop": { "$type": "dimension", "$value": "1200px" },
+    "desktop-wide": { "$type": "dimension", "$value": "1440px" }
+  }
+}
