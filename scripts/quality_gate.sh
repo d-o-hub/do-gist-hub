@@ -8,6 +8,13 @@ echo "Running quality gates..."
 
 cd "$ROOT_DIR"
 
+# Build tokens first so typecheck and lint see them
+if command -v pnpm &> /dev/null && [[ -f "$ROOT_DIR/package.json" ]]; then
+  echo "→ Building design tokens..."
+  pnpm run tokens:build || { echo "✗ Token build failed"; exit 1; }
+  echo "✓ Token build successful"
+fi
+
 # Type check
 if command -v pnpm &> /dev/null && [[ -f "$ROOT_DIR/package.json" ]]; then
   cd "$ROOT_DIR"

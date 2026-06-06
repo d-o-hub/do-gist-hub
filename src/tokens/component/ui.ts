@@ -1,15 +1,17 @@
 /**
  * UI Component Tokens (2026)
  */
+import * as tokens from '../generated/tokens';
+
 export const uiTokens = {
   backdrop: {
-    background: 'rgba(0, 0, 0, 0.5)',
-    blur: '8px',
+    background: tokens.UiBackdropBackground,
+    blur: tokens.UiBackdropBlur,
   },
   glass: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: 'rgba(255, 255, 255, 0.1)',
-    blur: '12px',
+    background: tokens.UiGlassBackground,
+    border: tokens.UiGlassBorder,
+    blur: tokens.UiGlassBlur,
   },
   card: {
     padding: 'var(--spacing-5)',

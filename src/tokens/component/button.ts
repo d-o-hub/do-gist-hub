@@ -3,42 +3,39 @@
  * Button-specific tokens derived from semantic tokens
  */
 
-import { motionTokens } from '../motion/motion';
-import { radius } from '../primitive/radius';
-import { spacing } from '../primitive/spacing';
-import { fontSize, fontWeight } from '../primitive/typography';
+import * as tokens from '../generated/tokens';
 
 export const buttonTokens = {
   // Padding by size
   padding: {
-    sm: `${spacing[2]} ${spacing[3]}`,
-    md: `${spacing[3]} ${spacing[4]}`,
-    lg: `${spacing[4]} ${spacing[6]}`,
+    sm: tokens.ButtonPaddingSm,
+    md: tokens.ButtonPaddingMd,
+    lg: tokens.ButtonPaddingLg,
   },
 
   // Font size by size
   fontSize: {
-    sm: fontSize.sm,
-    md: fontSize.base,
-    lg: fontSize.lg,
+    sm: tokens.ButtonFontSizeSm,
+    md: tokens.ButtonFontSizeMd,
+    lg: tokens.ButtonFontSizeLg,
   },
 
   // Font weight
-  fontWeight: fontWeight.medium,
+  fontWeight: tokens.ButtonFontWeight,
 
   // Border radius
-  borderRadius: radius.md,
+  borderRadius: tokens.ButtonBorderRadius,
 
   // Transition
   transition: {
-    duration: motionTokens.duration.fast,
-    easing: motionTokens.easing.smooth,
+    duration: tokens.MotionDurationFast,
+    easing: 'cubic-bezier(0.4, 0, 0.2, 1)', // Smooth
   },
 
   // Min height for touch targets (accessibility)
   minHeight: {
-    sm: '36px',
-    md: '44px', // WCAG minimum touch target
-    lg: '48px',
+    sm: tokens.ButtonMinHeightSm,
+    md: tokens.ButtonMinHeightMd,
+    lg: tokens.ButtonMinHeightLg,
   },
 } as const;

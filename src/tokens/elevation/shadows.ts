@@ -4,20 +4,22 @@
  * 2026 Update: Added accent glows and refined layering
  */
 
+import * as tokens from '../generated/tokens';
+
 export const shadowTokens = {
-  none: 'none',
-  sm: '0 1px 2px rgba(0, 0, 0, 0.05)',
-  md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-  lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-  xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-  '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+  none: tokens.ShadowNone,
+  sm: tokens.ShadowSm,
+  md: tokens.ShadowMd,
+  lg: tokens.ShadowLg,
+  xl: tokens.ShadowXl,
+  '2xl': tokens.Shadow2xl,
   accent: '0 2px 8px var(--color-accent-glow)',
   accentLg: '0 4px 16px var(--color-accent-glow)',
-  inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
+  inner: tokens.ShadowInner,
   // 2026: Tonal shadows for dark mode (lighter, subtler)
-  'sm-dark': '0 1px 2px rgba(255, 255, 255, 0.04)',
-  'md-dark': '0 4px 6px -1px rgba(255, 255, 255, 0.06), 0 2px 4px -1px rgba(255, 255, 255, 0.04)',
-  'lg-dark': '0 10px 15px -3px rgba(255, 255, 255, 0.08), 0 4px 6px -2px rgba(255, 255, 255, 0.04)',
+  'sm-dark': tokens.ShadowSmDark,
+  'md-dark': tokens.ShadowMdDark,
+  'lg-dark': tokens.ShadowLgDark,
 } as const;
 
 /**
@@ -25,30 +27,30 @@ export const shadowTokens = {
  * Single source of truth — replaces hand-authored CSS in base.css.
  */
 export const shadowOklch = {
-  xs: '0 1px 2px oklch(0 0 0 / 0.06)',
-  sm: '0 1px 3px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04)',
-  md: '0 4px 6px oklch(0 0 0 / 0.1), 0 2px 4px oklch(0 0 0 / 0.06)',
-  lg: '0 10px 15px oklch(0 0 0 / 0.12), 0 4px 6px oklch(0 0 0 / 0.08)',
-  xl: '0 20px 25px oklch(0 0 0 / 0.14), 0 8px 10px oklch(0 0 0 / 0.1)',
-  '2xl': '0 30px 40px oklch(0 0 0 / 0.16)',
-  'xs-light': '0 1px 2px oklch(0 0 0 / 0.04)',
-  'sm-light': '0 1px 3px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.03)',
-  'md-light': '0 4px 6px oklch(0 0 0 / 0.08), 0 2px 4px oklch(0 0 0 / 0.04)',
-  'lg-light': '0 10px 15px oklch(0 0 0 / 0.08), 0 4px 6px oklch(0 0 0 / 0.04)',
-  'xl-light': '0 20px 25px oklch(0 0 0 / 0.1), 0 8px 10px oklch(0 0 0 / 0.06)',
-  '2xl-light': '0 30px 40px oklch(0 0 0 / 0.12)',
+  xs: tokens.ShadowOklchXs,
+  sm: tokens.ShadowOklchSm,
+  md: tokens.ShadowOklchMd,
+  lg: tokens.ShadowOklchLg,
+  xl: tokens.ShadowOklchXl,
+  '2xl': tokens.ShadowOklch2xl,
+  'xs-light': tokens.ShadowOklchXsLight,
+  'sm-light': tokens.ShadowOklchSmLight,
+  'md-light': tokens.ShadowOklchMdLight,
+  'lg-light': tokens.ShadowOklchLgLight,
+  'xl-light': tokens.ShadowOklchXlLight,
+  '2xl-light': tokens.ShadowOklch2xlLight,
 } as const;
 
 export const zIndex = {
-  hide: '-1',
-  base: '0',
-  dropdown: '1000',
-  sticky: '1100',
-  fixed: '1200',
-  modalBackdrop: '1300',
-  modal: '1400',
-  popover: '1500',
-  skipLink: '1600',
-  toast: '1700',
-  tooltip: '1800',
+  hide: String(tokens.ZIndexHide),
+  base: String(tokens.ZIndexBase),
+  dropdown: String(tokens.ZIndexDropdown),
+  sticky: String(tokens.ZIndexSticky),
+  fixed: String(tokens.ZIndexFixed),
+  modalBackdrop: String(tokens.ZIndexModalBackdrop),
+  modal: String(tokens.ZIndexModal),
+  popover: String(tokens.ZIndexPopover),
+  skipLink: String(tokens.ZIndexSkipLink),
+  toast: String(tokens.ZIndexToast),
+  tooltip: String(tokens.ZIndexTooltip),
 } as const;

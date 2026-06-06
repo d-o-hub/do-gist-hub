@@ -1,27 +1,19 @@
 /**
  * Responsive Breakpoint Tokens
  * 7 breakpoints from mobile-first design
- *
- * Boundaries follow the rule "content pressure, then change":
- *   320  phone-small       — iPhone SE, narrowest target
- *   390  phone             — modern iPhone baseline
- *   480  phone-large       — large phones, last narrow column layout
- *   640  tablet-small      — small tablets, phone landscape
- *   768  tablet-portrait   — iPad portrait, nav rail starts
- *   1024 tablet-landscape  — iPad landscape, sidebar starts
- *   1280 desktop           — laptop, three-column gist grid
- *   1536 desktop-wide      — ultrawide, max container width
  */
 
+import * as tokens from '../generated/tokens';
+
 export const breakpoints = {
-  'phone-small': '320px',
-  phone: '390px',
-  'phone-large': '480px',
-  'tablet-small': '640px',
-  'tablet-portrait': '768px',
-  'tablet-landscape': '1024px',
-  desktop: '1280px',
-  'desktop-wide': '1536px',
+  'phone-small': tokens.BreakpointPhoneSmall,
+  phone: tokens.BreakpointPhone,
+  'phone-large': tokens.BreakpointPhoneLarge,
+  'tablet-small': tokens.BreakpointTabletSmall,
+  'tablet-portrait': tokens.BreakpointTabletPortrait,
+  'tablet-landscape': tokens.BreakpointTabletLandscape,
+  desktop: tokens.BreakpointDesktop,
+  'desktop-wide': tokens.BreakpointDesktopWide,
 } as const;
 
 /**
@@ -41,24 +33,18 @@ export const breakpointPx = {
 
 /**
  * Pre-baked `min-width` / `max-width` media query strings.
- *
- * Use these to avoid stringly-typed media queries in CSS files.
- * Both directions are exposed so narrow-viewport stacks (e.g. ≤480px)
- * and wide-viewport expansions (e.g. ≥768px) stay consistent.
  */
 export const mediaQueries = {
-  phoneSmall: '(min-width: 320px)',
-  phone: '(min-width: 390px)',
-  phoneLarge: '(min-width: 480px)',
-  tabletSmall: '(min-width: 640px)',
-  tabletPortrait: '(min-width: 768px)',
-  tabletLandscape: '(min-width: 1024px)',
-  desktop: '(min-width: 1280px)',
-  desktopWide: '(min-width: 1536px)',
+  phoneSmall: `(min-width: ${tokens.BreakpointPhoneSmall})`,
+  phone: `(min-width: ${tokens.BreakpointPhone})`,
+  phoneLarge: `(min-width: ${tokens.BreakpointPhoneLarge})`,
+  tabletSmall: `(min-width: ${tokens.BreakpointTabletSmall})`,
+  tabletPortrait: `(min-width: ${tokens.BreakpointTabletPortrait})`,
+  tabletLandscape: `(min-width: ${tokens.BreakpointTabletLandscape})`,
+  desktop: `(min-width: ${tokens.BreakpointDesktop})`,
+  desktopWide: `(min-width: ${tokens.BreakpointDesktopWide})`,
 
   // Max-width queries for narrow-viewport stacks.
-  // These use the "boundary - 0.02px" trick to avoid overlap with
-  // the matching min-width query at the same breakpoint.
   upToPhone: '(max-width: 389.98px)',
   upToPhoneLarge: '(max-width: 479.98px)',
   upToTablet: '(max-width: 767.98px)',
@@ -77,12 +63,12 @@ export const mediaQueries = {
  * Responsive Container Widths
  */
 export const containerWidths = {
-  'phone-small': '100%',
-  phone: '100%',
-  'phone-large': '100%',
-  'tablet-small': '600px',
-  'tablet-portrait': '720px',
-  'tablet-landscape': '960px',
-  desktop: '1200px',
-  'desktop-wide': '1440px',
+  'phone-small': tokens.ContainerWidthPhoneSmall,
+  phone: tokens.ContainerWidthPhone,
+  'phone-large': tokens.ContainerWidthPhoneLarge,
+  'tablet-small': tokens.ContainerWidthTabletSmall,
+  'tablet-portrait': tokens.ContainerWidthTabletPortrait,
+  'tablet-landscape': tokens.ContainerWidthTabletLandscape,
+  desktop: tokens.ContainerWidthDesktop,
+  'desktop-wide': tokens.ContainerWidthDesktopWide,
 } as const;

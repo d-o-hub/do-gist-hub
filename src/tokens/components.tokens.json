@@ -1,0 +1,67 @@
+{
+  "button": {
+    "padding": {
+      "sm": { "$type": "string", "$value": "{spacing.v2} {spacing.v3}" },
+      "md": { "$type": "string", "$value": "{spacing.v3} {spacing.v4}" },
+      "lg": { "$type": "string", "$value": "{spacing.v4} {spacing.v6}" }
+    },
+    "fontSize": {
+      "sm": { "$type": "dimension", "$value": "{fontSize.sm}" },
+      "md": { "$type": "dimension", "$value": "{fontSize.base}" },
+      "lg": { "$type": "dimension", "$value": "{fontSize.lg}" }
+    },
+    "fontWeight": { "$type": "fontWeight", "$value": "{fontWeight.medium}" },
+    "borderRadius": { "$type": "dimension", "$value": "{radius.md}" },
+    "minHeight": {
+      "sm": { "$type": "dimension", "$value": "36px" },
+      "md": { "$type": "dimension", "$value": "44px" },
+      "lg": { "$type": "dimension", "$value": "48px" }
+    }
+  },
+  "nav": {
+    "bottom": {
+      "height": { "$type": "dimension", "$value": "64px" },
+      "heightLarge": { "$type": "dimension", "$value": "72px" },
+      "padding": { "$type": "dimension", "$value": "0.5rem" },
+      "paddingLarge": { "$type": "dimension", "$value": "0.75rem" }
+    },
+    "rail": {
+      "width": { "$type": "dimension", "$value": "72px" },
+      "padding": { "$type": "string", "$value": "1rem 0.5rem" },
+      "gap": { "$type": "dimension", "$value": "0.5rem" },
+      "itemPadding": { "$type": "string", "$value": "0.5rem 0.25rem" }
+    },
+    "sidebar": {
+      "width": { "$type": "dimension", "$value": "240px" },
+      "widthLarge": { "$type": "dimension", "$value": "260px" },
+      "widthWide": { "$type": "dimension", "$value": "280px" },
+      "padding": { "$type": "dimension", "$value": "1.5rem" },
+      "paddingLarge": { "$type": "string", "$value": "1.5rem 2rem" }
+    },
+    "header": {
+      "actionsGap": { "$type": "dimension", "$value": "0.5rem" },
+      "actionsGapNarrow": { "$type": "dimension", "$value": "0.25rem" },
+      "syncIndicatorSize": { "$type": "dimension", "$value": "32px" },
+      "padding": { "$type": "string", "$value": "0.75rem 1rem" },
+      "paddingNarrow": { "$type": "string", "$value": "0.5rem 0.75rem" }
+    }
+  },
+  "ui": {
+    "backdrop": {
+      "background": { "$type": "color", "$value": "rgba(0, 0, 0, 0.5)" },
+      "blur": { "$type": "dimension", "$value": "8px" }
+    },
+    "glass": {
+      "background": { "$type": "color", "$value": "rgba(255, 255, 255, 0.05)" },
+      "border": { "$type": "color", "$value": "rgba(255, 255, 255, 0.1)" },
+      "blur": { "$type": "dimension", "$value": "12px" }
+    }
+  },
+  "gistCard": {
+    "background": { "$type": "color", "$value": "var(--color-background-primary)" },
+    "borderRadius": { "$type": "dimension", "$value": "{radius.lg}" },
+    "padding": { "$type": "dimension", "$value": "{spacing.v4}" },
+    "shadow": { "$type": "shadow", "$value": "{shadow.sm}" },
+    "shadowHover": { "$type": "shadow", "$value": "{shadow.md}" }
+  }
+}

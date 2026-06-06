@@ -1,0 +1,158 @@
+{
+  "semantic": {
+    "light": {
+      "background": {
+        "primary": { "$type": "color", "$value": "{color.zinc.50}" },
+        "secondary": { "$type": "color", "$value": "{color.gray.100}" },
+        "tertiary": { "$type": "color", "$value": "{color.gray.200}" },
+        "elevated": { "$type": "color", "$value": "{color.white}" }
+      },
+      "foreground": {
+        "primary": { "$type": "color", "$value": "#0F172A" },
+        "secondary": { "$type": "color", "$value": "#475569" },
+        "muted": { "$type": "color", "$value": "#64748B" },
+        "inverse": { "$type": "color", "$value": "{color.white}" }
+      },
+      "accent": {
+        "primary": { "$type": "color", "$value": "{color.blue.600}" },
+        "hover": { "$type": "color", "$value": "{color.blue.700}" },
+        "active": { "$type": "color", "$value": "{color.blue.800}" },
+        "subtle": { "$type": "color", "$value": "rgba(37, 99, 235, 0.08)" },
+        "glow": { "$type": "color", "$value": "rgba(37, 99, 235, 0.25)" }
+      },
+      "border": {
+        "default": { "$type": "color", "$value": "#E2E8F0" },
+        "emphasis": { "$type": "color", "$value": "#CBD5E1" },
+        "strong": { "$type": "color", "$value": "#94A3B8" },
+        "hover": { "$type": "color", "$value": "rgba(0, 0, 0, 0.15)" }
+      },
+      "status": {
+        "success": {
+          "bg": { "$type": "color", "$value": "{color.green.50}" },
+          "fg": { "$type": "color", "$value": "{color.green.700}" },
+          "border": { "$type": "color", "$value": "{color.green.300}" },
+          "subtle": { "$type": "color", "$value": "rgba(22, 163, 74, 0.1)" }
+        },
+        "error": {
+          "bg": { "$type": "color", "$value": "{color.red.50}" },
+          "fg": { "$type": "color", "$value": "{color.red.700}" },
+          "border": { "$type": "color", "$value": "{color.red.300}" },
+          "subtle": { "$type": "color", "$value": "rgba(220, 38, 38, 0.1)" }
+        },
+        "warning": {
+          "bg": { "$type": "color", "$value": "{color.yellow.50}" },
+          "fg": { "$type": "color", "$value": "#B45309" },
+          "border": { "$type": "color", "$value": "{color.yellow.300}" }
+        },
+        "info": {
+          "bg": { "$type": "color", "$value": "{color.blue.50}" },
+          "fg": { "$type": "color", "$value": "{color.blue.600}" },
+          "border": { "$type": "color", "$value": "{color.blue.300}" }
+        }
+      },
+      "interactive": {
+        "hover": { "$type": "color", "$value": "#F1F5F9" },
+        "active": { "$type": "color", "$value": "#E2E8F0" },
+        "focus": { "$type": "color", "$value": "rgba(37, 99, 235, 0.15)" }
+      },
+      "overlay": {
+        "surface": { "$type": "color", "$value": "rgba(0, 0, 0, 0.15)" },
+        "surfaceMedium": { "$type": "color", "$value": "rgba(0, 0, 0, 0.1)" },
+        "surfaceHeavy": { "$type": "color", "$value": "rgba(0, 0, 0, 0.25)" },
+        "surfaceLight": { "$type": "color", "$value": "rgba(0, 0, 0, 0.06)" },
+        "backdropMedium": { "$type": "color", "$value": "rgba(0, 0, 0, 0.3)" },
+        "backdropHeavy": { "$type": "color", "$value": "rgba(0, 0, 0, 0.35)" }
+      },
+      "skeleton": {
+        "shimmerStart": { "$type": "color", "$value": "rgba(0, 0, 0, 0.04)" },
+        "shimmerMid": { "$type": "color", "$value": "rgba(0, 0, 0, 0.08)" }
+      },
+      "nav": {
+        "bg": { "$type": "color", "$value": "rgba(245, 245, 247, 0.95)" }
+      },
+      "header": {
+        "bg": { "$type": "color", "$value": "rgba(255, 255, 255, 0.85)" }
+      },
+      "modal": {
+        "bg": { "$type": "color", "$value": "rgba(245, 245, 247, 0.95)" }
+      }
+    },
+    "dark": {
+      "background": {
+        "primary": { "$type": "color", "$value": "{color.gray.950}" },
+        "secondary": { "$type": "color", "$value": "#0A0F1A" },
+        "tertiary": { "$type": "color", "$value": "{color.gray.900}" },
+        "elevated": { "$type": "color", "$value": "#1A2332" }
+      },
+      "foreground": {
+        "primary": { "$type": "color", "$value": "#F8FAFC" },
+        "secondary": { "$type": "color", "$value": "#CBD5E1" },
+        "muted": { "$type": "color", "$value": "#64748B" },
+        "inverse": { "$type": "color", "$value": "{color.gray.950}" }
+      },
+      "accent": {
+        "primary": { "$type": "color", "$value": "{color.blue.400}" },
+        "hover": { "$type": "color", "$value": "{color.blue.300}" },
+        "active": { "$type": "color", "$value": "{color.blue.200}" },
+        "subtle": { "$type": "color", "$value": "rgba(96, 165, 250, 0.10)" },
+        "glow": { "$type": "color", "$value": "rgba(96, 165, 250, 0.35)" }
+      },
+      "border": {
+        "default": { "$type": "color", "$value": "#1E293B" },
+        "emphasis": { "$type": "color", "$value": "#334155" },
+        "strong": { "$type": "color", "$value": "#475569" },
+        "hover": { "$type": "color", "$value": "rgba(255, 255, 255, 0.15)" }
+      },
+      "status": {
+        "success": {
+          "bg": { "$type": "color", "$value": "rgba(34, 197, 94, 0.10)" },
+          "fg": { "$type": "color", "$value": "{color.green.400}" },
+          "border": { "$type": "color", "$value": "{color.green.500}" },
+          "subtle": { "$type": "color", "$value": "rgba(74, 222, 128, 0.12)" }
+        },
+        "error": {
+          "bg": { "$type": "color", "$value": "rgba(239, 68, 68, 0.10)" },
+          "fg": { "$type": "color", "$value": "{color.red.400}" },
+          "border": { "$type": "color", "$value": "{color.red.500}" },
+          "subtle": { "$type": "color", "$value": "rgba(248, 113, 113, 0.15)" }
+        },
+        "warning": {
+          "bg": { "$type": "color", "$value": "rgba(234, 179, 8, 0.10)" },
+          "fg": { "$type": "color", "$value": "{color.yellow.400}" },
+          "border": { "$type": "color", "$value": "{color.yellow.500}" }
+        },
+        "info": {
+          "bg": { "$type": "color", "$value": "rgba(59, 130, 246, 0.10)" },
+          "fg": { "$type": "color", "$value": "{color.blue.400}" },
+          "border": { "$type": "color", "$value": "{color.blue.500}" }
+        }
+      },
+      "interactive": {
+        "hover": { "$type": "color", "$value": "rgba(255, 255, 255, 0.05)" },
+        "active": { "$type": "color", "$value": "rgba(255, 255, 255, 0.08)" },
+        "focus": { "$type": "color", "$value": "rgba(96, 165, 250, 0.25)" }
+      },
+      "overlay": {
+        "surface": { "$type": "color", "$value": "rgba(0, 0, 0, 0.4)" },
+        "surfaceMedium": { "$type": "color", "$value": "rgba(0, 0, 0, 0.3)" },
+        "surfaceHeavy": { "$type": "color", "$value": "rgba(0, 0, 0, 0.6)" },
+        "surfaceLight": { "$type": "color", "$value": "rgba(0, 0, 0, 0.2)" },
+        "backdropMedium": { "$type": "color", "$value": "rgba(0, 0, 0, 0.7)" },
+        "backdropHeavy": { "$type": "color", "$value": "rgba(0, 0, 0, 0.75)" }
+      },
+      "skeleton": {
+        "shimmerStart": { "$type": "color", "$value": "rgba(255, 255, 255, 0.04)" },
+        "shimmerMid": { "$type": "color", "$value": "rgba(255, 255, 255, 0.08)" }
+      },
+      "nav": {
+        "bg": { "$type": "color", "$value": "rgba(5, 5, 5, 0.95)" }
+      },
+      "header": {
+        "bg": { "$type": "color", "$value": "rgba(5, 5, 5, 0.85)" }
+      },
+      "modal": {
+        "bg": { "$type": "color", "$value": "rgba(15, 15, 15, 0.95)" }
+      }
+    }
+  }
+}

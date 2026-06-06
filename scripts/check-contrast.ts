@@ -13,16 +13,27 @@
 
 import { colorSemantic } from '../src/tokens/semantic/color-semantic';
 
-function hexToRgb(hex: string): [number, number, number] | null {
+function hexToRgba(hex: string): [number, number, number, number] | null {
   const clean = hex.replace('#', '');
-  if (!/^[0-9a-fA-F]{6}$/.test(clean)) {
-    return null;
+  if (clean.length === 6) {
+    if (!/^[0-9a-fA-F]{6}$/.test(clean)) return null;
+    return [
+      Number.parseInt(clean.slice(0, 2), 16),
+      Number.parseInt(clean.slice(2, 4), 16),
+      Number.parseInt(clean.slice(4, 6), 16),
+      1,
+    ];
   }
-  return [
-    Number.parseInt(clean.slice(0, 2), 16),
-    Number.parseInt(clean.slice(2, 4), 16),
-    Number.parseInt(clean.slice(4, 6), 16),
-  ];
+  if (clean.length === 8) {
+    if (!/^[0-9a-fA-F]{8}$/.test(clean)) return null;
+    return [
+      Number.parseInt(clean.slice(0, 2), 16),
+      Number.parseInt(clean.slice(2, 4), 16),
+      Number.parseInt(clean.slice(4, 6), 16),
+      Number.parseInt(clean.slice(6, 8), 16) / 255,
+    ];
+  }
+  return null;
 }
 
 function srgbChannel(c: number): number {
@@ -35,11 +46,12 @@ function relativeLuminance(r: number, g: number, b: number): number {
 }
 
 function relativeLuminanceHex(hex: string): number | null {
-  const rgb = hexToRgb(hex);
-  if (!rgb) {
+  const rgba = hexToRgba(hex);
+  if (!rgba) {
     return null;
   }
-  return relativeLuminance(...rgb);
+  // relativeLuminance expects [r, g, b]
+  return relativeLuminance(rgba[0], rgba[1], rgba[2]);
 }
 
 function contrastRatio(fg: string, bg: string): number | null {
@@ -54,18 +66,23 @@ function contrastRatio(fg: string, bg: string): number | null {
 }
 
 /**
- * Blend a semi-transparent rgba foreground with a solid background.
+ * Blend a semi-transparent foreground with a solid background.
  * Returns the resulting solid color as if rendered on that background.
  */
-function blendRgbaOnHex(rgba: string, bgHex: string): string | null {
-  const rgbaMatch = rgba.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
-  if (!rgbaMatch) {
-    return null;
+function blendRgbaOnHex(fgColor: string, bgHex: string): string | null {
+  let rFg: number, gFg: number, bFg: number, a: number;
+
+  const rgbaMatch = fgColor.match(/rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)/);
+  if (rgbaMatch) {
+    rFg = Number.parseInt(rgbaMatch[1], 10);
+    gFg = Number.parseInt(rgbaMatch[2], 10);
+    bFg = Number.parseInt(rgbaMatch[3], 10);
+    a = Number.parseFloat(rgbaMatch[4]);
+  } else {
+    const rgba = hexToRgba(fgColor);
+    if (!rgba) return null;
+    [rFg, gFg, bFg, a] = rgba;
   }
-  const rFg = Number.parseInt(rgbaMatch[1], 10);
-  const gFg = Number.parseInt(rgbaMatch[2], 10);
-  const bFg = Number.parseInt(rgbaMatch[3], 10);
-  const a = Number.parseFloat(rgbaMatch[4]);
 
   if (
     !Number.isInteger(rFg) || rFg < 0 || rFg > 255 ||
@@ -76,14 +93,14 @@ function blendRgbaOnHex(rgba: string, bgHex: string): string | null {
     return null;
   }
 
-  const bgRgb = hexToRgb(bgHex);
-  if (!bgRgb) {
+  const bgRgba = hexToRgba(bgHex);
+  if (!bgRgba) {
     return null;
   }
 
-  const r = Math.round(rFg * a + bgRgb[0] * (1 - a));
-  const g = Math.round(gFg * a + bgRgb[1] * (1 - a));
-  const b = Math.round(bFg * a + bgRgb[2] * (1 - a));
+  const r = Math.round(rFg * a + bgRgba[0] * (1 - a));
+  const g = Math.round(gFg * a + bgRgba[1] * (1 - a));
+  const b = Math.round(bFg * a + bgRgba[2] * (1 - a));
 
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }

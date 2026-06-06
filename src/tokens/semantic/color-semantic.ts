@@ -1,83 +1,116 @@
 /**
  * Semantic Color Tokens
- * Colors mapped to UI roles for light and dark themes
+ * Colors mapped to UI roles for light and theme
  * Modernized 2026: Deep dark surfaces, subtle glow accents, refined light mode
  */
+
+import * as tokens from '../generated/tokens';
 
 export const colorSemantic = {
   light: {
     background: {
-      primary: '#FAFAFA',
-      secondary: '#F3F4F6',
-      tertiary: '#E5E7EB',
-      elevated: '#FFFFFF',
+      primary: tokens.SemanticLightBackgroundPrimary,
+      secondary: tokens.SemanticLightBackgroundSecondary,
+      tertiary: tokens.SemanticLightBackgroundTertiary,
+      elevated: tokens.SemanticLightBackgroundElevated,
     },
     foreground: {
-      primary: '#0F172A',
-      secondary: '#475569',
-      muted: '#64748B',
-      inverse: '#FFFFFF',
+      primary: tokens.SemanticLightForegroundPrimary,
+      secondary: tokens.SemanticLightForegroundSecondary,
+      muted: tokens.SemanticLightForegroundMuted,
+      inverse: tokens.SemanticLightForegroundInverse,
     },
     accent: {
-      primary: '#2563EB',
-      hover: '#1D4ED8',
-      active: '#1E40AF',
-      subtle: 'rgba(37, 99, 235, 0.08)',
-      glow: 'rgba(37, 99, 235, 0.25)',
+      primary: tokens.SemanticLightAccentPrimary,
+      hover: tokens.SemanticLightAccentHover,
+      active: tokens.SemanticLightAccentActive,
+      subtle: tokens.SemanticLightAccentSubtle,
+      glow: tokens.SemanticLightAccentGlow,
     },
     border: {
-      default: '#E2E8F0',
-      emphasis: '#CBD5E1',
-      strong: '#94A3B8',
+      default: tokens.SemanticLightBorderDefault,
+      emphasis: tokens.SemanticLightBorderEmphasis,
+      strong: tokens.SemanticLightBorderStrong,
     },
     status: {
-      success: { bg: '#F0FDF4', fg: '#15803D', border: '#86EFAC' },
-      error: { bg: '#FEF2F2', fg: '#B91C1C', border: '#FCA5A5' },
-      warning: { bg: '#FFFBEB', fg: '#B45309', border: '#FDE047' },
-      info: { bg: '#EFF6FF', fg: '#2563EB', border: '#93C5FD' },
+      success: {
+        bg: tokens.SemanticLightStatusSuccessBg,
+        fg: tokens.SemanticLightStatusSuccessFg,
+        border: tokens.SemanticLightStatusSuccessBorder,
+      },
+      error: {
+        bg: tokens.SemanticLightStatusErrorBg,
+        fg: tokens.SemanticLightStatusErrorFg,
+        border: tokens.SemanticLightStatusErrorBorder,
+      },
+      warning: {
+        bg: tokens.SemanticLightStatusWarningBg,
+        fg: tokens.SemanticLightStatusWarningFg,
+        border: tokens.SemanticLightStatusWarningBorder,
+      },
+      info: {
+        bg: tokens.SemanticLightStatusInfoBg,
+        fg: tokens.SemanticLightStatusInfoFg,
+        border: tokens.SemanticLightStatusInfoBorder,
+      },
     },
     interactive: {
-      hover: '#F1F5F9',
-      active: '#E2E8F0',
-      focus: 'rgba(37, 99, 235, 0.15)',
+      hover: tokens.SemanticLightInteractiveHover,
+      active: tokens.SemanticLightInteractiveActive,
+      focus: tokens.SemanticLightInteractiveFocus,
     },
   },
   dark: {
     background: {
-      primary: '#030712', // near-black base
-      secondary: '#0A0F1A', // slightly elevated surface
-      tertiary: '#111827', // card surfaces
-      elevated: '#1A2332', // modals, overlays
+      primary: tokens.SemanticDarkBackgroundPrimary,
+      secondary: tokens.SemanticDarkBackgroundSecondary,
+      tertiary: tokens.SemanticDarkBackgroundTertiary,
+      elevated: tokens.SemanticDarkBackgroundElevated,
     },
     foreground: {
-      primary: '#F8FAFC', // near-white text
-      secondary: '#CBD5E1', // secondary text
-      muted: '#64748B', // muted/disabled
-      inverse: '#030712', // dark text on light
+      primary: tokens.SemanticDarkForegroundPrimary,
+      secondary: tokens.SemanticDarkForegroundSecondary,
+      muted: tokens.SemanticDarkForegroundMuted,
+      inverse: tokens.SemanticDarkForegroundInverse,
     },
     accent: {
-      // Modern blue with subtle glow effect
-      primary: '#60A5FA', // bright blue for dark mode
-      hover: '#93C5FD', // lighter on hover
-      active: '#BFDBFE', // active state
-      subtle: 'rgba(96, 165, 250, 0.10)', // translucent background
-      glow: 'rgba(96, 165, 250, 0.35)', // glow effect
+      primary: tokens.SemanticDarkAccentPrimary,
+      hover: tokens.SemanticDarkAccentHover,
+      active: tokens.SemanticDarkAccentActive,
+      subtle: tokens.SemanticDarkAccentSubtle,
+      glow: tokens.SemanticDarkAccentGlow,
     },
     border: {
-      default: '#1E293B', // subtle borders
-      emphasis: '#334155', // emphasized borders
-      strong: '#475569', // strong borders
+      default: tokens.SemanticDarkBorderDefault,
+      emphasis: tokens.SemanticDarkBorderEmphasis,
+      strong: tokens.SemanticDarkBorderStrong,
     },
     status: {
-      success: { bg: 'rgba(34, 197, 94, 0.10)', fg: '#4ADE80', border: '#22C55E' },
-      error: { bg: 'rgba(239, 68, 68, 0.10)', fg: '#F87171', border: '#EF4444' },
-      warning: { bg: 'rgba(234, 179, 8, 0.10)', fg: '#FACC15', border: '#EAB308' },
-      info: { bg: 'rgba(59, 130, 246, 0.10)', fg: '#60A5FA', border: '#3B82F6' },
+      success: {
+        bg: tokens.SemanticDarkStatusSuccessBg,
+        fg: tokens.SemanticDarkStatusSuccessFg,
+        border: tokens.SemanticDarkStatusSuccessBorder,
+      },
+      error: {
+        bg: tokens.SemanticDarkStatusErrorBg,
+        fg: tokens.SemanticDarkStatusErrorFg,
+        border: tokens.SemanticDarkStatusErrorBorder,
+      },
+      warning: {
+        bg: tokens.SemanticDarkStatusWarningBg,
+        fg: tokens.SemanticDarkStatusWarningFg,
+        border: tokens.SemanticDarkStatusWarningBorder,
+      },
+      info: {
+        bg: tokens.SemanticDarkStatusInfoBg,
+        fg: tokens.SemanticDarkStatusInfoFg,
+        border: tokens.SemanticDarkStatusInfoBorder,
+      },
     },
     interactive: {
-      hover: 'rgba(255, 255, 255, 0.05)',
-      active: 'rgba(255, 255, 255, 0.08)',
-      focus: 'rgba(96, 165, 250, 0.25)',
+      hover: tokens.SemanticDarkInteractiveHover,
+      active: tokens.SemanticDarkInteractiveActive,
+      focus: tokens.SemanticDarkInteractiveFocus,
     },
   },
 } as const;

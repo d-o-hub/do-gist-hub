@@ -3,41 +3,43 @@
  * Raw spacing values without semantic meaning
  */
 
+import * as tokens from '../generated/tokens';
+
 export const spacing = {
-  0: '0',
-  0.5: '0.125rem', // 2px
-  1: '0.25rem', // 4px
-  1.5: '0.375rem', // 6px
-  2: '0.5rem', // 8px
-  2.5: '0.625rem', // 10px
-  3: '0.75rem', // 12px
-  4: '1rem', // 16px
-  5: '1.25rem', // 20px
-  6: '1.5rem', // 24px
-  7: '1.75rem', // 28px
-  8: '2rem', // 32px
-  9: '2.25rem', // 36px
-  10: '2.5rem', // 40px
-  11: '2.75rem', // 44px
-  12: '3rem', // 48px
-  14: '3.5rem', // 56px
-  15: '3.75rem', // 60px
-  16: '4rem', // 64px
-  20: '5rem', // 80px
-  24: '6rem', // 96px
-  28: '7rem', // 112px
-  32: '8rem', // 128px
-  36: '9rem', // 144px
-  40: '10rem', // 160px
-  44: '11rem', // 176px
-  48: '12rem', // 192px
-  50: '12.5rem', // 200px
-  52: '13rem', // 208px
-  56: '14rem', // 224px
-  60: '15rem', // 240px
-  64: '16rem', // 256px
-  72: '18rem', // 288px
-  80: '20rem', // 320px
-  96: '24rem', // 384px
-  100: '25rem', // 400px
+  0: tokens.SpacingV0,
+  0.5: tokens.SpacingV05,
+  1: tokens.SpacingV1,
+  1.5: tokens.SpacingV15,
+  2: tokens.SpacingV2,
+  2.5: tokens.SpacingV25,
+  3: tokens.SpacingV3,
+  4: tokens.SpacingV4,
+  5: tokens.SpacingV5,
+  6: tokens.SpacingV6,
+  7: tokens.SpacingV7,
+  8: tokens.SpacingV8,
+  9: tokens.SpacingV9,
+  10: tokens.SpacingV10,
+  11: tokens.SpacingV11,
+  12: tokens.SpacingV12,
+  14: tokens.SpacingV14,
+  15: tokens.SpacingV15Large,
+  16: tokens.SpacingV16,
+  20: tokens.SpacingV20,
+  24: tokens.SpacingV24,
+  28: tokens.SpacingV28,
+  32: tokens.SpacingV32,
+  36: tokens.SpacingV36,
+  40: tokens.SpacingV40,
+  44: tokens.SpacingV44,
+  48: tokens.SpacingV48,
+  50: tokens.SpacingV50,
+  52: tokens.SpacingV52,
+  56: tokens.SpacingV56,
+  60: tokens.SpacingV60,
+  64: tokens.SpacingV64,
+  72: tokens.SpacingV72,
+  80: tokens.SpacingV80,
+  96: tokens.SpacingV96,
+  100: tokens.SpacingV100,
 } as const;
