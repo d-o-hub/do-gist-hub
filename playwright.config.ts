@@ -118,11 +118,26 @@ export default defineConfig({
       testDir: './tests/accessibility',
     },
 
-    // Visual regression
+    // --- Screenshots (offline-first visual baseline) ---
+    {
+      name: 'screenshots',
+      testDir: './tests/visual',
+      testMatch: /.*\.screenshots\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], screenshot: 'on' },
+    },
+
+    // --- Visual regression ---
     {
       name: 'visual',
-      use: { ...devices['Desktop Chrome'] },
       testDir: './tests/visual',
+      testMatch: /.*\.visual\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 800 },
+        screenshot: 'on',
+        trace: 'off',
+      },
+      snapshotPathTemplate: '{testDir}/__snapshots__/{testFilePath}/{arg}{ext}',
     },
   ],
 

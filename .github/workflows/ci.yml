@@ -154,19 +154,19 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --stacktrace
+          ./gradlew assembleFdroid --stacktrace
       - name: Verify F-Droid APK exists
         if: steps.filter.outputs.fdroid == 'true'
         run: |
-          # No keystore is configured in CI, so assembleRelease produces an unsigned APK.
-          APK=android/app/build/outputs/apk/release/app-release-unsigned.apk
+          # The fdroid build type produces an unsigned APK for F-Droid signing.
+          APK=android/app/build/outputs/apk/fdroid/app-fdroid-unsigned.apk
           ls -la "$APK"
           file "$APK"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # pinned from v7
         if: always() && steps.filter.outputs.fdroid == 'true'
         with:
           name: app-fdroid-unsigned-apk
-          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+          path: android/app/build/outputs/apk/fdroid/app-fdroid-unsigned.apk
           retention-days: 7
 
   bundle-budget:
@@ -279,7 +279,7 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
       - name: Run Visual Tests
-        run: pnpm run test:visual
+        run: pnpm run test:e2e:visual
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # pinned from v7
         if: always()
         with:
