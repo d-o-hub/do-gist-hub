@@ -34,8 +34,8 @@
 }
 
 .stat-card .stat-icon {
-  width: var(--spacing-12);
-  height: var(--spacing-12);
+  width: var(--spacing-v12);
+  height: var(--spacing-v12);
   border-radius: var(--radius-lg);
   background: var(--color-status-success-subtle);
   display: flex;
@@ -85,7 +85,7 @@
 }
 
 .confirm-dialog {
-  max-width: var(--spacing-80);
+  max-width: var(--spacing-v80);
   width: 100%;
   padding: var(--space-8);
   display: flex;
