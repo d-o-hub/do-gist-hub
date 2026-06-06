@@ -497,6 +497,14 @@ body {
   }
 }
 
+.gist-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-divider);
+}
+
 @container gist-card (min-width: 600px) {
   .gist-card-actions {
     flex-direction: row;
@@ -594,14 +602,6 @@ body {
   max-height: var(--spacing-20);
   -webkit-mask-image: linear-gradient(to bottom, var(--color-black) 60%, transparent 100%);
   mask-image: linear-gradient(to bottom, var(--color-black) 60%, transparent 100%);
-}
-
-.gist-card-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--color-divider);
 }
 
 .gist-action-btn {
