@@ -93,7 +93,7 @@
 }
 
 .command-palette-results {
-  max-height: var(--spacing-100);
+  max-height: var(--spacing-v100);
   overflow-y: auto;
   padding: var(--space-2);
 }
@@ -119,8 +119,8 @@
 
 .command-icon {
   font-size: var(--text-lg);
-  width: var(--spacing-8);
-  height: var(--spacing-8);
+  width: var(--spacing-v8);
+  height: var(--spacing-v8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -166,7 +166,7 @@
 .command-palette-footer kbd {
   background: var(--color-surface-elevated);
   color: var(--color-text-muted);
-  padding: 0 var(--spacing-1);
+  padding: 0 var(--spacing-v1);
   border-radius: var(--radius-base);
   font-family: var(--font-mono);
 }

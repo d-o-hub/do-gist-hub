@@ -5,8 +5,8 @@
 
 /* ===== Focus Indicators ===== */
 :focus-visible {
-  outline: var(--spacing-0-5) solid var(--color-accent);
-  outline-offset: var(--spacing-0-5);
+  outline: var(--spacing-v05) solid var(--color-accent);
+  outline-offset: var(--spacing-v05);
   border-radius: var(--radius-sm);
 }
 
@@ -22,9 +22,9 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
 [tabindex]:focus-visible {
-  outline: var(--spacing-0-5) solid var(--color-accent);
-  outline-offset: var(--spacing-0-5);
-  box-shadow: 0 0 0 var(--spacing-1) var(--color-accent-subtle);
+  outline: var(--spacing-v05) solid var(--color-accent);
+  outline-offset: var(--spacing-v05);
+  box-shadow: 0 0 0 var(--spacing-v1) var(--color-accent-subtle);
   transition:
     outline-offset var(--motion-duration-fast) var(--motion-easing-smooth),
     box-shadow var(--motion-duration-fast) var(--motion-easing-smooth);
@@ -33,7 +33,7 @@ select:focus-visible,
 /* ===== Skip Links ===== */
 .skip-link {
   position: absolute;
-  top: calc(var(--spacing-10) * -1);
+  top: calc(var(--spacing-v10) * -1);
   left: 0;
   background: var(--color-accent);
   color: var(--color-foreground-inverse);
@@ -79,8 +79,8 @@ select:focus-visible,
   }
 
   :focus-visible {
-    outline-width: calc(var(--spacing-1) * 0.75);
-    outline-offset: calc(var(--spacing-1) * 0.75);
+    outline-width: calc(var(--spacing-v1) * 0.75);
+    outline-offset: calc(var(--spacing-v1) * 0.75);
   }
 }
 
@@ -99,8 +99,8 @@ select:focus-visible,
   }
 
   :focus-visible {
-    outline: calc(var(--spacing-1) * 0.75) solid Highlight;
-    outline-offset: var(--spacing-0-5);
+    outline: calc(var(--spacing-v1) * 0.75) solid Highlight;
+    outline-offset: var(--spacing-v05);
   }
 
   .gist-card {
@@ -131,7 +131,7 @@ select:focus-visible,
   .nav-item,
   .chip,
   a {
-    min-height: var(--spacing-11);
-    min-width: var(--spacing-11);
+    min-height: var(--spacing-v11);
+    min-width: var(--spacing-v11);
   }
 }
