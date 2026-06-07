@@ -66,12 +66,11 @@ const swSelf = self as unknown as ServiceWorkerGlobalScope;
  */
 swSelf.addEventListener('install', (event: ExtendableEvent) => {
   event.waitUntil(
-    caches
-      .open(STATIC_CACHE)
-      .then((cache) => {
-        return cache.addAll(PRECACHE_ASSETS);
-      })
-      .then(() => swSelf.skipWaiting())
+    caches.open(STATIC_CACHE).then((cache) => {
+      return cache.addAll(PRECACHE_ASSETS);
+    })
+    // Don't skipWaiting here — let the client control activation
+    // via the SKIP_WAITING message (sent when user clicks "Refresh")
   );
 });
 
