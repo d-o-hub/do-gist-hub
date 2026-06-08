@@ -1,9 +1,13 @@
 import { toast } from '../../components/ui/toast';
 import { safeError, safeLog, safeWarn } from '../security/logger';
+
 /**
  * Service Worker Registration
  * Registers the PWA service worker and handles updates
  */
+
+let controllerchangeListenerAttached = false;
+let updateToastShown = false;
 
 /**
  * Register the service worker
@@ -18,19 +22,30 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     // Use relative path — resolves relative to page URL, works at any deployment subpath
     const registration = await navigator.serviceWorker.register('./sw.js');
 
-    // Handle updates
+    // Handle updates — dedup guard prevents multiple toasts
     registration.addEventListener('updatefound', () => {
       const newWorker = registration.installing;
       if (!newWorker) return;
 
       newWorker.addEventListener('statechange', () => {
         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          // New service worker available, prompt user to refresh
-          safeLog('[PWA] New version available');
-          notifyUpdateAvailable();
+          if (!updateToastShown) {
+            updateToastShown = true;
+            safeLog('[PWA] New version available');
+            notifyUpdateAvailable(registration);
+          }
         }
       });
     });
+
+    // Auto-reload when a new SW takes over (e.g. from another tab)
+    // Guard prevents duplicate listeners if registerServiceWorker() is called more than once
+    if (!controllerchangeListenerAttached) {
+      controllerchangeListenerAttached = true;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+    }
 
     safeLog('[PWA] Service Worker registered');
     return registration;
@@ -78,10 +93,14 @@ interface SyncManager {
 /**
  * Notify user of update via toast notification
  */
-function notifyUpdateAvailable(): void {
+function notifyUpdateAvailable(registration: ServiceWorkerRegistration): void {
   toast.info('New version available — refresh to update', 0, {
     label: 'Refresh',
-    onClick: () => window.location.reload(),
+    onClick: () => {
+      // Tell the waiting SW to activate — the controllerchange listener
+      // (registered above) will reload the page once it takes over.
+      registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+    },
   });
 }
 
