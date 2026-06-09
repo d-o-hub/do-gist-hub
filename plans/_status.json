@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "lastUpdated": "2026-06-01T19:57:00Z",
+  "lastUpdated": "2026-06-09T00:00:00Z",
   "sprintComplete": {
     "038-sprint1": "2026-05-16",
     "038-sprint2": "2026-05-16",
@@ -343,8 +343,18 @@
     },
     "066-goap-comprehensive-ci-fixes-and-feature-gaps.md": {
       "type": "goap",
-      "status": "active",
-      "summary": "Comprehensive CI fixes (F-Droid build, keystore path), coverage/mutation thresholds, plan 064 bug triage, ADR-016 lazy hydration, PWA install prompt, multi-select bulk ops, tags system, syntax highlighting"
+      "status": "partial",
+      "summary": "Partially complete: version/gitignore hygiene plus PWA install capture, persistent storage, sync badging, gist share/open/copy actions landed; CI and larger feature gaps remain open"
+    },
+    "064-audit-2026-06-01-improvements-and-new-features.md": {
+      "type": "analysis",
+      "status": "partial",
+      "summary": "Forward-looking audit reconciled: B3-B7 and Web API quick wins partly/fully landed; multi-select, tags, syntax highlighting remain backlog"
+    },
+    "067-progress-update-2026-06-09-plan064-066-reconciliation.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "Static reconciliation snapshot for Plans 064/066: implemented quick wins documented and registry entries synced"
     }
   },
   "archive": [
@@ -378,7 +388,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-034",
-    "plan": "067",
-    "goap": "067"
+    "plan": "068",
+    "goap": "068"
   }
 }
