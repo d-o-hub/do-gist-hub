@@ -1,8 +1,12 @@
 # 038 — Codebase Audit & Recommendations (Tasks, Features, Lint, Build, Test, Workflow)
 
-> **Date**: 2026-05-16
-> **Type**: Audit / Recommendations
-> **Status**: 🟢 Complete — all 4 sprints done
+> **Status**: Complete
+> **Type**: Analysis
+> **Created**: 2026-05-16
+> **Updated**: 2026-05-16
+> **Owner**: agent
+> **Related**: 037-progress-update-2026-07-18.md, 030-coverage-improvement-plan.md, adr-026-phase-a-modernization-goap.md, adr-027-ci-node24-android-hardening.md
+
 > **Scope**: Missing tasks, lint gaps, build hardening, test coverage, coding workflow, lost plans recovery
 > **Related**: `037-progress-update-2026-07-18.md`, `030-coverage-improvement-plan.md`, `adr-026-phase-a-modernization-goap.md`, `adr-027-ci-node24-android-hardening.md`
 

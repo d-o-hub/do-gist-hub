@@ -1,6 +1,13 @@
 <!-- Last Audit: 2026-05-11 -->
 # Sync Model
 
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2026-05-11
+> **Updated**: 2026-05-11
+> **Owner**: agent
+> **Related**: adr-003, adr-014, adr-016
+
 ## Offline-First
 
 IndexedDB is source of truth for reads. Network used only to hydrate/refresh.

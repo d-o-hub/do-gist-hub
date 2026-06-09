@@ -1,9 +1,11 @@
 # 056 — GOAP: Upstream Sync Phase A — Script Hardening (P0)
 
-> **Date**: 2026-05-26
-> **Type**: GOAP Plan
 > **Status**: Complete
-> **Related**: `054-upstream-template-impact-analysis.md`, `adr-015-upstream-template-adaptation.md`
+> **Type**: GOAP
+> **Created**: 2026-05-26
+> **Updated**: 2026-05-26
+> **Owner**: agent
+> **Related**: 054-upstream-template-impact-analysis.md, adr-015-upstream-template-adaptation.md
 
 ---
 

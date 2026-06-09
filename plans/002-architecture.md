@@ -1,5 +1,12 @@
 # Architecture Overview
 
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2026-04-25
+> **Updated**: 2026-04-25
+> **Owner**: agent
+> **Related**: 000-project-charter.md, adr-002, adr-003, adr-005
+
 ## System Context
 
 ```

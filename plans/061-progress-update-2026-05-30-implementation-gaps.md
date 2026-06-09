@@ -1,9 +1,11 @@
 # 061 — Progress Update: Implementation Gaps Audit
 
-> **Date**: 2026-05-30
-> **Type**: Progress
 > **Status**: Complete
-> **Related**: `adr-016-github-api-efficiency.md`, `047-v0.3.0-scope.md`, `060-goap-plain-text-paste-llm-gist-creation.md`
+> **Type**: Progress
+> **Created**: 2026-05-30
+> **Updated**: 2026-05-30
+> **Owner**: agent
+> **Related**: adr-016-github-api-efficiency.md, 047-v0.3.0-scope.md, 060-goap-plain-text-paste-llm-gist-creation.md
 
 ---
 
