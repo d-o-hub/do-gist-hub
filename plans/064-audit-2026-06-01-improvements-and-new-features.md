@@ -2,10 +2,33 @@
 
 > **Status**: Active
 > **Type**: Analysis
+> **Status**: Partially complete (reconciled 2026-06-09; implementation backlog remains)
 > **Created**: 2026-06-01
 > **Updated**: 2026-06-01
 > **Owner**: agent
 > **Related**: 047-v0.3.0-scope.md, 048-codebase-audit-implementation-gaps-ci-docs.md, 061-progress-update-2026-05-30-implementation-gaps.md, 063-pre-existing-ci-issues-2026-06-01.md, adr-016-github-api-efficiency.md
+
+
+## Reconciliation Update — 2026-06-09
+
+Static implementation checks show that several quick-win items from this audit have landed and should no longer be treated as wholly open:
+
+| Item | Status | Evidence |
+|------|--------|----------|
+| B3 — version drift | Complete ✅ | `package.json` and `VERSION` both report `0.2.1`. |
+| B4 — hardcoded warning color fallback | Complete ✅ | `src/styles/base.css` no longer contains `#f97316`; warning usages resolve through `var(--color-warning)`. |
+| B5 — Playwright artifacts in git status | Complete ✅ | `.gitignore` contains `test-results/` and `playwright-report/`. |
+| B6 — duplicate `adr-007-*` naming note | Complete ✅ | Both duplicate-number ADRs now contain reciprocal notes that preserve links without renaming history. |
+| B7 — registry synchronization | Partially complete ◐ | This reconciliation updates `_index.md` and `_status.json`; future status changes still need to keep both files in lockstep. |
+| F3 — PWA install prompt | Partially complete ◐ | `src/services/pwa/capabilities.ts` captures `beforeinstallprompt`; app-shell UI subscribes to the prompt state. Remaining telemetry polish is not verified here. |
+| F5 — persistent storage | Complete ✅ | `src/services/pwa/capabilities.ts` requests persistent storage and records successful grants. |
+| F6 — app badge for pending sync | Complete ✅ | `src/services/sync/queue.ts` imports `capabilities` and updates the badge after queue changes. |
+| F7 — native share | Complete ✅ | `src/components/gist-detail.ts` implements a `Share` action with clipboard fallback. |
+| F13 — external/copy URL actions | Complete ✅ | `src/components/gist-detail.ts` implements `Open in GitHub` and `Copy URL`. |
+
+Plan 064 remains **partially complete** because large feature opportunities such as multi-select, tags/collections, and syntax highlighting are still backlog items.
+
+---
 
 ## Context
 
@@ -47,6 +70,8 @@ Per plan 063, the `Android F-Droid Build` CI job fails because the `assembleFdro
 
 ### B3. `package.json` version drift: `0.1.0` vs `VERSION: 0.2.0` (P3, XS)
 
+**2026-06-09 status**: Complete ✅ — both `package.json` and `VERSION` now show `0.2.1`.
+
 `package.json` field is stale. The `VERSION` file is canonical per `adr-001` and the release workflow, but `package.json` (used by `pnpm` metadata and IDE tooling) is not auto-synced.
 
 **Fix**: Add a pre-release check in `.github/workflows/release.yml` to fail if `package.json` `version` != `VERSION` file content. Or add a `scripts/sync-version.js` that runs in `version-propagation.yml` (currently it only updates `README.md` and `CHANGELOG.md`).
@@ -54,6 +79,8 @@ Per plan 063, the `Android F-Droid Build` CI job fails because the `assembleFdro
 **Effort**: XS. **Impact**: Low (cosmetic, but confusing for contributors).
 
 ### B4. `src/styles/base.css:1078` has a hardcoded color fallback `#f97316` (P3, XS)
+
+**2026-06-09 status**: Complete ✅ — the literal fallback is absent from `src/styles/base.css`; warning colors use semantic tokens.
 
 Tracked in `agents-docs/issues/css-hardcoded-colors.md` (Open, low severity). This single hit keeps the lint rule firing on every analyze pass.
 
@@ -63,6 +90,8 @@ Tracked in `agents-docs/issues/css-hardcoded-colors.md` (Open, low severity). Th
 
 ### B5. `test-results/` and `playwright-report/` committed to tree (P3, XS)
 
+**2026-06-09 status**: Complete ✅ — `.gitignore` includes both `test-results/` and `playwright-report/`.
+
 The most recent commits show these as untracked or staged, but they appear in the working tree. Should be gitignored.
 
 **Fix**: Add to `.gitignore`. Confirm with `git check-ignore`.
@@ -71,6 +100,8 @@ The most recent commits show these as untracked or staged, but they appear in th
 
 ### B6. Two `adr-007-*` files — naming oddity (P3, XS)
 
+**2026-06-09 status**: Complete ✅ — the duplicate-number ADRs contain reciprocal explanatory notes; no rename required.
+
 `adr-007-csp-and-logging-redaction.md` and `adr-007-ui-ux-modernization.md` both have the `adr-007-` prefix. The second should be `adr-022-...` but the file is preserved for historical accuracy. Rename would break links in progress updates.
 
 **Fix**: Add a header note in the second file pointing to `adr-022` as the canonical successor. **Do not rename** (breaks history).
@@ -78,6 +109,8 @@ The most recent commits show these as untracked or staged, but they appear in th
 **Effort**: XS. **Impact**: Low (clarity).
 
 ### B7. `_index.md` and `_status.json` slightly out of sync (P3, XS)
+
+**2026-06-09 status**: Partially complete ◐ — this reconciliation updates both registries for plans 064, 066, and 067; the item remains a standing hygiene check for future plan changes.
 
 `adr-022-2026-ui-trends-recommendations.md` appears in the ADR table but not the GOAP table; `063-pre-existing-ci-issues-2026-06-01.md` is missing from the active plans table.
 
@@ -118,6 +151,8 @@ GitHub gists have no native tags. A local tag system would dramatically improve 
 
 ### F3. PWA install prompt (P1, XS)
 
+**2026-06-09 status**: Partially complete ◐ — install prompt capture is implemented in `src/services/pwa/capabilities.ts` and surfaced through app-shell state; telemetry/dismissal UX details remain outside this static check.
+
 `beforeinstallprompt` event is fired by Chromium-based browsers but the app does not handle it. The app is fully installable (manifest + SW + start_url) but users have to find the browser's install UI on their own.
 
 **Scope**:
@@ -144,6 +179,8 @@ File content is shown in plain `<pre><code>`. For a code-first app, this is a si
 
 ### F5. `navigator.storage.persist()` request on init (P2, XS)
 
+**2026-06-09 status**: Complete ✅ — `src/services/pwa/capabilities.ts` requests persistent storage and records successful grants.
+
 Without persistent storage, the browser can evict IndexedDB under storage pressure. For an offline-first app, this is a regression risk.
 
 **Scope**:
@@ -155,6 +192,8 @@ Without persistent storage, the browser can evict IndexedDB under storage pressu
 
 ### F6. `navigator.setAppBadge()` for pending sync count (P2, XS)
 
+**2026-06-09 status**: Complete ✅ — `src/services/sync/queue.ts` calls `capabilities.setSyncBadge()` after queue changes.
+
 PWA-installed users get a badge on their home screen icon. Showing the pending sync count is a high-utility, low-effort win.
 
 **Scope**:
@@ -165,6 +204,8 @@ PWA-installed users get a badge on their home screen icon. Showing the pending s
 **Effort**: XS. **Impact**: Medium.
 
 ### F7. `navigator.share()` from gist detail (P2, XS)
+
+**2026-06-09 status**: Complete ✅ — `src/components/gist-detail.ts` includes a `Share` action using Web Share with clipboard fallback.
 
 Mobile share-sheet integration. Currently, sharing requires copying the URL manually.
 
@@ -237,6 +278,8 @@ Sync queue is global; users cannot see "which gists have pending writes."
 **Effort**: XS. **Impact**: Low (niche but cheap).
 
 ### F13. "Open in GitHub" / "Copy URL" buttons on gist detail (P2, XS)
+
+**2026-06-09 status**: Complete ✅ — `src/components/gist-detail.ts` renders `Open in GitHub` and `Copy URL` actions.
 
 `htmlUrl` is in the store but not surfaced.
 
