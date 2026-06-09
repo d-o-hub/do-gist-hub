@@ -1,9 +1,12 @@
 <!-- Last Audit: 2024-05-15 -->
 # ADR-003: IndexedDB for V1 Local Storage
 
-**Status**: Accepted  
-**Date**: 2026  
-**Deciders**: Architect, Data/Sync Agent  
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2024-05-15
+> **Updated**: 2024-05-15
+> **Owner**: agent
+> **Related**: _status.json
 
 ## Context
 

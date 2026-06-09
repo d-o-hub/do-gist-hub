@@ -1,4 +1,12 @@
 # ADR-021: PR Conflict Analysis & Merge Strategy
+
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2026-04-25
+> **Updated**: 2026-04-25
+> **Owner**: agent
+> **Related**: _status.json
+
 ## Status
 Accepted
 ## Context

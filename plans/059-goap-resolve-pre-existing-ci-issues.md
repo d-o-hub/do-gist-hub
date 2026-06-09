@@ -1,9 +1,11 @@
 # 059 — GOAP: Resolve Pre-Existing CI Issues
 
-> **Date**: 2026-05-26
-> **Type**: GOAP Plan
 > **Status**: Active
-> **Related**: `adr-032-vitest-environment-teardown.md`, `adr-033-webkit-indexeddb-flaky-tests.md`, `tests/unit/app.test.ts`, `tests/browser/gist-store.spec.ts`
+> **Type**: GOAP
+> **Created**: 2026-05-26
+> **Updated**: 2026-05-26
+> **Owner**: agent
+> **Related**: adr-032-vitest-environment-teardown.md, adr-033-webkit-indexeddb-flaky-tests.md, tests/unit/app.test.ts, tests/browser/gist-store.spec.ts
 
 ---
 

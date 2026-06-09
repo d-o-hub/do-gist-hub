@@ -1,9 +1,12 @@
 <!-- Last Audit: 2024-05-15 -->
 # ADR-006: Global Error Boundary and Error Taxonomy
 
-**Status**: Accepted  
-**Date**: 2026  
-**Deciders**: Architect, Reliability Agent  
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2024-05-15
+> **Updated**: 2024-05-15
+> **Owner**: agent
+> **Related**: _status.json
 
 ## Context
 

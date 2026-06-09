@@ -1,6 +1,13 @@
 <!-- Last Audit: 2026-05-11 -->
 # Security
 
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2026-05-11
+> **Updated**: 2026-05-11
+> **Owner**: agent
+> **Related**: adr-004, adr-007-csp-and-logging-redaction.md
+
 ## PAT Handling
 
 Encrypted at rest using Web Cryptography API (AES-GCM). Redacted in logs and UI.

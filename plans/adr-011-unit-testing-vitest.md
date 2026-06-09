@@ -2,9 +2,12 @@
 
 # ADR-011: Unit Testing Infrastructure with Vitest
 
-**Status**: Accepted
-**Date**: 2026-04-30
-**Deciders**: Architect, Testing Agent
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2026-04-30
+> **Updated**: 2026-05-07
+> **Owner**: agent
+> **Related**: _status.json
 
 ## Context
 

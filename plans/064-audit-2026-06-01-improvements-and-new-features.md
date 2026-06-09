@@ -1,10 +1,12 @@
 # 064 — Audit 2026-06-01: Improvements & New Feature Opportunities
 
-> **Date**: 2026-06-01
+> **Status**: Active
 > **Type**: Analysis
 > **Status**: Partially complete (reconciled 2026-06-09; implementation backlog remains)
+> **Created**: 2026-06-01
+> **Updated**: 2026-06-01
 > **Owner**: agent
-> **Related**: `047-v0.3.0-scope.md`, `048-codebase-audit-implementation-gaps-ci-docs.md`, `061-progress-update-2026-05-30-implementation-gaps.md`, `063-pre-existing-ci-issues-2026-06-01.md`, `adr-016-github-api-efficiency.md`
+> **Related**: 047-v0.3.0-scope.md, 048-codebase-audit-implementation-gaps-ci-docs.md, 061-progress-update-2026-05-30-implementation-gaps.md, 063-pre-existing-ci-issues-2026-06-01.md, adr-016-github-api-efficiency.md
 
 
 ## Reconciliation Update — 2026-06-09

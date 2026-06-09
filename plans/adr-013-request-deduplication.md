@@ -1,9 +1,12 @@
 <!-- Last Audit: 2026-04-25 -->
 # ADR-013: Request Deduplication Strategy
 
-**Status**: Accepted
-**Date**: 2026-04-25
-**Deciders**: Architect, Performance Agent
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2026-04-25
+> **Updated**: 2026-04-25
+> **Owner**: agent
+> **Related**: _status.json
 
 ## Context
 

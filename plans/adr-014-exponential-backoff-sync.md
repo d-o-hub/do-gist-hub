@@ -1,9 +1,12 @@
 <!-- Last Audit: 2026-04-25 -->
 # ADR-014: Exponential Backoff for Sync Queue
 
-**Status**: Accepted
-**Date**: 2026-04-25
-**Deciders**: Architect, Offline-First Agent
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2026-04-25
+> **Updated**: 2026-04-25
+> **Owner**: agent
+> **Related**: _status.json
 
 ## Context
 
