@@ -2,6 +2,13 @@
 
 # Android Packaging
 
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2026-05-07
+> **Updated**: 2026-05-07
+> **Owner**: agent
+> **Related**: adr-002, adr-029
+
 ## Capacitor Configuration
 
 - **Config**: `capacitor.config.ts` - appId: `com.dogisthub.app`, webDir: `dist`

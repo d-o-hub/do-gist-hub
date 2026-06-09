@@ -2,8 +2,13 @@
 
 # ADR-010: Service Worker Cache Name Derivation from app.config.ts
 
-**Status**: Accepted
-**Date**: 2026-04-25
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2026-04-25
+> **Updated**: 2026-05-06
+> **Owner**: agent
+> **Related**: _status.json
+
 **Implemented**: 2026-05-06
 **Deciders**: Architect, PWA Agent
 

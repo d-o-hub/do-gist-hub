@@ -1,9 +1,11 @@
 # 058 — GOAP: Cross-Browser WebKit System Dependency Fix
 
-> **Date**: 2026-05-26
-> **Type**: GOAP Plan
 > **Status**: Active
-> **Related**: `adr-031-playwright-webkit-deps-ci.md`, `.github/workflows/cross-browser.yml`, `053-progress-update-2026-05-21-playwright-cache-fix.md`
+> **Type**: GOAP
+> **Created**: 2026-05-26
+> **Updated**: 2026-05-26
+> **Owner**: agent
+> **Related**: adr-031-playwright-webkit-deps-ci.md, .github/workflows/cross-browser.yml, 053-progress-update-2026-05-21-playwright-cache-fix.md
 
 ---
 

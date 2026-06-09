@@ -1,9 +1,11 @@
 # 050 — GOAP: Plans Completion Sprint (Deep Audit Items)
 
-> **Date**: 2026-05-20
-> **Type**: GOAP Plan
 > **Status**: Complete
-> **Related**: `048-codebase-audit-implementation-gaps-ci-docs.md`
+> **Type**: GOAP
+> **Created**: 2026-05-20
+> **Updated**: 2026-05-20
+> **Owner**: agent
+> **Related**: 048-codebase-audit-implementation-gaps-ci-docs.md
 
 ---
 

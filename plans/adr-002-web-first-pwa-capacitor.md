@@ -1,9 +1,12 @@
 <!-- Last Audit: 2024-05-15 -->
 # ADR-002: Web-First PWA with Capacitor Android
 
-**Status**: Accepted  
-**Date**: 2026  
-**Deciders**: Architect, Frontend Agent, Android Packaging Agent  
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2024-05-15
+> **Updated**: 2024-05-15
+> **Owner**: agent
+> **Related**: _status.json
 
 ## Context
 

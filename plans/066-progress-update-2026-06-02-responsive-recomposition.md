@@ -1,9 +1,11 @@
 # 066 — Progress Update: Responsive Recomposition
 
-> **Date**: 2026-06-02
-> **Type**: Progress
 > **Status**: Complete
-> **Related**: `004-responsive-system.md`, `adr-022-2026-ui-trends-recommendations.md`, `050-goap-plans-completion-v2.md`, `.agents/skills/responsive-system/SKILL.md`
+> **Type**: Progress
+> **Created**: 2026-06-02
+> **Updated**: 2026-06-02
+> **Owner**: agent
+> **Related**: 004-responsive-system.md, adr-022-2026-ui-trends-recommendations.md, 050-goap-plans-completion-v2.md, .agents/skills/responsive-system/SKILL.md
 
 ---
 

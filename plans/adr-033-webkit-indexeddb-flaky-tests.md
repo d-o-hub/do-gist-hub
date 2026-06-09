@@ -1,9 +1,11 @@
 # ADR-033 — WebKit IndexedDB Flakiness: Skip Star-Toggle Test on Linux WebKit
 
-**Status**: Accepted
-**Date**: 2026-05-26
-**Deciders**: QA Agent
-**Related**: `tests/browser/gist-store.spec.ts`, `.github/workflows/cross-browser.yml`, `058-goap-cross-browser-webkit-fix.md`
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2026-05-26
+> **Updated**: 2026-05-26
+> **Owner**: agent
+> **Related**: tests/browser/gist-store.spec.ts, .github/workflows/cross-browser.yml, 058-goap-cross-browser-webkit-fix.md
 
 ---
 

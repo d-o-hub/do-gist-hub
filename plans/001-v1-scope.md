@@ -2,6 +2,13 @@
 
 # Gist Hub v1 Scope
 
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2026-05-07
+> **Updated**: 2026-05-07
+> **Owner**: agent
+> **Related**: 000-project-charter.md, 002-architecture.md
+
 ## Core Features (v1)
 
 - [x] Personal Access Token (PAT) authentication

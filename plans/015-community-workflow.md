@@ -1,9 +1,12 @@
 <!-- Last Audit: 2026-05-11 -->
 # Plan-015: Contributing Guidelines and Community Workflow
 
-**Status**: Implemented
-**Date**: 2026-04-25
-**Deciders**: Project Lead, Community Agent
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2026-04-25
+> **Updated**: 2026-05-11
+> **Owner**: agent
+> **Related**: 012-android-packaging.md, 013-release-plan.md
 
 ## Objective
 

@@ -1,9 +1,11 @@
 # ADR-032 — Vitest Environment Teardown Error Fix: Proactive Transitive Module Mocking
 
-**Status**: Accepted
-**Date**: 2026-05-26
-**Deciders**: QA Agent
-**Related**: `tests/unit/app.test.ts`, `051-progress-update-2026-05-20-tdz-circular-dep-fix.md`
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2026-05-26
+> **Updated**: 2026-05-26
+> **Owner**: agent
+> **Related**: tests/unit/app.test.ts, 051-progress-update-2026-05-20-tdz-circular-dep-fix.md
 
 ---
 
