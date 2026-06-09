@@ -1,5 +1,12 @@
 # ADR-015: Upstream Template Adaptation Roadmap
 
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2026-04-25
+> **Updated**: 2026-04-25
+> **Owner**: agent
+> **Related**: _status.json
+
 ## Status
 
 **Accepted** — Phases 1-6 substantially implemented via plans 019 and 038. See implementation notes below.

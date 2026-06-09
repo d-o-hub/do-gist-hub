@@ -2,6 +2,13 @@
 
 # Testing Strategy
 
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2026-05-07
+> **Updated**: 2026-05-07
+> **Owner**: agent
+> **Related**: adr-011
+
 ## Playwright Coverage (299 tests)
 
 ### Browser Tests (`tests/browser/`)

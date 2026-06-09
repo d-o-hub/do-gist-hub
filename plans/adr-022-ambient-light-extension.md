@@ -1,6 +1,12 @@
 # ADR-022 Extension: Ambient Light Sensor Theming
 
-> **Status**: Proposed (backlog)  
+> **Status**: Proposed
+> **Type**: ADR
+> **Created**: 2026-04-25
+> **Updated**: 2026-04-25
+> **Owner**: agent
+> **Related**: _status.json
+
 > **Priority**: P3  
 > **Effort**: High (requires Permissions API, sensor hardware, privacy review)  
 > **Depends on**: Goal 3 (time-based theming) complete  

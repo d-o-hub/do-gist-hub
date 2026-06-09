@@ -1,10 +1,12 @@
 <!-- Last Audit: 2026-05-26 -->
 # ADR-031 — Playwright WebKit System Dependency Installation in CI
 
-**Status**: Accepted
-**Date**: 2026-05-26
-**Deciders**: DevOps Agent
-**Related**: `.github/workflows/cross-browser.yml`, `053-progress-update-2026-05-21-playwright-cache-fix.md`
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2026-05-26
+> **Updated**: 2026-05-26
+> **Owner**: agent
+> **Related**: .github/workflows/cross-browser.yml, 053-progress-update-2026-05-21-playwright-cache-fix.md
 
 ---
 

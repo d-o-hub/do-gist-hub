@@ -1,9 +1,11 @@
 # 065 — Keystore Backup Procedure
 
-> **Date**: 2026-06-02
+> **Status**: Active
 > **Type**: Runbook
-> **Status**: Active (reusable procedure)
-> **Related**: `adr-029-android-release-signing.md`, `docs/CAPACITOR_ANDROID.md`, `scripts/generate-keystore.sh`
+> **Created**: 2026-06-02
+> **Updated**: 2026-06-02
+> **Owner**: agent
+> **Related**: adr-029-android-release-signing.md, docs/CAPACITOR_ANDROID.md, scripts/generate-keystore.sh
 
 ## Why this exists
 

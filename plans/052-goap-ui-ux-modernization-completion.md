@@ -1,9 +1,11 @@
 # 052 — GOAP: UI/UX Modernization & Quality Gate Alignment
 
-> **Date**: 2026-05-21
-> **Type**: GOAP Plan
 > **Status**: Complete
-> **Related**: `039-ui-ux-2026-modernization.md`, `adr-022-2026-ui-trends-recommendations.md`, `adr-007-ui-ux-modernization.md`
+> **Type**: GOAP
+> **Created**: 2026-05-21
+> **Updated**: 2026-05-21
+> **Owner**: agent
+> **Related**: 039-ui-ux-2026-modernization.md, adr-022-2026-ui-trends-recommendations.md, adr-007-ui-ux-modernization.md
 
 ## Context
 

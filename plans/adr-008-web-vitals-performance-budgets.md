@@ -2,9 +2,12 @@
 
 # ADR-008: Web Vitals Performance Budgets
 
-**Status**: Accepted  
-**Date**: 2026  
-**Deciders**: Architect, Performance Agent
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2026-05-07
+> **Updated**: 2026-05-07
+> **Owner**: agent
+> **Related**: _status.json
 
 ## Context
 

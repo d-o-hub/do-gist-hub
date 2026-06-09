@@ -1,9 +1,11 @@
 # 062 — Progress Update: Plan 060 Completion
 
-> **Date**: 2026-05-30
-> **Type**: Progress Update
 > **Status**: Complete
-> **Related**: `060-goap-plain-text-paste-llm-gist-creation.md`
+> **Type**: Progress
+> **Created**: 2026-05-30
+> **Updated**: 2026-05-30
+> **Owner**: agent
+> **Related**: 060-goap-plain-text-paste-llm-gist-creation.md
 
 ---
 

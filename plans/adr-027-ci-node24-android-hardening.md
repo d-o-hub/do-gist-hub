@@ -1,9 +1,12 @@
 <!-- Last Audit: 2026-07-17 -->
 # ADR-027: CI Node 24 Migration and Android Build Hardening
 
-**Status**: Implemented
-**Date**: 2026-07-17
-**Deciders**: DevOps Agent
+> **Status**: Complete
+> **Type**: ADR
+> **Created**: 2026-07-17
+> **Updated**: 2026-07-17
+> **Owner**: agent
+> **Related**: _status.json
 
 ## Context
 

@@ -1,9 +1,11 @@
 # 048 — Codebase Audit: Implementation Gaps, CI Failings & Doc Hygiene
 
-> **Date**: 2026-05-19
-> **Type**: GOAP Plan
 > **Status**: Complete
-> **Related**: `046-post-release-and-v0.2.0-stable.md`, `047-v0.3.0-scope.md`, `adr-028-github-app-vs-pat-2026.md`, `adr-029-android-release-signing.md`
+> **Type**: GOAP
+> **Created**: 2026-05-19
+> **Updated**: 2026-05-19
+> **Owner**: agent
+> **Related**: 046-post-release-and-v0.2.0-stable.md, 047-v0.3.0-scope.md, adr-028-github-app-vs-pat-2026.md, adr-029-android-release-signing.md
 
 ---
 

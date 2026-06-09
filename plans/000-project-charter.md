@@ -1,5 +1,12 @@
 # Project Charter: d.o. Gist Hub
 
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2026-04-25
+> **Updated**: 2026-04-25
+> **Owner**: agent
+> **Related**: 001-v1-scope.md, 002-architecture.md
+
 ## Vision
 
 Build the easiest serious production path for a personal GitHub Gist management app that works offline-first, packages for Android, and uses a token-driven design system.

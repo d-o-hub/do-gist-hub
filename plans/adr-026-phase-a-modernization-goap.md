@@ -1,5 +1,12 @@
 # ADR-026: Phase A Modernization & GoAP Execution
 
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2026-04-25
+> **Updated**: 2026-04-25
+> **Owner**: agent
+> **Related**: _status.json
+
 ## Context
 During the 2026-grade modernization pass, we standardized the repository on \`pnpm\`, upgraded Capacitor to v8, TypeScript to v6, Vite to v8, Playwright to v1.59, and Vitest to v4. We also migrated the primary linting and formatting tooling from ESLint/Prettier to Biome.
 

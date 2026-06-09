@@ -1,9 +1,12 @@
 # 066 — GOAP: Comprehensive CI Fixes, Bug Triage & Feature Gap Closure
 
-> **Date**: 2026-06-03
-> **Type**: GOAP Plan
 > **Status**: Active
-> **Related**: CI workflows, `src/stores/gist-store.ts`, `src/routes/create.ts`, `src/styles/base.css`, `plans/064-audit-2026-06-01-improvements-and-new-features.md`, `plans/063-pre-existing-ci-issues-2026-06-01.md`
+> **Type**: GOAP
+> **Created**: 2026-06-03
+> **Updated**: 2026-06-03
+> **Owner**: agent
+> **Related**: CI workflows, src/stores/gist-store.ts, src/routes/create.ts, src/styles/base.css, plans/064-audit-2026-06-01-improvements-and-new-features.md, plans/063-pre-existing-ci-issues-2026-06-01.md
+
 > **Prerequisites**: `plans/_status.json` entry 063 (F-Droid CI) is active
 
 ---
