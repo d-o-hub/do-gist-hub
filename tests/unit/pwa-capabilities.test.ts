@@ -162,6 +162,25 @@ describe('PWA capabilities service', () => {
     unsubscribe();
   });
 
+  it('binds install prompt listeners only once per active lifecycle', () => {
+    const expectedInstallPromptNotifications = 2;
+    capabilities.init();
+    capabilities.init();
+    const listener = vi.fn();
+    capabilities.onInstallPromptChange(listener);
+    const event = new Event('beforeinstallprompt') as Event & {
+      prompt: () => Promise<void>;
+      userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+    };
+    event.prompt = vi.fn().mockResolvedValue(undefined);
+    event.userChoice = Promise.resolve({ outcome: 'accepted', platform: 'web' });
+
+    window.dispatchEvent(event);
+
+    expect(listener).toHaveBeenCalledTimes(expectedInstallPromptNotifications);
+    expect(listener).toHaveBeenLastCalledWith(true);
+  });
+
   it('subscribes to install prompt availability changes', () => {
     const listener = vi.fn();
     const unsubscribe = capabilities.onInstallPromptChange(listener);
