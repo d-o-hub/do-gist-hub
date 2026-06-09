@@ -1,6 +1,13 @@
 <!-- Last Audit: 2026-05-11 -->
 # Global Error Handling
 
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2026-05-11
+> **Updated**: 2026-05-11
+> **Owner**: agent
+> **Related**: adr-006, adr-009
+
 ## Error Taxonomy
 
 Implemented structured error classes: Fatal, Recoverable, Auth, Validation.

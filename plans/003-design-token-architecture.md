@@ -1,6 +1,13 @@
 <!-- Last Audit: 2024-05-15 -->
 # Design Token Architecture
 
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2024-05-15
+> **Updated**: 2024-05-15
+> **Owner**: agent
+> **Related**: adr-001, adr-022
+
 ## Token Layers
 
 ### Primitive Tokens

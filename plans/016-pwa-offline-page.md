@@ -1,9 +1,12 @@
 <!-- Last Audit: 2026-04-25 -->
 # Plan-016: PWA Offline Fallback Page
 
-**Status**: Implemented
-**Date**: 2026-04-25
-**Deciders**: Architect, PWA Agent
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2026-04-25
+> **Updated**: 2026-04-25
+> **Owner**: agent
+> **Related**: adr-002, adr-010
 
 ## Objective
 

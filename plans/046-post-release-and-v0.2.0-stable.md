@@ -1,9 +1,11 @@
 # 046 — Post-Release, Play Store Deployment & v0.3.0 Planning
 
-> **Date**: 2026-05-18
-> **Type**: GOAP Plan
 > **Status**: Complete
-> **Related**: `045-v0.2.0-release-and-auth-modernization.md`, `013-release-plan.md`, `adr-028-github-app-vs-pat-2026.md`, `adr-029-android-release-signing.md`
+> **Type**: GOAP
+> **Created**: 2026-05-18
+> **Updated**: 2026-05-18
+> **Owner**: agent
+> **Related**: 045-v0.2.0-release-and-auth-modernization.md, 013-release-plan.md, adr-028-github-app-vs-pat-2026.md, adr-029-android-release-signing.md
 
 ---
 

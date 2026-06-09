@@ -1,9 +1,11 @@
 # 060 — GOAP: Plain Text Paste & LLM-Assisted Gist Creation
 
-> **Date**: 2026-05-30
-> **Type**: GOAP Plan
 > **Status**: Active
-> **Related**: `src/routes/create.ts`, `src/stores/gist-store.ts`, `src/services/github/client.ts`, `src/types/api.ts`
+> **Type**: GOAP
+> **Created**: 2026-05-30
+> **Updated**: 2026-05-30
+> **Owner**: agent
+> **Related**: src/routes/create.ts, src/stores/gist-store.ts, src/services/github/client.ts, src/types/api.ts
 
 ---
 

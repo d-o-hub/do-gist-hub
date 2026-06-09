@@ -1,9 +1,13 @@
 <!-- Last Audit: 2026-05-17 -->
 # ADR-029 — Android Release Signing via CI
 
-**Status**: Accepted
-**Date**: 2026-05-17
-**Deciders**: Architect, DevOps Agent
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2026-05-17
+> **Updated**: 2026-05-17
+> **Owner**: agent
+> **Related**: 013-release-plan.md
+
 **Supersedes**: extends [ADR-002](adr-002-web-first-pwa-capacitor.md); references [012-android-packaging.md](012-android-packaging.md)
 **Related**: [013-release-plan.md](013-release-plan.md)
 
@@ -94,4 +98,3 @@ Both APKs are attached to the GitHub Release:
 ---
 
 *Created: 2026-05-17. Status: Accepted.*
-

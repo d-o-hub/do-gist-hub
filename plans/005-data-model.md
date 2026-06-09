@@ -1,6 +1,13 @@
 <!-- Last Audit: 2026-05-11 -->
 # Data Model
 
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2026-05-11
+> **Updated**: 2026-05-11
+> **Owner**: agent
+> **Related**: adr-003
+
 ## IndexedDB Stores (`src/services/db.ts`)
 
 | Store | Key Path | Indexes | Purpose |

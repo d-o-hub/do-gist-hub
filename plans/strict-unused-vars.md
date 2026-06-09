@@ -1,5 +1,12 @@
 # Plan: Enforce Strict Unused Variables Rule
 
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2026-04-25
+> **Updated**: 2026-04-25
+> **Owner**: agent
+> **Related**: biome.json, adr-026
+
 ## Objective
 Update `eslint.config.js` to strictly enforce the `@typescript-eslint/no-unused-vars` rule by removing ignore patterns and setting `"caughtErrors": "all"`. Resolve all resulting lint errors across the codebase.
 

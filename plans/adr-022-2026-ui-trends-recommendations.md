@@ -2,6 +2,13 @@
 
 # ADR-022: 2026 UI Trends Integration Recommendations
 
+> **Status**: Proposed
+> **Type**: ADR
+> **Created**: 2026-05-06
+> **Updated**: 2026-05-06
+> **Owner**: agent
+> **Related**: _status.json
+
 ## Status
 
 Proposed

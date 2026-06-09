@@ -1,6 +1,13 @@
 <!-- Last Audit: 2026-05-11 -->
 # Release Plan
 
+> **Status**: Complete
+> **Type**: Plan
+> **Created**: 2026-05-11
+> **Updated**: 2026-05-11
+> **Owner**: agent
+> **Related**: adr-029, adr-030
+
 ## Phases
 
 1. ✅ Foundation (weeks 1-2) — Repo setup, tokens, architecture

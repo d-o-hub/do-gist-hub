@@ -1,9 +1,13 @@
 <!-- Last Audit: 2026-05-16 -->
 # ADR-028 — GitHub App vs Fine-Grained PAT (2026 re-evaluation)
 
-**Status**: Accepted
-**Date**: 2026-05-16
-**Deciders**: Architect, Security Agent, GitHub API Agent
+> **Status**: Accepted
+> **Type**: ADR
+> **Created**: 2026-05-16
+> **Updated**: 2026-05-16
+> **Owner**: agent
+> **Related**: 008-security.md, adr-007-csp-and-logging-redaction.md
+
 **Supersedes**: extends [ADR-004](adr-004-fine-grained-pat-v1.md); references [ADR-005](adr-005-no-backend-v1.md)
 **Related**: [008-security.md](008-security.md), [adr-007-csp-and-logging-redaction.md](adr-007-csp-and-logging-redaction.md)
 
