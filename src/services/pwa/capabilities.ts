@@ -18,6 +18,7 @@ class CapabilitiesService {
   private deferredInstallPrompt: BeforeInstallPromptEvent | null = null;
   private installPromptListeners = new Set<(available: boolean) => void>();
   private abortController = new AbortController();
+  private installPromptListenersBound = false;
 
   /**
    * Initialize all PWA capabilities. Safe to call multiple times.
@@ -91,6 +92,9 @@ class CapabilitiesService {
    */
   private captureInstallPrompt(): void {
     if (typeof window === 'undefined') return;
+    if (this.installPromptListenersBound && !this.abortController.signal.aborted) return;
+    this.installPromptListenersBound = true;
+
     window.addEventListener(
       'beforeinstallprompt',
       (e) => {
@@ -172,6 +176,7 @@ class CapabilitiesService {
   destroy(): void {
     this.abortController.abort();
     this.installPromptListeners.clear();
+    this.installPromptListenersBound = false;
   }
 }
 
