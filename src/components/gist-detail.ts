@@ -146,6 +146,7 @@ export function renderGistDetail(gist: GistRecord): DocumentFragment {
       tab.dataset.fileKey = key;
       tab.id = `tab-${idx}`;
       tab.setAttribute('role', 'tab');
+      tab.setAttribute('tabindex', idx === 0 ? '0' : '-1');
       tab.setAttribute('aria-selected', idx === 0 ? 'true' : 'false');
       tab.setAttribute('aria-controls', 'file-content-area');
       tab.textContent = file.filename.toUpperCase();
@@ -380,9 +381,11 @@ export function bindDetailEvents(
         tabs.forEach((t) => {
           t.classList.remove('active');
           t.setAttribute('aria-selected', 'false');
+          t.setAttribute('tabindex', '-1');
         });
         tab.classList.add('active');
         tab.setAttribute('aria-selected', 'true');
+        tab.setAttribute('tabindex', '0');
 
         // Update content
         void (async () => {
@@ -442,6 +445,43 @@ export function bindDetailEvents(
       { signal }
     );
   });
+
+  // Keyboard navigation for tabs (Roving Tabindex)
+  const tabList = container.querySelector('[role="tablist"]');
+  if (tabList) {
+    tabList.addEventListener(
+      'keydown',
+      (e) => {
+        const event = e as KeyboardEvent;
+        const target = event.target as HTMLElement;
+        if (target.getAttribute('role') !== 'tab') return;
+
+        const tabNodes = Array.from(tabList.querySelectorAll('[role="tab"]')) as HTMLElement[];
+        const currentIndex = tabNodes.indexOf(target);
+
+        let nextIndex = -1;
+        if (event.key === 'ArrowRight') {
+          nextIndex = (currentIndex + 1) % tabNodes.length;
+        } else if (event.key === 'ArrowLeft') {
+          nextIndex = (currentIndex - 1 + tabNodes.length) % tabNodes.length;
+        } else if (event.key === 'Home') {
+          nextIndex = 0;
+        } else if (event.key === 'End') {
+          nextIndex = tabNodes.length - 1;
+        }
+
+        if (nextIndex !== -1) {
+          event.preventDefault();
+          const nextTab = tabNodes[nextIndex];
+          if (nextTab) {
+            nextTab.focus();
+            nextTab.click();
+          }
+        }
+      },
+      { signal }
+    );
+  }
 
   // Copy Content
   if (container.dataset.copyBound !== 'true') {
