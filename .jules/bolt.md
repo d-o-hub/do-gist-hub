@@ -15,3 +15,7 @@
 ## 2026-05-09 - Cross-Component Cache Consolidation
 **Learning:** Duplicate caches for the same data (e.g., ISO date timestamps) across different modules (store, route, component) waste memory and redundant 'first-miss' parsing. Consolidating into a single utility utility utility utility with a shared cache ensures maximum efficiency app-wide.
 **Action:** Identify shared data transformation patterns and centralize them in a utility with a shared cache to eliminate redundant processing across different layers of the application.
+
+## 2026-05-10 - Redundant Module Resolution in Event Handlers
+**Learning:** Using dynamic `await import()` within frequently-triggered event handlers (e.g., Star button, file tab switching) adds microtask overhead and redundant module resolution logic. In mobile-first apps, these micro-delays aggregate to noticeable interaction latency.
+**Action:** Use static imports for core dependencies (like stores) within component files. Reserve dynamic imports only for heavy, infrequently-used routes or truly optional feature modules to ensure interaction delight remains instantaneous.

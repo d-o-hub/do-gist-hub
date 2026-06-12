@@ -8,21 +8,8 @@ import { safeError } from '../services/security/logger';
 import gistStore from '../stores/gist-store';
 import type { GistRecord } from '../types';
 import type { GistRevision } from '../types/api';
+import { formatRelativeTime } from '../utils/date';
 import { toast } from './ui/toast';
-
-function formatRelativeTime(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  if (diffSec < 60) return 'Just now';
-  const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
-  const diffDay = Math.floor(diffHr / 24);
-  return `${diffDay}d ago`;
-}
 
 export function buildFileContent(content: string, language?: string): DocumentFragment {
   const frag = document.createDocumentFragment();
@@ -37,7 +24,13 @@ export function buildFileContent(content: string, language?: string): DocumentFr
 
 export function renderGistDetail(gist: GistRecord): DocumentFragment {
   const title = gist.description || 'Untitled Gist';
-  const fileCount = Object.keys(gist.files).length;
+
+  // BOLT: Calculate file count in a single pass to avoid Object.keys() array allocation
+  let fileCount = 0;
+  for (const key in gist.files) {
+    if (Object.hasOwn(gist.files, key)) fileCount++;
+  }
+
   const visibility = gist.public ? 'Public' : 'Secret';
   const frag = document.createDocumentFragment();
 
@@ -162,8 +155,16 @@ export function renderGistDetail(gist: GistRecord): DocumentFragment {
   contentArea.id = 'file-content-area';
   contentArea.setAttribute('role', 'tabpanel');
   contentArea.setAttribute('aria-labelledby', 'tab-0');
-  const firstFileKey = Object.keys(gist.files)[0];
-  const firstFile = firstFileKey ? gist.files[firstFileKey] : null;
+
+  // BOLT: Get first file without Object.keys() allocation
+  let firstFile: GistRecord['files'][string] | null = null;
+  for (const key in gist.files) {
+    if (Object.hasOwn(gist.files, key)) {
+      firstFile = gist.files[key]!;
+      break;
+    }
+  }
+
   if (firstFile?.content) {
     contentArea.appendChild(buildFileContent(firstFile.content, firstFile.language));
   } else {
@@ -360,7 +361,7 @@ export function bindDetailEvents(
     () => {
       void (async () => {
         if (!gistId) return;
-        const ok = await (await import('../stores/gist-store')).default.toggleStar(gistId);
+        const ok = await gistStore.toggleStar(gistId);
         if (signal?.aborted) return;
         if (ok) void loadGistDetail(gistId, container, onBack, onEdit, onViewRevision, signal);
       })();
@@ -388,9 +389,9 @@ export function bindDetailEvents(
         tab.setAttribute('tabindex', '0');
 
         // Update content
-        void (async () => {
+        {
           if (!gistId) return;
-          const gist = await (await import('../stores/gist-store')).default.getGist(gistId);
+          const gist = gistStore.getGist(gistId);
           if (signal?.aborted) return;
           if (!gist) return;
           const file = gist.files[fileKey];
@@ -440,7 +441,7 @@ export function bindDetailEvents(
             copyContentBtn.appendChild(copyLabel);
             infoArea.appendChild(copyContentBtn);
           }
-        })();
+        }
       },
       { signal }
     );
@@ -557,7 +558,7 @@ export function bindDetailEvents(
 async function copyGistUrl(container: HTMLElement, signal?: AbortSignal): Promise<void> {
   const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id');
   if (!gistId) return;
-  const gist = await (await import('../stores/gist-store')).default.getGist(gistId);
+  const gist = gistStore.getGist(gistId);
   if (signal?.aborted) return;
   const url = gist?.htmlUrl;
   if (!url) {
@@ -580,14 +581,23 @@ async function copyGistUrl(container: HTMLElement, signal?: AbortSignal): Promis
 async function shareGist(container: HTMLElement, signal?: AbortSignal): Promise<void> {
   const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id');
   if (!gistId) return;
-  const gist = await (await import('../stores/gist-store')).default.getGist(gistId);
+  const gist = gistStore.getGist(gistId);
   if (signal?.aborted) return;
   if (!gist?.htmlUrl) {
     toast.error('Nothing to share for this gist');
     return;
   }
   const htmlUrl: string = gist.htmlUrl;
-  const firstFile = Object.values(gist.files)[0];
+
+  // BOLT: Get first file without Object.values() allocation
+  let firstFile: GistRecord['files'][string] | undefined;
+  for (const key in gist.files) {
+    if (Object.hasOwn(gist.files, key)) {
+      firstFile = gist.files[key];
+      break;
+    }
+  }
+
   const shareData: ShareData = {
     title: gist.description || 'Gist',
     text: firstFile?.content?.slice(0, 200) || gist.description || '',
