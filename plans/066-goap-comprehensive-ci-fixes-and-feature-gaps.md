@@ -94,8 +94,8 @@ Stop returning full file content in list endpoints.
 |---|--------|-------------|--------|------|
 | 18 | Audit `src/services/github/client.ts` `listGists()` and `listStarredGists()` — confirm they pass `?files=false` or not | Research done | Gap confirmed | XS |
 | 19 | Add `?files=false` query parameter to both list endpoints in `client.ts` | Action 18 done | List responses exclude file content | XS |
-| 20 | Update `src/stores/gist-store.ts` to handle list responses without content (lazy-load on demand) | Action 19 done | Store handles partial payloads | S |
-| 21 | Add unit tests verifying list calls include `?files=false` and detail calls include file content | Action 20 done | Regression prevention | S |
+| 20 | ✅ Update `src/stores/gist-store.ts` to handle list responses without content (lazy-load on demand) and consume every paginated own/starred gist page | Action 19 done | Store handles partial payloads and full paginated list results | S |
+| 21 | ✅ Add unit tests verifying list pagination and content preservation for omitted list file content | Action 20 done | Regression prevention | S |
 
 ### Goal 6: PWA Install Prompt & Web APIs (Plan 064 F3, F5-F7, F13)
 
@@ -157,8 +157,10 @@ Display code with proper syntax highlighting.
 - [ ] `pnpm run typecheck` passes
 - [ ] `pnpm run lint` passes (zero errors)
 - [ ] `./scripts/quality_gate.sh` passes
+- [ ] Plan 064 bugs B3-B7 resolved
+- [x] ADR-016 lazy hydration pagination implemented
+- [ ] PWA install prompt functional
 - [x] Plan 064 bugs B3-B7 resolved (static reconciliation complete; keep registry hygiene ongoing)
-- [ ] ADR-016 lazy hydration implemented
 - [ ] PWA install prompt functional — Partial ◐: capture/subscription implemented; telemetry and UX polish not fully verified
 - [x] Persistent storage request implemented
 - [x] Pending sync app badge implemented

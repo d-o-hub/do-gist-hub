@@ -131,9 +131,12 @@ describe('GistDetail', () => {
       expect(w.textContent).toContain('Public');
     });
 
-    it('renders file tabs for multi-file gists', () => {
+    it('renders file tabs for multi-file gists with roving tabindex', () => {
       const w = renderToWrapper(mockGist);
-      expect(w.querySelector('.file-tabs')).not.toBeNull();
+      const tabs = w.querySelectorAll('.file-tab');
+      expect(tabs.length).toBe(2);
+      expect(tabs[0]?.getAttribute('tabindex')).toBe('0');
+      expect(tabs[1]?.getAttribute('tabindex')).toBe('-1');
       expect(w.textContent).toContain('TEST.TS');
       expect(w.textContent).toContain('README.MD');
     });
@@ -472,7 +475,52 @@ describe('GistDetail', () => {
       // Verify tab UI updated
       expect(secondTab.classList.contains('active')).toBe(true);
       expect(secondTab.getAttribute('aria-selected')).toBe('true');
+      expect(secondTab.getAttribute('tabindex')).toBe('0');
       expect(container.querySelector('#tab-0')?.getAttribute('aria-selected')).toBe('false');
+      expect(container.querySelector('#tab-0')?.getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('navigates tabs with arrow keys', () => {
+      bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+
+      const firstTab = container.querySelector('#tab-0') as HTMLElement;
+      const secondTab = container.querySelector('#tab-1') as HTMLElement;
+
+      firstTab.focus();
+
+      // ArrowRight to second tab
+      firstTab.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+
+      expect(secondTab.getAttribute('tabindex')).toBe('0');
+      expect(secondTab.classList.contains('active')).toBe(true);
+      expect(document.activeElement).toBe(secondTab);
+
+      // ArrowLeft back to first tab
+      secondTab.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+
+      expect(firstTab.getAttribute('tabindex')).toBe('0');
+      expect(firstTab.classList.contains('active')).toBe(true);
+      expect(document.activeElement).toBe(firstTab);
+    });
+
+    it('navigates tabs with Home and End keys', () => {
+      bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+
+      const firstTab = container.querySelector('#tab-0') as HTMLElement;
+      const secondTab = container.querySelector('#tab-1') as HTMLElement;
+
+      // Start at first tab, press End
+      firstTab.focus();
+      firstTab.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+
+      expect(secondTab.getAttribute('tabindex')).toBe('0');
+      expect(document.activeElement).toBe(secondTab);
+
+      // Press Home
+      secondTab.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+
+      expect(firstTab.getAttribute('tabindex')).toBe('0');
+      expect(document.activeElement).toBe(firstTab);
     });
 
     it('copies content to clipboard when copy button is clicked', async () => {

@@ -15,3 +15,7 @@
 - **Actionable Empty States**: Guide users with a primary CTA, title, description, and icon in every empty state (e.g., "Create Gist" button when no gists are found).
 - **Adaptive Layouts**: Prefer Container Queries for internal component responsive logic to allow fluid layouts regardless of sidebar visibility.
 - **UI Label Normalization**: Use mixed-case/sentence case for UI labels rather than ALL-CAPS to improve readability and ensure compatibility with standard test assertions.
+
+## 2026-07-20 - [Roving Tabindex for Navigation Efficiency]
+**Learning:** Roving tabindex is essential for tabbed interfaces to prevent keyboard users from being "trapped" in long lists of tabs. It allows users to skip the entire tab list with a single Tab press while still maintaining access to all tabs via Arrow keys, significantly improving keyboard navigation efficiency.
+**Action:** Implement Roving Tabindex (`tabindex="0"` for active, `-1` for inactive) for all custom tabbed or grouped controls.
