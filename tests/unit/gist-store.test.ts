@@ -9,6 +9,7 @@
  * beforeEach to reset its internal state between tests.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { PaginationInfo } from '../../src/types/api';
 
 // ---- Mocks (hoisted) ----
 
@@ -85,6 +86,16 @@ import gistStore from '../../src/stores/gist-store';
 
 // ---- Helpers ----
 
+function pagination(nextPage: number | null): PaginationInfo {
+  return {
+    nextPage,
+    prevPage: null,
+    firstPage: null,
+    lastPage: null,
+    totalPages: null,
+  };
+}
+
 function makeGistRecord(id: string, overrides: Record<string, unknown> = {}) {
   return {
     id,
@@ -134,8 +145,8 @@ function makeGitHubGist(id: string, overrides: Record<string, unknown> = {}) {
 
 /** Reset all mocks that loadGists depends on (called by init()) */
 function resetGistMocks() {
-  vi.mocked(GitHub.listGists).mockResolvedValue({ data: [] });
-  vi.mocked(GitHub.listStarredGists).mockResolvedValue({ data: [] });
+  vi.mocked(GitHub.listGists).mockResolvedValue({ data: [], pagination: pagination(null) });
+  vi.mocked(GitHub.listStarredGists).mockResolvedValue({ data: [], pagination: pagination(null) });
   vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
   vi.mocked(isAuthenticated).mockResolvedValue(true);
   vi.mocked(syncQueue.queueOperation).mockResolvedValue(1);
@@ -293,6 +304,82 @@ describe('GistStore', () => {
       await gistStore.init();
 
       expect(listener).toHaveBeenCalled();
+    });
+  });
+
+  // ---- loadGists ----
+
+  describe('loadGists', () => {
+    it('loads all pages of own gists and preserves existing file content omitted by list responses', async () => {
+      vi.mocked(dbGetAllGists).mockResolvedValue([
+        makeGistRecord('own-1', {
+          files: { 'test.txt': { filename: 'test.txt', content: 'cached content' } },
+        }),
+      ] as never[]);
+      await gistStore.init();
+      clearGistMockCalls();
+
+      vi.mocked(GitHub.listGists)
+        .mockResolvedValueOnce({
+          data: [
+            makeGitHubGist('own-1', {
+              files: {
+                'test.txt': {
+                  filename: 'test.txt',
+                  raw_url: 'https://api.github.com/gists/own-1/raw',
+                  size: 14,
+                  type: 'text/plain',
+                  language: 'Text',
+                },
+              },
+            }),
+          ],
+          pagination: pagination(2),
+        })
+        .mockResolvedValueOnce({
+          data: [makeGitHubGist('own-2')],
+          pagination: pagination(null),
+        });
+      vi.mocked(GitHub.listStarredGists).mockResolvedValue({
+        data: [],
+        pagination: pagination(null),
+      });
+
+      await gistStore.loadGists();
+
+      expect(GitHub.listGists).toHaveBeenNthCalledWith(1, { page: 1, perPage: 100 });
+      expect(GitHub.listGists).toHaveBeenNthCalledWith(2, { page: 2, perPage: 100 });
+      expect(gistStore.getGist('own-1')?.files['test.txt']?.content).toBe('cached content');
+      expect(gistStore.getGist('own-2')).toBeDefined();
+      expect(saveGists).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ id: 'own-1' }),
+          expect.objectContaining({ id: 'own-2' }),
+        ])
+      );
+    });
+
+    it('loads all pages of starred gists', async () => {
+      vi.mocked(GitHub.listGists).mockResolvedValue({
+        data: [],
+        pagination: pagination(null),
+      });
+      vi.mocked(GitHub.listStarredGists)
+        .mockResolvedValueOnce({
+          data: [makeGitHubGist('starred-1')],
+          pagination: pagination(3),
+        })
+        .mockResolvedValueOnce({
+          data: [makeGitHubGist('starred-3')],
+          pagination: pagination(null),
+        });
+
+      await gistStore.loadGists();
+
+      expect(GitHub.listStarredGists).toHaveBeenNthCalledWith(1, { page: 1, perPage: 100 });
+      expect(GitHub.listStarredGists).toHaveBeenNthCalledWith(2, { page: 3, perPage: 100 });
+      expect(gistStore.getGist('starred-1')?.starred).toBe(true);
+      expect(gistStore.getGist('starred-3')?.starred).toBe(true);
     });
   });
 
@@ -679,8 +766,12 @@ describe('GistStore', () => {
     it('fetches own and starred gists from GitHub', async () => {
       vi.mocked(GitHub.listGists).mockResolvedValue({
         data: [makeGitHubGist('gist-1', { description: 'Own gist' })],
+        pagination: pagination(null),
       });
-      vi.mocked(GitHub.listStarredGists).mockResolvedValue({ data: [] });
+      vi.mocked(GitHub.listStarredGists).mockResolvedValue({
+        data: [],
+        pagination: pagination(null),
+      });
 
       await gistStore.loadGists();
 
@@ -690,8 +781,14 @@ describe('GistStore', () => {
 
     it('saves fetched gists to IndexedDB', async () => {
       const ownGist = makeGitHubGist('gist-1');
-      vi.mocked(GitHub.listGists).mockResolvedValue({ data: [ownGist] });
-      vi.mocked(GitHub.listStarredGists).mockResolvedValue({ data: [] });
+      vi.mocked(GitHub.listGists).mockResolvedValue({
+        data: [ownGist],
+        pagination: pagination(null),
+      });
+      vi.mocked(GitHub.listStarredGists).mockResolvedValue({
+        data: [],
+        pagination: pagination(null),
+      });
 
       await gistStore.loadGists();
 
@@ -706,8 +803,14 @@ describe('GistStore', () => {
 
     it('marks gists as starred when they appear in starred gists', async () => {
       const ownGist = makeGitHubGist('starred-gist');
-      vi.mocked(GitHub.listGists).mockResolvedValue({ data: [ownGist] });
-      vi.mocked(GitHub.listStarredGists).mockResolvedValue({ data: [ownGist] });
+      vi.mocked(GitHub.listGists).mockResolvedValue({
+        data: [ownGist],
+        pagination: pagination(null),
+      });
+      vi.mocked(GitHub.listStarredGists).mockResolvedValue({
+        data: [ownGist],
+        pagination: pagination(null),
+      });
 
       await gistStore.loadGists();
 
@@ -716,8 +819,11 @@ describe('GistStore', () => {
 
     it('includes gists that are only in starred list', async () => {
       const starredOnly = makeGitHubGist('starred-only');
-      vi.mocked(GitHub.listGists).mockResolvedValue({ data: [] });
-      vi.mocked(GitHub.listStarredGists).mockResolvedValue({ data: [starredOnly] });
+      vi.mocked(GitHub.listGists).mockResolvedValue({ data: [], pagination: pagination(null) });
+      vi.mocked(GitHub.listStarredGists).mockResolvedValue({
+        data: [starredOnly],
+        pagination: pagination(null),
+      });
 
       await gistStore.loadGists();
 

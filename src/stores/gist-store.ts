@@ -19,10 +19,39 @@ import {
   storeConflicts,
 } from '../services/sync/conflict-detector';
 import syncQueue from '../services/sync/queue';
-import type { GitHubGist, UpdateGistRequest } from '../types/api';
+import type {
+  GitHubGist,
+  GitHubGistListItem,
+  PaginatedResult,
+  UpdateGistRequest,
+} from '../types/api';
 import { parseIsoDate } from '../utils/date';
 
 export type GistStoreListener = (gists: GistRecord[]) => void;
+
+const GIST_LIST_PAGE_SIZE = 100;
+
+type GistListPageFetcher = (options: {
+  page: number;
+  perPage: number;
+}) => Promise<PaginatedResult<GitHubGistListItem>>;
+
+async function fetchAllGistPages(fetchPage: GistListPageFetcher): Promise<GitHubGistListItem[]> {
+  const gists: GitHubGistListItem[] = [];
+  let page = 1;
+
+  while (true) {
+    const result = await fetchPage({ page, perPage: GIST_LIST_PAGE_SIZE });
+    gists.push(...result.data);
+
+    const nextPage = result.pagination?.nextPage ?? null;
+    if (nextPage === null) {
+      return gists;
+    }
+
+    page = nextPage;
+  }
+}
 
 class GistStore {
   private gists: GistRecord[] = [];
@@ -89,12 +118,10 @@ class GistStore {
     this.notifyListeners();
     try {
       if (!networkMonitor.isOnline()) return;
-      const [ownResult, starredResult] = await Promise.all([
-        GitHub.listGists(),
-        GitHub.listStarredGists(),
+      const [ownGists, starredGists] = await Promise.all([
+        fetchAllGistPages(GitHub.listGists),
+        fetchAllGistPages(GitHub.listStarredGists),
       ]);
-      const ownGists = ownResult.data;
-      const starredGists = starredResult.data;
 
       const starredIds = new Set(starredGists.map((g) => g.id));
       const ownIds = new Set(ownGists.map((g) => g.id));
@@ -107,7 +134,7 @@ class GistStore {
       for (const g of this.gists) gistMap.set(g.id, g);
 
       // BOLT: Optimize by processing all gists in parallel and batching DB writes
-      const processGist = (gist: GitHubGist, isStarred: boolean): void => {
+      const processGist = (gist: GitHubGistListItem, isStarred: boolean): void => {
         const existing = gistMap.get(gist.id);
         let record: GistRecord;
 
@@ -388,7 +415,7 @@ class GistStore {
   }
 
   private static githubGistToRecord(
-    gist: GitHubGist,
+    gist: GitHubGist | GitHubGistListItem,
     starred = false,
     existingRecord?: GistRecord
   ): GistRecord {
@@ -396,14 +423,19 @@ class GistStore {
       id: gist.id,
       description: gist.description,
       files: Object.fromEntries(
-        Object.entries(gist.files).map(([k, f]) => [
-          k,
-          {
-            ...f,
-            content: f.content ?? existingRecord?.files[k]?.content,
-            rawUrl: f.raw_url,
-          },
-        ])
+        Object.entries(gist.files).map(([k, f]) => {
+          const content: string | undefined =
+            'content' in f && typeof f.content === 'string' ? f.content : undefined;
+
+          return [
+            k,
+            {
+              ...f,
+              content: content ?? existingRecord?.files[k]?.content,
+              rawUrl: f.raw_url,
+            },
+          ];
+        })
       ),
       htmlUrl: gist.html_url,
       gitPullUrl: gist.git_pull_url,
