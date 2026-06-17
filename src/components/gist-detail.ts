@@ -4,6 +4,7 @@
  */
 
 import * as GitHub from '../services/github/client';
+import { sanitizeUrl } from '../services/security/dom';
 import { safeError } from '../services/security/logger';
 import gistStore from '../stores/gist-store';
 import type { GistRecord } from '../types';
@@ -105,7 +106,7 @@ export function renderGistDetail(gist: GistRecord): DocumentFragment {
     const githubLink = document.createElement('a');
     githubLink.className = 'btn btn-ghost';
     githubLink.dataset.action = 'open-github';
-    githubLink.href = gist.htmlUrl;
+    githubLink.href = sanitizeUrl(gist['htmlUrl']);
     githubLink.target = '_blank';
     githubLink.rel = 'noopener noreferrer';
     githubLink.textContent = 'Open in GitHub';
@@ -190,7 +191,7 @@ export function renderGistDetail(gist: GistRecord): DocumentFragment {
     rawSpan.className = 'micro-label';
     rawSpan.textContent = 'Raw URL: ';
     const rawLink = document.createElement('a');
-    rawLink.href = firstFile.rawUrl || '';
+    rawLink.href = sanitizeUrl(firstFile.rawUrl || '');
     rawLink.target = '_blank';
     rawLink.rel = 'noopener noreferrer';
     rawLink.textContent = 'Link';
@@ -424,7 +425,7 @@ export function bindDetailEvents(
             rawSpan.className = 'micro-label';
             rawSpan.textContent = 'Raw URL: ';
             const rawLink = document.createElement('a');
-            rawLink.href = file.rawUrl || '';
+            rawLink.href = sanitizeUrl(file.rawUrl || '');
             rawLink.target = '_blank';
             rawLink.rel = 'noopener noreferrer';
             rawLink.textContent = 'Link';
