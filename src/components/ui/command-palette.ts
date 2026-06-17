@@ -17,6 +17,7 @@ export interface Command {
 
 export class CommandPalette {
   private container: HTMLElement | null = null;
+  private input: HTMLInputElement | null = null;
   private commands: Command[] = [];
   private filteredCommands: Command[] = [];
   private selectedIndex = 0;
@@ -128,6 +129,7 @@ export class CommandPalette {
     input.autofocus = true;
     searchDiv.appendChild(input);
     this.container.appendChild(searchDiv);
+    this.input = input;
 
     const resultsDiv = document.createElement('div');
     resultsDiv.className = 'command-palette-results';
@@ -160,7 +162,10 @@ export class CommandPalette {
     if (this.filteredCommands.length === 0) {
       const noResults = document.createElement('div');
       noResults.className = 'no-results';
-      noResults.textContent = 'No commands found';
+      const searchValue = this.input?.value.trim() ?? '';
+      noResults.textContent = searchValue
+        ? `No commands match "${searchValue}"`
+        : 'No commands available';
       frag.appendChild(noResults);
       return frag;
     }

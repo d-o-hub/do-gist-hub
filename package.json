@@ -58,15 +58,6 @@
   "overrides": {
     "@xmldom/xmldom": "^0.8.13"
   },
-  "pnpm": {
-    "overrides": {
-      "@xmldom/xmldom": "^0.8.13"
-    },
-    "onlyBuiltDependencies": [
-      "canvas",
-      "esbuild"
-    ]
-  },
   "devDependencies": {
     "@biomejs/biome": "^2.4.15",
     "@commitlint/config-conventional": "^21.0.1",
@@ -78,7 +69,7 @@
     "@vitest/coverage-v8": "^4.1.6",
     "canvas": "^3.0.1",
     "commitlint": "^21.0.1",
-    "esbuild": "^0.28.0",
+    "esbuild": "^0.28.1",
     "fake-indexeddb": "^6.0.0",
     "html-escaper": "^3.0.3",
     "jsdom": "^29.1.1",
@@ -87,7 +78,7 @@
     "style-dictionary": "^5.4.3",
     "tsx": "^4.22.3",
     "typescript": "^6.0.3",
-    "vite": "^8.0.13",
+    "vite": "^8.0.16",
     "vitest": "^4.1.6"
   }
 }

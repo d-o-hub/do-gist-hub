@@ -11,6 +11,21 @@
   border-radius: var(--radius-xl);
   margin: var(--spacing-v4) 0;
 }
+
+/* Tighter padding on very narrow phones so the title and
+   description don't get crushed against the container edges. */
+@media (max-width: 480px) {
+  .empty-state-container {
+    padding: var(--spacing-v8) var(--spacing-v4);
+  }
+  .empty-state-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .empty-state-actions .btn {
+    width: 100%;
+  }
+}
 .empty-state-title {
   font-family: var(--font-display);
   font-size: var(--font-size-lg);
@@ -28,6 +43,58 @@
   text-wrap: pretty;
 }
 .empty-state-icon {
-  font-size: var(--font-size-v4xl);
+  font-size: var(--font-size-4xl);
   margin-bottom: var(--space-4);
+}
+
+.empty-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+  margin-top: var(--space-4);
+}
+
+@media (max-width: 480px) {
+  .empty-state-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .empty-state-actions .btn {
+    width: 100%;
+  }
+}
+
+/* Subtle stagger reveal: when the empty state appears (e.g. the
+   retry/back actions on a failed gist-detail load), the buttons
+   fade up in sequence so the user reads them as a deliberate
+   recovery path rather than a flat list. Skipped on narrow
+   viewports where the buttons stack — no stagger needed. */
+.empty-state-actions .btn {
+  animation: empty-action-rise var(--motion-duration-base) var(--motion-easing-out) backwards;
+}
+
+.empty-state-actions .btn:nth-child(1) {
+  animation-delay: 60ms;
+}
+
+.empty-state-actions .btn:nth-child(2) {
+  animation-delay: 100ms;
+}
+
+.empty-state-actions .btn:nth-child(n + 3) {
+  animation-delay: 140ms;
+}
+
+@keyframes empty-action-rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

@@ -210,3 +210,11 @@
 .stat-card.clickable:active {
   transform: translateY(0);
 }
+
+/* ===== Narrow-viewport buttons in conflict compare/list ===== */
+@media (max-width: 480px) {
+  .resolve-btn,
+  .resolve-choice-btn {
+    width: 100%;
+  }
+}

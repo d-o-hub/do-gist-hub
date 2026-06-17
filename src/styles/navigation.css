@@ -215,11 +215,19 @@
   position: absolute;
   bottom: calc(var(--spacing-v1) * -1);
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scaleX(0);
   width: var(--spacing-v4);
   height: calc(var(--spacing-v1) * 0.75);
   background: var(--color-accent);
   border-radius: var(--radius-full);
+  transform-origin: center;
+  animation: nav-indicator-grow var(--motion-duration-base) var(--motion-easing-out) forwards;
+}
+
+@keyframes nav-indicator-grow {
+  to {
+    transform: translateX(-50%) scaleX(1);
+  }
 }
 
 .nav-item:focus-visible {

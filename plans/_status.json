@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
-  "lastUpdated": "2026-06-09T00:00:00Z",
+  "lastUpdated": "2026-06-16T00:00:00Z",
   "sprintComplete": {
     "038-sprint1": "2026-05-16",
     "038-sprint2": "2026-05-16",
@@ -314,7 +314,7 @@
     "adr-033-webkit-indexeddb-flaky-tests.md": {
       "type": "adr",
       "status": "accepted",
-      "summary": "Skip WebKit tests with unreliable IndexedDB evaluation on Linux Playwright port"
+      "summary": "Skip WebKit tests with unreliable IndexedDB on Linux — Accepted"
     },
     "059-goap-resolve-pre-existing-ci-issues.md": {
       "type": "goap",
@@ -355,6 +355,16 @@
       "type": "progress",
       "status": "complete",
       "summary": "Static reconciliation snapshot for Plans 064/066: implemented quick wins documented and registry entries synced"
+    },
+    "adr-034-design-token-system-dtcg.md": {
+      "type": "adr",
+      "status": "accepted",
+      "summary": "DTCG-aligned design token system: 6-layer architecture, Style Dictionary pipeline, dark-first themes, OKLCH accent ramp"
+    },
+    "070-goap-design-token-system-audit-and-cleanup.md": {
+      "type": "goap",
+      "status": "complete",
+      "summary": "Design token system audit: documentation update, ADR formalization, dead-code identification, validation plan"
     }
   },
   "archive": [
@@ -387,8 +397,8 @@
     "016-pwa-offline-page.md"
   ],
   "nextAvailable": {
-    "adr": "adr-034",
-    "plan": "068",
-    "goap": "068"
+    "adr": "adr-035",
+    "plan": "071",
+    "goap": "071"
   }
 }

@@ -1,6 +1,6 @@
 # plans/\_index.md — Active Plan Registry
 
-> **Last updated**: 2026-06-09T00:00
+> **Last updated**: 2026-06-16T00:00
 > Agents: read this before starting any task. Update it when you change plan status.
 
 ---
@@ -47,6 +47,9 @@ See `plans/archive/` for completed or superseded files moved here on 2026-05-15.
 | `archive/024-progress-update-2026-05-07.md`   | Complete ✅    | Progress update                                                |
 | `archive/025-progress-update-2026-05-07.md`   | Complete ✅    | Progress update                                                |
 
+| `070-goap-design-token-system-audit-and-cleanup.md` | GOAP | Complete ✅ | Design token system audit: documentation, ADR, dead-code identification |
+| `069-progress-update-2026-06-16-responsive-composition-v2.md` | Progress | Complete ✅ | Responsive composition v2: 8 narrow-viewport fixes, token cleanup |
+
 ## Active ADRs (accepted, not superseded)
 
 | File                                                  | Summary                                |
@@ -79,6 +82,7 @@ See `plans/archive/` for completed or superseded files moved here on 2026-05-15.
 | `adr-031-playwright-webkit-deps-ci.md`                 | Playwright WebKit must use --with-deps on cache miss for system libs — Accepted |
 | `adr-032-vitest-environment-teardown.md`               | Mock transitively resolved modules to prevent vitest teardown errors — Accepted |
 | `adr-033-webkit-indexeddb-flaky-tests.md`              | Skip WebKit tests with unreliable IndexedDB on Linux — Accepted |
+| `adr-034-design-token-system-dtcg.md`                  | DTCG-aligned design token system: 6-layer architecture, Style Dictionary pipeline — Accepted |
 
 ## Reference docs (foundational, stable)
 
@@ -135,6 +139,6 @@ These numbered plans document the project's foundation and are considered stable
 ## Quick reference: ADR numbers in use
 
 `adr-001` through `adr-033` (gaps: 017-019 reserved)
-**Next available ADR**: `adr-034`
-**Next available plan/GOAP number**: `068`
-**Next available GOAP action number**: New GOAP plan = `068`
+**Next available ADR**: `adr-035`
+**Next available plan/GOAP number**: `071`
+**Next available GOAP action number**: New GOAP plan = `071`

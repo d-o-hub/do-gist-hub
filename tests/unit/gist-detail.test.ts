@@ -566,7 +566,7 @@ describe('GistDetail', () => {
 
       // Let the async handler run
       await vi.waitFor(() => {
-        expect(copyBtn.innerHTML).toContain('COPIED!');
+        expect(copyBtn.innerHTML).toContain('COPIED');
       });
 
       expect(copyBtn.classList.contains('btn-success')).toBe(true);

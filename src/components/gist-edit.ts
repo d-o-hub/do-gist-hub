@@ -5,7 +5,9 @@
 
 import type { GistRecord } from '../services/db';
 import { getGist } from '../services/db';
+import networkMonitor from '../services/network/offline-monitor';
 import gistStore from '../stores/gist-store';
+import { clearAllFieldErrors, showFieldError } from '../utils/form-error';
 import { setButtonLoading, setButtonText } from './ui/button';
 import { EmptyState } from './ui/empty-state';
 import { toast } from './ui/toast';
@@ -165,6 +167,17 @@ export function renderEditForm(gist: GistRecord): DocumentFragment {
   submitBtn.id = 'edit-submit-btn';
   submitBtn.textContent = 'SAVE CHANGES';
   actions.appendChild(submitBtn);
+
+  // "Unsaved changes" badge: visible only when the form is dirty.
+  // Anchored to the actions row so it doesn't shift other layout
+  // (the actions row already has flex-wrap on narrow viewports).
+  const dirtyBadge = document.createElement('span');
+  dirtyBadge.id = 'edit-dirty-badge';
+  dirtyBadge.className = 'dirty-badge';
+  dirtyBadge.setAttribute('aria-live', 'polite');
+  dirtyBadge.setAttribute('aria-hidden', 'true');
+  dirtyBadge.textContent = 'Unsaved changes';
+  actions.insertBefore(dirtyBadge, submitBtn);
   const cancelBtn = document.createElement('button');
   cancelBtn.type = 'button';
   cancelBtn.id = 'edit-cancel-btn';
@@ -185,8 +198,73 @@ export function bindEditEvents(
 ): void {
   const gistId = (container.querySelector('.route-edit') as HTMLElement | null)?.dataset.gistId;
 
-  container.querySelector('#edit-back-btn')?.addEventListener('click', onBack, { signal });
-  container.querySelector('#edit-cancel-btn')?.addEventListener('click', onBack, { signal });
+  // Snapshot the original field values so we can detect dirty state.
+  // The form gets a `is-dirty` class on first change; the SUBMIT and
+  // CANCEL buttons stay accessible but trigger a confirm when dirty
+  // before navigating away.
+  const form = container.querySelector('#edit-gist-form') as HTMLFormElement | null;
+  const snapshot = (): string => {
+    if (!form) return '';
+    const fields = form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea');
+    return Array.from(fields)
+      .map((f) => `${f.id || f.name}:${f.value}`)
+      .join('|');
+  };
+  const original = snapshot();
+  const isDirty = (): boolean => snapshot() !== original;
+  const setDirty = (): void => {
+    if (!form) return;
+    const dirty = isDirty();
+    form.classList.toggle('is-dirty', dirty);
+    const badge = container.querySelector('#edit-dirty-badge') as HTMLElement | null;
+    if (badge) {
+      if (dirty) {
+        badge.removeAttribute('aria-hidden');
+      } else {
+        badge.setAttribute('aria-hidden', 'true');
+      }
+    }
+  };
+  if (form) {
+    form.addEventListener(
+      'input',
+      () => {
+        setDirty();
+      },
+      { signal }
+    );
+  }
+  const guardedBack = async (): Promise<void> => {
+    if (isDirty()) {
+      // Use the app's confirm dialog (consistent UX, accessible,
+      // a11y-friendly) instead of window.confirm. Returns true if
+      // the user confirms they want to discard the changes.
+      const { showConfirmDialog } = await import('../utils/dialog');
+      const confirmed = await showConfirmDialog({
+        title: 'Discard unsaved changes?',
+        message: 'You have edits that have not been saved. Leaving now will discard them.',
+        confirmLabel: 'Discard changes',
+        cancelLabel: 'Keep editing',
+        variant: 'danger',
+      });
+      if (!confirmed) return;
+    }
+    onBack();
+  };
+  container.querySelector('#edit-back-btn')?.addEventListener(
+    'click',
+    () => {
+      void guardedBack();
+    },
+    { signal }
+  );
+  container.querySelector('#edit-cancel-btn')?.addEventListener(
+    'click',
+    () => {
+      void guardedBack();
+    },
+    { signal }
+  );
 
   container.querySelector('#edit-add-file-btn')?.addEventListener(
     'click',
@@ -199,8 +277,18 @@ export function bindEditEvents(
       editor.querySelector('.remove-file-btn')?.addEventListener(
         'click',
         () => {
-          if (section.querySelectorAll('.file-editor').length > 1) editor.remove();
-          else toast.error('AT LEAST ONE FILE IS REQUIRED');
+          if (section.querySelectorAll('.file-editor').length <= 1) {
+            toast.error('AT LEAST ONE FILE IS REQUIRED');
+            return;
+          }
+          // Animate the row out (150ms fade + lift) before removing.
+          // See create.ts for the same pattern and the reasoning.
+          editor.classList.add('is-leaving');
+          const onEnd = (): void => {
+            editor.remove();
+          };
+          editor.addEventListener('animationend', onEnd, { once: true });
+          window.setTimeout(onEnd, 250);
         },
         { signal }
       );
@@ -214,11 +302,19 @@ export function bindEditEvents(
       'click',
       () => {
         const section = container.querySelector('#edit-files-section');
-        if (section && section.querySelectorAll('.file-editor').length > 1) {
-          (btn as HTMLElement).closest('.file-editor')?.remove();
-        } else {
+        if (!section) return;
+        const editor = (btn as HTMLElement).closest('.file-editor');
+        if (!editor) return;
+        if (section.querySelectorAll('.file-editor').length <= 1) {
           toast.error('AT LEAST ONE FILE IS REQUIRED');
+          return;
         }
+        editor.classList.add('is-leaving');
+        const onEnd = (): void => {
+          editor.remove();
+        };
+        editor.addEventListener('animationend', onEnd, { once: true });
+        window.setTimeout(onEnd, 250);
       },
       { signal }
     );
@@ -231,24 +327,44 @@ export function bindEditEvents(
         e.preventDefault();
         if (!gistId) return;
 
+        clearAllFieldErrors(container);
+
         const files: Record<string, string> = {};
-        let valid = true;
+        const seenFilenames = new Map<string, HTMLInputElement>();
+        const invalidInputs: HTMLInputElement[] = [];
+
         container.querySelectorAll('.file-editor').forEach((editor) => {
           const existingKey = (editor as HTMLElement).dataset.fileKey;
-          const filename = (
-            editor.querySelector('.filename-input') as HTMLInputElement
-          )?.value.trim();
+          const filenameInput = editor.querySelector('.filename-input') as HTMLInputElement;
+          const filename = filenameInput?.value.trim();
           const content =
             (editor.querySelector('.content-editor') as HTMLTextAreaElement)?.value || '';
+
           if (!filename) {
-            valid = false;
+            showFieldError(filenameInput, 'Filename is required');
+            invalidInputs.push(filenameInput);
             return;
           }
+
+          // Duplicate filename check (against the user-typed name; the
+          // existing key lets us keep stable across renames).
+          if (seenFilenames.has(filename) && filename !== existingKey) {
+            showFieldError(filenameInput, `Duplicate filename: ${filename}`);
+            invalidInputs.push(filenameInput);
+            return;
+          }
+          seenFilenames.set(filename, filenameInput);
           files[existingKey || filename] = content;
         });
 
-        if (!valid || Object.keys(files).length === 0) {
-          toast.error('ALL FILES MUST HAVE FILENAMES');
+        const firstInvalid = invalidInputs[0];
+        if (firstInvalid) {
+          firstInvalid.focus();
+          return;
+        }
+
+        if (Object.keys(files).length === 0) {
+          toast.error('AT LEAST ONE FILE REQUIRED');
           return;
         }
 
@@ -257,11 +373,21 @@ export function bindEditEvents(
         )?.value.trim();
 
         const submitBtn = container.querySelector<HTMLButtonElement>('#edit-submit-btn');
-        if (submitBtn) {
+        const enterBusy = (): void => {
+          if (!submitBtn) return;
           submitBtn.disabled = true;
           submitBtn.setAttribute('aria-busy', 'true');
           setButtonLoading(submitBtn, 'Saving...');
-        }
+        };
+        const exitBusy = (): void => {
+          if (!submitBtn) return;
+          submitBtn.disabled = false;
+          submitBtn.removeAttribute('aria-busy');
+          setButtonText(submitBtn, 'SAVE CHANGES');
+        };
+        enterBusy();
+
+        const wasOffline = !networkMonitor.isOnline();
 
         try {
           const result = await gistStore.updateGist(gistId, { description, files });
@@ -269,15 +395,20 @@ export function bindEditEvents(
           if (result) {
             toast.success('GIST UPDATED');
             onBack();
+            return;
           }
-        } catch {
-          toast.error('FAILED TO UPDATE GIST');
-        } finally {
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.removeAttribute('aria-busy');
-            setButtonText(submitBtn, 'SAVE CHANGES');
+          if (wasOffline) {
+            toast.info('CHANGES QUEUED, WILL SYNC WHEN YOU ARE BACK ONLINE', 5000);
+            onBack();
+            return;
           }
+          // Online + null result = real failure. Keep the user on
+          // the form so their changes aren't lost.
+          toast.error('UPDATE FAILED, CHECK YOUR CONNECTION AND TRY AGAIN', 6000);
+          exitBusy();
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : 'FAILED TO UPDATE GIST', 6000);
+          exitBusy();
         }
       })();
     },

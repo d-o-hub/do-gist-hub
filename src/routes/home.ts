@@ -61,7 +61,24 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     searchInput.className = 'search-input';
     searchInput.placeholder = 'Search gists...';
     searchInput.value = query;
+    searchInput.setAttribute('aria-label', 'Search gists');
     searchContainer.appendChild(searchInput);
+
+    const clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.id = 'gist-search-clear';
+    clearBtn.className = 'search-clear-btn';
+    clearBtn.setAttribute('aria-label', 'Clear search');
+    // Use aria-hidden + tabindex to hide from AT/keyboard without
+    // removing the element from layout, so the opacity/transform
+    // transition can play (display:none cannot transition).
+    const initiallyEmpty = query.length === 0;
+    if (initiallyEmpty) {
+      clearBtn.setAttribute('aria-hidden', 'true');
+      clearBtn.tabIndex = -1;
+    }
+    clearBtn.textContent = '×';
+    searchContainer.appendChild(clearBtn);
     routeHome.appendChild(searchContainer);
 
     // Filter header
@@ -101,6 +118,17 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     gistList.id = 'gist-list';
     gistList.className = 'gist-list gist-grid';
     routeHome.appendChild(gistList);
+
+    // Result count: visible summary + screen-reader-only live region.
+    // The visible count tells the user "X gists" at a glance; the
+    // live region announces the same value to AT when the list
+    // changes (filter, sort, search). Both use the same element id.
+    const resultCount = document.createElement('p');
+    resultCount.id = 'gist-result-count';
+    resultCount.className = 'result-count micro-label';
+    resultCount.setAttribute('aria-live', 'polite');
+    resultCount.setAttribute('aria-atomic', 'true');
+    routeHome.appendChild(resultCount);
 
     target.appendChild(routeHome);
   }
@@ -164,6 +192,16 @@ export function render(container: HTMLElement, params?: Record<string, string>):
 
   function updateList(): void {
     const list = container.querySelector('#gist-list');
+    const countEl = container.querySelector('#gist-result-count') as HTMLElement | null;
+    if (countEl) {
+      const total = gistStore.getGists().length;
+      const filtered = countFilteredGists();
+      const countText =
+        filtered === total
+          ? `${total} gist${total === 1 ? '' : 's'}`
+          : `${filtered} of ${total} gist${total === 1 ? '' : 's'}`;
+      countEl.textContent = countText;
+    }
     if (list) {
       list.innerHTML = renderGistList();
       bindCardEvents(
@@ -180,12 +218,42 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     }
   }
 
+  function countFilteredGists(): number {
+    let gists = gistStore.filterGists(
+      currentFilter === 'mine' ? 'all' : (currentFilter as 'all' | 'starred')
+    );
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      gists = gists.filter((g) => {
+        if (g.description?.toLowerCase().includes(q)) return true;
+        for (const filename in g.files) {
+          if (filename.toLowerCase().includes(q)) return true;
+        }
+        return false;
+      });
+    }
+    return gists.length;
+  }
+
   function bindEvents(signal: AbortSignal): void {
-    const searchInput = container.querySelector('#gist-search');
+    const searchInput = container.querySelector('#gist-search') as HTMLInputElement | null;
+    const clearBtn = container.querySelector('#gist-search-clear') as HTMLButtonElement | null;
     if (searchInput) {
+      const toggleClear = (): void => {
+        if (!clearBtn) return;
+        const isEmpty = searchInput.value.length === 0;
+        if (isEmpty) {
+          clearBtn.setAttribute('aria-hidden', 'true');
+          clearBtn.tabIndex = -1;
+        } else {
+          clearBtn.removeAttribute('aria-hidden');
+          clearBtn.removeAttribute('tabindex');
+        }
+      };
       searchInput.addEventListener(
         'input',
         (e) => {
+          toggleClear();
           clearTimeout(searchTimeout);
           const val = (e.target as HTMLInputElement).value;
           searchTimeout = window.setTimeout(() => {
@@ -195,6 +263,38 @@ export function render(container: HTMLElement, params?: Record<string, string>):
         },
         { signal }
       );
+
+      searchInput.addEventListener(
+        'keydown',
+        (e) => {
+          if (e.key === 'Escape' && searchInput.value.length > 0) {
+            e.preventDefault();
+            clearTimeout(searchTimeout);
+            searchTimeout = undefined;
+            searchInput.value = '';
+            searchQuery = '';
+            toggleClear();
+            updateList();
+          }
+        },
+        { signal }
+      );
+
+      if (clearBtn) {
+        clearBtn.addEventListener(
+          'click',
+          () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = undefined;
+            searchInput.value = '';
+            searchQuery = '';
+            toggleClear();
+            updateList();
+            searchInput.focus();
+          },
+          { signal }
+        );
+      }
 
       // Clear debounce timer when the signal aborts to prevent stale updates
       signal.addEventListener(

@@ -169,8 +169,12 @@ describe('Settings Route', () => {
 
       const input = container.querySelector('#pat-input') as HTMLInputElement;
       input.value = 'ghp_newtoken123';
+      // The button is disabled until the input has a value, so
+      // dispatch the input event to enable it.
+      input.dispatchEvent(new Event('input', { bubbles: true }));
 
-      const saveBtn = container.querySelector('#save-token-btn') as HTMLElement;
+      const saveBtn = container.querySelector('#save-token-btn') as HTMLButtonElement;
+      expect(saveBtn.disabled).toBe(false);
       saveBtn?.click();
 
       await vi.waitFor(() => {
@@ -179,15 +183,52 @@ describe('Settings Route', () => {
       });
     });
 
-    it('shows error when save clicked with empty input', async () => {
+    it('keeps save button disabled when input is empty', async () => {
       vi.mocked(getToken).mockResolvedValue(null);
       await render(container);
 
-      const saveBtn = container.querySelector('#save-token-btn') as HTMLElement;
-      saveBtn?.click();
-
-      expect(toast.error).toHaveBeenCalledWith('ENTER A TOKEN');
+      const saveBtn = container.querySelector('#save-token-btn') as HTMLButtonElement;
+      // The button starts disabled and stays disabled while the
+      // input is empty. The hint text under the input explains
+      // the expected format.
+      expect(saveBtn.disabled).toBe(true);
       expect(saveToken).not.toHaveBeenCalled();
+    });
+
+    it('shows inline format error on blur for non-PAT values', async () => {
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      const input = container.querySelector('#pat-input') as HTMLInputElement;
+      input.value = 'not-a-real-token';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('blur', { bubbles: true }));
+
+      await vi.waitFor(() => {
+        expect(input.getAttribute('aria-invalid')).toBe('true');
+        const errorEl = container.querySelector('.form-error');
+        expect(errorEl?.textContent).toContain('Token should start with ghp_ or github_pat_');
+      });
+    });
+
+    it('clears the format error when the user fixes the value', async () => {
+      vi.mocked(getToken).mockResolvedValue(null);
+      await render(container);
+
+      const input = container.querySelector('#pat-input') as HTMLInputElement;
+      input.value = 'bad';
+      input.dispatchEvent(new Event('blur', { bubbles: true }));
+
+      await vi.waitFor(() => {
+        expect(input.getAttribute('aria-invalid')).toBe('true');
+      });
+
+      input.value = 'ghp_valid';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('blur', { bubbles: true }));
+
+      expect(input.getAttribute('aria-invalid')).toBeNull();
+      expect(container.querySelector('.form-error')).toBeNull();
     });
 
     it('removes token when remove button is clicked', async () => {
@@ -334,7 +375,14 @@ describe('Settings Route', () => {
       clearBtn?.click();
 
       await vi.waitFor(() => {
-        expect(showConfirmDialog).toHaveBeenCalledWith('CLEAR ALL LOCAL DATA?');
+        expect(showConfirmDialog).toHaveBeenCalledWith(
+          expect.objectContaining({
+            title: 'Clear all local data?',
+            confirmLabel: 'Clear local cache',
+            cancelLabel: 'Keep it',
+            variant: 'danger',
+          })
+        );
       });
     });
 

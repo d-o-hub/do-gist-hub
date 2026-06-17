@@ -231,26 +231,48 @@ export async function loadGistDetail(
     bindDetailEvents(container, { onBack, onEdit, onViewRevision }, signal);
   } catch (err) {
     safeError('[GistDetail] Failed to load gist', err);
-    toast.error('Failed to load gist details');
+    const isLikelyOffline = err instanceof Error && /network|offline|fetch/i.test(err.message);
+    toast.error(
+      isLikelyOffline ? 'CANNOT REACH GITHUB, CHECK YOUR CONNECTION' : 'Failed to load gist details'
+    );
     const errWrapper = document.createElement('div');
     errWrapper.className = 'empty-state-container';
     errWrapper.setAttribute('role', 'alert');
     const errTitle = document.createElement('h3');
     errTitle.className = 'empty-state-title';
-    errTitle.textContent = 'Gist Not Found';
+    errTitle.textContent = isLikelyOffline ? 'Connection Problem' : 'Gist Not Found';
     errWrapper.appendChild(errTitle);
     const errDesc = document.createElement('p');
     errDesc.className = 'empty-state-description';
-    errDesc.textContent =
-      'This gist may have been deleted or you do not have permission to view it.';
+    errDesc.textContent = isLikelyOffline
+      ? 'We could not reach GitHub. Your cached gists are still available. Try again once you reconnect.'
+      : 'This gist may have been deleted or you do not have permission to view it.';
     errWrapper.appendChild(errDesc);
-    const errBtn = document.createElement('button');
-    errBtn.className = 'btn btn-primary';
-    errBtn.id = 'gist-back-btn';
-    errBtn.textContent = 'Go Back';
-    errWrapper.appendChild(errBtn);
+    const actions = document.createElement('div');
+    actions.className = 'empty-state-actions';
+    const retryBtn = document.createElement('button');
+    retryBtn.className = 'btn btn-primary';
+    retryBtn.id = 'gist-retry-btn';
+    retryBtn.textContent = 'Try again';
+    actions.appendChild(retryBtn);
+    const backBtn = document.createElement('button');
+    backBtn.className = 'btn btn-ghost';
+    backBtn.id = 'gist-back-btn';
+    backBtn.textContent = 'Back to gists';
+    actions.appendChild(backBtn);
+    errWrapper.appendChild(actions);
     container.replaceChildren(errWrapper);
-    container.querySelector('#gist-back-btn')?.addEventListener('click', onBack, { signal });
+    backBtn.addEventListener('click', onBack, { signal });
+    retryBtn.addEventListener(
+      'click',
+      () => {
+        // Re-trigger the same load. Abort the current attempt so the
+        // navigation cleanup doesn't kick in mid-retry, and pass a
+        // fresh signal so the retry can race the abort.
+        void loadGistDetail(id, container, onBack, onEdit, onViewRevision, signal);
+      },
+      { signal }
+    );
   }
 }
 
@@ -510,15 +532,17 @@ export function bindDetailEvents(
               copyBtn.replaceChildren();
               const copiedSpan = document.createElement('span');
               copiedSpan.className = 'micro-label';
-              copiedSpan.textContent = '✅ COPIED!';
+              copiedSpan.textContent = 'COPIED';
               copyBtn.appendChild(copiedSpan);
               copyBtn.classList.add('btn-success');
+              copyBtn.classList.add('is-state-changed');
               toast.success('COPIED TO CLIPBOARD');
 
               setTimeout(() => {
                 if (signal?.aborted) return;
                 copyBtn.replaceChildren(...originalChildren);
                 copyBtn.classList.remove('btn-success');
+                copyBtn.classList.remove('is-state-changed');
               }, 2000);
             } catch (err) {
               safeError('Failed to copy', err);

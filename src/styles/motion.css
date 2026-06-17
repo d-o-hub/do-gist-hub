@@ -243,6 +243,157 @@
     opacity 100ms var(--motion-easing-in),
     transform 100ms var(--motion-easing-in);
 }
+
+/* ===== File Row Enter/Leave (Create + Edit forms) ===== */
+/* When the user clicks "+ ADD FILE" or removes a row, the row
+   appears/disappears with a height + opacity transition. Uses
+   `grid-template-rows: 0fr → 1fr` so the height interpolates
+   without jank, and only animates `transform` + `opacity`
+   (the row content fades while the row's containing grid
+   collapses). */
+@keyframes file-row-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes file-row-leave {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.file-entry,
+.file-editor {
+  animation: file-row-enter var(--motion-duration-fast) var(--motion-easing-out) backwards;
+}
+
+.file-entry.is-leaving,
+.file-editor.is-leaving {
+  animation: file-row-leave var(--motion-duration-fast) var(--motion-easing-in) forwards;
+  pointer-events: none;
+}
+
+/* ===== Empty State Appear ===== */
+/* .empty-state-container and .error-boundary reveal when they
+   mount. Subtle 8px lift + opacity. Distinct from .gist-card
+   entrance so the user can tell the difference between "the list
+   loaded" and "this state is empty/error". */
+@keyframes state-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.empty-state-container,
+.error-boundary {
+  animation: state-card-enter var(--motion-duration-normal) var(--motion-easing-out) backwards;
+}
+
+/* ===== Success Flash ===== */
+/* Short opacity pulse on the target element when a destructive or
+   irreversible action is undone via a toast action. Applies a
+     .is-just-saved class — the consumer adds it for 200ms and
+     removes it. Confirms to the user that "yes, it landed". */
+@keyframes success-flash {
+  0% {
+    box-shadow: 0 0 0 0 var(--color-accent-glow);
+  }
+  40% {
+    box-shadow: 0 0 0 6px var(--color-accent-subtle);
+  }
+  100% {
+    box-shadow: 0 0 0 0 var(--color-accent-glow);
+  }
+}
+
+.is-just-saved {
+  animation: success-flash 400ms var(--motion-easing-out-expo);
+}
+
+/* ===== State Change Pulse ===== */
+/* When a control flips state (button → success, error → idle,
+   disabled → enabled), the user should feel the change. The
+   200ms scale + opacity pulse is read as "this just changed" —
+   short enough to not delay task flow, distinct enough to be
+   impossible to miss. Pair with `transition: ... 200ms` on
+   background-color / border-color for the color flip. */
+@keyframes state-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.is-state-changed {
+  animation: state-pulse 200ms var(--motion-easing-out);
+}
+
+/* ===== Status Reveal ===== */
+/* Inline status lines (token status, auth status) appear via
+   textContent change or replaceChildren. A short fade-up
+   signals "new information has arrived" without overshooting
+   the visual weight. */
+@keyframes status-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.token-status-mt,
+#device-flow-status {
+  animation: status-reveal var(--motion-duration-base) var(--motion-easing-out);
+}
+
+/* ===== Hint Fade ===== */
+/* Disabled-with-reason hint appears next to a control. When
+   the reason becomes irrelevant (e.g. an LLM provider is
+   configured), the hint fades out smoothly instead of just
+   disappearing via the [hidden] attribute (which can't
+   transition because display:none can't animate). */
+.btn-hint {
+  transition:
+    opacity var(--motion-duration-base) var(--motion-easing),
+    transform var(--motion-duration-base) var(--motion-easing-out);
+}
+
+.btn-hint[hidden] {
+  display: none;
+}
+
+/* ===== Confirm Dialog Exit ===== */
+/* The dialog already has an opacity + scale transition on open via
+   modern-glass.css. The exit transition is paired by removing
+   `.visible` — the same `transition: ...` rule applies in reverse.
+   The `cleanup()` function in utils/dialog.ts removes `.visible`
+   200ms before removing the DOM node, giving the close animation
+   time to play. This block intentionally adds no new rules; it
+   documents the pairing so future changes don't break it. */
 /* Progressive enhancement: cards reveal as they scroll into view.
    When `animation-timeline: view()` is supported, we replace the
    fixed `card-enter` with a scroll-driven `card-reveal` and zero
@@ -445,6 +596,14 @@
 }
 
 /* ===== Reduced Motion ===== */
+/* Functional signals (focus rings, loading spinners, state-change
+   pulses) stay. Spatial movement (translate, scale) is replaced by
+   opacity-only fades, capped at 150ms. This is the "low-motion"
+   alternative the design philosophy calls for: if the reduced
+   version loses meaning, the original motion was carrying too much
+   of the interface. */
+
+/* Phase 1: kill spatial transitions on the common surfaces. */
 @media (prefers-reduced-motion: reduce) {
   /* biome-ignore lint/style/noDescendingSpecificity: wildcard inside media query
      is the only practical way to override all per-element animation rules
@@ -474,5 +633,165 @@
   .detail-header {
     /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
     animation: none !important;
+  }
+}
+
+/* Phase 2: re-enable a small set of meaningful fades so the user
+   still gets feedback that "something changed" without the spatial
+   motion. Each rule opts in explicitly — only what carries meaning. */
+@media (prefers-reduced-motion: reduce) {
+  /* Loading spinner keeps spinning — it's a waiting signal, not decoration. */
+  .spinner,
+  .btn-spinner,
+  .loading-skeleton {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    animation-duration: 1.6s !important;
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    animation-iteration-count: infinite !important;
+  }
+
+  /* Sync status pulse keeps a single-shot 200ms opacity fade so the
+     state change is still announced visually. */
+  .sync-indicator.sync-status-changed {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    animation: state-pulse-reduced 200ms var(--motion-easing) !important;
+  }
+
+  @keyframes state-pulse-reduced {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  /* Focus rings keep their transition so the keyboard user still
+     sees the focus shift smoothly. 80ms is below the 100ms a11y
+     threshold and is read as "instant" by most users. */
+  :focus-visible {
+    transition:
+      outline-offset 80ms var(--motion-easing),
+      /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+      box-shadow 80ms var(--motion-easing) !important;
+  }
+
+  /* Toast slide-in becomes an opacity-only fade so success/error
+     feedback still announces without horizontal motion. */
+  .toast-enter {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    animation: toast-fade-in-reduced 150ms var(--motion-easing) !important;
+  }
+
+  @keyframes toast-fade-in-reduced {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* File row enter/leave become instant — the visual signal is "row
+     appeared/disappeared" and that reads fine without translation. */
+  .file-entry,
+  .file-editor,
+  .file-entry.is-leaving,
+  .file-editor.is-leaving {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    animation: none !important;
+  }
+
+  /* State cards (empty, error) appear instantly. */
+  .empty-state-container,
+  .error-boundary {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    animation: none !important;
+  }
+
+  /* Success flash becomes a 150ms opacity pulse. */
+  .is-just-saved {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    animation: success-flash-reduced 150ms var(--motion-easing) !important;
+  }
+
+  @keyframes success-flash-reduced {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  /* New from interaction pass 2: form error appears instantly. The
+     4px slide down carries no meaning; the red text + ring on the
+     input is the actual signal. */
+  .form-error {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    animation: none !important;
+  }
+
+  /* Search clear button: keep the transition so the button doesn't
+     pop in/out, but kill the spatial scale. */
+  .search-clear-btn {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    transform: translateY(-50%) !important;
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    transition: opacity 80ms var(--motion-easing) !important;
+  }
+
+  /* Empty state action buttons: skip the stagger; they appear in
+     layout order without translation. */
+  .empty-state-actions .btn {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    animation: none !important;
+  }
+
+  /* Gist card focus ring still transitions so keyboard users see
+     the focus shift, but the lift transform is dropped. */
+  .gist-card:focus-visible {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    transform: none !important;
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    transition: outline-color 80ms var(--motion-easing) !important;
+  }
+
+  /* State change pulse: skip the scale, but keep the color flip
+     transition (already a transition, not animation). */
+  .is-state-changed {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    animation: none !important;
+  }
+
+  /* Status reveal: keep the opacity fade, drop the 2px lift. */
+  .token-status-mt,
+  #device-flow-status {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    transform: none !important;
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    transition: opacity 80ms var(--motion-easing) !important;
+  }
+
+  /* Hint fade: keep the opacity transition so the hint doesn't pop
+     in/out, but drop the spatial scale. */
+  .btn-hint {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    transform: none !important;
+  }
+
+  /* Dirty badge: keep the opacity transition so the "unsaved
+     changes" pill doesn't pop in/out, but drop the translate. */
+  .dirty-badge {
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    transform: none !important;
+    /* biome-ignore lint/complexity/noImportantStyles: needed for a11y */
+    transition: opacity 80ms var(--motion-easing) !important;
   }
 }
