@@ -23,7 +23,7 @@
       "recommended": true,
       "style": {
         "noParameterAssign": "off",
-        "noNonNullAssertion": "off",
+        "noNonNullAssertion": "warn",
         "useConst": "error"
       },
       "complexity": {
@@ -69,7 +69,7 @@
         "noDuplicateClassMembers": "error",
         "noDuplicateObjectKeys": "error",
         "noDuplicateParameters": "error",
-        "noEmptyBlockStatements": "off",
+        "noEmptyBlockStatements": "warn",
         "noExplicitAny": "error",
         "noExtraNonNullAssertion": "error",
         "noFallthroughSwitchClause": "error",

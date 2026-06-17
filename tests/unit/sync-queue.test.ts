@@ -4,8 +4,15 @@ import * as github from '../../src/services/github';
 import * as rateLimiter from '../../src/services/github/rate-limiter';
 import networkMonitor from '../../src/services/network/offline-monitor';
 import * as conflictDetector from '../../src/services/sync/conflict-detector';
-import { type SyncAction, SyncQueue } from '../../src/services/sync/queue';
+import * as queueModule from '../../src/services/sync/queue';
+import {
+  calculateBackoff,
+  isRetryableError,
+  type SyncAction,
+  SyncQueue,
+} from '../../src/services/sync/queue';
 import type { GitHubGist } from '../../src/types/api';
+import { githubGistToRecord } from '../../src/utils/gist-mapper';
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
@@ -77,14 +84,6 @@ function makeMockGist(id: string): GitHubGist {
     comments_url: `https://api.github.com/gists/${id}/comments`,
   };
 }
-
-/** Cast to access private static members for testing. */
-interface SyncQueueStatic {
-  calculateBackoff(attempt: number, retryAfterMs?: number): number;
-  delay(ms: number): Promise<void>;
-}
-
-const SyncQueueStatic = SyncQueue as unknown as SyncQueueStatic;
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
@@ -230,7 +229,7 @@ describe('SyncQueue', () => {
         },
       ]);
 
-      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       vi.mocked(github.createGist).mockResolvedValue(makeMockGist('gist-a'));
       vi.mocked(github.updateGist).mockResolvedValue(makeMockGist('gist-b'));
       vi.mocked(github.deleteGist).mockResolvedValue(undefined);
@@ -280,7 +279,7 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       vi.mocked(github.createGist).mockRejectedValue(new Error('network error'));
 
       await queue.processQueue();
@@ -300,7 +299,7 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       vi.mocked(github.createGist).mockRejectedValue(new Error('bad request'));
 
       await queue.processQueue();
@@ -352,7 +351,7 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       vi.mocked(github.starGist).mockResolvedValue(undefined);
 
       await queue.processQueue();
@@ -372,7 +371,7 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       vi.mocked(github.unstarGist).mockResolvedValue(undefined);
 
       await queue.processQueue();
@@ -392,7 +391,7 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       const forkedGist = makeMockGist('gist-forked');
       vi.mocked(github.forkGist).mockResolvedValue(forkedGist);
 
@@ -414,7 +413,7 @@ describe('SyncQueue', () => {
           expectedRemoteVersion: '2026-01-01T10:00:00Z',
         },
       ]);
-      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       const remoteGist = makeMockGist('gist-1');
       remoteGist.updated_at = '2026-01-15T12:00:00Z'; // Different from expected
       vi.mocked(github.getGist).mockResolvedValue(remoteGist);
@@ -443,7 +442,7 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
 
       await queue.processQueue();
 
@@ -458,24 +457,20 @@ describe('SyncQueue', () => {
 
   describe('isRetryableError', () => {
     it('is retryable for network errors', () => {
-      // Access via the SyncQueue type to test private static method
-      const SyncQueueAny = SyncQueue as unknown as { isRetryableError(e: unknown): boolean };
-      expect(SyncQueueAny.isRetryableError(new Error('network error'))).toBe(true);
-      expect(SyncQueueAny.isRetryableError(new Error('fetch failed'))).toBe(true);
-      expect(SyncQueueAny.isRetryableError(new Error('rate limit exceeded'))).toBe(true);
-      expect(SyncQueueAny.isRetryableError(new Error('timeout'))).toBe(true);
+      expect(isRetryableError(new Error('network error'))).toBe(true);
+      expect(isRetryableError(new Error('fetch failed'))).toBe(true);
+      expect(isRetryableError(new Error('rate limit exceeded'))).toBe(true);
+      expect(isRetryableError(new Error('timeout'))).toBe(true);
     });
 
     it('is not retryable for non-network errors', () => {
-      const SyncQueueAny = SyncQueue as unknown as { isRetryableError(e: unknown): boolean };
-      expect(SyncQueueAny.isRetryableError(new Error('bad request'))).toBe(false);
-      expect(SyncQueueAny.isRetryableError(new Error('not found'))).toBe(false);
+      expect(isRetryableError(new Error('bad request'))).toBe(false);
+      expect(isRetryableError(new Error('not found'))).toBe(false);
     });
 
     it('is not retryable for non-Error values', () => {
-      const SyncQueueAny = SyncQueue as unknown as { isRetryableError(e: unknown): boolean };
-      expect(SyncQueueAny.isRetryableError('string error')).toBe(false);
-      expect(SyncQueueAny.isRetryableError(null)).toBe(false);
+      expect(isRetryableError('string error')).toBe(false);
+      expect(isRetryableError(null)).toBe(false);
     });
   });
 
@@ -495,7 +490,7 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(SyncQueueStatic, 'delay').mockResolvedValue(undefined);
+      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
 
       await queue.processQueue();
 
@@ -508,26 +503,26 @@ describe('SyncQueue', () => {
 
   describe('calculateBackoff', () => {
     it('calculates exponential backoff with jitter', () => {
-      const backoff0 = SyncQueueStatic.calculateBackoff(0);
+      const backoff0 = calculateBackoff(0);
       expect(backoff0).toBeGreaterThanOrEqual(1000);
       expect(backoff0).toBeLessThan(2000);
 
-      const backoff1 = SyncQueueStatic.calculateBackoff(1);
+      const backoff1 = calculateBackoff(1);
       expect(backoff1).toBeGreaterThanOrEqual(2000);
       expect(backoff1).toBeLessThan(3000);
 
-      const backoff2 = SyncQueueStatic.calculateBackoff(2);
+      const backoff2 = calculateBackoff(2);
       expect(backoff2).toBeGreaterThanOrEqual(4000);
       expect(backoff2).toBeLessThan(5000);
     });
 
     it('caps at max delay', () => {
-      const backoff10 = SyncQueueStatic.calculateBackoff(10);
+      const backoff10 = calculateBackoff(10);
       expect(backoff10).toBeLessThanOrEqual(30000);
     });
 
     it('respects Retry-After value when provided', () => {
-      const retryAfter = SyncQueueStatic.calculateBackoff(0, 5000);
+      const retryAfter = calculateBackoff(0, 5000);
       expect(retryAfter).toBe(5000);
     });
   });
@@ -573,7 +568,7 @@ describe('SyncQueue', () => {
 
     it('caps calculateBackoff at RETRY_MAX_DELAY_MS when jitter is zero', () => {
       vi.spyOn(Math, 'random').mockReturnValue(0);
-      const backoff = SyncQueueStatic.calculateBackoff(10);
+      const backoff = calculateBackoff(10);
       expect(backoff).toBe(30000);
       vi.restoreAllMocks();
     });
@@ -590,9 +585,6 @@ describe('SyncQueue', () => {
     });
 
     it('maps content field through githubGistToRecord', () => {
-      const SyncQueueAny = SyncQueue as unknown as {
-        githubGistToRecord: (gist: GitHubGist) => { files: Record<string, { content?: string }> };
-      };
       const gist = makeMockGist('gist-1');
       gist.files = {
         'test.ts': {
@@ -606,7 +598,7 @@ describe('SyncQueue', () => {
         },
       };
 
-      const record = SyncQueueAny.githubGistToRecord(gist);
+      const record = githubGistToRecord(gist);
 
       expect(record.files['test.ts']).toEqual(expect.objectContaining({ content: 'const x = 1;' }));
     });

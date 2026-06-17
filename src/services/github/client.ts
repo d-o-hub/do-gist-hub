@@ -152,8 +152,8 @@ export async function handleApiError(error: unknown, context: string): Promise<n
     try {
       const { revalidateToken } = await import('./auth');
       await revalidateToken();
-    } catch {
-      // Revalidation is best-effort
+    } catch (err) {
+      safeError('[Client] Token revalidation failed (best-effort)', err);
     }
   }
 

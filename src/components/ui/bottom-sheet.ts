@@ -22,7 +22,9 @@ export class BottomSheet {
 
     this.backdrop = document.createElement('div');
     this.backdrop.className = 'bottom-sheet-backdrop';
-    this.backdrop.onclick = () => this.close();
+    this.backdrop.addEventListener('click', () => this.close(), {
+      signal: this.abortController.signal,
+    });
 
     this.container = document.createElement('div');
     this.container.className = 'bottom-sheet';

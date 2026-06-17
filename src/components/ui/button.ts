@@ -14,6 +14,7 @@ export function createButton(options: {
   ariaExpanded?: boolean;
   ariaControls?: string;
   ariaDescribedby?: string;
+  signal?: AbortSignal;
 }): HTMLButtonElement {
   const button = document.createElement('button');
   button.type = 'button';
@@ -38,7 +39,8 @@ export function createButton(options: {
   labelSpan.textContent = labelText;
   button.appendChild(labelSpan);
 
-  button.addEventListener('click', options.onClick);
+  const listenerOptions = options.signal ? { signal: options.signal } : undefined;
+  button.addEventListener('click', options.onClick, listenerOptions);
 
   // Disabled state
   if (options.disabled) {
