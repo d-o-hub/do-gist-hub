@@ -43,10 +43,14 @@ test.describe('Settings', () => {
   });
 
   test('should validate token input requires value', async ({ page }) => {
-    // Try to save without entering token
-    await page.locator('#save-token-btn').click();
-    // Should show error toast - check for generic toast or specific error class
-    // Use .first() to avoid strict mode violations if multiple toasts appear
+    // Verify save button is disabled when input is empty
+    const saveBtn = page.locator('#save-token-btn');
+    await expect(saveBtn).toBeDisabled();
+    // Enter a value and try to save with an invalid token
+    await page.locator('#pat-input').fill('invalid-token');
+    await expect(saveBtn).toBeEnabled();
+    await saveBtn.click();
+    // Should show error toast
     await expect(page.locator('.toast').first()).toBeVisible({ timeout: 15000 });
   });
 
