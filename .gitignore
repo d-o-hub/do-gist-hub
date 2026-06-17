@@ -145,7 +145,7 @@ actionlint
 # AI agent project configs (local, machine-specific)
 .antigravitycli/
 .commandcode/
-pnpm-workspace.yaml
+
 
 # Generated design tokens
 src/styles/generated/
