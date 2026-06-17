@@ -1,11 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { GistRecord } from '../../src/services/db';
 import * as db from '../../src/services/db';
 import * as github from '../../src/services/github';
 import networkMonitor from '../../src/services/network/offline-monitor';
 import { safeError } from '../../src/services/security/logger';
-import { type SyncAction, SyncQueue } from '../../src/services/sync/queue';
 import type { GitHubGist } from '../../src/types/api';
+import { githubGistToRecord } from '../../src/utils/gist-mapper';
+
+vi.mock('../../src/services/sync/queue', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../../src/services/sync/queue')>();
+  return {
+    ...mod,
+    delay: vi.fn().mockResolvedValue(undefined),
+  };
+});
+
+const { SyncQueue, delay } = await import('../../src/services/sync/queue');
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
@@ -70,14 +79,6 @@ function makeMockGist(id: string): GitHubGist {
     comments_url: `https://api.github.com/gists/${id}/comments`,
   };
 }
-
-interface SyncQueueAccess {
-  calculateBackoff(attempt: number, retryAfterMs?: number): number;
-  delay(ms: number): Promise<void>;
-  githubGistToRecord(gist: GitHubGist): GistRecord;
-}
-
-const SyncQueueAccess = SyncQueue as unknown as SyncQueueAccess;
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
@@ -168,7 +169,7 @@ describe('SyncQueue retry exhaustion and dedup', () => {
 
   describe('processQueue error catch', () => {
     it('catches and logs error when getPendingWrites rejects', async () => {
-      vi.spyOn(SyncQueueAccess, 'delay').mockResolvedValue(undefined);
+      vi.mocked(delay).mockResolvedValue(undefined);
       const error = new Error('IndexedDB connection lost');
       vi.mocked(db.getPendingWrites).mockRejectedValue(error);
 
@@ -178,7 +179,7 @@ describe('SyncQueue retry exhaustion and dedup', () => {
     });
 
     it('resets isSyncing flag after error', async () => {
-      vi.spyOn(SyncQueueAccess, 'delay').mockResolvedValue(undefined);
+      vi.mocked(delay).mockResolvedValue(undefined);
       vi.mocked(db.getPendingWrites).mockRejectedValue(new Error('db error'));
 
       await queue.processQueue();
@@ -195,7 +196,7 @@ describe('SyncQueue retry exhaustion and dedup', () => {
 
   describe('pre-write conflict check error', () => {
     it('logs error and proceeds when conflict check network call fails', async () => {
-      vi.spyOn(SyncQueueAccess, 'delay').mockResolvedValue(undefined);
+      vi.mocked(delay).mockResolvedValue(undefined);
       vi.mocked(db.getPendingWrites).mockResolvedValue([
         {
           id: 1,
@@ -249,25 +250,27 @@ describe('SyncQueue retry exhaustion and dedup', () => {
         },
       };
 
-      const record = SyncQueueAccess.githubGistToRecord(gist);
+      const record = githubGistToRecord(gist);
 
       expect(record.files['file1.ts']).toEqual({
         filename: 'file1.ts',
         type: 'text/typescript',
         language: 'TypeScript',
-        rawUrl: 'https://raw.gist.com/file1.ts',
+        raw_url: 'https://raw.gist.com/file1.ts',
         size: 100,
         truncated: false,
         content: 'const x = 1;',
+        rawUrl: 'https://raw.gist.com/file1.ts',
       });
       expect(record.files['file2.json']).toEqual({
         filename: 'file2.json',
         type: 'application/json',
         language: 'JSON',
-        rawUrl: 'https://raw.gist.com/file2.json',
+        raw_url: 'https://raw.gist.com/file2.json',
         size: 50,
         truncated: false,
         content: '{"key": "value"}',
+        rawUrl: 'https://raw.gist.com/file2.json',
       });
     });
 
@@ -279,7 +282,7 @@ describe('SyncQueue retry exhaustion and dedup', () => {
         },
       };
 
-      const record = SyncQueueAccess.githubGistToRecord(gist);
+      const record = githubGistToRecord(gist);
 
       expect(record.files['readme.md']).toEqual({
         filename: 'readme.md',
@@ -295,7 +298,7 @@ describe('SyncQueue retry exhaustion and dedup', () => {
     it('handles empty files object', () => {
       const gist = makeMockGist('gist-empty');
 
-      const record = SyncQueueAccess.githubGistToRecord(gist);
+      const record = githubGistToRecord(gist);
 
       expect(record.files).toEqual({});
     });
@@ -309,7 +312,7 @@ describe('SyncQueue retry exhaustion and dedup', () => {
         html_url: 'https://github.com/testuser',
       };
 
-      const record = SyncQueueAccess.githubGistToRecord(gist);
+      const record = githubGistToRecord(gist);
 
       expect(record.owner).toEqual({
         login: 'testuser',
@@ -323,7 +326,7 @@ describe('SyncQueue retry exhaustion and dedup', () => {
       const gist = makeMockGist('gist-no-owner');
       gist.owner = undefined;
 
-      const record = SyncQueueAccess.githubGistToRecord(gist);
+      const record = githubGistToRecord(gist);
 
       expect(record.owner).toBeUndefined();
     });

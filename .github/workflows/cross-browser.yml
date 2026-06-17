@@ -3,6 +3,9 @@ name: Cross-Browser Tests
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
+    paths: ['src/**', 'tests/**', 'playwright.config.ts']
 
 permissions:
   contents: read
@@ -10,7 +13,7 @@ permissions:
 jobs:
   cross-browser:
     name: Cross-Browser Tests
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:

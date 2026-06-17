@@ -4,6 +4,7 @@
 
 /* ===== CSS Custom Property Aliases ===== */
 /* Bridge legacy --space-* and --text-* tokens to generated --spacing-* and --font-size-* */
+/* TODO: Migrate all consumers to --spacing-vN / --font-size-vN tokens, then remove these bridges */
 :root {
   color-scheme: dark;
   --space-1: var(--spacing-v1);

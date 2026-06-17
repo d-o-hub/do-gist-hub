@@ -5,10 +5,10 @@
 
 import type { PendingWrite } from '../../types';
 import type { CreateGistRequest, GitHubGist, UpdateGistRequest } from '../../types/api';
+import { githubGistToRecord } from '../../utils/gist-mapper';
 import {
   deleteGist as dbDeleteGist,
   queueWrite as dbQueueWrite,
-  type GistRecord,
   getGist,
   getPendingWrites,
   removePendingWrite,
@@ -117,11 +117,8 @@ export class SyncQueue {
         }
         // Exponential backoff with jitter between operations, respecting server Retry-After
         const retryAfterMs = getRetryAfterMs();
-        const backoffMs = SyncQueue.calculateBackoff(
-          write.retryCount ?? 0,
-          retryAfterMs || undefined
-        );
-        await SyncQueue.delay(backoffMs);
+        const backoffMs = calculateBackoff(write.retryCount ?? 0, retryAfterMs || undefined);
+        await delay(backoffMs);
       }
     } catch (error) {
       safeError('[SyncQueue] Error processing queue:', error);
@@ -162,12 +159,12 @@ export class SyncQueue {
       }
 
       const handlers: Record<string, () => Promise<SyncResult>> = {
-        create: () => SyncQueue.syncCreate(write.gistId, write.payload),
-        update: () => SyncQueue.syncUpdate(write.gistId, write.payload),
-        delete: () => SyncQueue.syncDelete(write.gistId),
-        star: () => SyncQueue.syncStar(write.gistId),
-        unstar: () => SyncQueue.syncUnstar(write.gistId),
-        fork: () => SyncQueue.syncFork(write.gistId),
+        create: () => syncCreate(write.gistId, write.payload),
+        update: () => syncUpdate(write.gistId, write.payload),
+        delete: () => syncDelete(write.gistId),
+        star: () => syncStar(write.gistId),
+        unstar: () => syncUnstar(write.gistId),
+        fork: () => syncFork(write.gistId),
       };
       const handler = handlers[write.action];
       if (handler) return await handler();
@@ -176,113 +173,9 @@ export class SyncQueue {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        shouldRetry: SyncQueue.isRetryableError(error),
+        shouldRetry: isRetryableError(error),
       };
     }
-  }
-
-  private static async syncCreate(_gistId: string, payload: unknown): Promise<SyncResult> {
-    const gist = await createGist(payload as CreateGistRequest);
-    await saveGist(SyncQueue.githubGistToRecord(gist));
-    return { success: true, shouldRetry: false };
-  }
-
-  private static async syncUpdate(gistId: string, payload: unknown): Promise<SyncResult> {
-    const gist = await updateGist(gistId, payload as UpdateGistRequest);
-    await saveGist(SyncQueue.githubGistToRecord(gist));
-    return { success: true, shouldRetry: false };
-  }
-
-  private static async syncDelete(gistId: string): Promise<SyncResult> {
-    await deleteGist(gistId);
-    await dbDeleteGist(gistId);
-    return { success: true, shouldRetry: false };
-  }
-
-  private static async syncStar(gistId: string): Promise<SyncResult> {
-    await starGist(gistId);
-    return { success: true, shouldRetry: false };
-  }
-
-  private static async syncUnstar(gistId: string): Promise<SyncResult> {
-    await unstarGist(gistId);
-    return { success: true, shouldRetry: false };
-  }
-
-  private static async syncFork(gistId: string): Promise<SyncResult> {
-    const gist = await forkGist(gistId);
-    await saveGist(SyncQueue.githubGistToRecord(gist));
-    return { success: true, shouldRetry: false };
-  }
-
-  private static githubGistToRecord(gist: GitHubGist): GistRecord {
-    return {
-      id: gist.id,
-      description: gist.description,
-      files: Object.fromEntries(
-        Object.entries(gist.files).map(([key, file]) => [
-          key,
-          {
-            filename: file.filename,
-            type: file.type,
-            language: file.language,
-            rawUrl: file.raw_url,
-            size: file.size,
-            truncated: file.truncated,
-            content: file.content,
-          },
-        ])
-      ),
-      htmlUrl: gist.html_url,
-      gitPullUrl: gist.git_pull_url,
-      gitPushUrl: gist.git_push_url,
-      createdAt: gist.created_at,
-      updatedAt: gist.updated_at,
-      starred: false,
-      public: gist.public,
-      owner: gist.owner
-        ? {
-            login: gist.owner.login,
-            id: gist.owner.id,
-            avatarUrl: gist.owner.avatar_url,
-            htmlUrl: gist.owner.html_url,
-          }
-        : undefined,
-      syncStatus: 'synced',
-      lastSyncedAt: new Date().toISOString(),
-    };
-  }
-
-  private static isRetryableError(error: unknown): boolean {
-    if (error instanceof Error) {
-      const message = error.message.toLowerCase();
-      return (
-        message.includes('network') ||
-        message.includes('fetch') ||
-        message.includes('rate limit') ||
-        message.includes('timeout')
-      );
-    }
-    return false;
-  }
-
-  /**
-   * Calculate exponential backoff delay with jitter.
-   * Respects server Retry-After headers when available.
-   */
-  private static calculateBackoff(attempt: number, retryAfterMs?: number): number {
-    if (retryAfterMs && retryAfterMs > 0) {
-      return retryAfterMs;
-    }
-    const base = RETRY_BACKOFF_MS;
-    const max = RETRY_MAX_DELAY_MS;
-    const exponential = base * 2 ** attempt;
-    const jitter = Math.random() * base;
-    return Math.min(exponential + jitter, max);
-  }
-
-  private static delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   async getQueueLength(): Promise<number> {
@@ -300,6 +193,72 @@ export class SyncQueue {
     if (this.unsubscribeNetwork) this.unsubscribeNetwork();
     safeLog('[SyncQueue] Destroyed');
   }
+}
+
+async function syncCreate(_gistId: string, payload: unknown): Promise<SyncResult> {
+  const gist = await createGist(payload as CreateGistRequest);
+  await saveGist(githubGistToRecord(gist));
+  return { success: true, shouldRetry: false };
+}
+
+async function syncUpdate(gistId: string, payload: unknown): Promise<SyncResult> {
+  const gist = await updateGist(gistId, payload as UpdateGistRequest);
+  await saveGist(githubGistToRecord(gist));
+  return { success: true, shouldRetry: false };
+}
+
+async function syncDelete(gistId: string): Promise<SyncResult> {
+  await deleteGist(gistId);
+  await dbDeleteGist(gistId);
+  return { success: true, shouldRetry: false };
+}
+
+async function syncStar(gistId: string): Promise<SyncResult> {
+  await starGist(gistId);
+  return { success: true, shouldRetry: false };
+}
+
+async function syncUnstar(gistId: string): Promise<SyncResult> {
+  await unstarGist(gistId);
+  return { success: true, shouldRetry: false };
+}
+
+async function syncFork(gistId: string): Promise<SyncResult> {
+  const gist = await forkGist(gistId);
+  await saveGist(githubGistToRecord(gist));
+  return { success: true, shouldRetry: false };
+}
+
+export function isRetryableError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    return (
+      message.includes('network') ||
+      message.includes('fetch') ||
+      message.includes('rate limit') ||
+      message.includes('timeout')
+    );
+  }
+  return false;
+}
+
+/**
+ * Calculate exponential backoff delay with jitter.
+ * Respects server Retry-After headers when available.
+ */
+export function calculateBackoff(attempt: number, retryAfterMs?: number): number {
+  if (retryAfterMs && retryAfterMs > 0) {
+    return retryAfterMs;
+  }
+  const base = RETRY_BACKOFF_MS;
+  const max = RETRY_MAX_DELAY_MS;
+  const exponential = base * 2 ** attempt;
+  const jitter = Math.random() * base;
+  return Math.min(exponential + jitter, max);
+}
+
+export function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 const syncQueue = new SyncQueue();

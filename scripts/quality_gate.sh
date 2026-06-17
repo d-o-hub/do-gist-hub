@@ -50,8 +50,11 @@ if command -v pnpm &> /dev/null; then
 fi
 
 # Validate skills
-true
-echo "✓ Skill validation passed"
+if [[ -f "$ROOT_DIR/scripts/validate-skills.sh" ]]; then
+  echo "→ Skill validation..."
+  bash "$ROOT_DIR/scripts/validate-skills.sh" || { echo "✗ Skill validation failed"; exit 1; }
+  echo "✓ Skill validation passed"
+fi
 
 # ADR compliance check (from plan 038 A1)
 if [[ -f "$ROOT_DIR/scripts/check-adr-compliance.sh" ]]; then

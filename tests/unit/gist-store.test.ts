@@ -212,7 +212,7 @@ describe('GistStore', () => {
 
       await gistStore.init();
 
-      expect(safeError).toHaveBeenCalledWith('[GistStore] Init failed');
+      expect(safeError).toHaveBeenCalledWith('[GistStore] Init failed', expect.any(Error));
     });
   });
 

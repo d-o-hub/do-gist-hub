@@ -19,13 +19,9 @@ import {
   storeConflicts,
 } from '../services/sync/conflict-detector';
 import syncQueue from '../services/sync/queue';
-import type {
-  GitHubGist,
-  GitHubGistListItem,
-  PaginatedResult,
-  UpdateGistRequest,
-} from '../types/api';
+import type { GitHubGistListItem, PaginatedResult, UpdateGistRequest } from '../types/api';
 import { parseIsoDate } from '../utils/date';
+import { githubGistToRecord } from '../utils/gist-mapper';
 
 export type GistStoreListener = (gists: GistRecord[]) => void;
 
@@ -72,8 +68,8 @@ class GistStore {
       // Pass refresh=true to bypass the isLoading guard that would otherwise
       // short-circuit the sync on startup (isLoading is set to true in init()).
       if (networkMonitor.isOnline() && (await isAuthenticated())) await this.loadGists(true);
-    } catch {
-      safeError('[GistStore] Init failed');
+    } catch (err) {
+      safeError('[GistStore] Init failed', err);
     } finally {
       this.isLoading = false;
       this.notifyListeners();
@@ -144,10 +140,10 @@ class GistStore {
             newConflicts.push(conflict);
             record = resolveConflict(conflict, 'manual');
           } else {
-            record = GistStore.githubGistToRecord(gist, isStarred, existing);
+            record = githubGistToRecord(gist, isStarred, existing);
           }
         } else {
-          record = GistStore.githubGistToRecord(gist, isStarred);
+          record = githubGistToRecord(gist, isStarred);
         }
 
         processedRecords.push(record);
@@ -242,7 +238,7 @@ class GistStore {
         this.notifyListeners();
 
         const gist = await GitHub.createGist(payload);
-        const record = GistStore.githubGistToRecord(gist);
+        const record = githubGistToRecord(gist);
         await dbSaveGist(record);
 
         // Replace temp with real record
@@ -304,7 +300,7 @@ class GistStore {
         }
 
         const gist = await GitHub.updateGist(id, payload);
-        const record = GistStore.githubGistToRecord(gist);
+        const record = githubGistToRecord(gist);
         await dbSaveGist(record);
         const idx = this.gists.findIndex((g) => g.id === id);
         if (idx !== -1) this.gists[idx] = record;
@@ -363,7 +359,7 @@ class GistStore {
     try {
       const gist = await GitHub.getGist(id);
       const existing = this.getGist(id);
-      const record = GistStore.githubGistToRecord(gist, existing?.starred);
+      const record = githubGistToRecord(gist, existing?.starred);
       await dbSaveGist(record);
 
       const idx = this.gists.findIndex((g) => g.id === id);
@@ -412,49 +408,6 @@ class GistStore {
       safeError('[GistStore] Toggle star failed', err);
       return false;
     }
-  }
-
-  private static githubGistToRecord(
-    gist: GitHubGist | GitHubGistListItem,
-    starred = false,
-    existingRecord?: GistRecord
-  ): GistRecord {
-    return {
-      id: gist.id,
-      description: gist.description,
-      files: Object.fromEntries(
-        Object.entries(gist.files).map(([k, f]) => {
-          const content: string | undefined =
-            'content' in f && typeof f.content === 'string' ? f.content : undefined;
-
-          return [
-            k,
-            {
-              ...f,
-              content: content ?? existingRecord?.files[k]?.content,
-              rawUrl: f.raw_url,
-            },
-          ];
-        })
-      ),
-      htmlUrl: gist.html_url,
-      gitPullUrl: gist.git_pull_url,
-      gitPushUrl: gist.git_push_url,
-      createdAt: gist.created_at,
-      updatedAt: gist.updated_at,
-      starred,
-      public: gist.public,
-      owner: gist.owner
-        ? {
-            login: gist.owner.login,
-            id: gist.owner.id,
-            avatarUrl: gist.owner.avatar_url,
-            htmlUrl: gist.owner.html_url,
-          }
-        : undefined,
-      syncStatus: 'synced',
-      lastSyncedAt: new Date().toISOString(),
-    };
   }
 
   async resolveGistConflict(gistId: string, strategy: 'local-wins' | 'remote-wins'): Promise<void> {

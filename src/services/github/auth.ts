@@ -60,7 +60,8 @@ async function getStoredRefreshToken(): Promise<{ token: string; expiresAt: numb
   try {
     const token = await decrypt(enc.data, enc.iv);
     return { token, expiresAt };
-  } catch {
+  } catch (err) {
+    safeError('[Auth] Failed to decrypt refresh token', err);
     await clearRefreshToken();
     return null;
   }
@@ -109,7 +110,8 @@ export async function refreshToken(): Promise<string | null> {
     }
 
     return data.access_token;
-  } catch {
+  } catch (err) {
+    safeError('[Auth] Token refresh failed', err);
     return null;
   }
 }
