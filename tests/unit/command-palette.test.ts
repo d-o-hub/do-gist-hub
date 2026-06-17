@@ -92,7 +92,10 @@ describe('CommandPalette', () => {
 
       void palette.open();
       const container = document.querySelector('.command-palette');
-      expect(container?.innerHTML).toContain('No commands found');
+      // When the commands list is empty AND the user hasn't searched,
+      // the copy explains the situation instead of saying "no matches"
+      // (which would imply the user did search).
+      expect(container?.innerHTML).toContain('No commands available');
     });
   });
 
@@ -251,7 +254,7 @@ describe('CommandPalette', () => {
       expect(results?.innerHTML).not.toContain('Create Gist');
     });
 
-    it('shows "No commands found" when no matches', async () => {
+    it('shows the query in the no-results message when the search filters all commands', async () => {
       palette.setCommands([{ id: '1', title: 'Home', action: vi.fn() }]);
       await palette.open();
 
@@ -260,7 +263,9 @@ describe('CommandPalette', () => {
       input!.dispatchEvent(new Event('input'));
 
       const results = document.querySelector('.command-palette-results');
-      expect(results?.innerHTML).toContain('No commands found');
+      // The "no results" message includes the user's query so they
+      // understand what was searched, not just that nothing matched.
+      expect(results?.innerHTML).toContain('No commands match "zzzzz"');
     });
 
     it('resets selection index after search', async () => {

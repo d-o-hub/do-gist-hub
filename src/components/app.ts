@@ -154,6 +154,19 @@ export class App {
     }
     announcer.announce(`Navigating to ${route} page`);
 
+    // Move focus to the main content so keyboard users land in the
+    // new route's content (not stuck on a navigation button they
+    // already pressed). The main element needs `tabindex="-1"` to
+    // be focusable programmatically; that is set in the markup.
+    const mainEl = this.container?.querySelector('#main-content');
+    if (mainEl instanceof HTMLElement) {
+      // requestAnimationFrame waits for the view transition to
+      // commit so the new content is in the DOM before we focus.
+      requestAnimationFrame(() => {
+        (mainEl as HTMLElement).focus({ preventScroll: false });
+      });
+    }
+
     const savedSort = localStorage.getItem('sort-preference') || 'updated-desc';
 
     await withViewTransition(async () => {
@@ -286,6 +299,28 @@ export class App {
           );
           break;
         }
+        default: {
+          // Unknown route (defensive: the union type catches most
+          // cases at compile time, but runtime events from third
+          // parties could still fall through). Show a helpful
+          // empty state and route the user back home.
+          if (main) {
+            (main as HTMLElement).replaceChildren();
+            const EmptyState = await import('./ui/empty-state');
+            if (routeSignal.aborted) return;
+            const fragment = EmptyState.EmptyState.renderToFragment({
+              title: 'Page not found',
+              description: `We don't have a page at "${String(route)}". The link may be out of date.`,
+              actionLabel: 'Back to gists',
+              actionRoute: 'home',
+            });
+            (main as HTMLElement).appendChild(fragment);
+            // Announce the failure for screen readers
+            const { announcer } = await import('../utils/announcer');
+            announcer.announce('Page not found');
+          }
+          break;
+        }
       }
     });
   }
@@ -356,13 +391,13 @@ export class App {
             <h1 class="app-title" data-route="home">${APP.name}</h1>
           </div>
           <div class="header-right">
-            <div id="sync-indicator" class="sync-indicator" data-status="online"><span class="sync-dot" aria-hidden="true"></span><span class="sr-only">online</span></div>
+            <div id="sync-indicator" class="sync-indicator" data-status="online"><span class="sync-dot" aria-hidden="true"></span><span class="sr-only" aria-live="polite" aria-atomic="true">online</span></div>
             <button id="mobile-menu-btn" class="icon-button" aria-label="Open menu" data-testid="mobile-menu-btn" aria-expanded="false" aria-controls="mobile-menu">Menu</button>
             <button class="icon-button" aria-label="Settings" data-testid="settings-btn" data-route="settings">Settings</button>
           </div>
         </header>
 
-        <main class="app-main" id="main-content"></main>
+        <main class="app-main" id="main-content" tabindex="-1"></main>
 
         <nav class="bottom-nav" data-testid="bottom-nav" role="navigation" aria-label="Bottom navigation">
           <button class="nav-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home" ${this.currentRoute === 'home' ? 'aria-current="page"' : ''}>
@@ -409,6 +444,8 @@ export class App {
     el.appendChild(syncDot);
     const srOnly = document.createElement('span');
     srOnly.className = 'sr-only';
+    srOnly.setAttribute('aria-live', 'polite');
+    srOnly.setAttribute('aria-atomic', 'true');
     srOnly.textContent = status;
     el.appendChild(srOnly);
 

@@ -62,10 +62,16 @@ describe('ToastManager', () => {
 
       const toastEl = document.getElementById(id);
       expect(toastEl).not.toBeNull();
-      expect(toastEl?.getAttribute('role')).toBe('alert');
+      expect(toastEl?.getAttribute('role')).toBe('status');
       expect(toastEl?.classList.contains('toast')).toBe(true);
       expect(toastEl?.classList.contains('toast-info')).toBe(true);
       expect(toastEl?.classList.contains('toast-enter')).toBe(true);
+    });
+
+    it('uses role=alert for error toasts', () => {
+      const id = manager.show('Boom', 'error');
+      const toastEl = document.getElementById(id);
+      expect(toastEl?.getAttribute('role')).toBe('alert');
     });
 
     it('renders message text', () => {

@@ -169,16 +169,50 @@ export function bindCardEvents(
           return;
         }
 
-        const deleteBtn = target.closest('.delete-btn') as HTMLElement;
+        const deleteBtn = target.closest('.delete-btn') as HTMLButtonElement;
         if (deleteBtn) {
           e.preventDefault();
           e.stopPropagation();
           const id = deleteBtn.dataset.id;
           if (!id) return;
-          const confirmed = await showConfirmDialog('DELETE THIS GIST?');
-          if (!confirmed) return;
-          const ok = await gistStore.deleteGist(id);
-          if (ok) toast.success('GIST DELETED');
+          // Prevent double-click while the delete is in flight. The
+          // optimistic local removal makes the button disappear from
+          // the DOM quickly, but a slow network call could let the
+          // user click twice before the card unmounts.
+          if (deleteBtn.disabled) return;
+          deleteBtn.disabled = true;
+          const confirmed = await showConfirmDialog({
+            title: 'Delete this gist?',
+            message:
+              'The gist will be removed from GitHub and from your local cache. Other forks stay intact.',
+            confirmLabel: 'Delete gist',
+            cancelLabel: 'Keep it',
+            variant: 'danger',
+          });
+          if (!confirmed) {
+            deleteBtn.disabled = false;
+            return;
+          }
+          deleteBtn.setAttribute('aria-busy', 'true');
+          try {
+            const ok = await gistStore.deleteGist(id);
+            if (ok) {
+              toast.success('GIST DELETED');
+            } else {
+              // The store rolled back the optimistic removal,
+              // so the card is back in the list. Tell the user
+              // the delete didn't go through so they know their
+              // click was processed but didn't succeed.
+              toast.error('DELETE FAILED, CHECK YOUR CONNECTION AND TRY AGAIN', 6000);
+            }
+          } finally {
+            deleteBtn.removeAttribute('aria-busy');
+            // If the delete succeeded, the card is already gone
+            // (optimistic). If it failed, re-enable the button.
+            if (document.body.contains(deleteBtn)) {
+              deleteBtn.disabled = false;
+            }
+          }
           return;
         }
 

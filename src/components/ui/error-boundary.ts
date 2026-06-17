@@ -74,7 +74,16 @@ export const ErrorBoundary = {
     container.querySelector('#error-clear-cache-btn')?.addEventListener('click', () => {
       void (async () => {
         const { showConfirmDialog } = await import('../../utils/dialog');
-        if (await showConfirmDialog('Clear Data?')) {
+        if (
+          await showConfirmDialog({
+            title: 'Clear local cache?',
+            message:
+              'Removes every cached gist and pending write from this device. Sign back in to re-sync from GitHub.',
+            confirmLabel: 'Clear cache',
+            cancelLabel: 'Cancel',
+            variant: 'danger',
+          })
+        ) {
           const { clearAllData } = await import('../../services/db');
           await clearAllData();
           window.location.reload();

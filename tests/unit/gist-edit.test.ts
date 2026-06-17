@@ -28,6 +28,14 @@ vi.mock('../../src/components/ui/toast', () => ({
   },
 }));
 
+vi.mock('../../src/utils/dialog', () => ({
+  showConfirmDialog: vi.fn(),
+  focusTrap: {
+    activate: vi.fn(),
+    deactivate: vi.fn(),
+  },
+}));
+
 // ── Imports (after mocks) ───────────────────────────────────────────
 
 import { bindEditEvents, loadEditForm, renderEditForm } from '../../src/components/gist-edit';
@@ -178,6 +186,54 @@ describe('Gist Edit', () => {
       expect(onBack).toHaveBeenCalled();
     });
 
+    it('shows dirty badge when a field changes', () => {
+      container.replaceChildren(renderEditForm(makeGist('dirty-1')));
+      bindEditEvents(container, vi.fn());
+
+      const badge = container.querySelector('#edit-dirty-badge') as HTMLElement;
+      expect(badge).not.toBeNull();
+      // Initially hidden via aria-hidden.
+      expect(badge.getAttribute('aria-hidden')).toBe('true');
+
+      // Edit the description field.
+      const descInput = container.querySelector('#edit-description') as HTMLInputElement;
+      descInput.value = 'Changed description';
+      descInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+      expect(badge.getAttribute('aria-hidden')).toBeNull();
+      expect(container.querySelector('.is-dirty')).not.toBeNull();
+    });
+
+    it('asks to discard unsaved changes when navigating away while dirty', async () => {
+      const { showConfirmDialog } = await import('../../src/utils/dialog');
+      const onBack = vi.fn();
+      container.replaceChildren(renderEditForm(makeGist('dirty-2')));
+      bindEditEvents(container, onBack);
+
+      // Mark the form as dirty.
+      const descInput = container.querySelector('#edit-description') as HTMLInputElement;
+      descInput.value = 'Changed';
+      descInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+      // User clicks CANCEL: with confirm=false, onBack should NOT be called.
+      vi.mocked(showConfirmDialog).mockResolvedValue(false as never);
+      const cancelBtn = container.querySelector('#edit-cancel-btn') as HTMLElement;
+      cancelBtn?.click();
+      await vi.waitFor(() => {
+        expect(showConfirmDialog).toHaveBeenCalledWith(
+          expect.objectContaining({ title: 'Discard unsaved changes?' })
+        );
+      });
+      expect(onBack).not.toHaveBeenCalled();
+
+      // User clicks CANCEL again: with confirm=true, onBack should be called.
+      vi.mocked(showConfirmDialog).mockResolvedValue(true as never);
+      cancelBtn?.click();
+      await vi.waitFor(() => {
+        expect(onBack).toHaveBeenCalled();
+      });
+    });
+
     it('adds file editor when add file button is clicked', () => {
       const onBack = vi.fn();
       container.replaceChildren(renderEditForm(makeGist()));
@@ -236,11 +292,19 @@ describe('Gist Edit', () => {
       const removeBtns = container.querySelectorAll('.remove-file-btn');
       expect(removeBtns.length).toBe(2);
 
-      // Click first remove button
-      (removeBtns[0] as HTMLElement)?.click();
+      // Click first remove button. The editor is animated out (150ms
+      // fade + lift) before being removed from the DOM, with a 250ms
+      // safety timeout as fallback. Advance fake timers to resolve.
+      vi.useFakeTimers();
+      try {
+        (removeBtns[0] as HTMLElement)?.click();
+        vi.advanceTimersByTime(300);
 
-      const remainingEditors = container.querySelectorAll('.file-editor');
-      expect(remainingEditors.length).toBe(1);
+        const remainingEditors = container.querySelectorAll('.file-editor');
+        expect(remainingEditors.length).toBe(1);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 
@@ -314,10 +378,7 @@ describe('Gist Edit', () => {
       expect(gistStore.updateGist).not.toHaveBeenCalled();
     });
 
-    it('shows error when all filenames are empty', async () => {
-      const { toast } = await import('../../src/components/ui/toast');
-      vi.mocked(gistStore.updateGist).mockResolvedValue(true as never);
-
+    it('shows inline error when filename is empty', async () => {
       const onBack = vi.fn();
       container.replaceChildren(renderEditForm(makeGist('validate-2')));
       bindEditEvents(container, onBack);
@@ -332,8 +393,12 @@ describe('Gist Edit', () => {
       form?.dispatchEvent(new Event('submit'));
 
       await vi.waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('ALL FILES MUST HAVE FILENAMES');
+        expect(filenameInput.getAttribute('aria-invalid')).toBe('true');
+        const errorEl = container.querySelector('.form-error');
+        expect(errorEl?.textContent).toContain('Filename is required');
       });
+      // updateGist should NOT have been called because filename is empty
+      expect(gistStore.updateGist).not.toHaveBeenCalled();
     });
 
     it('shows error toast when updateGist fails', async () => {
@@ -348,7 +413,7 @@ describe('Gist Edit', () => {
       form?.dispatchEvent(new Event('submit'));
 
       await vi.waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('FAILED TO UPDATE GIST');
+        expect(toast.error).toHaveBeenCalledWith('API error', 6000);
       });
     });
 

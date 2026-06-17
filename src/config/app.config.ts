@@ -15,7 +15,7 @@ export const APP = {
 
   /** One-line description shown in npm search and PWA install prompt */
   description:
-    'd.o. Gist Hub — offline-first GitHub Gist management app with token-driven design and Android support',
+    'd.o. Gist Hub, an offline-first GitHub Gist management app with token-driven design and Android support',
 
   /** Theme color for PWA status bar / manifest / meta */
   themeColor: '#2563eb',

@@ -226,7 +226,7 @@ describe('Service Worker Registration', () => {
       stateChangeHandler!();
 
       expect(toast.info).toHaveBeenCalledWith(
-        'New version available — refresh to update',
+        'New version available, refresh to update',
         0,
         expect.objectContaining({ label: 'Refresh' })
       );

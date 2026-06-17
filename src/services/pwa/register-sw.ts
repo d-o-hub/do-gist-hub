@@ -94,7 +94,7 @@ interface SyncManager {
  * Notify user of update via toast notification
  */
 function notifyUpdateAvailable(registration: ServiceWorkerRegistration): void {
-  toast.info('New version available — refresh to update', 0, {
+  toast.info('New version available, refresh to update', 0, {
     label: 'Refresh',
     onClick: () => {
       // Tell the waiting SW to activate — the controllerchange listener

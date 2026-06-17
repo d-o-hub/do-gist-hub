@@ -21,6 +21,7 @@ import {
 import gistStore from '../stores/gist-store';
 import { getThemePreference, initTheme } from '../tokens/design-tokens';
 import { showConfirmDialog } from '../utils/dialog';
+import { clearFieldError, showFieldError } from '../utils/form-error';
 
 export async function render(
   container: HTMLElement,
@@ -45,10 +46,22 @@ export async function render(
             <div class="form-group">
               <label class="form-label" for="pat-input">GitHub Personal Access Token</label>
               <div class="flex-row gap-2">
-                  <input type="password" id="pat-input" class="form-input flex-1" placeholder="ghp_...">
-                  <button id="save-token-btn" class="btn btn-primary">SAVE</button>
+                  <input
+                    type="password"
+                    id="pat-input"
+                    class="form-input flex-1"
+                    placeholder="ghp_..."
+                    aria-describedby="pat-hint"
+                  >
+                  <button
+                    id="save-token-btn"
+                    class="btn btn-primary"
+                    disabled
+                    aria-describedby="pat-hint"
+                  >SAVE</button>
                   <button id="remove-token-btn" class="btn btn-ghost">REMOVE</button>
               </div>
+              <p id="pat-hint" class="micro-label hint-text">Paste a GitHub PAT to enable sync. Both <code>ghp_</code> and <code>github_pat_</code> formats are supported.</p>
               <div id="token-status" class="token-status-mt"></div>
               <div class="flex-row gap-2 mt-4">
                 <button id="device-flow-login-btn" class="btn btn-primary">SIGN IN WITH GITHUB</button>
@@ -299,30 +312,77 @@ function updateLLMFieldsVisibility(
  * Bind all event listeners for the settings route (auth, import/export, theme, cache).
  */
 function bindEvents(container: HTMLElement, signal: AbortSignal): void {
-  container.querySelector('#save-token-btn')?.addEventListener(
+  const patInput = container.querySelector('#pat-input') as HTMLInputElement;
+  const saveTokenBtn = container.querySelector('#save-token-btn') as HTMLButtonElement | null;
+  // Enable the SAVE button only when the user has typed a non-empty
+  // value. The hint text under the input already explains what's
+  // expected, so the disabled state needs no separate aria.
+  const syncSaveEnabled = (): void => {
+    if (!saveTokenBtn || !patInput) return;
+    saveTokenBtn.disabled = patInput.value.trim().length === 0;
+  };
+  if (patInput) {
+    patInput.addEventListener('input', syncSaveEnabled, { signal });
+    // Format-on-blur: show an inline error if the value doesn't
+    // match a known PAT format. We don't block submission here
+    // because GitHub's API will reject a malformed token with a
+    // clear error message; the inline warning is just an early
+    // signal so the user doesn't wait for a network round-trip.
+    patInput.addEventListener(
+      'blur',
+      () => {
+        const value = patInput.value.trim();
+        if (!value) {
+          clearFieldError(patInput);
+          return;
+        }
+        const looksLikePat = /^(ghp_|github_pat_)/.test(value);
+        if (!looksLikePat) {
+          showFieldError(patInput, 'Token should start with ghp_ or github_pat_');
+        } else {
+          clearFieldError(patInput);
+        }
+      },
+      { signal }
+    );
+  }
+  saveTokenBtn?.addEventListener(
     'click',
     () => {
-      const input = container.querySelector('#pat-input') as HTMLInputElement;
-      if (input.value) {
-        void (async () => {
-          try {
-            const result = await saveToken(input.value);
-            if (result.success) {
-              toast.success('TOKEN SAVED');
-              void recordAuthMethod('pat').catch(() => {});
-              void recordAuthCompleted().catch(() => {});
-              await loadTokenInfo(container);
-              input.value = '';
-            } else {
-              toast.error(result.error || 'FAILED TO SAVE TOKEN');
-            }
-          } catch {
-            toast.error('FAILED TO SAVE TOKEN');
+      const input = patInput;
+      if (!input.value) return;
+      if (saveTokenBtn?.disabled) return;
+      // Prevent double-clicks while the save is in flight. The button
+      // is re-enabled in the finally block whether the save succeeds
+      // or fails.
+      const restore = (): void => {
+        if (!saveTokenBtn) return;
+        saveTokenBtn.disabled = false;
+        saveTokenBtn.removeAttribute('aria-busy');
+        saveTokenBtn.textContent = 'SAVE TOKEN';
+      };
+      saveTokenBtn.disabled = true;
+      saveTokenBtn.setAttribute('aria-busy', 'true');
+      saveTokenBtn.textContent = 'SAVING...';
+      void (async () => {
+        try {
+          const result = await saveToken(input.value);
+          if (result.success) {
+            toast.success('TOKEN SAVED');
+            void recordAuthMethod('pat').catch(() => {});
+            void recordAuthCompleted().catch(() => {});
+            await loadTokenInfo(container);
+            input.value = '';
+          } else {
+            toast.error(result.error || 'FAILED TO SAVE TOKEN');
           }
-        })();
-      } else {
-        toast.error('ENTER A TOKEN');
-      }
+        } catch {
+          toast.error('FAILED TO SAVE TOKEN');
+        } finally {
+          restore();
+          syncSaveEnabled();
+        }
+      })();
     },
     { signal }
   );
@@ -359,7 +419,7 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
 
           if (result.success) {
             toast.success('AUTHENTICATED VIA GITHUB');
-            statusEl.textContent = 'Authentication successful!';
+            statusEl.textContent = 'Authentication successful';
             await loadTokenInfo(container);
           } else {
             toast.error('AUTHENTICATION FAILED');
@@ -484,7 +544,16 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
     'click',
     () => {
       void (async () => {
-        if (await showConfirmDialog('CLEAR ALL LOCAL DATA?')) {
+        if (
+          await showConfirmDialog({
+            title: 'Clear all local data?',
+            message:
+              'This deletes every cached gist, pending sync, and stored token from this device. Your gists on GitHub are not touched.',
+            confirmLabel: 'Clear local cache',
+            cancelLabel: 'Keep it',
+            variant: 'danger',
+          })
+        ) {
           const { clearAllData } = await import('../services/db');
           await clearAllData();
           window.location.reload();

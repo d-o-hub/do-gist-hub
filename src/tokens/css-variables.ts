@@ -171,6 +171,7 @@ export function generateCSSVariables(): string {
   /* ===== Motion Tokens (2026) ===== */
   --motion-duration-instant: var(--motion-duration-instant);
   --motion-duration-fast: var(--motion-duration-fast);
+  --motion-duration-base: var(--motion-duration-normal);
   --motion-duration-normal: var(--motion-duration-normal);
   --motion-duration-slow: var(--motion-duration-slow);
   --motion-duration-deliberate: var(--motion-duration-deliberate);

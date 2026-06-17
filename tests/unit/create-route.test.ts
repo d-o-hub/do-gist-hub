@@ -92,21 +92,30 @@ describe('Create Route', () => {
       expect(fileEntries.length).toBe(2);
     });
 
-    it('removes a file row when remove button is clicked', () => {
+    it('removes a file row when remove button is clicked', async () => {
       render(container);
 
       // Add a second file first
       const addBtn = container.querySelector('#add-file-btn') as HTMLElement;
       addBtn?.click();
 
-      // Now remove the first file
-      const removeBtns = container.querySelectorAll('.btn-remove-file');
-      expect(removeBtns.length).toBe(2);
+      // Now remove the first file. The row is animated out (150ms
+      // fade + lift) before being removed from the DOM, with a
+      // 250ms safety timeout as fallback. Advance fake timers to
+      // resolve the leave animation.
+      vi.useFakeTimers();
+      try {
+        const removeBtns = container.querySelectorAll('.btn-remove-file');
+        expect(removeBtns.length).toBe(2);
 
-      (removeBtns[0] as HTMLElement)?.click();
+        (removeBtns[0] as HTMLElement)?.click();
+        vi.advanceTimersByTime(300);
 
-      const fileEntries = container.querySelectorAll('.file-entry');
-      expect(fileEntries.length).toBe(1);
+        const fileEntries = container.querySelectorAll('.file-entry');
+        expect(fileEntries.length).toBe(1);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('does not remove last file entry', () => {
@@ -172,7 +181,7 @@ describe('Create Route', () => {
       );
     });
 
-    it('shows error toast when filename is empty', () => {
+    it('shows inline error when filename is empty', () => {
       render(container);
 
       const descInput = container.querySelector('#gist-description') as HTMLInputElement;
@@ -185,11 +194,14 @@ describe('Create Route', () => {
       const form = container.querySelector('#create-gist-form') as HTMLFormElement;
       form?.dispatchEvent(new Event('submit'));
 
-      expect(toast.error).toHaveBeenCalledWith('ALL FILES MUST HAVE A FILENAME');
+      // Inline error: aria-invalid set on input, .form-error message rendered.
+      expect(filenameInput.getAttribute('aria-invalid')).toBe('true');
+      const errorEl = container.querySelector('.form-error');
+      expect(errorEl?.textContent).toContain('Filename is required');
       expect(gistStore.createGist).not.toHaveBeenCalled();
     });
 
-    it('shows error toast for duplicate filenames', () => {
+    it('shows inline error for duplicate filenames', () => {
       render(container);
 
       const descInput = container.querySelector('#gist-description') as HTMLInputElement;
@@ -211,7 +223,13 @@ describe('Create Route', () => {
       const form = container.querySelector('#create-gist-form') as HTMLFormElement;
       form?.dispatchEvent(new Event('submit'));
 
-      expect(toast.error).toHaveBeenCalledWith('DUPLICATE FILENAME: dup.js');
+      // The second (duplicate) filename input is flagged. The first
+      // one was already accepted before the collision was detected.
+      const invalidInputs = container.querySelectorAll('[aria-invalid="true"]');
+      expect(invalidInputs.length).toBe(1);
+      expect((invalidInputs[0] as HTMLInputElement).value).toBe('dup.js');
+      const errorEl = container.querySelector('.form-error');
+      expect(errorEl?.textContent).toContain('Duplicate filename: dup.js');
       expect(gistStore.createGist).not.toHaveBeenCalled();
     });
 
@@ -244,6 +262,11 @@ describe('Create Route', () => {
 
     it('shows queued message when offline', async () => {
       vi.mocked(gistStore.createGist).mockResolvedValue(false as never);
+      // Simulate offline state
+      const { default: networkMonitor } = await import(
+        '../../src/services/network/offline-monitor'
+      );
+      vi.spyOn(networkMonitor, 'isOnline').mockReturnValue(false);
 
       render(container);
 
@@ -258,7 +281,10 @@ describe('Create Route', () => {
       form?.dispatchEvent(new Event('submit'));
 
       await vi.waitFor(() => {
-        expect(toast.success).toHaveBeenCalledWith('GIST QUEUED FOR SYNC');
+        expect(toast.info).toHaveBeenCalledWith(
+          'GIST QUEUED, WILL SYNC WHEN YOU ARE BACK ONLINE',
+          5000
+        );
       });
     });
   });
@@ -292,6 +318,25 @@ describe('Create Route', () => {
       parseBtn?.click();
 
       expect(toast.error).toHaveBeenCalledWith('PASTE TEXT FIRST');
+    });
+
+    it('renders AI parse as disabled with a visible reason hint', async () => {
+      // Default LLM config: not enabled (mocked in the test setup).
+      render(container);
+
+      // Let the loadLLMConfig() init promise resolve so the button
+      // state is finalized.
+      await new Promise((r) => setTimeout(r, 0));
+
+      const aiParseBtn = container.querySelector('#ai-parse-btn') as HTMLButtonElement;
+      expect(aiParseBtn.disabled).toBe(true);
+      expect(aiParseBtn.getAttribute('aria-describedby')).toBe('ai-parse-hint');
+
+      const hint = container.querySelector('#ai-parse-hint') as HTMLElement;
+      expect(hint).not.toBeNull();
+      // Hint must be visible (not hidden), so the user can see why
+      // the button is disabled without hovering.
+      expect(hint.hidden).toBe(false);
     });
 
     it('parses paste text and populates file entries', () => {

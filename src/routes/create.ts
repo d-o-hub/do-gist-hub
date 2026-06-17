@@ -7,7 +7,9 @@ import { toast } from '../components/ui/toast';
 import { parsePasteText } from '../services/gist-paste-parser';
 import { lifecycle } from '../services/lifecycle';
 import { generateDescription, loadLLMConfig, splitIntoFiles } from '../services/llm/client';
+import networkMonitor from '../services/network/offline-monitor';
 import gistStore from '../stores/gist-store';
+import { clearAllFieldErrors, showFieldError } from '../utils/form-error';
 
 let nextFileId = 0;
 
@@ -64,12 +66,22 @@ function createFileRow(id: number, container: HTMLElement, signal: AbortSignal):
     () => {
       const filesContainer = container.querySelector('#files-container') as HTMLElement;
       const entries = filesContainer.querySelectorAll('.file-entry');
-      if (entries.length > 1) {
+      if (entries.length <= 1) {
+        toast.error('AT LEAST ONE FILE REQUIRED');
+        return;
+      }
+      // Animate the row out (150ms fade + lift) before removing it
+      // from the DOM so the change reads as motion, not a snap. If
+      // reduced motion is on, the listener fires immediately.
+      div.classList.add('is-leaving');
+      const onEnd = (): void => {
         div.remove();
         updateRemoveButtons(filesContainer);
-      } else {
-        toast.error('AT LEAST ONE FILE REQUIRED');
-      }
+      };
+      div.addEventListener('animationend', onEnd, { once: true });
+      // Safety fallback in case animationend never fires (e.g. tab
+      // backgrounded). 250ms = leave duration + 100ms buffer.
+      window.setTimeout(onEnd, 250);
     },
     { signal }
   );
@@ -108,7 +120,8 @@ export function render(container: HTMLElement): void {
           <textarea id="paste-input" class="form-textarea paste-zone" placeholder="Paste plain text here (supports --- filename.ext --- delimiters, ## headers, or code blocks)..." rows="4"></textarea>
           <div class="paste-zone-actions">
             <button type="button" id="parse-paste-btn" class="btn btn-ghost">PARSE PASTE</button>
-            <button type="button" id="ai-parse-btn" class="btn btn-ghost" disabled title="Configure LLM in Settings">AI PARSE</button>
+            <button type="button" id="ai-parse-btn" class="btn btn-ghost" disabled aria-describedby="ai-parse-hint">AI PARSE</button>
+            <span id="ai-parse-hint" class="btn-hint">Enable an LLM provider in Settings to use this</span>
           </div>
         </div>
 
@@ -289,7 +302,11 @@ export function render(container: HTMLElement): void {
       const aiParseBtn = container.querySelector('#ai-parse-btn') as HTMLButtonElement;
       if (aiParseBtn && config.enabled) {
         aiParseBtn.disabled = false;
+        aiParseBtn.removeAttribute('aria-describedby');
         aiParseBtn.title = `AI Parse using ${config.provider}`;
+        // Hide the "enable LLM" hint once the button is enabled
+        const hint = container.querySelector('#ai-parse-hint') as HTMLElement | null;
+        if (hint) hint.hidden = true;
 
         // AI PARSE button handler
         aiParseBtn.addEventListener(
@@ -363,6 +380,9 @@ export function render(container: HTMLElement): void {
       const desc = (container.querySelector('#gist-description') as HTMLInputElement).value;
       const isPublic = (container.querySelector('#gist-public') as HTMLInputElement).checked;
 
+      // Clear any previous inline errors before re-validating.
+      clearAllFieldErrors(container);
+
       const files: Record<string, string> = {};
       const entries = filesContainer.querySelectorAll('.file-entry');
       let hasError = false;
@@ -374,15 +394,15 @@ export function render(container: HTMLElement): void {
         const content = contentInput.value;
 
         if (!filename) {
-          toast.error('ALL FILES MUST HAVE A FILENAME');
-          filenameInput.focus();
+          showFieldError(filenameInput, 'Filename is required');
+          if (!hasError) filenameInput.focus();
           hasError = true;
           return;
         }
 
         if (files[filename]) {
-          toast.error(`DUPLICATE FILENAME: ${filename}`);
-          filenameInput.focus();
+          showFieldError(filenameInput, `Duplicate filename: ${filename}`);
+          if (!hasError) filenameInput.focus();
           hasError = true;
           return;
         }
@@ -399,26 +419,47 @@ export function render(container: HTMLElement): void {
 
       void (async () => {
         const submitBtn = container.querySelector<HTMLButtonElement>('[type="submit"]');
-        if (submitBtn) {
+        const enterBusy = (): void => {
+          if (!submitBtn) return;
           submitBtn.disabled = true;
           submitBtn.setAttribute('aria-busy', 'true');
           setButtonLoading(submitBtn, 'Creating...');
-        }
+        };
+        const exitBusy = (): void => {
+          if (!submitBtn) return;
+          submitBtn.disabled = false;
+          submitBtn.removeAttribute('aria-busy');
+          setButtonText(submitBtn, 'CREATE GIST');
+        };
+        enterBusy();
+
+        // Track whether we expected to queue (offline) vs attempted
+        // to send to GitHub (online). The store returns null in both
+        // cases, so we need this hint to surface the right message.
+        const wasOffline = !networkMonitor.isOnline();
 
         try {
           const result = await gistStore.createGist(desc, isPublic, files);
           if (result) {
             toast.success('GIST CREATED');
-          } else {
-            toast.success('GIST QUEUED FOR SYNC');
+            window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'home' } }));
+            return;
           }
-          window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'home' } }));
-        } finally {
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.removeAttribute('aria-busy');
-            setButtonText(submitBtn, 'CREATE GIST');
+          if (wasOffline) {
+            toast.info('GIST QUEUED, WILL SYNC WHEN YOU ARE BACK ONLINE', 5000);
+            window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'home' } }));
+            return;
           }
+          // Online + null result = real failure. Surface a clear
+          // error with a retry path and keep the user on the form
+          // so their input isn't lost.
+          toast.error('CREATE FAILED, CHECK YOUR CONNECTION AND TRY AGAIN', 6000);
+          exitBusy();
+        } catch (err) {
+          // Unexpected error from the store itself. Same recovery
+          // path: keep the user on the form, surface the message.
+          toast.error(err instanceof Error ? err.message : 'CREATE FAILED, TRY AGAIN', 6000);
+          exitBusy();
         }
       })();
     },

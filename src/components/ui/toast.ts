@@ -30,13 +30,15 @@ export class ToastManager {
       this.container.setAttribute('aria-atomic', 'true');
       this.container.style.cssText = `
         position: fixed;
-        bottom: calc(var(--spacing-4, 1rem) + var(--nav-bottom-height, 0px) + env(safe-area-inset-bottom, 0px));
-        right: var(--spacing-4, 1rem);
-        z-index: var(--z-index-modal, 1050);
+        left: var(--space-4, 1rem);
+        right: var(--space-4, 1rem);
+        bottom: calc(var(--space-4, 1rem) + var(--nav-bottom-height, 0px) + env(safe-area-inset-bottom, 0px));
+        z-index: 1000;
         display: flex;
         flex-direction: column;
-        gap: var(--spacing-2, 0.5rem);
-        max-width: calc(100vw - var(--spacing-8, 2rem));
+        gap: var(--space-2, 0.5rem);
+        max-width: calc(100vw - var(--space-8, 2rem));
+        margin: 0 auto;
         pointer-events: none;
       `;
       document.body.appendChild(this.container);
@@ -51,7 +53,7 @@ export class ToastManager {
 
     const toast = document.createElement('div');
     toast.id = id;
-    toast.setAttribute('role', 'alert');
+    toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
     toast.classList.add('toast', `toast-${type}`, 'toast-enter');
     toast.style.pointerEvents = 'auto';
 
@@ -91,9 +93,17 @@ export class ToastManager {
       signal: this.abortController.signal,
     });
 
-    // Auto-dismiss
+    // Hover pauses the auto-dismiss timer so the user can read or interact.
     if (durationMs > 0) {
-      setTimeout(() => this.dismiss(id), durationMs);
+      const autoDismiss = setTimeout(() => this.dismiss(id), durationMs);
+      toast.addEventListener('mouseenter', () => clearTimeout(autoDismiss), {
+        signal: this.abortController.signal,
+        once: true,
+      });
+      toast.addEventListener('focusin', () => clearTimeout(autoDismiss), {
+        signal: this.abortController.signal,
+        once: true,
+      });
     }
 
     return id;
@@ -154,7 +164,20 @@ export class ToastManager {
     this.abortController.abort();
     this.container?.remove();
   }
+
+  /** Read-only view of active toasts, used by the global Escape handler. */
+  get activeToasts(): ReadonlyMap<string, HTMLElement> {
+    return this.toasts;
+  }
 }
 
 // Singleton instance
 export const toast = new ToastManager();
+
+// Global Escape dismisses the most recent toast (one at a time)
+window.addEventListener('keydown', (e: KeyboardEvent) => {
+  if (e.key !== 'Escape') return;
+  if (toast.activeToasts.size === 0) return;
+  const last = Array.from(toast.activeToasts.keys()).at(-1);
+  if (last) toast.dismiss(last);
+});

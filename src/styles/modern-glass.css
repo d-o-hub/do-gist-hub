@@ -119,4 +119,25 @@
   gap: var(--space-3);
   justify-content: flex-end;
   padding-top: var(--space-2);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .confirm-dialog {
+    padding: var(--space-5);
+    gap: var(--space-3);
+  }
+
+  .confirm-title {
+    font-size: var(--text-base);
+  }
+
+  .confirm-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .confirm-actions .btn {
+    width: 100%;
+  }
 }
