@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { sanitizeHtml, html } from '../../src/services/security/dom';
+import { describe, expect, it } from 'vitest';
+import { html, sanitizeHtml, sanitizeUrl } from '../../src/services/security/dom';
 
 describe('sanitizeHtml', () => {
   it('escapes special characters', () => {
@@ -133,5 +133,51 @@ describe('sanitizeHtml fast-path', () => {
   it('correctly escapes a string that starts with clean chars and ends with special chars', () => {
     const input = 'clean prefix <dangerous>';
     expect(sanitizeHtml(input)).toBe('clean prefix &lt;dangerous&gt;');
+  });
+});
+
+describe('sanitizeUrl', () => {
+  it('allows safe protocols', () => {
+    expect(sanitizeUrl('https://example.com')).toBe('https://example.com');
+    expect(sanitizeUrl('http://example.com')).toBe('http://example.com');
+    expect(sanitizeUrl('mailto:user@example.com')).toBe('mailto:user@example.com');
+    expect(sanitizeUrl('tel:+123456789')).toBe('tel:+123456789');
+  });
+
+  it('allows relative paths', () => {
+    expect(sanitizeUrl('/path/to/resource')).toBe('/path/to/resource');
+    expect(sanitizeUrl('path/to/resource')).toBe('path/to/resource');
+    expect(sanitizeUrl('./path')).toBe('./path');
+    expect(sanitizeUrl('../path')).toBe('../path');
+  });
+
+  it('blocks javascript: protocol', () => {
+    expect(sanitizeUrl('javascript:alert(1)')).toBe('about:blank');
+    expect(sanitizeUrl('JAVASCRIPT:alert(1)')).toBe('about:blank');
+    expect(sanitizeUrl('  javascript:alert(1)')).toBe('about:blank');
+    expect(sanitizeUrl('\x01javascript:alert(1)')).toBe('about:blank');
+    expect(sanitizeUrl('\x00javascript:alert(1)')).toBe('about:blank');
+  });
+
+  it('blocks data: protocol', () => {
+    expect(sanitizeUrl('data:text/html,<script>alert(1)</script>')).toBe('about:blank');
+    expect(sanitizeUrl('DATA:image/png;base64,...')).toBe('about:blank');
+  });
+
+  it('blocks vbscript: protocol', () => {
+    expect(sanitizeUrl('vbscript:msgbox("hello")')).toBe('about:blank');
+    expect(sanitizeUrl('VBSCRIPT:alert(1)')).toBe('about:blank');
+  });
+
+  it('handles null, undefined and empty strings', () => {
+    expect(sanitizeUrl(null)).toBe('');
+    expect(sanitizeUrl(undefined)).toBe('');
+    expect(sanitizeUrl('')).toBe('');
+    expect(sanitizeUrl('   ')).toBe('');
+  });
+
+  it('blocks URLs with leading control characters', () => {
+    expect(sanitizeUrl('\x19javascript:alert(1)')).toBe('about:blank');
+    expect(sanitizeUrl('\x01  javascript:alert(1)')).toBe('about:blank');
   });
 });

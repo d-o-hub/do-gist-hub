@@ -44,3 +44,26 @@ export function html(strings: TemplateStringsArray, ...values: unknown[]): strin
     return acc + str + sanitizedValue;
   }, '');
 }
+
+/**
+ * Sanitize a URL to prevent XSS via dangerous protocols
+ * Blocks javascript:, data:, and vbscript: protocols.
+ */
+export function sanitizeUrl(url: string | undefined | null): string {
+  if (!url) return '';
+  const trimmedUrl = String(url).trim();
+
+  // Pattern matches javascript:, data:, and vbscript: at the start of the string,
+  // case-insensitively, ignoring any control characters or spaces at the beginning.
+  // biome-ignore lint/complexity/useRegexLiterals: Using constructor to avoid literal analysis issues with control chars
+  const dangerousProtocolPattern = new RegExp(
+    '^((javascript|data|vbscript):|[\\u0000-\\u001F\\u007F-\\u009F\\s]+(javascript|data|vbscript):)',
+    'i'
+  );
+
+  if (dangerousProtocolPattern.test(trimmedUrl)) {
+    return 'about:blank';
+  }
+
+  return trimmedUrl;
+}
