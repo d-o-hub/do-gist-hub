@@ -133,15 +133,30 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     target.appendChild(routeHome);
   }
 
-  function renderGistList(): string {
+  /**
+   * Update the gist list and result count.
+   * BOLT: Consolidated filtering, searching, sorting, and rendering into a single
+   * pass to eliminate redundant O(N) iterations and function overhead.
+   */
+  function updateList(): void {
+    const list = container.querySelector('#gist-list') as HTMLElement | null;
+    const countEl = container.querySelector('#gist-result-count') as HTMLElement | null;
+
+    if (!list) return;
+
+    // Loading state
     if (gistStore.getLoading() && gistStore.getGists().length === 0) {
-      return Skeleton.renderList(3);
+      list.innerHTML = Skeleton.renderList(3);
+      if (countEl) countEl.textContent = 'Loading gists...';
+      return;
     }
 
+    // 1. Initial filter
     let gists = gistStore.filterGists(
       currentFilter === 'mine' ? 'all' : (currentFilter as 'all' | 'starred')
     );
 
+    // 2. Search filter
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       gists = gists.filter((g) => {
@@ -154,8 +169,41 @@ export function render(container: HTMLElement, params?: Record<string, string>):
       });
     }
 
-    // BOLT: Optimize by skipping sorting when the order matches the store's natural order (updated-desc).
-    // The store already maintains gists sorted by updatedAt descending, and filtering preserves order.
+    const filteredCount = gists.length;
+    const totalCount = gistStore.getGists().length;
+
+    // 3. Update result count
+    if (countEl) {
+      countEl.textContent =
+        filteredCount === totalCount
+          ? `${totalCount} gist${totalCount === 1 ? '' : 's'}`
+          : `${filteredCount} of ${totalCount} gist${totalCount === 1 ? '' : 's'}`;
+    }
+
+    // 4. Handle empty state
+    if (filteredCount === 0) {
+      if (searchQuery) {
+        list.innerHTML = EmptyState.render({
+          title: 'No Matches Found',
+          description: `We couldn't find any gists matching "${searchQuery}"`,
+          actionLabel: 'Clear Search',
+          actionType: 'clear-search',
+        });
+      } else {
+        const isStarred = currentFilter === 'starred';
+        list.innerHTML = EmptyState.render({
+          title: isStarred ? 'No Starred Gists' : 'No Gists Found',
+          description: isStarred
+            ? "You haven't starred any gists yet"
+            : 'Start by creating your first gist or syncing from GitHub',
+          actionLabel: isStarred ? 'View All Gists' : 'Create New Gist',
+          actionRoute: isStarred ? 'home' : 'create',
+        });
+      }
+      return;
+    }
+
+    // 5. Sort (if not natural updated-desc order)
     if (currentSort !== 'updated-desc') {
       gists = gists
         .map((gist) => ({
@@ -166,73 +214,19 @@ export function render(container: HTMLElement, params?: Record<string, string>):
         .map((item) => item.gist);
     }
 
-    if (gists.length === 0) {
-      if (searchQuery) {
-        return EmptyState.render({
-          title: 'No Matches Found',
-          description: `We couldn't find any gists matching "${searchQuery}"`,
-          actionLabel: 'Clear Search',
-          actionType: 'clear-search',
-        });
-      }
-
-      const isStarred = currentFilter === 'starred';
-      return EmptyState.render({
-        title: isStarred ? 'No Starred Gists' : 'No Gists Found',
-        description: isStarred
-          ? "You haven't starred any gists yet"
-          : 'Start by creating your first gist or syncing from GitHub',
-        actionLabel: isStarred ? 'View All Gists' : 'Create New Gist',
-        actionRoute: isStarred ? 'home' : 'create',
-      });
-    }
-
-    return gists.map((g) => renderCard(g)).join('');
-  }
-
-  function updateList(): void {
-    const list = container.querySelector('#gist-list');
-    const countEl = container.querySelector('#gist-result-count') as HTMLElement | null;
-    if (countEl) {
-      const total = gistStore.getGists().length;
-      const filtered = countFilteredGists();
-      const countText =
-        filtered === total
-          ? `${total} gist${total === 1 ? '' : 's'}`
-          : `${filtered} of ${total} gist${total === 1 ? '' : 's'}`;
-      countEl.textContent = countText;
-    }
-    if (list) {
-      list.innerHTML = renderGistList();
-      bindCardEvents(
-        list as HTMLElement,
-        (id: string) => {
-          window.dispatchEvent(
-            new CustomEvent('app:navigate', {
-              detail: { route: 'detail', params: { gistId: id } },
-            })
-          );
-        },
-        signal
-      );
-    }
-  }
-
-  function countFilteredGists(): number {
-    let gists = gistStore.filterGists(
-      currentFilter === 'mine' ? 'all' : (currentFilter as 'all' | 'starred')
+    // 6. Render and bind
+    list.innerHTML = gists.map((g) => renderCard(g)).join('');
+    bindCardEvents(
+      list,
+      (id: string) => {
+        window.dispatchEvent(
+          new CustomEvent('app:navigate', {
+            detail: { route: 'detail', params: { gistId: id } },
+          })
+        );
+      },
+      signal
     );
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      gists = gists.filter((g) => {
-        if (g.description?.toLowerCase().includes(q)) return true;
-        for (const filename in g.files) {
-          if (filename.toLowerCase().includes(q)) return true;
-        }
-        return false;
-      });
-    }
-    return gists.length;
   }
 
   function bindEvents(signal: AbortSignal): void {
