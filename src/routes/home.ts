@@ -171,6 +171,7 @@ export function render(container: HTMLElement, params?: Record<string, string>):
         return EmptyState.render({
           title: 'No Matches Found',
           description: `We couldn't find any gists matching "${searchQuery}"`,
+          icon: '🔍',
           actionLabel: 'Clear Search',
           actionType: 'clear-search',
         });
@@ -182,6 +183,7 @@ export function render(container: HTMLElement, params?: Record<string, string>):
         description: isStarred
           ? "You haven't starred any gists yet"
           : 'Start by creating your first gist or syncing from GitHub',
+        icon: isStarred ? '⭐' : '✨',
         actionLabel: isStarred ? 'View All Gists' : 'Create New Gist',
         actionRoute: isStarred ? 'home' : 'create',
       });

@@ -3,6 +3,7 @@
  */
 
 import { loadGistDetail } from '../components/gist-detail';
+import { EmptyState } from '../components/ui/empty-state';
 import { Skeleton } from '../components/ui/skeleton';
 import { lifecycle } from '../services/lifecycle';
 
@@ -11,13 +12,12 @@ export function render(container: HTMLElement, params?: Record<string, string>):
 
   const gistId = params?.gistId;
   if (!gistId) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'empty-state-container';
-    const p = document.createElement('p');
-    p.className = 'empty-state-description';
-    p.textContent = 'No gist selected';
-    wrapper.appendChild(p);
-    container.replaceChildren(wrapper);
+    const fragment = EmptyState.renderToFragment({
+      title: 'No Gist Selected',
+      description: 'Select a gist from the list to view its contents and history.',
+      icon: '📄',
+    });
+    container.replaceChildren(fragment);
     return;
   }
 
@@ -29,8 +29,12 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     () => {
       window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'home' } }));
     },
-    () => {},
-    () => {},
+    (_id) => {
+      /* edit not implemented from detail yet */
+    },
+    (_id, _version) => {
+      /* view revision not implemented from detail yet */
+    },
     signal
   );
 
