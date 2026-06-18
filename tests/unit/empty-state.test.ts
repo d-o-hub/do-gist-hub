@@ -104,6 +104,27 @@ describe('EmptyState', () => {
       expect(html).toContain('empty-state-action');
     });
 
+    it('renders icon when provided', () => {
+      const html = EmptyState.render({
+        title: 'Empty',
+        description: 'Nothing.',
+        icon: '✨',
+      });
+      expect(html).toContain('empty-state-icon');
+      expect(html).toContain('✨');
+    });
+
+    it('renders icon in fragment when provided', () => {
+      const frag = EmptyState.renderToFragment({
+        title: 'Empty',
+        description: 'Nothing.',
+        icon: '🔍',
+      });
+      const iconDiv = frag.querySelector('.empty-state-icon');
+      expect(iconDiv).not.toBeNull();
+      expect(iconDiv?.textContent).toBe('🔍');
+    });
+
     it('calls sanitizeHtml on user-provided values', () => {
       EmptyState.render({
         title: 'Test',

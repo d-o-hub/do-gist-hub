@@ -8,6 +8,7 @@ import { sanitizeHtml } from '../../services/security/dom';
 export interface EmptyStateOptions {
   title: string;
   description: string;
+  icon?: string;
   actionLabel?: string;
   actionRoute?: string;
   actionType?: string;
@@ -15,7 +16,7 @@ export interface EmptyStateOptions {
 
 export const EmptyState = {
   render(options: EmptyStateOptions): string {
-    const { title, description, actionLabel, actionRoute, actionType } = options;
+    const { title, description, icon, actionLabel, actionRoute, actionType } = options;
 
     const actionAttr = actionRoute
       ? `data-route="${actionRoute}"`
@@ -25,6 +26,7 @@ export const EmptyState = {
 
     return `
       <div class="empty-state-container" role="status">
+        ${icon ? `<div class="empty-state-icon" aria-hidden="true">${sanitizeHtml(icon)}</div>` : ''}
         <h3 class="empty-state-title">${sanitizeHtml(title)}</h3>
         <p class="empty-state-description">${sanitizeHtml(description)}</p>
         ${
@@ -45,12 +47,20 @@ export const EmptyState = {
    * inject the result directly into the DOM.
    */
   renderToFragment(options: EmptyStateOptions): DocumentFragment {
-    const { title, description, actionLabel, actionRoute, actionType } = options;
+    const { title, description, icon, actionLabel, actionRoute, actionType } = options;
 
     const fragment = document.createDocumentFragment();
     const container = document.createElement('div');
     container.className = 'empty-state-container';
     container.setAttribute('role', 'status');
+
+    if (icon) {
+      const iconDiv = document.createElement('div');
+      iconDiv.className = 'empty-state-icon';
+      iconDiv.setAttribute('aria-hidden', 'true');
+      iconDiv.textContent = icon;
+      container.appendChild(iconDiv);
+    }
 
     const h3 = document.createElement('h3');
     h3.className = 'empty-state-title';
