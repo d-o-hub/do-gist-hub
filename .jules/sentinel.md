@@ -21,3 +21,8 @@
 **Vulnerability:** The GitHub API error handler (`error-handler.ts`) was passing raw error messages and technical details (like HTTP status codes or GitHub's internal error descriptions) directly to the application. If a PAT was present in the request context or GitHub's response message, it could be leaked into diagnostic logs or the UI.
 **Learning:** External API error messages are untrusted input. Even if the application redacts secrets before logging, the error handler itself must ensure that the `AppError` objects it produces are already scrubbed.
 **Prevention:** Implement a mandatory redaction wrapper in the centralized error handler (`handleGitHubError`) to sanitize all user-facing messages and technical details.
+
+## 2026-06-18 - [XSS: Obfuscated Protocol Bypass]
+**Vulnerability:** `sanitizeUrl` only stripped leading control characters and whitespace. An attacker could bypass protocol validation by embedding non-printable control characters (like null bytes `\0`) or whitespace within the protocol string (e.g., `java\0script:alert(1)`). Browsers often ignore these characters, allowing the malicious script to execute.
+**Learning:** Security validation must happen on a normalized version of the input. Stripping dangerous characters from only the start of a string is insufficient if the target system (the browser's URI parser) is permissive about where those characters appear.
+**Prevention:** Always strip all control characters and whitespace from the entire string before performing protocol or pattern matching for security validation.
