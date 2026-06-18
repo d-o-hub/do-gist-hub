@@ -43,7 +43,7 @@ describe('GistDetail Route', () => {
     it('shows empty state when no gistId provided', () => {
       render(container);
 
-      expect(container.innerHTML).toContain('No gist selected');
+      expect(container.innerHTML).toContain('No Gist Selected');
       expect(container.innerHTML).toContain('empty-state-container');
     });
 
@@ -186,7 +186,7 @@ describe('GistDetail Route', () => {
     it('handles empty params object gracefully', () => {
       render(container, {});
 
-      expect(container.innerHTML).toContain('No gist selected');
+      expect(container.innerHTML).toContain('No Gist Selected');
       expect(loadGistDetail).not.toHaveBeenCalled();
     });
   });
