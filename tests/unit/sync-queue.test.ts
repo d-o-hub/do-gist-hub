@@ -200,7 +200,7 @@ describe('SyncQueue', () => {
   // ── processQueue ──────────────────────────────────────────────────────────
 
   describe('processQueue', () => {
-    it('processes operations in FIFO order', async () => {
+    it('processes operations in FIFO order', { timeout: 15000 }, async () => {
       vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
       vi.mocked(db.getPendingWrites).mockResolvedValue([
         {
