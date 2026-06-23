@@ -32,6 +32,13 @@
   }
 }
 
+/* Theme toggle button */
+.theme-toggle svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
 /* Phone (390px): larger nav icons, relaxed spacing */
 @media (min-width: 390px) {
   .bottom-nav {

@@ -48,6 +48,8 @@ vi.mock('../../src/services/sync/queue', () => ({
 
 vi.mock('../../src/tokens/design-tokens', () => ({
   getThemePreference: vi.fn(() => 'auto'),
+  getTheme: vi.fn(() => 'dark'),
+  setTheme: vi.fn(),
 }));
 
 vi.mock('../../src/utils/announcer', () => ({
