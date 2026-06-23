@@ -42,7 +42,7 @@ allprojects {
     afterEvaluate { project ->
         if (project.plugins.hasPlugin('com.android.library') || project.plugins.hasPlugin('com.android.application')) {
             project.tasks.configureEach { task ->
-                if (task.name.contains('LintVital') && task.name.contains('fdroid', StringComparison.CASE_INSENSITIVE)) {
+                if (task.name.toLowerCase().contains('lintvital') && task.name.toLowerCase().contains('fdroid')) {
                     task.enabled = false
                 }
             }
