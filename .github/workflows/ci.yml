@@ -154,11 +154,13 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
+          # Use assembleFdroid: Capacitor's singleVariant("release") causes
+          # lintVital to fail for the fdroid buildType. The root build.gradle
+          # disables lintVital fdroid tasks via configureEach.
           ./gradlew assembleFdroid --stacktrace
       - name: Verify F-Droid APK exists
         if: steps.filter.outputs.fdroid == 'true'
         run: |
-          # The fdroid build type produces an unsigned APK for F-Droid signing.
           APK=android/app/build/outputs/apk/fdroid/app-fdroid-unsigned.apk
           ls -la "$APK"
           file "$APK"
