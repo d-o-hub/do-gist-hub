@@ -154,22 +154,21 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          # Use assembleRelease instead of assembleFdroid: Capacitor's
-          # singleVariant("release") causes lintVital to fail for the fdroid
-          # buildType. When no signing keystore is configured, assembleRelease
-          # produces an unsigned APK that F-Droid can sign with its own key.
-          ./gradlew assembleRelease --stacktrace
+          # Use assembleFdroid: Capacitor's singleVariant("release") causes
+          # lintVital to fail for the fdroid buildType. The root build.gradle
+          # disables lintVital fdroid tasks via configureEach.
+          ./gradlew assembleFdroid --stacktrace
       - name: Verify F-Droid APK exists
         if: steps.filter.outputs.fdroid == 'true'
         run: |
-          APK=android/app/build/outputs/apk/release/app-release-unsigned.apk
+          APK=android/app/build/outputs/apk/fdroid/app-fdroid-unsigned.apk
           ls -la "$APK"
           file "$APK"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # pinned from v7
         if: always() && steps.filter.outputs.fdroid == 'true'
         with:
           name: app-fdroid-unsigned-apk
-          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+          path: android/app/build/outputs/apk/fdroid/app-fdroid-unsigned.apk
           retention-days: 7
 
   bundle-budget:

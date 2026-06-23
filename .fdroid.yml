@@ -17,13 +17,10 @@ Builds:
     commit: v0.2.0
     subdir: android
     gradle:
-      - assembleRelease
-    output: app/build/outputs/apk/release/app-release-unsigned.apk
+      - assembleFdroid
+    output: app/build/outputs/apk/fdroid/app-fdroid-unsigned.apk
     # F-Droid will sign the APK with its own key.
-    # Uses assembleRelease (not assembleFdroid) because Capacitor's
-    # singleVariant("release") causes lintVital failures for the fdroid
-    # buildType. When no signing keystore is set, release produces an
-    # unsigned APK suitable for F-Droid signing.
+    # Uses the 'fdroid' build variant (unsigned release with ProGuard + minification).
     # Reproducible builds are a future goal (varies per environment).
 
   # Note: v0.2.0-rc.1 omitted from F-Droid Builds list because:

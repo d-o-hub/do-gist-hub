@@ -35,6 +35,19 @@ allprojects {
             }
         }
     }
+
+    // Disable lintVital for the fdroid buildType across all subprojects.
+    // Capacitor's singleVariant("release") means libraries don't publish an
+    // fdroid variant, so lintVital's classpath resolution fails at config time.
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin('com.android.library') || project.plugins.hasPlugin('com.android.application')) {
+            project.tasks.configureEach { task ->
+                if (task.name.contains('LintVital') && task.name.contains('fdroid', StringComparison.CASE_INSENSITIVE)) {
+                    task.enabled = false
+                }
+            }
+        }
+    }
 }
 
 task clean(type: Delete) {
