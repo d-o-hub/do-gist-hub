@@ -51,7 +51,7 @@ test.describe('Security & Coverage', () => {
 
     await page.evaluate(async () => {
       const dbName = 'd-o-gist-hub-db';
-      const dbVersion = 3;
+      const dbVersion = 4;
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('Timeout'));
@@ -104,7 +104,7 @@ test.describe('Security & Coverage', () => {
 
     const encryptionStatus = (await page.evaluate(async () => {
       const dbName = 'd-o-gist-hub-db';
-      const dbVersion = 3;
+      const dbVersion = 4;
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('Timeout'));
