@@ -192,10 +192,18 @@ function performanceBudgetPlugin(): Plugin {
         const raw = fs.readFileSync(file);
         const gzipped = zlib.gzipSync(raw);
         const gzipSize = gzipped.length;
-        totalGzipSize += gzipSize;
 
         const relativePath = path.relative(distDir, file);
+        const filename = path.basename(file);
         const sizeKB = (gzipSize / 1024).toFixed(1);
+
+        // Skip lazy-loaded vendor chunks (they're code-split and loaded on demand)
+        if (filename.startsWith('vendor-shiki-') || filename.startsWith('vendor-idb-')) {
+          console.log(`  ⊘ ${relativePath}: lazy-loaded, skipped from budget`);
+          continue;
+        }
+
+        totalGzipSize += gzipSize;
 
         if (gzipSize > PERFORMANCE_BUDGETS.routeChunk) {
           const msg = `Route chunk exceeds budget: ${relativePath} (${sizeKB}KB > ${(PERFORMANCE_BUDGETS.routeChunk / 1024).toFixed(0)}KB)`;
