@@ -14,6 +14,7 @@
  * @see https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#device-flow
  */
 
+import { noop } from '../../utils/noop';
 import { recordAuthCompleted, recordAuthMethod } from '../telemetry/auth-telemetry';
 import { saveToken } from './auth';
 
@@ -223,8 +224,8 @@ export async function authenticateWithDeviceFlow(
     }
 
     // Fire-and-forget telemetry (must not block success)
-    recordAuthMethod('device-flow').catch(() => {});
-    recordAuthCompleted().catch(() => {});
+    recordAuthMethod('device-flow').catch(noop);
+    recordAuthCompleted().catch(noop);
 
     // Store refresh token in its own try/catch (must not block success)
     if (result.refreshToken && result.expiresIn) {

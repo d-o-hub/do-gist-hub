@@ -305,7 +305,9 @@ export function bindConflictEvents(
  */
 export async function loadConflictResolution(
   container: HTMLElement,
-  onResolve: () => void = () => {},
+  onResolve: () => void = () => {
+    // Default no-op handler
+  },
   signal?: AbortSignal
 ): Promise<void> {
   const conflicts = await getConflicts();

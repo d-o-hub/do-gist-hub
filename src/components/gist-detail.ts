@@ -244,7 +244,7 @@ export function renderGistDetail(gist: GistRecord): DocumentFragment {
   let firstFile: GistRecord['files'][string] | null = null;
   for (const key in gist.files) {
     if (Object.hasOwn(gist.files, key)) {
-      firstFile = gist.files[key]!;
+      firstFile = gist.files[key] ?? null;
       break;
     }
   }

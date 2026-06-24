@@ -4,6 +4,7 @@
  * Encrypted at rest using Web Cryptography API
  */
 
+import { noop } from '../../utils/noop';
 import { getMetadata, setMetadata } from '../db';
 import { lifecycle } from '../lifecycle';
 import { decrypt, encrypt } from '../security/crypto';
@@ -167,8 +168,8 @@ export async function saveToken(token: string): Promise<{ success: boolean; erro
 
     safeLog(`[Auth] Token saved and encrypted: ${redactToken(token)}`);
     clearUsernameCache();
-    recordAuthMethod('pat').catch(() => {});
-    recordAuthCompleted().catch(() => {});
+    recordAuthMethod('pat').catch(noop);
+    recordAuthCompleted().catch(noop);
     return { success: true };
   } catch (error: unknown) {
     safeError('[Auth] Failed to save token:', error);
