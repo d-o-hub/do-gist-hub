@@ -251,23 +251,33 @@ function fetchWithEtag<T>(url: string, context: string): Promise<T> {
 
       trackRateLimit(response);
       const data = await response.json();
-
-      let result = data;
-      if (context === 'listGists' || context === 'listStarredGists') {
-        const pagination = parseLinkHeader(response.headers.get('Link'));
-        result = { data: data as GitHubGistListItem[], pagination };
-      }
-
-      const etag = response.headers.get('ETag');
-      if (etag) {
-        await setEtag(url, etag, result);
-      }
+      const result = wrapPaginationIfNeeded(data, response, context) as T;
+      await cacheEtagIfPresent(url, response, result);
 
       return result;
     } catch (error) {
       return handleApiError(error, context);
     }
   });
+}
+
+function wrapPaginationIfNeeded(
+  data: unknown,
+  response: Response,
+  context: string
+): GitHubGistListItem[] | { data: GitHubGistListItem[]; pagination: PaginationInfo } {
+  if (context === 'listGists' || context === 'listStarredGists') {
+    const pagination = parseLinkHeader(response.headers.get('Link'));
+    return { data: data as GitHubGistListItem[], pagination };
+  }
+  return data as GitHubGistListItem[];
+}
+
+async function cacheEtagIfPresent<T>(url: string, response: Response, result: T): Promise<void> {
+  const etag = response.headers.get('ETag');
+  if (etag) {
+    await setEtag(url, etag, result);
+  }
 }
 
 /**

@@ -74,21 +74,21 @@ export async function recordFirstApiCall(): Promise<void> {
   await writeTelemetry(data);
 }
 
+function calculateMedian(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? Math.round(((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2)
+    : (sorted[mid] ?? 0);
+}
+
 export async function logAuthTelemetry(): Promise<void> {
   const data = await readTelemetry();
   const total = data.patCount + data.deviceFlowCount;
   if (total === 0) return;
 
   const deltas = data.timeToFirstApiCallDeltas;
-  let medianMs: number | null = null;
-  if (deltas.length > 0) {
-    const sorted = [...deltas].sort((a, b) => a - b);
-    const mid = Math.floor(sorted.length / 2);
-    medianMs =
-      sorted.length % 2 === 0
-        ? Math.round(((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2)
-        : (sorted[mid] ?? 0);
-  }
+  const medianMs = deltas.length > 0 ? calculateMedian(deltas) : null;
 
   safeLog(
     `[Telemetry] Auth methods: ${data.patCount} PAT, ${data.deviceFlowCount} Device Flow | Time-to-first-API-call: ${deltas.length} samples${medianMs !== null ? `, median: ${medianMs}ms` : ''}`

@@ -52,6 +52,43 @@ export async function exportAllGists(): Promise<Blob> {
 /**
  * Import gists from a JSON file
  */
+async function processImportedGist(
+  importedGist: GistRecord,
+  result: ImportResult,
+  gistsToSave: GistRecord[]
+): Promise<void> {
+  const db = getDB();
+  if (!db) throw new Error('Database not initialized');
+
+  const existing = await getGist(importedGist.id);
+
+  if (!existing) {
+    gistsToSave.push(importedGist);
+    result.imported++;
+    return;
+  }
+
+  const hasChanges = JSON.stringify(existing) !== JSON.stringify(importedGist);
+  if (!hasChanges) {
+    result.skipped++;
+    return;
+  }
+
+  const importedAsGitHubGist = recordToGitHubGist(importedGist);
+  const conflict = detectConflict(existing, importedAsGitHubGist);
+
+  if (conflict) {
+    await storeConflict(conflict);
+    await db.put('gists', { ...existing, syncStatus: 'conflict' });
+    result.conflicts++;
+  } else if (new Date(importedGist.updatedAt) > new Date(existing.updatedAt)) {
+    gistsToSave.push(importedGist);
+    result.updated++;
+  } else {
+    result.skipped++;
+  }
+}
+
 export async function importGists(file: File): Promise<ImportResult> {
   const result: ImportResult = {
     imported: 0,
@@ -69,49 +106,11 @@ export async function importGists(file: File): Promise<ImportResult> {
       throw new Error('Invalid export file format: missing gists array');
     }
 
-    const db = getDB();
-    if (!db) throw new Error('Database not initialized');
-
     const gistsToSave: GistRecord[] = [];
 
     for (const importedGist of data.gists) {
       try {
-        const existing = await getGist(importedGist.id);
-
-        if (!existing) {
-          // New gist
-          gistsToSave.push(importedGist);
-          result.imported++;
-        } else {
-          // Existing gist - check for updates/conflicts
-          const hasChanges = JSON.stringify(existing) !== JSON.stringify(importedGist);
-
-          if (!hasChanges) {
-            result.skipped++;
-            continue;
-          }
-
-          // Check for conflicts
-          const importedAsGitHubGist = recordToGitHubGist(importedGist);
-          const conflict = detectConflict(existing, importedAsGitHubGist);
-
-          if (conflict) {
-            await storeConflict(conflict);
-            await db.put('gists', {
-              ...existing,
-              syncStatus: 'conflict',
-            });
-            result.conflicts++;
-          } else {
-            // Local is clean, check for newer timestamp
-            if (new Date(importedGist.updatedAt) > new Date(existing.updatedAt)) {
-              gistsToSave.push(importedGist);
-              result.updated++;
-            } else {
-              result.skipped++;
-            }
-          }
-        }
+        await processImportedGist(importedGist, result, gistsToSave);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         result.errors.push(`Failed to import gist ${importedGist.id}: ${msg}`);
