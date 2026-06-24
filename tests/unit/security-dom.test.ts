@@ -176,4 +176,20 @@ describe('sanitizeUrl', () => {
     expect(sanitizeUrl('\x19javascript:alert(1)')).toBe('about:blank');
     expect(sanitizeUrl('\x01  javascript:alert(1)')).toBe('about:blank');
   });
+
+  it('blocks URLs with embedded control characters (obfuscation)', () => {
+    expect(sanitizeUrl('java\x00script:alert(1)')).toBe('about:blank');
+    expect(sanitizeUrl('j\x01a\x02v\x03a\x04s\x05c\x06r\x07i\x08p\x09t\x0A:alert(1)')).toBe(
+      'about:blank'
+    );
+    expect(sanitizeUrl('javascript\x00:alert(1)')).toBe('about:blank');
+    expect(sanitizeUrl('java\x7Fscript:alert(1)')).toBe('about:blank');
+    expect(sanitizeUrl('java\x9Fscript:alert(1)')).toBe('about:blank');
+  });
+
+  it('blocks URLs with embedded whitespace (obfuscation)', () => {
+    expect(sanitizeUrl('j a v a s c r i p t : alert(1)')).toBe('about:blank');
+    expect(sanitizeUrl('javascript\n:alert(1)')).toBe('about:blank');
+    expect(sanitizeUrl('javascript\t:alert(1)')).toBe('about:blank');
+  });
 });

@@ -19,7 +19,3 @@
 ## 2026-07-20 - [Roving Tabindex for Navigation Efficiency]
 **Learning:** Roving tabindex is essential for tabbed interfaces to prevent keyboard users from being "trapped" in long lists of tabs. It allows users to skip the entire tab list with a single Tab press while still maintaining access to all tabs via Arrow keys, significantly improving keyboard navigation efficiency.
 **Action:** Implement Roving Tabindex (`tabindex="0"` for active, `-1` for inactive) for all custom tabbed or grouped controls.
-
-## 2026-07-25 - [Iconic Empty States for Better Guidance]
-**Learning:** Actionable empty states are more effective when they include a decorative icon (using `aria-hidden="true"`) to provide immediate visual context. Standardizing these states via a shared component ensures consistent layouts and accessibility across all app routes.
-**Action:** Always include a relevant icon in `EmptyState` calls and refactor manual DOM-based empty states to use the shared component for consistency.

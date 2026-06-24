@@ -429,7 +429,6 @@ export async function loadEditForm(
       const fragment = EmptyState.renderToFragment({
         title: 'Gist Not Found',
         description: 'This gist may have been deleted or you do not have permission to edit it.',
-        icon: '⚠️',
         actionLabel: 'Go Back',
       });
       container.replaceChildren(fragment);
