@@ -55,29 +55,14 @@ export function sanitizeUrl(url: string | undefined | null): string {
   if (!url) return '';
   const trimmedUrl = String(url).trim();
 
-  // Strip leading control characters (U+0000-U+001F, U+007F-U+009F) and whitespace
-  // to prevent bypass attempts like \x00javascript:alert(1)
-  let start = 0;
-  while (start < trimmedUrl.length) {
-    const code = trimmedUrl.charCodeAt(start);
-    // Control chars: 0x00-0x1F, 0x7F-0x9F, and whitespace (0x09-0x0D, 0x20)
-    if (
-      code <= 0x1f ||
-      (code >= 0x7f && code <= 0x9f) ||
-      code === 0x09 ||
-      code === 0x0a ||
-      code === 0x0d ||
-      code === 0x20
-    ) {
-      start++;
-    } else {
-      break;
-    }
-  }
+  // Sentinel: Strip ALL control characters (U+0000-U+001F, U+007F-U+009F) and whitespace
+  // from the entire string to prevent bypass attempts with embedded characters like "java\0script:".
+  // Uses new RegExp() constructor to avoid Biome lint errors with control characters in literals.
+  const controlCharsRegex = new RegExp('[\\x00-\\x1f\\x7f-\\x9f\\s]', 'g');
+  const validationUrl = trimmedUrl.replace(controlCharsRegex, '').toLowerCase();
 
-  const strippedUrl = trimmedUrl.slice(start).toLowerCase();
   for (const protocol of DANGEROUS_PROTOCOLS) {
-    if (strippedUrl.startsWith(protocol)) {
+    if (validationUrl.startsWith(protocol)) {
       return 'about:blank';
     }
   }

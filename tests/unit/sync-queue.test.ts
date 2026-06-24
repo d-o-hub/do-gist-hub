@@ -91,6 +91,7 @@ describe('SyncQueue', () => {
   let queue: SyncQueue;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     queue = new SyncQueue();
     vi.clearAllMocks();
     vi.stubGlobal('window', {
@@ -103,6 +104,7 @@ describe('SyncQueue', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     queue.destroy();
   });
@@ -229,12 +231,15 @@ describe('SyncQueue', () => {
         },
       ]);
 
-      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       vi.mocked(github.createGist).mockResolvedValue(makeMockGist('gist-a'));
       vi.mocked(github.updateGist).mockResolvedValue(makeMockGist('gist-b'));
       vi.mocked(github.deleteGist).mockResolvedValue(undefined);
 
-      await queue.processQueue();
+      const promise = queue.processQueue();
+
+      // Exhaust all pending promises/timers (including internal delays)
+      await vi.runAllTimersAsync();
+      await promise;
 
       const createOrder = vi.mocked(github.createGist).mock.invocationCallOrder[0];
       const updateOrder = vi.mocked(github.updateGist).mock.invocationCallOrder[0];
@@ -260,9 +265,10 @@ describe('SyncQueue', () => {
 
       const p1 = queue.processQueue();
       const p2 = queue.processQueue();
-      await Promise.all([p1, p2]);
 
-      await new Promise((r) => setTimeout(r, 30));
+      // Fast-forward timers to resolve the internal setTimeouts in mockImplementation
+      await vi.runAllTimersAsync();
+      await Promise.all([p1, p2]);
 
       expect(db.getPendingWrites).toHaveBeenCalledTimes(2);
     });
@@ -279,10 +285,11 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       vi.mocked(github.createGist).mockRejectedValue(new Error('network error'));
 
-      await queue.processQueue();
+      const promise = queue.processQueue();
+      await vi.runAllTimersAsync();
+      await promise;
 
       expect(db.updatePendingWriteError).toHaveBeenCalledWith(1, 'network error');
     });
@@ -299,10 +306,11 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       vi.mocked(github.createGist).mockRejectedValue(new Error('bad request'));
 
-      await queue.processQueue();
+      const promise = queue.processQueue();
+      await vi.runAllTimersAsync();
+      await promise;
 
       expect(db.updatePendingWriteError).toHaveBeenCalledWith(1, 'bad request');
     });
@@ -351,10 +359,11 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       vi.mocked(github.starGist).mockResolvedValue(undefined);
 
-      await queue.processQueue();
+      const promise = queue.processQueue();
+      await vi.runAllTimersAsync();
+      await promise;
 
       expect(github.starGist).toHaveBeenCalledWith('gist-1');
     });
@@ -371,10 +380,11 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       vi.mocked(github.unstarGist).mockResolvedValue(undefined);
 
-      await queue.processQueue();
+      const promise = queue.processQueue();
+      await vi.runAllTimersAsync();
+      await promise;
 
       expect(github.unstarGist).toHaveBeenCalledWith('gist-1');
     });
@@ -391,11 +401,12 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       const forkedGist = makeMockGist('gist-forked');
       vi.mocked(github.forkGist).mockResolvedValue(forkedGist);
 
-      await queue.processQueue();
+      const promise = queue.processQueue();
+      await vi.runAllTimersAsync();
+      await promise;
 
       expect(github.forkGist).toHaveBeenCalledWith('gist-1');
     });
@@ -413,7 +424,6 @@ describe('SyncQueue', () => {
           expectedRemoteVersion: '2026-01-01T10:00:00Z',
         },
       ]);
-      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
       const remoteGist = makeMockGist('gist-1');
       remoteGist.updated_at = '2026-01-15T12:00:00Z'; // Different from expected
       vi.mocked(github.getGist).mockResolvedValue(remoteGist);
@@ -424,7 +434,9 @@ describe('SyncQueue', () => {
         detectedAt: new Date().toISOString(),
       } as never);
 
-      await queue.processQueue();
+      const promise = queue.processQueue();
+      await vi.runAllTimersAsync();
+      await promise;
 
       expect(conflictDetector.storeConflict).toHaveBeenCalled();
       expect(db.removePendingWrite).not.toHaveBeenCalledWith(1);
@@ -442,9 +454,10 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
 
-      await queue.processQueue();
+      const promise = queue.processQueue();
+      await vi.runAllTimersAsync();
+      await promise;
 
       expect(db.updatePendingWriteError).toHaveBeenCalledWith(
         5,
@@ -490,9 +503,10 @@ describe('SyncQueue', () => {
           retryCount: 0,
         },
       ]);
-      vi.spyOn(queueModule, 'delay').mockResolvedValue(undefined);
 
-      await queue.processQueue();
+      const promise = queue.processQueue();
+      await vi.runAllTimersAsync();
+      await promise;
 
       // Should not call createGist since rate limiter says not safe
       expect(github.createGist).not.toHaveBeenCalled();
