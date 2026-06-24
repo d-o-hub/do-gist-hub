@@ -15,6 +15,9 @@ import { renderTagChips } from './ui/tag-chip';
 import { toast } from './ui/toast';
 
 export function buildFileContent(content: string, language?: string): DocumentFragment {
+  if (typeof document === 'undefined') {
+    return new DocumentFragment();
+  }
   const frag = document.createDocumentFragment();
   const pre = document.createElement('pre');
   pre.className = `code-block language-${language?.replace(/[^a-z0-9-]/gi, '') || 'text'}`;
