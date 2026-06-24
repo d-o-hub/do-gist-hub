@@ -2,7 +2,7 @@
  * Unit tests for Performance Monitoring module
  * Covers: budgets, interaction-timer, web-vitals
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---- Mocks (hoisted) ----
 
@@ -27,12 +27,12 @@ vi.mock('../../src/services/db', () => ({
 
 // ---- Imports (after mocks) ----
 
+import { onCLS, onFCP, onINP, onLCP } from 'web-vitals';
+import { getMetadata } from '../../src/services/db';
 import { PERFORMANCE_BUDGETS } from '../../src/services/perf/budgets';
 import { InteractionTimer, measureAsync } from '../../src/services/perf/interaction-timer';
-import { initWebVitals, getStoredMetrics } from '../../src/services/perf/web-vitals';
-import { safeLog, safeWarn, safeError } from '../../src/services/security/logger';
-import { onLCP, onCLS, onINP, onFCP } from 'web-vitals';
-import { getMetadata } from '../../src/services/db';
+import { getStoredMetrics, initWebVitals } from '../../src/services/perf/web-vitals';
+import { safeWarn } from '../../src/services/security/logger';
 
 // ---- Budgets ----
 
@@ -99,9 +99,7 @@ describe('InteractionTimer', () => {
 
     timer.end();
 
-    expect(safeWarn).toHaveBeenCalledWith(
-      expect.stringContaining('[Perf Budget]'),
-    );
+    expect(safeWarn).toHaveBeenCalledWith(expect.stringContaining('[Perf Budget]'));
   });
 
   it('does not warn when within budget', () => {
@@ -121,9 +119,7 @@ describe('InteractionTimer', () => {
     const second = timer.end();
 
     expect(second).toBe(0);
-    expect(safeWarn).toHaveBeenCalledWith(
-      expect.stringContaining('already ended'),
-    );
+    expect(safeWarn).toHaveBeenCalledWith(expect.stringContaining('already ended'));
   });
 
   it('cancel() prevents end() from reporting', () => {
@@ -134,9 +130,7 @@ describe('InteractionTimer', () => {
     const duration = timer.end();
 
     expect(duration).toBe(0);
-    expect(safeWarn).toHaveBeenCalledWith(
-      expect.stringContaining('already ended'),
-    );
+    expect(safeWarn).toHaveBeenCalledWith(expect.stringContaining('already ended'));
   });
 
   it('uses custom budget from constructor', () => {
@@ -145,9 +139,7 @@ describe('InteractionTimer', () => {
 
     timer.end();
 
-    expect(safeWarn).toHaveBeenCalledWith(
-      expect.stringContaining('budget: 500ms'),
-    );
+    expect(safeWarn).toHaveBeenCalledWith(expect.stringContaining('budget: 500ms'));
   });
 
   it('uses override budget from end() parameter', () => {
@@ -166,9 +158,7 @@ describe('InteractionTimer', () => {
 
     timer.end();
 
-    expect(safeWarn).toHaveBeenCalledWith(
-      expect.stringContaining('budget: 100ms'),
-    );
+    expect(safeWarn).toHaveBeenCalledWith(expect.stringContaining('budget: 100ms'));
   });
 
   it('creates performance marks on start and end', () => {
@@ -191,7 +181,7 @@ describe('InteractionTimer', () => {
     expect(measureSpy).toHaveBeenCalledWith(
       'measure-test',
       'measure-test-start',
-      'measure-test-end',
+      'measure-test-end'
     );
     measureSpy.mockRestore();
   });
@@ -218,7 +208,7 @@ describe('measureAsync', () => {
     await expect(
       measureAsync('error-async', async () => {
         throw error;
-      }),
+      })
     ).rejects.toThrow('async error');
   });
 

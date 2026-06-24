@@ -223,7 +223,7 @@ describe('Service Worker Registration', () => {
         (c: [string, () => void]) => c[0] === 'statechange'
       )?.[1];
       expect(stateChangeHandler).toBeDefined();
-      stateChangeHandler!();
+      stateChangeHandler?.();
 
       expect(toast.info).toHaveBeenCalledWith(
         'New version available, refresh to update',
@@ -306,7 +306,7 @@ describe('Service Worker Registration', () => {
       });
 
       // Now trigger the resolve
-      currentMockPort1.onmessage!({} as MessageEvent);
+      currentMockPort1.onmessage?.({} as MessageEvent);
       await promise;
     });
 

@@ -1,7 +1,7 @@
 /**
  * Unit tests for Empty State Component
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Hoisted mock for sanitizeHtml
 vi.mock('../../src/services/security/dom', () => ({

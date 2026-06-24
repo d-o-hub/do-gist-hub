@@ -1,7 +1,7 @@
 /**
  * Unit tests for Toast Notification System
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -331,6 +331,42 @@ describe('ToastManager', () => {
       toastEl?.dispatchEvent(new Event('animationend'));
 
       expect(document.getElementById(id)).toBeNull();
+    });
+  });
+
+  // ── destroy ─────────────────────────────────────────────────────
+
+  describe('destroy', () => {
+    it('removes container from DOM', () => {
+      manager.show('Hello');
+      const container = document.getElementById('toast-container');
+      expect(container).not.toBeNull();
+
+      manager.destroy();
+
+      expect(document.getElementById('toast-container')).toBeNull();
+    });
+
+    it('does nothing if no container exists', () => {
+      expect(() => manager.destroy()).not.toThrow();
+    });
+  });
+
+  // ── activeToasts ──────────────────────────────────────────────
+
+  describe('activeToasts', () => {
+    it('returns a readonly map of active toasts', () => {
+      manager.show('One');
+      manager.show('Two');
+      expect(manager.activeToasts.size).toBe(2);
+    });
+
+    it('reflects dismissals', () => {
+      const id = manager.show('Temp', 'info', 0);
+      expect(manager.activeToasts.size).toBe(1);
+      manager.dismiss(id);
+      vi.advanceTimersByTime(300);
+      expect(manager.activeToasts.size).toBe(0);
     });
   });
 

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Security & Coverage', () => {
   test.beforeEach(async ({ page }) => {
@@ -11,12 +11,14 @@ test.describe('Security & Coverage', () => {
   });
 
   test('should verify strict CSP meta tag is present and correct', async ({ page }) => {
-    const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
+    const csp = await page
+      .locator('meta[http-equiv="Content-Security-Policy"]')
+      .getAttribute('content');
     expect(csp).toBeTruthy();
     expect(csp).toContain("default-src 'self'");
 
     // style-src checks - use exact directive name matching to avoid matching style-src-elem/attr
-    const styleSrc = csp?.split(';').find(part => {
+    const styleSrc = csp?.split(';').find((part) => {
       const directive = part.trim().split(/\s+/)[0];
       return directive === 'style-src';
     });
@@ -40,7 +42,10 @@ test.describe('Security & Coverage', () => {
     }
   });
 
-  test('should verify that PAT is encrypted in IndexedDB storage', async ({ page, browserName }) => {
+  test('should verify that PAT is encrypted in IndexedDB storage', async ({
+    page,
+    browserName,
+  }) => {
     // Skip this complex indexedDB test in webkit as it has hanging issues with Playwright evaluation
     test.skip(browserName === 'webkit', 'WebKit IndexedDB evaluation hangs in CI');
 
@@ -54,10 +59,13 @@ test.describe('Security & Coverage', () => {
 
         try {
           // WebKit bug workaround: close other connections first
-          indexedDB.databases().then((dbs) => {
-             // Let it fall through, but trigger a tiny wait
-          }).catch(() => {});
-        } catch(e) {}
+          indexedDB
+            .databases()
+            .then((_dbs) => {
+              // Let it fall through, but trigger a tiny wait
+            })
+            .catch(() => {});
+        } catch (_e) {}
 
         const request = indexedDB.open(dbName, dbVersion);
         request.onsuccess = () => {
@@ -85,7 +93,7 @@ test.describe('Security & Coverage', () => {
         };
         request.onerror = () => {
           clearTimeout(timeout);
-          reject(new Error('Open failed: ' + request.error?.message));
+          reject(new Error(`Open failed: ${request.error?.message}`));
         };
         request.onblocked = () => {
           clearTimeout(timeout);
@@ -151,13 +159,14 @@ test.describe('Security & Coverage', () => {
 
   test('should verify that PAT is never logged in console', async ({ page }) => {
     const logs: string[] = [];
-    page.on('console', msg => logs.push(msg.text()));
+    page.on('console', (msg) => logs.push(msg.text()));
     const testToken = 'ghp_secret_token_that_should_be_redacted_12345';
     await page.evaluate((token) => {
-        const redactSecrets = (input: string) => input.replace(/(ghp_[A-Za-z0-9_]{36,})/g, '[REDACTED]');
-        console.log('User Action: Saving token', redactSecrets(token));
+      const redactSecrets = (input: string) =>
+        input.replace(/(ghp_[A-Za-z0-9_]{36,})/g, '[REDACTED]');
+      console.log('User Action: Saving token', redactSecrets(token));
     }, testToken);
-    expect(logs.some(log => log.includes(testToken))).toBe(false);
-    expect(logs.some(log => log.includes('[REDACTED]'))).toBe(true);
+    expect(logs.some((log) => log.includes(testToken))).toBe(false);
+    expect(logs.some((log) => log.includes('[REDACTED]'))).toBe(true);
   });
 });

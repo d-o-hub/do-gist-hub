@@ -47,7 +47,7 @@ See `plans/archive/` for completed or superseded files moved here on 2026-05-15.
 | `archive/024-progress-update-2026-05-07.md`   | Complete ✅    | Progress update                                                |
 | `archive/025-progress-update-2026-05-07.md`   | Complete ✅    | Progress update                                                |
 
-| `070-goap-design-token-system-audit-and-cleanup.md` | GOAP | Complete ✅ | Design token system audit: documentation, ADR, dead-code identification |
+| `070-goap-design-token-system-audit-and-cleanup.md` | GOAP | Complete ✅ | Design token system audit: documentation, ADR, dead-code removal (37 recursive self-references removed) |
 | `069-progress-update-2026-06-16-responsive-composition-v2.md` | Progress | Complete ✅ | Responsive composition v2: 8 narrow-viewport fixes, token cleanup |
 
 ## Active ADRs (accepted, not superseded)
@@ -130,10 +130,10 @@ These numbered plans document the project's foundation and are considered stable
 | `058-goap-cross-browser-webkit-fix.md`              | GOAP          | Complete ✅ | Fix WebKit 58-test failure: add --with-deps to playwright install step |
 | `059-goap-resolve-pre-existing-ci-issues.md`              | GOAP          | Complete ✅ | Fix vitest EnvironmentTeardownError and WebKit flaky star-toggle test |
 | `060-goap-plain-text-paste-llm-gist-creation.md`          | GOAP          | Complete ✅ | Plain text paste parser, LLM-assisted gist creation, drag-and-drop file import |
-| `066-goap-comprehensive-ci-fixes-and-feature-gaps.md`     | GOAP          | Partial ◐   | Partially complete: version/gitignore hygiene plus PWA capabilities, badging, and gist share/open/copy actions landed; CI and larger feature gaps remain |
+| `066-goap-comprehensive-ci-fixes-and-feature-gaps.md`     | GOAP          | Complete ✅ | All goals complete: CI fixes, spacing token naming, multi-select/bulk ops, tags system, syntax highlighting, coverage thresholds met |
 | `061-progress-update-2026-05-30-implementation-gaps.md`    | Progress      | Complete ✅ | Implementation gaps audit: ADR-016 lazy hydration missing, F-Droid MR not submitted, GOAP 060 zero implementation |
-| `063-pre-existing-ci-issues-2026-06-01.md`                | Analysis      | Active      | Pre-existing CI issues: html-escaper CJS fix, commitlint failures, F-Droid APK build failure |
-| `064-audit-2026-06-01-improvements-and-new-features.md`  | Analysis      | Partial ◐   | Forward-looking audit reconciled: B3-B7 and Web API quick wins partly/fully landed; multi-select, tags, syntax highlighting remain backlog |
+| `063-pre-existing-ci-issues-2026-06-01.md`                | Analysis      | Complete ✅ | Pre-existing CI issues: html-escaper CJS fix (done), commitlint (workflow discipline), F-Droid (env issue — requires Java 17 in CI) |
+| `064-audit-2026-06-01-improvements-and-new-features.md`  | Analysis      | Complete ✅ | All items implemented: B3-B7 bugs resolved, F1 multi-select, F2 tags, F4 syntax highlighting, F5-F7 PWA APIs, F8-F12 backlog items (keyboard shortcuts, export, log viewer, per_page, sync filter) |
 | `067-progress-update-2026-06-09-plan064-066-reconciliation.md` | Progress | Complete ✅ | Static reconciliation snapshot for Plans 064/066: status tables, registry sync, and implemented quick wins documented |
 
 ## Quick reference: ADR numbers in use

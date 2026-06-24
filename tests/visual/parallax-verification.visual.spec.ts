@@ -2,9 +2,9 @@
  * Scroll-Driven Parallax Verification Tests (Phase C Action 5.2)
  * Verifies the detail header parallax animation and reduced-motion compliance.
  */
-import { test, expect } from '@playwright/test';
-import { seedGists, DEFAULT_TEST_GISTS } from '../helpers/seed-gists';
+import { expect, test } from '@playwright/test';
 import { mockGitHubApi } from '../helpers/mock-github-api';
+import { DEFAULT_TEST_GISTS, seedGists } from '../helpers/seed-gists';
 
 test.describe('Scroll-Driven Parallax', () => {
   test.beforeEach(async ({ page }) => {
@@ -19,9 +19,11 @@ test.describe('Scroll-Driven Parallax', () => {
 
   test('should inject scroll-progress bar on gist detail page', async ({ page }) => {
     await page.evaluate(() => {
-      window.dispatchEvent(new CustomEvent('app:navigate', {
-        detail: { route: 'detail', params: { gistId: 'test-gist-1' } },
-      }));
+      window.dispatchEvent(
+        new CustomEvent('app:navigate', {
+          detail: { route: 'detail', params: { gistId: 'test-gist-1' } },
+        })
+      );
     });
 
     // Wait for detail view (API is mocked, responsive)
@@ -53,10 +55,7 @@ test.describe('Scroll-Driven Parallax', () => {
       for (const sheet of document.styleSheets) {
         try {
           for (const rule of sheet.cssRules) {
-            if (
-              rule instanceof CSSKeyframesRule &&
-              rule.name === 'detail-header-parallax'
-            ) {
+            if (rule instanceof CSSKeyframesRule && rule.name === 'detail-header-parallax') {
               return true;
             }
           }
@@ -105,9 +104,11 @@ test.describe('Scroll-Driven Parallax', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
 
     await page.evaluate(() => {
-      window.dispatchEvent(new CustomEvent('app:navigate', {
-        detail: { route: 'detail', params: { gistId: 'test-gist-1' } },
-      }));
+      window.dispatchEvent(
+        new CustomEvent('app:navigate', {
+          detail: { route: 'detail', params: { gistId: 'test-gist-1' } },
+        })
+      );
     });
 
     // Wait for detail view (API is mocked)
@@ -132,15 +133,14 @@ test.describe('Scroll-Driven Parallax', () => {
     });
   });
 
-  test('should have detail-header-parallax keyframe with translateY and opacity', async ({ page }) => {
+  test('should have detail-header-parallax keyframe with translateY and opacity', async ({
+    page,
+  }) => {
     const keyframeDetails = await page.evaluate(() => {
       for (const sheet of document.styleSheets) {
         try {
           for (const rule of sheet.cssRules) {
-            if (
-              rule instanceof CSSKeyframesRule &&
-              rule.name === 'detail-header-parallax'
-            ) {
+            if (rule instanceof CSSKeyframesRule && rule.name === 'detail-header-parallax') {
               const details: string[] = [];
               for (const kf of rule.cssRules) {
                 if (kf instanceof CSSKeyframeRule) {

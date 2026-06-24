@@ -1,7 +1,7 @@
 /**
  * Unit tests for Error Boundary Components
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -33,7 +33,7 @@ vi.mock('../../src/services/db', () => ({
 // ── Imports (after mocks) ───────────────────────────────────────────
 
 import { ErrorBoundary, initGlobalErrorHandling } from '../../src/components/ui/error-boundary';
-import { ErrorCategory, type AppError } from '../../src/services/github/error-handler';
+import { type AppError, ErrorCategory } from '../../src/services/github/error-handler';
 import { safeError } from '../../src/services/security/logger';
 import { announcer } from '../../src/utils/announcer';
 

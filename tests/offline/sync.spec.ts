@@ -2,7 +2,7 @@
  * Offline Sync Tests
  * Test sync behavior, online/offline transitions, and optimistic writes
  */
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Offline Sync', () => {
   test.beforeEach(async ({ page }) => {
@@ -135,7 +135,9 @@ test.describe('Offline Sync', () => {
     await page.locator('#gist-content').fill('Offline test content');
 
     // Submit form
-    await page.locator('#create-gist-form').evaluate((form: HTMLFormElement) => form.requestSubmit());
+    await page
+      .locator('#create-gist-form')
+      .evaluate((form: HTMLFormElement) => form.requestSubmit());
 
     // Should show toast or update UI
     await page.waitForTimeout(1000);

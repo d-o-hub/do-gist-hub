@@ -27,6 +27,8 @@ vi.mock('../../src/services/security', () => ({
 vi.mock('../../src/services/security/logger', () => ({
   safeLog: vi.fn(),
   safeError: vi.fn(),
+  getOfflineLogs: vi.fn().mockResolvedValue([]),
+  clearOfflineLogs: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../../src/services/export-import', () => ({
@@ -54,6 +56,12 @@ vi.mock('../../src/stores/gist-store', () => ({
   default: {
     getGists: vi.fn(() => []),
     reloadFromDb: vi.fn(),
+    getAllTags: vi.fn(() => Promise.resolve([])),
+    createTag: vi.fn(() =>
+      Promise.resolve({ id: 'tag-1', name: 'test', color: '#ff0000', gistIds: [] })
+    ),
+    renameTag: vi.fn(() => Promise.resolve()),
+    deleteTag: vi.fn(() => Promise.resolve()),
   },
 }));
 

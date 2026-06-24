@@ -8,7 +8,7 @@
  * Also: gistStore is a singleton, so we call init() in the outer
  * beforeEach to reset its internal state between tests.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---- Mocks (hoisted) ----
 
@@ -17,6 +17,13 @@ vi.mock('../../src/services/db', () => ({
   saveGist: vi.fn(),
   deleteGist: vi.fn(),
   saveGists: vi.fn(),
+  createTag: vi.fn(),
+  getAllTags: vi.fn().mockResolvedValue([]),
+  deleteTag: vi.fn(),
+  updateTag: vi.fn(),
+  getTagsForGist: vi.fn().mockResolvedValue([]),
+  assignTag: vi.fn(),
+  removeTag: vi.fn(),
 }));
 
 vi.mock('../../src/services/github/client', () => ({
@@ -51,7 +58,7 @@ vi.mock('../../src/services/sync/conflict-detector', () => ({
     description: 'Resolved',
     files: {},
     starred: false,
-    syncStatus: strategy === 'remote-wins' ? 'synced' as const : 'pending' as const,
+    syncStatus: strategy === 'remote-wins' ? ('synced' as const) : ('pending' as const),
   })),
   storeConflicts: vi.fn(),
   getConflicts: vi.fn(() => []),
@@ -71,14 +78,14 @@ vi.mock('../../src/services/github/auth', () => ({
 
 import {
   getAllGists as dbGetAllGists,
+  getTagsForGist as dbGetTagsForGist,
   saveGist as dbSaveGist,
   saveGists,
 } from '../../src/services/db';
-
+import { isAuthenticated } from '../../src/services/github/auth';
 import * as GitHub from '../../src/services/github/client';
 import networkMonitor from '../../src/services/network/offline-monitor';
 import syncQueue from '../../src/services/sync/queue';
-import { isAuthenticated } from '../../src/services/github/auth';
 
 import gistStore from '../../src/stores/gist-store';
 
@@ -206,7 +213,7 @@ describe('GistStore — conflict resolution', () => {
 
       expect(vi.mocked(detectConflict)).toHaveBeenCalled();
       expect(vi.mocked(storeConflicts)).toHaveBeenCalledWith(
-        expect.arrayContaining([expect.objectContaining({ gistId: 'gist-1' })]),
+        expect.arrayContaining([expect.objectContaining({ gistId: 'gist-1' })])
       );
     });
 
@@ -216,14 +223,10 @@ describe('GistStore — conflict resolution', () => {
       await gistStore.init();
       clearGistMockCalls();
 
-      const { detectConflict } = await import(
-        '../../src/services/sync/conflict-detector'
-      );
+      const { detectConflict } = await import('../../src/services/sync/conflict-detector');
       vi.mocked(detectConflict).mockReturnValue(null);
 
-      const { storeConflicts } = await import(
-        '../../src/services/sync/conflict-detector'
-      );
+      const { storeConflicts } = await import('../../src/services/sync/conflict-detector');
 
       const apiGist = makeGitHubGist('gist-1', { description: 'No conflict' });
       vi.mocked(GitHub.listGists).mockResolvedValue({ data: [apiGist] });
@@ -281,18 +284,16 @@ describe('GistStore — conflict resolution', () => {
       };
       vi.mocked(getConflicts).mockResolvedValue([conflict]);
       vi.mocked(resolveConflict).mockReturnValue(
-        makeGistRecord('gist-1', { description: 'Resolved locally' }),
+        makeGistRecord('gist-1', { description: 'Resolved locally' })
       );
 
       await gistStore.resolveGistConflict('gist-1', 'local-wins');
 
       expect(vi.mocked(resolveConflict)).toHaveBeenCalledWith(conflict, 'local-wins');
       expect(dbSaveGist).toHaveBeenCalledWith(
-        expect.objectContaining({ id: 'gist-1', description: 'Resolved locally' }),
+        expect.objectContaining({ id: 'gist-1', description: 'Resolved locally' })
       );
-      const { clearConflict } = await import(
-        '../../src/services/sync/conflict-detector'
-      );
+      const { clearConflict } = await import('../../src/services/sync/conflict-detector');
       expect(vi.mocked(clearConflict)).toHaveBeenCalledWith('gist-1');
       expect(gistStore.getGist('gist-1')?.description).toBe('Resolved locally');
     });
@@ -342,9 +343,7 @@ describe('GistStore — conflict resolution', () => {
         conflictingFields: ['content'],
       };
       vi.mocked(getConflicts).mockResolvedValue([conflict]);
-      vi.mocked(resolveConflict).mockReturnValue(
-        makeGistRecord('gist-1'),
-      );
+      vi.mocked(resolveConflict).mockReturnValue(makeGistRecord('gist-1'));
 
       vi.mocked(networkMonitor.isOnline).mockReturnValue(true);
 
@@ -370,9 +369,7 @@ describe('GistStore — conflict resolution', () => {
         conflictingFields: ['content'],
       };
       vi.mocked(getConflicts).mockResolvedValue([conflict]);
-      vi.mocked(resolveConflict).mockReturnValue(
-        makeGistRecord('gist-1'),
-      );
+      vi.mocked(resolveConflict).mockReturnValue(makeGistRecord('gist-1'));
 
       await gistStore.resolveGistConflict('gist-1', 'remote-wins');
 
@@ -396,9 +393,7 @@ describe('GistStore — conflict resolution', () => {
         conflictingFields: ['content'],
       };
       vi.mocked(getConflicts).mockResolvedValue([conflict]);
-      vi.mocked(resolveConflict).mockReturnValue(
-        makeGistRecord('gist-1'),
-      );
+      vi.mocked(resolveConflict).mockReturnValue(makeGistRecord('gist-1'));
 
       vi.mocked(networkMonitor.isOnline).mockReturnValue(false);
 
@@ -408,14 +403,104 @@ describe('GistStore — conflict resolution', () => {
     });
 
     it('does nothing when no conflict exists for the given gistId', async () => {
-      const { getConflicts } = await import(
-        '../../src/services/sync/conflict-detector'
-      );
+      const { getConflicts } = await import('../../src/services/sync/conflict-detector');
       vi.mocked(getConflicts).mockResolvedValue([]);
 
       await gistStore.resolveGistConflict('non-existent', 'remote-wins');
 
       expect(dbSaveGist).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('tag operations', () => {
+    it('creates a tag', async () => {
+      const { createTag: dbCreateTag } = await import('../../src/services/db');
+      vi.mocked(dbCreateTag).mockResolvedValue({
+        id: 't1',
+        name: 'bug',
+        color: '#f00',
+        gistIds: [],
+      });
+      const tag = await gistStore.createTag('bug', '#f00');
+      expect(tag.id).toBe('t1');
+    });
+
+    it('renames a tag', async () => {
+      const { updateTag: dbUpdateTag } = await import('../../src/services/db');
+      vi.mocked(dbUpdateTag).mockResolvedValue(undefined);
+      await gistStore.renameTag('t1', 'new-name');
+      expect(dbUpdateTag).toHaveBeenCalledWith('t1', { name: 'new-name' });
+    });
+
+    it('deletes a tag', async () => {
+      const { deleteTag: dbDeleteTag } = await import('../../src/services/db');
+      vi.mocked(dbDeleteTag).mockResolvedValue(undefined);
+      await gistStore.deleteTag('t1');
+      expect(dbDeleteTag).toHaveBeenCalledWith('t1');
+    });
+
+    it('assigns a tag to gist', async () => {
+      const { assignTag: dbAssignTag } = await import('../../src/services/db');
+      vi.mocked(dbAssignTag).mockResolvedValue(undefined);
+      await gistStore.assignTag('g1', 't1');
+      expect(dbAssignTag).toHaveBeenCalledWith('g1', 't1');
+    });
+
+    it('removes a tag from gist', async () => {
+      const { removeTag: dbRemoveTag } = await import('../../src/services/db');
+      vi.mocked(dbRemoveTag).mockResolvedValue(undefined);
+      await gistStore.removeTag('g1', 't1');
+      expect(dbRemoveTag).toHaveBeenCalledWith('g1', 't1');
+    });
+
+    it('gets tags for gist', async () => {
+      vi.mocked(dbGetTagsForGist).mockResolvedValue([
+        { id: 't1', name: 'bug', color: '#f00', gistIds: ['g1'] },
+      ]);
+      const tags = await gistStore.getTagsForGist('g1');
+      expect(tags).toHaveLength(1);
+    });
+
+    it('loads tags for gist into cache', async () => {
+      vi.mocked(dbGetTagsForGist).mockResolvedValue([
+        { id: 't1', name: 'bug', color: '#f00', gistIds: ['g1'] },
+      ]);
+      await gistStore.loadTagsForGist('g1');
+      const cached = gistStore.getTagsFromCache('g1');
+      expect(cached).toHaveLength(1);
+    });
+
+    it('getTagsFromCache returns empty array for uncached gist', () => {
+      const cached = gistStore.getTagsFromCache('nonexistent');
+      expect(cached).toEqual([]);
+    });
+
+    it('clears tag cache', async () => {
+      vi.mocked(dbGetTagsForGist).mockResolvedValue([
+        { id: 't1', name: 'bug', color: '#f00', gistIds: ['g1'] },
+      ]);
+      await gistStore.loadTagsForGist('g1');
+      gistStore.clearTagCache();
+      const cached = gistStore.getTagsFromCache('g1');
+      expect(cached).toEqual([]);
+    });
+
+    it('filters gists by tag', async () => {
+      vi.mocked(dbGetAllGists).mockResolvedValue([
+        makeGistRecord('g1'),
+        makeGistRecord('g2'),
+      ] as never[]);
+      await gistStore.init();
+      clearGistMockCalls();
+
+      vi.mocked(dbGetTagsForGist).mockResolvedValue([
+        { id: 't1', name: 'bug', color: '#f00', gistIds: ['g1'] },
+      ]);
+      await gistStore.loadTagsForGist('g1');
+
+      const filtered = gistStore.filterGistsByTag('t1');
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0]?.id).toBe('g1');
     });
   });
 });

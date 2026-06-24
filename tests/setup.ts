@@ -27,6 +27,27 @@ process.on('unhandledRejection', (reason: unknown) => {
   throw reason;
 });
 
+if (typeof IntersectionObserver === 'undefined') {
+  // @ts-expect-error JSDOM polyfill: IntersectionObserver not in type defs
+  globalThis.IntersectionObserver = class IntersectionObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() {
+      return [];
+    }
+  };
+}
+
+if (typeof ResizeObserver === 'undefined') {
+  // @ts-expect-error JSDOM polyfill: ResizeObserver not in type defs
+  globalThis.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+
 if (typeof HTMLElement !== 'undefined') {
   if (!('showPopover' in HTMLElement.prototype)) {
     // @ts-expect-error JSDOM polyfill: showPopover not in type defs

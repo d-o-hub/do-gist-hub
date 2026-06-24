@@ -19,3 +19,7 @@
 ## 2026-05-10 - Redundant Module Resolution in Event Handlers
 **Learning:** Using dynamic `await import()` within frequently-triggered event handlers (e.g., Star button, file tab switching) adds microtask overhead and redundant module resolution logic. In mobile-first apps, these micro-delays aggregate to noticeable interaction latency.
 **Action:** Use static imports for core dependencies (like stores) within component files. Reserve dynamic imports only for heavy, infrequently-used routes or truly optional feature modules to ensure interaction delight remains instantaneous.
+
+## 2026-05-11 - Consolidating Redundant O(N) Passes in Rendering
+**Learning:** Dividing list processing into separate functions for "counting" and "rendering" leads to redundant O(N) iterations and extra array allocations. Consolidating filtering, searching, and sorting into a single update function improves both performance and state consistency.
+**Action:** Avoid separate passes for UI metadata (like result counts) and the actual item list. Process the collection once and use the derived results for all UI elements.

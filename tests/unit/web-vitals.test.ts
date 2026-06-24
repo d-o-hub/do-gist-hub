@@ -2,7 +2,7 @@
  * Unit tests for Web Vitals monitoring service
  * Covers initWebVitals, reportMetric, storeMetric, and getStoredMetrics
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---- Mocks (hoisted) ----
 
@@ -26,10 +26,10 @@ vi.mock('../../src/services/db', () => ({
 
 // ---- Imports (after mocks) ----
 
-import { onCLS, onFCP, onINP, onLCP } from 'web-vitals';
 import type { Metric } from 'web-vitals';
-import { safeLog } from '../../src/services/security/logger';
+import { onCLS, onFCP, onINP, onLCP } from 'web-vitals';
 import { getMetadata, setMetadata } from '../../src/services/db';
+import { safeLog } from '../../src/services/security/logger';
 
 // Module-level import for functions under test
 let initWebVitals: () => void;
@@ -99,7 +99,7 @@ describe('Web Vitals', () => {
       });
 
       // Invoke the callback
-      lcpCallback!(mockMetric);
+      lcpCallback?.(mockMetric);
 
       // Wait for async storeMetric to complete
       await vi.waitFor(() => {
@@ -107,10 +107,7 @@ describe('Web Vitals', () => {
       });
 
       // Verify the stored metrics include the old and new LCP
-      const storedMetrics = vi.mocked(setMetadata).mock.calls[0]?.[1] as Record<
-        string,
-        unknown
-      >;
+      const storedMetrics = vi.mocked(setMetadata).mock.calls[0]?.[1] as Record<string, unknown>;
       expect(storedMetrics['LCP']).toBeDefined();
       expect((storedMetrics['LCP'] as Record<string, unknown>).value).toBe(2500);
     });
@@ -131,16 +128,13 @@ describe('Web Vitals', () => {
         navigationType: 'navigate',
       };
 
-      lcpCallback!(mockMetric);
+      lcpCallback?.(mockMetric);
 
       await vi.waitFor(() => {
         expect(setMetadata).toHaveBeenCalled();
       });
 
-      const storedMetrics = vi.mocked(setMetadata).mock.calls[0]?.[1] as Record<
-        string,
-        unknown
-      >;
+      const storedMetrics = vi.mocked(setMetadata).mock.calls[0]?.[1] as Record<string, unknown>;
       expect(storedMetrics['LCP']).toBeDefined();
       expect((storedMetrics['LCP'] as Record<string, unknown>).value).toBe(1200);
     });
@@ -163,14 +157,11 @@ describe('Web Vitals', () => {
         navigationType: 'navigate',
       };
 
-      fcpCallback!(mockMetric);
+      fcpCallback?.(mockMetric);
 
       await vi.waitFor(() => {
-        expect(safeLog).toHaveBeenCalledWith(
-          expect.stringContaining('[Web Vitals] FCP: 800.00ms'),
-        );
+        expect(safeLog).toHaveBeenCalledWith(expect.stringContaining('[Web Vitals] FCP: 800.00ms'));
       });
-
     });
 
     it('marks performance budget exceeded in log', async () => {
@@ -192,14 +183,11 @@ describe('Web Vitals', () => {
         navigationType: 'navigate',
       };
 
-      lcpCallback!(mockMetric);
+      lcpCallback?.(mockMetric);
 
       await vi.waitFor(() => {
-        expect(safeLog).toHaveBeenCalledWith(
-          expect.stringContaining('[BUDGET EXCEEDED'),
-        );
+        expect(safeLog).toHaveBeenCalledWith(expect.stringContaining('[BUDGET EXCEEDED'));
       });
-
     });
 
     it('creates Performance API mark for DevTools', async () => {
@@ -220,7 +208,7 @@ describe('Web Vitals', () => {
         navigationType: 'navigate',
       };
 
-      inpCallback!(mockMetric);
+      inpCallback?.(mockMetric);
 
       await vi.waitFor(() => {
         expect(markSpy).toHaveBeenCalledWith('web-vitals-INP', {
@@ -250,7 +238,7 @@ describe('Web Vitals', () => {
       };
 
       // Should not throw
-      expect(() => lcpCallback!(mockMetric)).not.toThrow();
+      expect(() => lcpCallback?.(mockMetric)).not.toThrow();
     });
   });
 

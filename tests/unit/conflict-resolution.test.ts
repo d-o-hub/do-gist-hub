@@ -70,12 +70,9 @@ import {
   buildConflictDetail,
   buildConflictList,
   loadConflictResolution,
-  renderConflictDetail,
-  renderConflictList,
 } from '../../src/components/conflict-resolution';
 import { getConflicts } from '../../src/services/sync/conflict-detector';
 import gistStore from '../../src/stores/gist-store';
-import { announcer } from '../../src/utils/announcer';
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 

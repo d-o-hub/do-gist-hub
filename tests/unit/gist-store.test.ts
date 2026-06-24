@@ -904,4 +904,189 @@ describe('GistStore', () => {
       expect(dbSaveGist).not.toHaveBeenCalled();
     });
   });
+
+  // ---- Selection State ----
+
+  describe('selection', () => {
+    beforeEach(async () => {
+      vi.mocked(dbGetAllGists).mockResolvedValue([
+        makeGistRecord('gist-1'),
+        makeGistRecord('gist-2'),
+        makeGistRecord('gist-3'),
+      ] as never[]);
+      await gistStore.init();
+      clearGistMockCalls();
+      gistStore.clearSelection();
+    });
+
+    it('starts with empty selection', () => {
+      expect(gistStore.getSelectedIds().size).toBe(0);
+    });
+
+    it('isSelected returns false for unselected id', () => {
+      expect(gistStore.isSelected('gist-1')).toBe(false);
+    });
+
+    it('toggleSelect adds id to selection', () => {
+      gistStore.toggleSelect('gist-1');
+      expect(gistStore.isSelected('gist-1')).toBe(true);
+      expect(gistStore.getSelectedIds().size).toBe(1);
+    });
+
+    it('toggleSelect removes id from selection', () => {
+      gistStore.toggleSelect('gist-1');
+      gistStore.toggleSelect('gist-1');
+      expect(gistStore.isSelected('gist-1')).toBe(false);
+      expect(gistStore.getSelectedIds().size).toBe(0);
+    });
+
+    it('clearSelection empties selection', () => {
+      gistStore.toggleSelect('gist-1');
+      gistStore.toggleSelect('gist-2');
+      gistStore.clearSelection();
+      expect(gistStore.getSelectedIds().size).toBe(0);
+    });
+
+    it('clearSelection is a no-op when already empty', () => {
+      gistStore.clearSelection();
+      expect(gistStore.getSelectedIds().size).toBe(0);
+    });
+
+    it('selectAll selects all gists', () => {
+      gistStore.selectAll();
+      expect(gistStore.getSelectedIds().size).toBe(3);
+      expect(gistStore.isSelected('gist-1')).toBe(true);
+      expect(gistStore.isSelected('gist-2')).toBe(true);
+      expect(gistStore.isSelected('gist-3')).toBe(true);
+    });
+
+    it('selectRange selects a range of gists', () => {
+      gistStore.selectRange('gist-1', 'gist-3');
+      expect(gistStore.getSelectedIds().size).toBe(3);
+    });
+
+    it('selectRange handles reverse order', () => {
+      gistStore.selectRange('gist-3', 'gist-1');
+      expect(gistStore.getSelectedIds().size).toBe(3);
+    });
+
+    it('selectRange ignores non-existent ids', () => {
+      gistStore.selectRange('gist-1', 'non-existent');
+      expect(gistStore.getSelectedIds().size).toBe(0);
+    });
+
+    it('notifySelectionListeners notifies subscribers', () => {
+      const listener = vi.fn();
+      gistStore.subscribeSelection(listener);
+      gistStore.toggleSelect('gist-1');
+      expect(listener).toHaveBeenCalled();
+    });
+
+    it('unsubscribeSelection stops notifications', () => {
+      const listener = vi.fn();
+      const unsub = gistStore.subscribeSelection(listener);
+      unsub();
+      gistStore.toggleSelect('gist-1');
+      expect(listener).not.toHaveBeenCalled();
+    });
+  });
+
+  // ---- Bulk Actions ----
+
+  describe('bulk actions', () => {
+    beforeEach(async () => {
+      vi.mocked(dbGetAllGists).mockResolvedValue([
+        makeGistRecord('gist-1', { starred: false, htmlUrl: 'https://gist.github.com/gist-1' }),
+        makeGistRecord('gist-2', { starred: true, htmlUrl: 'https://gist.github.com/gist-2' }),
+        makeGistRecord('gist-3', { starred: false, htmlUrl: 'https://gist.github.com/gist-3' }),
+      ] as never[]);
+      await gistStore.init();
+      clearGistMockCalls();
+      gistStore.clearSelection();
+    });
+
+    it('executeBulkAction star stars selected unstarred gists', async () => {
+      vi.mocked(GitHub.starGist).mockResolvedValue(undefined);
+      gistStore.toggleSelect('gist-1');
+      gistStore.toggleSelect('gist-3');
+
+      const result = await gistStore.executeBulkAction('star');
+
+      expect(result.action).toBe('star');
+      expect(result.succeeded).toHaveLength(2);
+      expect(result.failed).toHaveLength(0);
+      expect(GitHub.starGist).toHaveBeenCalledWith('gist-1');
+      expect(GitHub.starGist).toHaveBeenCalledWith('gist-3');
+      expect(gistStore.getSelectedIds().size).toBe(0);
+    });
+
+    it('executeBulkAction unstar stars selected starred gists', async () => {
+      vi.mocked(GitHub.unstarGist).mockResolvedValue(undefined);
+      gistStore.toggleSelect('gist-2');
+
+      const result = await gistStore.executeBulkAction('unstar');
+
+      expect(result.action).toBe('unstar');
+      expect(result.succeeded).toHaveLength(1);
+      expect(GitHub.unstarGist).toHaveBeenCalledWith('gist-2');
+      expect(gistStore.getSelectedIds().size).toBe(0);
+    });
+
+    it('executeBulkAction delete deletes selected gists', async () => {
+      vi.mocked(GitHub.deleteGist).mockResolvedValue(undefined);
+      gistStore.toggleSelect('gist-1');
+
+      const result = await gistStore.executeBulkAction('delete');
+
+      expect(result.action).toBe('delete');
+      expect(result.succeeded).toHaveLength(1);
+      expect(GitHub.deleteGist).toHaveBeenCalledWith('gist-1');
+      expect(gistStore.getSelectedIds().size).toBe(0);
+    });
+
+    it('executeBulkAction copy-urls collects ids', async () => {
+      gistStore.toggleSelect('gist-1');
+      gistStore.toggleSelect('gist-3');
+
+      const result = await gistStore.executeBulkAction('copy-urls');
+
+      expect(result.action).toBe('copy-urls');
+      expect(result.succeeded).toEqual(['gist-1', 'gist-3']);
+      expect(result.failed).toHaveLength(0);
+      expect(gistStore.getSelectedIds().size).toBe(0);
+    });
+
+    it('executeBulkAction reports failures via allSettled', async () => {
+      vi.mocked(GitHub.starGist).mockRejectedValue(new Error('rate limited'));
+      gistStore.toggleSelect('gist-1');
+
+      const result = await gistStore.executeBulkAction('star');
+
+      expect(result.failed).toHaveLength(1);
+      expect(result.failed[0].id).toBe('gist-1');
+    });
+
+    it('executeBulkAction handles mixed success and failure', async () => {
+      vi.mocked(GitHub.starGist)
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('fail'));
+      gistStore.toggleSelect('gist-1');
+      gistStore.toggleSelect('gist-3');
+
+      const result = await gistStore.executeBulkAction('star');
+
+      expect(result.succeeded).toHaveLength(1);
+      expect(result.failed).toHaveLength(1);
+    });
+
+    it('executeBulkAction clears selection after completion', async () => {
+      vi.mocked(GitHub.starGist).mockResolvedValue(undefined);
+      gistStore.toggleSelect('gist-1');
+      gistStore.toggleSelect('gist-2');
+
+      await gistStore.executeBulkAction('star');
+
+      expect(gistStore.getSelectedIds().size).toBe(0);
+    });
+  });
 });

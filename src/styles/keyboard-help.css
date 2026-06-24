@@ -1,0 +1,127 @@
+.keyboard-help-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-surface-overlay);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--motion-duration-base) var(--motion-easing),
+    visibility var(--motion-duration-base) var(--motion-easing);
+  z-index: 900;
+}
+
+.keyboard-help-backdrop.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.keyboard-help-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  overlay: auto;
+  width: min(520px, 90vw);
+  max-height: 80vh;
+  background: var(--color-surface);
+  border: var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform var(--motion-duration-base) var(--motion-easing),
+    opacity var(--motion-duration-base) var(--motion-easing),
+    visibility var(--motion-duration-base) var(--motion-easing);
+}
+
+.keyboard-help-modal:popover-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+@starting-style {
+  .keyboard-help-modal:popover-open {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+}
+
+.keyboard-help-modal::backdrop {
+  background: transparent;
+}
+
+.keyboard-help-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.keyboard-help-header h2 {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.keyboard-help-close {
+  font-size: var(--text-lg);
+  line-height: 1;
+}
+
+.keyboard-help-body {
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+.keyboard-help-section {
+  margin-bottom: var(--space-4);
+}
+
+.keyboard-help-section:last-child {
+  margin-bottom: 0;
+}
+
+.keyboard-help-section h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  color: var(--color-accent-text);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.keyboard-help-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-4);
+  align-items: center;
+  margin: 0;
+}
+
+.keyboard-help-list kbd {
+  display: inline-block;
+  min-width: 2.5em;
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-base);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.keyboard-help-list dd {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}

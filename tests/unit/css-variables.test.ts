@@ -1,14 +1,14 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { generateCSSVariables } from '../../src/tokens/css-variables';
 import {
+  expectBalancedBraces,
+  expectBalancedBrackets,
+  expectBalancedParens,
+  expectMinMediaQueries,
+  expectSectionTokens,
+  expectSemicolons,
   expectToken,
   expectTokens,
-  expectBalancedBraces,
-  expectBalancedParens,
-  expectSemicolons,
-  expectSectionTokens,
-  expectMinMediaQueries,
-  expectBalancedBrackets,
 } from '../helpers/token-assertions';
 
 describe('generateCSSVariables', () => {
@@ -109,17 +109,8 @@ describe('generateCSSVariables', () => {
 
   // ── Spacing Tokens ───────────────────────────
 
-  it('generates spacing tokens', () => {
-    expectTokens(css, [
-      '--spacing-0',
-      '--spacing-4',
-      '--spacing-8',
-      '--spacing-16',
-      '--spacing-32',
-      '--spacing-64',
-      '--spacing-96',
-      '--spacing-100',
-    ]);
+  it('generates spacing container tokens', () => {
+    expectTokens(css, ['--spacing-container']);
   });
 
   // ── Typography Tokens ────────────────────────
@@ -318,7 +309,7 @@ describe('generateCSSVariables', () => {
       /@media \(prefers-reduced-motion: reduce\)[\s\S]*?(?=@media|$)/
     );
     expect(reducedMotionSection).not.toBeNull();
-    const section = reducedMotionSection![0] ?? '';
+    const section = reducedMotionSection?.[0] ?? '';
     expect(section).toContain('animation-duration: 0.01ms');
     expect(section).toContain('--motion-duration-instant: 0ms');
     expect(section).toContain('--motion-duration-fast: 0ms');

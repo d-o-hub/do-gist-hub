@@ -74,9 +74,10 @@ export function cleanupSheets(): void {
  * });
  * ```
  */
-export function useCSSMock(
-  mock: Partial<typeof CSS> = {},
-): { install: () => void; restore: () => void } {
+export function useCSSMock(mock: Partial<typeof CSS> = {}): {
+  install: () => void;
+  restore: () => void;
+} {
   let original: typeof CSS | undefined;
 
   return {
@@ -118,10 +119,7 @@ export function keydownEvent(key: string): KeyboardEvent {
 /**
  * Creates an app:navigate CustomEvent with the given route and optional params.
  */
-export function navigateEvent(
-  route: string,
-  params?: Record<string, string>,
-): CustomEvent {
+export function navigateEvent(route: string, params?: Record<string, string>): CustomEvent {
   return new CustomEvent('app:navigate', {
     detail: { route, ...(params ? { params } : {}) },
   });

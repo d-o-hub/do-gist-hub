@@ -2,7 +2,7 @@
  * Unit tests for src/types/ (0% coverage)
  * Tests type factory functions and validates type shape
  */
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 describe('Types', () => {
   describe('GitHubGist shape', () => {
@@ -125,7 +125,7 @@ describe('Types', () => {
       expect(record.syncStatus).toBe('synced');
       expect(record.starred).toBe(true);
       expect(record.owner).toBeDefined();
-      expect(record.owner!.avatarUrl).toMatch(/^http/);
+      expect(record.owner?.avatarUrl).toMatch(/^http/);
     });
 
     it('validates all sync status values', () => {
@@ -179,7 +179,7 @@ describe('Types', () => {
 
       expect(error.message).toBe('Not Found');
       expect(error.errors).toHaveLength(1);
-      expect(error.errors![0].code).toBe('missing_field');
+      expect(error.errors?.[0].code).toBe('missing_field');
     });
 
     it('validates pagination info shape', () => {

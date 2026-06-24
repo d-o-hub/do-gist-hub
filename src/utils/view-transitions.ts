@@ -39,7 +39,7 @@ export async function withViewTransition(updateFn: () => void | Promise<void>): 
     };
   };
 
-  const transition = doc.startViewTransition!(updateFn);
+  const transition = doc.startViewTransition?.(updateFn);
   await transition.finished;
 }
 

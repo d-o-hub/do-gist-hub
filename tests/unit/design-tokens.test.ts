@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks ─────────────────────────────────────
 
@@ -26,13 +26,14 @@ const mockLocalStorage = () => ({
 // ── Imports (after mocks) ─────────────────────
 
 import {
-  resolveTimeBasedTheme,
-  resolveTheme,
-  setTheme,
+  cleanupThemeSystem,
   getTheme,
   getThemePreference,
-  initTheme,
   initDesignTokens,
+  initTheme,
+  resolveTheme,
+  resolveTimeBasedTheme,
+  setTheme,
 } from '../../src/tokens/design-tokens';
 
 // ── Helpers ─────────────────────────────────────
@@ -332,6 +333,33 @@ describe('Design Tokens — Theme System', () => {
       initDesignTokens();
       const link2 = document.getElementById('design-tokens');
       expect(link1).toBe(link2);
+    });
+  });
+
+  describe('resolveTheme — ambient', () => {
+    it('resolves ambient to dark', () => {
+      expect(resolveTheme('ambient')).toBe('dark');
+    });
+  });
+
+  describe('setTheme — ambient', () => {
+    it('sets ambient theme and clears interval', () => {
+      const clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
+      setTheme('ambient');
+      expect(setAttributeSpy).toHaveBeenCalledWith('data-theme', 'dark');
+      expect(clearIntervalSpy).toHaveBeenCalled();
+      clearIntervalSpy.mockRestore();
+    });
+  });
+
+  describe('cleanupThemeSystem', () => {
+    it('clears active interval', () => {
+      const clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
+      storedPreference = 'time';
+      initTheme();
+      cleanupThemeSystem();
+      expect(clearIntervalSpy).toHaveBeenCalled();
+      clearIntervalSpy.mockRestore();
     });
   });
 });

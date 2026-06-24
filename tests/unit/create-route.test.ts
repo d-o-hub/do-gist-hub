@@ -436,7 +436,7 @@ describe('Create Route', () => {
       });
 
       // Resolve to avoid hanging
-      resolveCreate!(true);
+      resolveCreate?.(true);
     });
   });
 });

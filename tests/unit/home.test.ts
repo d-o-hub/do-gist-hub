@@ -34,9 +34,11 @@ vi.mock('../../src/stores/gist-store', () => {
       subscribers.add(cb);
       return () => subscribers.delete(cb);
     }),
+    subscribeSelection: vi.fn(() => () => {}),
     getGists: vi.fn(() => gists),
     getLoading: vi.fn(() => loading),
     filterGists: vi.fn((_filter: string) => gists),
+    isSelected: vi.fn(() => false),
     setGists: (newGists: Record<string, unknown>[]) => {
       gists = newGists;
     },
@@ -48,6 +50,11 @@ vi.mock('../../src/stores/gist-store', () => {
         cb();
       }
     },
+    getAllTags: vi.fn(() => Promise.resolve([])),
+    getTagsFromCache: vi.fn(() => []),
+    clearSelection: vi.fn(),
+    getSelectedIds: vi.fn(() => new Set<string>()),
+    executeBulkAction: vi.fn(() => Promise.resolve({ succeeded: [], failed: [] })),
   };
 
   return { default: store };
@@ -341,9 +348,18 @@ describe('Home Route', () => {
 
       // Cards should be rendered for all 3 gists
       expect(renderCard).toHaveBeenCalled();
-      expect(renderCard).toHaveBeenCalledWith(expect.objectContaining({ id: 'gist-old' }));
-      expect(renderCard).toHaveBeenCalledWith(expect.objectContaining({ id: 'gist-mid' }));
-      expect(renderCard).toHaveBeenCalledWith(expect.objectContaining({ id: 'gist-recent' }));
+      expect(renderCard).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'gist-old' }),
+        expect.any(Boolean)
+      );
+      expect(renderCard).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'gist-mid' }),
+        expect.any(Boolean)
+      );
+      expect(renderCard).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'gist-recent' }),
+        expect.any(Boolean)
+      );
     });
   });
 
@@ -494,10 +510,22 @@ describe('Home Route', () => {
 
       render(container, { filter: 'mine', sort: 'updated-desc', searchQuery: '' });
 
-      expect(renderCard).toHaveBeenCalledWith(expect.objectContaining({ id: 'mine-1' }));
-      expect(renderCard).toHaveBeenCalledWith(expect.objectContaining({ id: 'mine-2' }));
-      expect(renderCard).toHaveBeenCalledWith(expect.objectContaining({ id: 'starred-1' }));
-      expect(renderCard).toHaveBeenCalledWith(expect.objectContaining({ id: 'starred-2' }));
+      expect(renderCard).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'mine-1' }),
+        expect.any(Boolean)
+      );
+      expect(renderCard).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'mine-2' }),
+        expect.any(Boolean)
+      );
+      expect(renderCard).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'starred-1' }),
+        expect.any(Boolean)
+      );
+      expect(renderCard).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'starred-2' }),
+        expect.any(Boolean)
+      );
 
       // Mine chip should be active
       const mineChip = container.querySelector('[data-filter="mine"]');
@@ -522,6 +550,175 @@ describe('Home Route', () => {
     });
   });
 
+  // ── Pending Sync Filter ──────────────────────────────────────────────────
+
+  describe('pending sync filter', () => {
+    it('renders Pending Sync filter chip', () => {
+      vi.mocked(gistStore.getGists).mockReturnValue([]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue([]);
+
+      render(container);
+
+      const pendingChip = container.querySelector('[data-filter="pending"]');
+      expect(pendingChip).not.toBeNull();
+      expect(pendingChip?.textContent).toBe('Pending Sync');
+    });
+
+    it('filters to only pending gists when Pending Sync chip is clicked', () => {
+      const testGists = [
+        makeStoreGist('synced-1', { syncStatus: 'synced' }),
+        makeStoreGist('pending-1', { syncStatus: 'pending' }),
+        makeStoreGist('pending-2', { syncStatus: 'pending' }),
+      ];
+      vi.mocked(gistStore.getGists).mockReturnValue(testGists as never[]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue(testGists as never[]);
+
+      render(container);
+
+      const pendingChip = container.querySelector('[data-filter="pending"]') as HTMLElement;
+      pendingChip?.click();
+
+      expect(pendingChip?.classList.contains('active')).toBe(true);
+      const allChip = container.querySelector('[data-filter="all"]');
+      expect(allChip?.classList.contains('active')).toBe(false);
+    });
+
+    it('shows empty state when no pending gists exist', () => {
+      vi.mocked(gistStore.getGists).mockReturnValue([]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue([]);
+
+      render(container, { filter: 'pending', sort: 'updated-desc', searchQuery: '' });
+
+      expect(EmptyState.render).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'No Pending Syncs' })
+      );
+    });
+  });
+
+  // ── Search Escape Key ────────────────────────────────────────────────
+
+  describe('search escape key', () => {
+    it('clears search on Escape key when input has value', () => {
+      vi.useFakeTimers();
+      const testGists = [makeStoreGist('gist-1')];
+      vi.mocked(gistStore.getGists).mockReturnValue(testGists as never[]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue(testGists as never[]);
+
+      render(container, { filter: 'all', sort: 'updated-desc', searchQuery: 'test' });
+
+      const searchInput = container.querySelector('#gist-search') as HTMLInputElement;
+      searchInput.value = 'test';
+      searchInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+      expect(searchInput.value).toBe('');
+      vi.useRealTimers();
+    });
+  });
+
+  // ── Clear Search Button ─────────────────────────────────────────────
+
+  describe('clear search button', () => {
+    it('clears search and focuses input when clear button clicked', () => {
+      const testGists = [makeStoreGist('gist-1')];
+      vi.mocked(gistStore.getGists).mockReturnValue(testGists as never[]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue(testGists as never[]);
+
+      render(container, { filter: 'all', sort: 'updated-desc', searchQuery: 'something' });
+
+      const clearBtn = container.querySelector('#gist-search-clear') as HTMLButtonElement;
+      clearBtn?.click();
+
+      const searchInput = container.querySelector('#gist-search') as HTMLInputElement;
+      expect(searchInput.value).toBe('');
+    });
+  });
+
+  // ── Bulk Actions ──────────────────────────────────────────────────
+
+  describe('bulk actions', () => {
+    it('clears selection when clear button is clicked', async () => {
+      vi.mocked(gistStore.getGists).mockReturnValue([]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue([]);
+
+      render(container);
+
+      const clearBtn = container.querySelector('[data-bulk-action="clear"]') as HTMLElement;
+      clearBtn?.click();
+
+      await vi.waitFor(() => {
+        expect(gistStore.clearSelection).toHaveBeenCalled();
+      });
+    });
+  });
+
+  // ── Keyboard Shortcuts ─────────────────────────────────────────────
+
+  describe('keyboard shortcuts', () => {
+    it('clears selection on Escape when items are selected', () => {
+      vi.mocked(gistStore.getGists).mockReturnValue([]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue([]);
+      vi.mocked(gistStore.getSelectedIds).mockReturnValue(new Set(['gist-1']));
+
+      render(container);
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+      expect(gistStore.clearSelection).toHaveBeenCalled();
+    });
+
+    it('does not clear selection on Escape when input is focused', () => {
+      vi.mocked(gistStore.getGists).mockReturnValue([]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue([]);
+      vi.mocked(gistStore.getSelectedIds).mockReturnValue(new Set(['gist-1']));
+
+      render(container);
+
+      const searchInput = container.querySelector('#gist-search') as HTMLInputElement;
+      searchInput.focus();
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+      expect(gistStore.clearSelection).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── Result Count ──────────────────────────────────────────────────
+
+  describe('result count', () => {
+    it('shows total count when all gists match', () => {
+      const testGists = [makeStoreGist('g1'), makeStoreGist('g2')];
+      vi.mocked(gistStore.getGists).mockReturnValue(testGists as never[]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue(testGists as never[]);
+
+      render(container);
+
+      const countEl = container.querySelector('#gist-result-count');
+      expect(countEl?.textContent).toBe('2 gists');
+    });
+
+    it('shows filtered count when some gists are filtered', () => {
+      const allGists = [makeStoreGist('g1'), makeStoreGist('g2'), makeStoreGist('g3')];
+      const filteredGists = [makeStoreGist('g1')];
+      vi.mocked(gistStore.getGists).mockReturnValue(allGists as never[]);
+      vi.mocked(gistStore.getLoading).mockReturnValue(false);
+      vi.mocked(gistStore.filterGists).mockReturnValue(filteredGists as never[]);
+
+      render(container);
+
+      const countEl = container.querySelector('#gist-result-count');
+      expect(countEl?.textContent).toContain('1 of 3');
+    });
+  });
+
   // ── Store Subscription ────────────────────────────────────────────────
 
   describe('store subscription', () => {
@@ -533,8 +730,6 @@ describe('Home Route', () => {
     it('unsubscribes previous store subscription on re-render', () => {
       render(container);
       render(container);
-      // subscribe should have been called twice,
-      // the first subscription should have been cleaned up
       expect(gistStore.subscribe).toHaveBeenCalledTimes(2);
     });
 
@@ -546,20 +741,37 @@ describe('Home Route', () => {
 
       render(container);
 
-      // Clear the call count from the initial render
       vi.clearAllMocks();
 
-      // Re-set mocks after clearing
       vi.mocked(gistStore.getGists).mockReturnValue(testGists as never[]);
       vi.mocked(gistStore.getLoading).mockReturnValue(false);
       vi.mocked(gistStore.filterGists).mockReturnValue(testGists as never[]);
 
-      // Trigger store notification
       const subscribeCb = vi.mocked(gistStore.subscribe).mock.calls[0]?.[0];
       if (subscribeCb) {
         subscribeCb();
         expect(renderCard).toHaveBeenCalledWith(expect.objectContaining({ id: 'gist-notify' }));
       }
+    });
+  });
+
+  // ── Search Clear Button Visibility ────────────────────────────────────
+
+  describe('search clear button', () => {
+    it('shows clear button when search has value', () => {
+      render(container, { filter: 'all', sort: 'updated-desc', searchQuery: 'test' });
+
+      const clearBtn = container.querySelector('#gist-search-clear') as HTMLElement;
+      expect(clearBtn).not.toBeNull();
+      expect(clearBtn.getAttribute('aria-hidden')).toBeNull();
+    });
+
+    it('hides clear button when search is empty', () => {
+      render(container);
+
+      const clearBtn = container.querySelector('#gist-search-clear') as HTMLElement;
+      expect(clearBtn.getAttribute('aria-hidden')).toBe('true');
+      expect(clearBtn.tabIndex).toBe(-1);
     });
   });
 });

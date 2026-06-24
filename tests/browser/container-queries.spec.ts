@@ -3,9 +3,9 @@
  * Verifies that all container-type declarations have active @container rules.
  * Uses getComputedStyle to confirm container query behavior at different widths.
  */
-import { test, expect } from '@playwright/test';
-import { seedGists, DEFAULT_TEST_GISTS } from '../helpers/seed-gists';
+import { expect, test } from '@playwright/test';
 import { mockGitHubApi } from '../helpers/mock-github-api';
+import { DEFAULT_TEST_GISTS, seedGists } from '../helpers/seed-gists';
 
 const CONTAINER_QUERIES = [
   { selector: '.gist-card', name: 'gist-card', expectedType: 'inline-size' },
@@ -28,9 +28,7 @@ test.describe('Container Queries', () => {
       const el = page.locator(cq.selector).first();
       await expect(el).toBeVisible();
 
-      const containerType = await el.evaluate(
-        (el) => window.getComputedStyle(el).containerType
-      );
+      const containerType = await el.evaluate((el) => window.getComputedStyle(el).containerType);
       expect(containerType).toBe(cq.expectedType);
     });
   }
@@ -39,48 +37,44 @@ test.describe('Container Queries', () => {
     const card = page.locator('.gist-card').first();
     await expect(card).toBeVisible();
 
-    const containerName = await card.evaluate(
-      (el) => window.getComputedStyle(el).containerName
-    );
+    const containerName = await card.evaluate((el) => window.getComputedStyle(el).containerName);
     expect(containerName).toBe('gist-card');
   });
 
   test('should have container-name set on gist detail', async ({ page }) => {
     // Navigate directly to detail (more reliable than clicking cards)
     await page.evaluate(() => {
-      window.dispatchEvent(new CustomEvent('app:navigate', {
-        detail: { route: 'detail', params: { gistId: 'test-gist-1' } },
-      }));
+      window.dispatchEvent(
+        new CustomEvent('app:navigate', {
+          detail: { route: 'detail', params: { gistId: 'test-gist-1' } },
+        })
+      );
     });
 
     const detail = page.locator('.gist-detail');
     await expect(detail).toBeVisible({ timeout: 5000 });
 
-    const containerType = await detail.evaluate(
-      (el) => window.getComputedStyle(el).containerType
-    );
+    const containerType = await detail.evaluate((el) => window.getComputedStyle(el).containerType);
     expect(containerType).toBe('inline-size');
 
-    const containerName = await detail.evaluate(
-      (el) => window.getComputedStyle(el).containerName
-    );
+    const containerName = await detail.evaluate((el) => window.getComputedStyle(el).containerName);
     expect(containerName).toBe('detail-view');
   });
 
   test('should have container-type: inline-size on detail-view', async ({ page }) => {
     // Navigate directly to detail view
     await page.evaluate(() => {
-      window.dispatchEvent(new CustomEvent('app:navigate', {
-        detail: { route: 'detail', params: { gistId: 'test-gist-1' } },
-      }));
+      window.dispatchEvent(
+        new CustomEvent('app:navigate', {
+          detail: { route: 'detail', params: { gistId: 'test-gist-1' } },
+        })
+      );
     });
 
     const detail = page.locator('.gist-detail');
     await expect(detail).toBeVisible({ timeout: 5000 });
 
-    const containerType = await detail.evaluate(
-      (el) => window.getComputedStyle(el).containerType
-    );
+    const containerType = await detail.evaluate((el) => window.getComputedStyle(el).containerType);
     expect(containerType).toBe('inline-size');
   });
 
@@ -101,9 +95,7 @@ test.describe('Container Queries', () => {
     const header = card.locator('.gist-card-header');
     await expect(header).toBeVisible();
 
-    const flexDirection = await header.evaluate(
-      (el) => window.getComputedStyle(el).flexDirection
-    );
+    const flexDirection = await header.evaluate((el) => window.getComputedStyle(el).flexDirection);
     test.info().annotations.push({
       type: 'header-flex',
       description: `gist-card-header flex-direction at ${cardWidth}px card width: ${flexDirection}`,
@@ -112,19 +104,18 @@ test.describe('Container Queries', () => {
 
   test('should apply @container settings-panel rules on settings page', async ({ page }) => {
     // Navigate to settings
-    const settingsBtn = page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first();
+    const settingsBtn = page
+      .locator('[data-testid="settings-btn"]')
+      .filter({ visible: true })
+      .first();
     await expect(settingsBtn).toBeVisible();
 
     await settingsBtn.click();
     const section = page.locator('.settings-section').first();
     await expect(section).toBeVisible({ timeout: 5000 });
 
-    const containerType = await section.evaluate(
-      (el) => window.getComputedStyle(el).containerType
-    );
-    const containerName = await section.evaluate(
-      (el) => window.getComputedStyle(el).containerName
-    );
+    const containerType = await section.evaluate((el) => window.getComputedStyle(el).containerType);
+    const containerName = await section.evaluate((el) => window.getComputedStyle(el).containerName);
     expect(containerType).toBe('inline-size');
     expect(containerName).toBe('settings-panel');
 
@@ -140,12 +131,8 @@ test.describe('Container Queries', () => {
     const section = page.locator('.offline-stats').first();
     await expect(section).toBeVisible({ timeout: 5000 });
 
-    const containerType = await section.evaluate(
-      (el) => window.getComputedStyle(el).containerType
-    );
-    const containerName = await section.evaluate(
-      (el) => window.getComputedStyle(el).containerName
-    );
+    const containerType = await section.evaluate((el) => window.getComputedStyle(el).containerType);
+    const containerName = await section.evaluate((el) => window.getComputedStyle(el).containerName);
     expect(containerType).toBe('inline-size');
     expect(containerName).toBe('offline-panel');
 

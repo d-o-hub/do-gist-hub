@@ -2,7 +2,7 @@
  * Offline Service Worker Install Tests
  * Test SW registration, activation, and offline caching behavior
  */
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Offline SW Install', () => {
   test.beforeEach(async ({ page }) => {

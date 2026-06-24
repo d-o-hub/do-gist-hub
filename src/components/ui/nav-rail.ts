@@ -107,7 +107,7 @@ export class NavRail {
 
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
           e.preventDefault();
-          const buttons = Array.from(this.container!.querySelectorAll('.rail-item'));
+          const buttons = Array.from(this.container?.querySelectorAll('.rail-item') ?? []);
           const currentIndex = buttons.indexOf(target);
           const nextIndex =
             e.key === 'ArrowDown'

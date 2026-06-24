@@ -2,7 +2,7 @@
  * Offline Cache Tests
  * Test IndexedDB caching, offline reads, and cached gist loading
  */
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Offline Cache', () => {
   test.beforeEach(async ({ page }) => {
@@ -128,7 +128,10 @@ test.describe('Offline Cache', () => {
     // Should show empty state or loading
     const emptyState = page.locator('.empty-state');
     const emptyVisible = await emptyState.isVisible().catch(() => false);
-    const listExists = await page.locator('.gist-list').count().then(c => c > 0);
+    const listExists = await page
+      .locator('.gist-list')
+      .count()
+      .then((c) => c > 0);
 
     expect(emptyVisible || listExists).toBe(true);
   });

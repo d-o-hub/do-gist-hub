@@ -10,12 +10,23 @@ vi.mock('../../src/stores/gist-store', () => ({
     hydrateGist: vi.fn(),
     getGist: vi.fn(),
     toggleStar: vi.fn(),
+    getTagsForGist: vi.fn(() => Promise.resolve([])),
+    getAllTags: vi.fn(() => Promise.resolve([])),
+    assignTag: vi.fn(() => Promise.resolve()),
+    removeTag: vi.fn(() => Promise.resolve()),
   },
 }));
 
 // Mock GitHub client for bindDetailEvents
 vi.mock('../../src/services/github/client', () => ({
   listGistRevisions: vi.fn(),
+}));
+
+// Mock syntax highlighting service
+vi.mock('../../src/services/syntax-highlight', () => ({
+  highlightCode: vi.fn().mockResolvedValue(''),
+  shouldLazyHighlight: vi.fn().mockReturnValue(false),
+  resetHighlighter: vi.fn(),
 }));
 
 // Mock toast so error handling doesn't throw
@@ -39,6 +50,7 @@ import {
   renderGistDetail,
   renderRevisions,
 } from '../../src/components/gist-detail';
+import gistStore from '../../src/stores/gist-store';
 import type { GistRecord } from '../../src/types';
 import type { GistRevision } from '../../src/types/api';
 
@@ -152,6 +164,13 @@ describe('GistDetail', () => {
       expect(w.querySelector('[data-action="star"]')).not.toBeNull();
       expect(w.querySelector('[data-action="fork"]')).not.toBeNull();
       expect(w.querySelector('[data-action="edit"]')).not.toBeNull();
+    });
+
+    it('renders download button', () => {
+      const w = renderToWrapper(mockGist);
+      const downloadBtn = w.querySelector('[data-action="download"]');
+      expect(downloadBtn).not.toBeNull();
+      expect(downloadBtn?.textContent).toBe('Download');
     });
 
     it('shows Unstar for starred gists', () => {
@@ -585,6 +604,45 @@ describe('GistDetail', () => {
       });
 
       vi.useRealTimers();
+    });
+
+    it('exports gist as JSON when download button is clicked', () => {
+      const downloadBtn = document.createElement('button');
+      downloadBtn.dataset.action = 'download';
+      downloadBtn.textContent = 'Download';
+      const actionsEl = container.querySelector('.gist-detail-actions');
+      actionsEl?.appendChild(downloadBtn);
+
+      vi.mocked(gistStore.getGist).mockReturnValue({
+        id: 'gist-1',
+        description: 'Test Gist',
+        files: {
+          'test.ts': { filename: 'test.ts', content: 'const x = 1;', language: 'typescript' },
+        },
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-15T12:00:00Z',
+      } as GistRecord);
+
+      bindDetailEvents(container, { onBack, onEdit, onViewRevision });
+
+      const clickSpy = vi.fn();
+      const anchorEl = document.createElement('a');
+      anchorEl.click = clickSpy;
+      const createObjectURLSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test');
+      const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL').mockReturnValue(undefined);
+      const createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(anchorEl);
+
+      downloadBtn.click();
+
+      expect(createObjectURLSpy).toHaveBeenCalled();
+      const blobArg = vi.mocked(URL.createObjectURL).mock.calls[0]?.[0] as Blob;
+      expect(blobArg.type).toBe('application/json');
+      expect(clickSpy).toHaveBeenCalled();
+      expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test');
+
+      createElementSpy.mockRestore();
+      createObjectURLSpy.mockRestore();
+      revokeObjectURLSpy.mockRestore();
     });
   });
 });

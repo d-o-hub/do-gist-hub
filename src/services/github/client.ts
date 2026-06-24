@@ -277,10 +277,11 @@ export async function listGists(
   options: { page?: number; perPage?: number; since?: string } = {}
 ): Promise<PaginatedResult<GitHubGistListItem>> {
   const { page = 1, perPage = 30, since } = options;
+  const clampedPerPage = Math.max(1, Math.min(100, perPage));
 
   const params = new URLSearchParams({
     page: String(page),
-    per_page: String(perPage),
+    per_page: String(clampedPerPage),
     ...(since ? { since } : {}),
   });
 
@@ -295,10 +296,11 @@ export function listStarredGists(
   options: { page?: number; perPage?: number } = {}
 ): Promise<PaginatedResult<GitHubGistListItem>> {
   const { page = 1, perPage = 30 } = options;
+  const clampedPerPage = Math.max(1, Math.min(100, perPage));
 
   const params = new URLSearchParams({
     page: String(page),
-    per_page: String(perPage),
+    per_page: String(clampedPerPage),
   });
 
   const url = `${BASE_URL}/gists/starred?${params}`;

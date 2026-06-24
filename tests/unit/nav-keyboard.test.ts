@@ -1,7 +1,7 @@
 /**
  * Unit tests for Navigation Keyboard Handler
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { NavKeyboardHandler } from '../../src/utils/nav-keyboard';
 
 describe('NavKeyboardHandler', () => {
@@ -83,9 +83,7 @@ describe('NavKeyboardHandler', () => {
       const handler = new NavKeyboardHandler(container);
       items[0].focus();
 
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
-      );
+      container.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
       expect(document.activeElement).toBe(items[1]);
       handler.destroy();
     });
@@ -94,9 +92,7 @@ describe('NavKeyboardHandler', () => {
       const handler = new NavKeyboardHandler(container);
       items[0].focus();
 
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
-      );
+      container.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
       expect(document.activeElement).toBe(items[1]);
       handler.destroy();
     });
@@ -105,9 +101,7 @@ describe('NavKeyboardHandler', () => {
       const handler = new NavKeyboardHandler(container);
       items[2].focus();
 
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }),
-      );
+      container.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
       expect(document.activeElement).toBe(items[1]);
       handler.destroy();
     });
@@ -116,9 +110,7 @@ describe('NavKeyboardHandler', () => {
       const handler = new NavKeyboardHandler(container);
       items[2].focus();
 
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }),
-      );
+      container.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
       expect(document.activeElement).toBe(items[1]);
       handler.destroy();
     });
@@ -127,9 +119,7 @@ describe('NavKeyboardHandler', () => {
       const handler = new NavKeyboardHandler(container);
       items[2].focus();
 
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
-      );
+      container.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
       expect(document.activeElement).toBe(items[0]);
       handler.destroy();
     });
@@ -138,9 +128,7 @@ describe('NavKeyboardHandler', () => {
       const handler = new NavKeyboardHandler(container);
       items[0].focus();
 
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }),
-      );
+      container.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
       expect(document.activeElement).toBe(items[2]);
       handler.destroy();
     });
@@ -162,9 +150,7 @@ describe('NavKeyboardHandler', () => {
       const handler = new NavKeyboardHandler(emptyDiv);
       // Should not throw
       expect(() => {
-        emptyDiv.dispatchEvent(
-          new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
-        );
+        emptyDiv.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
       }).not.toThrow();
       handler.destroy();
     });
@@ -177,9 +163,7 @@ describe('NavKeyboardHandler', () => {
       const handler = new NavKeyboardHandler(container);
       items[2].focus();
 
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Home', bubbles: true }),
-      );
+      container.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
       expect(document.activeElement).toBe(items[0]);
       handler.destroy();
     });
@@ -188,9 +172,7 @@ describe('NavKeyboardHandler', () => {
       const handler = new NavKeyboardHandler(container);
       items[0].focus();
 
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'End', bubbles: true }),
-      );
+      container.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
       expect(document.activeElement).toBe(items[2]);
       handler.destroy();
     });
@@ -226,9 +208,7 @@ describe('NavKeyboardHandler', () => {
       items[2].dispatchEvent(new FocusEvent('focus', { bubbles: false }));
 
       // ArrowUp should now go to item[1] since currentIndex is 2
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }),
-      );
+      container.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
       expect(document.activeElement).toBe(items[1]);
       handler.destroy();
     });
@@ -243,9 +223,7 @@ describe('NavKeyboardHandler', () => {
       items[1].dispatchEvent(new FocusEvent('focus', { bubbles: false }));
 
       // ArrowDown should go to item[2] since currentIndex is 1
-      container.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
-      );
+      container.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
       expect(document.activeElement).toBe(items[2]);
       handler.destroy();
     });

@@ -165,6 +165,16 @@ vi.mock('../../src/services/db', () => ({
   clearAllData: vi.fn(),
   exportData: vi.fn(),
   importData: vi.fn(),
+  createTag: vi
+    .fn()
+    .mockResolvedValue({ id: 'tag-1', name: 'test', color: '#ff0000', gistIds: [] }),
+  getAllTags: vi.fn().mockResolvedValue([]),
+  getTag: vi.fn(),
+  updateTag: vi.fn(),
+  deleteTag: vi.fn(),
+  getTagsForGist: vi.fn().mockResolvedValue([]),
+  assignTag: vi.fn(),
+  removeTag: vi.fn(),
 }));
 
 vi.mock('../../src/components/conflict-resolution', () => ({

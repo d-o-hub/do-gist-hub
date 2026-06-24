@@ -168,3 +168,152 @@ function recordToGitHubGist(record: GistRecord): GitHubGist {
       : undefined,
   } as GitHubGist;
 }
+
+const encoder = new TextEncoder();
+
+function uint16LE(n: number): Uint8Array {
+  const buf = new Uint8Array(2);
+  buf[0] = n & 0xff;
+  buf[1] = (n >> 8) & 0xff;
+  return buf;
+}
+
+function uint32LE(n: number): Uint8Array {
+  const buf = new Uint8Array(4);
+  buf[0] = n & 0xff;
+  buf[1] = (n >> 8) & 0xff;
+  buf[2] = (n >> 16) & 0xff;
+  buf[3] = (n >> 24) & 0xff;
+  return buf;
+}
+
+function crc32(data: Uint8Array): number {
+  let crc = 0xffffffff;
+  for (let i = 0; i < data.length; i++) {
+    crc ^= data[i]!;
+    for (let j = 0; j < 8; j++) {
+      crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
+    }
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+export interface ZipEntry {
+  name: string;
+  content: string;
+}
+
+export function createZipBlob(entries: ZipEntry[]): Blob {
+  const parts: Uint8Array[] = [];
+  const centralDir: Uint8Array[] = [];
+  let offset = 0;
+
+  for (const entry of entries) {
+    const nameBytes = encoder.encode(entry.name);
+    const contentBytes = encoder.encode(entry.content);
+    const crc = crc32(contentBytes);
+    const now = new Date();
+    const dosTime = (now.getSeconds() >> 1) | (now.getMinutes() << 5) | (now.getHours() << 11);
+    const dosDate = now.getDate() | ((now.getMonth() + 1) << 5) | ((now.getFullYear() - 1980) << 9);
+
+    const localHeader = new Uint8Array(30 + nameBytes.length);
+    localHeader.set(uint32LE(0x04034b50), 0);
+    localHeader.set(uint16LE(20), 4);
+    localHeader.set(uint16LE(0), 6);
+    localHeader.set(uint16LE(0), 8);
+    localHeader.set(uint16LE(dosTime), 10);
+    localHeader.set(uint16LE(dosDate), 12);
+    localHeader.set(uint32LE(crc), 14);
+    localHeader.set(uint32LE(contentBytes.length), 18);
+    localHeader.set(uint32LE(contentBytes.length), 22);
+    localHeader.set(uint16LE(nameBytes.length), 26);
+    localHeader.set(uint16LE(0), 28);
+    localHeader.set(nameBytes, 30);
+
+    parts.push(localHeader);
+    parts.push(contentBytes);
+
+    const centralEntry = new Uint8Array(46 + nameBytes.length);
+    centralEntry.set(uint32LE(0x02014b50), 0);
+    centralEntry.set(uint16LE(20), 4);
+    centralEntry.set(uint16LE(20), 6);
+    centralEntry.set(uint16LE(0), 8);
+    centralEntry.set(uint16LE(0), 10);
+    centralEntry.set(uint16LE(dosTime), 12);
+    centralEntry.set(uint16LE(dosDate), 14);
+    centralEntry.set(uint32LE(crc), 16);
+    centralEntry.set(uint32LE(contentBytes.length), 20);
+    centralEntry.set(uint32LE(contentBytes.length), 24);
+    centralEntry.set(uint16LE(nameBytes.length), 28);
+    centralEntry.set(uint16LE(0), 30);
+    centralEntry.set(uint16LE(0), 32);
+    centralEntry.set(uint16LE(0), 34);
+    centralEntry.set(uint16LE(0), 36);
+    centralEntry.set(uint32LE(0), 38);
+    centralEntry.set(uint32LE(offset), 42);
+    centralEntry.set(nameBytes, 46);
+    centralDir.push(centralEntry);
+
+    offset += localHeader.length + contentBytes.length;
+  }
+
+  const centralDirOffset = offset;
+  let centralDirSize = 0;
+  for (const cd of centralDir) {
+    parts.push(cd);
+    centralDirSize += cd.length;
+  }
+
+  const endRecord = new Uint8Array(22);
+  endRecord.set(uint32LE(0x06054b50), 0);
+  endRecord.set(uint16LE(0), 4);
+  endRecord.set(uint16LE(0), 6);
+  endRecord.set(uint16LE(entries.length), 8);
+  endRecord.set(uint16LE(entries.length), 10);
+  endRecord.set(uint32LE(centralDirSize), 12);
+  endRecord.set(uint32LE(centralDirOffset), 16);
+  endRecord.set(uint16LE(0), 20);
+  parts.push(endRecord);
+
+  const totalSize = parts.reduce((s, p) => s + p.length, 0);
+  const result = new Uint8Array(totalSize);
+  let pos = 0;
+  for (const part of parts) {
+    result.set(part, pos);
+    pos += part.length;
+  }
+
+  return new Blob([result], { type: 'application/zip' });
+}
+
+export function exportGistAsJson(gist: GistRecord): Blob {
+  const files: Record<string, { filename: string; content: string; language?: string }> = {};
+  for (const key in gist.files) {
+    if (Object.hasOwn(gist.files, key)) {
+      const f = gist.files[key];
+      if (!f) continue;
+      files[key] = { filename: f.filename, content: f.content ?? '', language: f.language };
+    }
+  }
+  const data = {
+    id: gist.id,
+    description: gist.description,
+    public: gist.public,
+    createdAt: gist.createdAt,
+    updatedAt: gist.updatedAt,
+    files,
+  };
+  return new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+}
+
+export function exportGistAsZip(gist: GistRecord): Blob {
+  const entries: ZipEntry[] = [];
+  for (const key in gist.files) {
+    if (Object.hasOwn(gist.files, key)) {
+      const f = gist.files[key];
+      if (!f) continue;
+      entries.push({ name: f.filename, content: f.content ?? '' });
+    }
+  }
+  return createZipBlob(entries);
+}

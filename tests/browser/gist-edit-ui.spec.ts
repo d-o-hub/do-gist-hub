@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Gist Edit UI', () => {
   test.beforeEach(async ({ page }) => {
@@ -64,7 +64,7 @@ test.describe('Gist Edit UI', () => {
     // Wait for API request to be made
     try {
       await page.waitForRequest('**/gists', { timeout: 5000 });
-    } catch (e) {
+    } catch (_e) {
       console.log('[TEST] No request made to /gists after button click');
       await page.screenshot({ path: 'test-results/debug-click.png' });
     }

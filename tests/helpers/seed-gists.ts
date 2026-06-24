@@ -11,10 +11,7 @@ import type { GistRecord } from '../../src/services/db';
  * Create a mock gist record with sensible defaults.
  * Override any field for test-specific scenarios.
  */
-export function makeGistRecord(
-  id: string,
-  overrides: Partial<GistRecord> = {},
-): GistRecord {
+export function makeGistRecord(id: string, overrides: Partial<GistRecord> = {}): GistRecord {
   return {
     id,
     description: `Test Gist ${id}`,
@@ -65,7 +62,7 @@ export const DEFAULT_TEST_GISTS: GistRecord[] = [
  */
 export async function seedGists(
   page: Page,
-  gists: GistRecord[] = DEFAULT_TEST_GISTS,
+  gists: GistRecord[] = DEFAULT_TEST_GISTS
 ): Promise<void> {
   await page.evaluate(async (gistData) => {
     const { initIndexedDB, saveGists } = await import('/src/services/db');

@@ -8,11 +8,19 @@ import { sanitizeHtml } from '../services/security/dom';
 import gistStore from '../stores/gist-store';
 import { formatRelativeTime, parseIsoDate } from '../utils/date';
 import { showConfirmDialog } from '../utils/dialog';
+import { renderTagChips } from './ui/tag-chip';
 import { toast } from './ui/toast';
 
 const cardCache = new Map<
   string,
-  { html: string; updatedAt: string; starred: boolean; syncStatus: string; lastSyncedAt?: string }
+  {
+    html: string;
+    updatedAt: string;
+    starred: boolean;
+    syncStatus: string;
+    lastSyncedAt?: string;
+    selected: boolean;
+  }
 >();
 
 const SYNC_BADGE_LOOKUP: Record<string, string> = {
@@ -68,14 +76,15 @@ function renderStalenessTooltip(updatedAt: string, lastSyncedAt?: string): strin
   </span>`;
 }
 
-export function renderCard(gist: GistRecord): string {
+export function renderCard(gist: GistRecord, selected = false): string {
   const cached = cardCache.get(gist.id);
   if (
     cached &&
     cached.updatedAt === gist.updatedAt &&
     cached.starred === gist.starred &&
     cached.syncStatus === gist.syncStatus &&
-    cached.lastSyncedAt === gist.lastSyncedAt
+    cached.lastSyncedAt === gist.lastSyncedAt &&
+    cached.selected === selected
   )
     return cached.html;
 
@@ -100,13 +109,20 @@ export function renderCard(gist: GistRecord): string {
     : `<time class="micro-label" datetime="${gist.updatedAt}">${formatRelativeTime(gist.updatedAt)}</time>`;
 
   const vtName = escapeViewTransitionName(gist.id);
+  const tags = gistStore.getTagsFromCache(gist.id);
+  const tagsHtml =
+    tags.length > 0 ? `<div class="gist-card-tags">${renderTagChips(tags)}</div>` : '';
 
   const html = `
-    <article class="glass-card gist-card${gist.starred ? ' featured' : ''}" data-gist-id="${sanitizeHtml(gist.id)}" data-testid="gist-item" tabindex="0" role="button"
+    <article class="glass-card gist-card${gist.starred ? ' featured' : ''}${selected ? ' selected' : ''}" data-gist-id="${sanitizeHtml(gist.id)}" data-testid="gist-item" tabindex="0" role="button"
              style="view-transition-name: ${vtName}"
              aria-label="Open gist: ${sanitizeHtml(description)}">
       <div class="gist-card-header">
         <div class="gist-card-meta">
+          <label class="gist-select" aria-label="Select gist ${sanitizeHtml(description)}">
+            <input type="checkbox" class="gist-checkbox" data-select-id="${sanitizeHtml(gist.id)}" ${selected ? 'checked' : ''} tabindex="-1">
+            <span class="checkmark"></span>
+          </label>
           <span class="micro-label">${sanitizeHtml(language.toUpperCase())}</span>
           <h2 class="gist-card-title">${sanitizeHtml(description)}</h2>
         </div>
@@ -115,6 +131,7 @@ export function renderCard(gist: GistRecord): string {
           <span class="micro-label">FILES</span>
         </div>
       </div>
+      ${tagsHtml}
       <div class="gist-card-preview">
         <pre class="gist-preview-code"><code>${sanitizeHtml(snippet)}</code></pre>
       </div>
@@ -142,6 +159,7 @@ export function renderCard(gist: GistRecord): string {
     starred: gist.starred,
     syncStatus: gist.syncStatus ?? 'synced',
     lastSyncedAt: gist.lastSyncedAt,
+    selected,
   });
   return html;
 }
@@ -158,6 +176,25 @@ export function bindCardEvents(
     (e) => {
       void (async () => {
         const target = e.target as HTMLElement;
+
+        const checkbox = target.closest('.gist-checkbox') as HTMLInputElement;
+        if (checkbox) {
+          e.preventDefault();
+          e.stopPropagation();
+          const id = checkbox.dataset.selectId;
+          if (!id) return;
+          if (e.shiftKey) {
+            const lastSelected = gistStore.getSelectedIds().values().next().value;
+            if (lastSelected) {
+              gistStore.selectRange(lastSelected, id);
+            } else {
+              gistStore.toggleSelect(id);
+            }
+          } else {
+            gistStore.toggleSelect(id);
+          }
+          return;
+        }
 
         const starBtn = target.closest('.star-btn') as HTMLElement;
         if (starBtn) {

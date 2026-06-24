@@ -6,10 +6,12 @@
 import * as GitHub from '../services/github/client';
 import { sanitizeUrl } from '../services/security/dom';
 import { safeError } from '../services/security/logger';
+import { highlightCode, shouldLazyHighlight } from '../services/syntax-highlight';
 import gistStore from '../stores/gist-store';
 import type { GistRecord } from '../types';
 import type { GistRevision } from '../types/api';
 import { formatRelativeTime } from '../utils/date';
+import { renderTagChips } from './ui/tag-chip';
 import { toast } from './ui/toast';
 
 export function buildFileContent(content: string, language?: string): DocumentFragment {
@@ -21,6 +23,49 @@ export function buildFileContent(content: string, language?: string): DocumentFr
   pre.appendChild(code);
   frag.appendChild(pre);
   return frag;
+}
+
+const highlightObserver = new IntersectionObserver(
+  (entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      const pre = entry.target as HTMLPreElement;
+      const code = pre.querySelector('code');
+      if (!code || pre.dataset.highlighted === 'true') continue;
+      const lang = pre.className.match(/language-(\S+)/)?.[1];
+      const content = code.textContent ?? '';
+      if (shouldLazyHighlight(content)) {
+        void applyHighlight(pre, code, lang, content);
+      }
+      highlightObserver.unobserve(pre);
+    }
+  },
+  { rootMargin: '200px' }
+);
+
+async function applyHighlight(
+  pre: HTMLPreElement,
+  code: HTMLElement,
+  lang: string | undefined,
+  content: string
+): Promise<void> {
+  try {
+    const html = await highlightCode(content, lang);
+    if (html) {
+      code.innerHTML = html;
+      pre.dataset.highlighted = 'true';
+    }
+  } catch {
+    safeError('[SyntaxHighlight] Failed to highlight code block');
+  }
+}
+
+function applyLineNumbers(pre: HTMLPreElement, enabled: boolean): void {
+  if (enabled) {
+    pre.classList.add('has-line-numbers');
+  } else {
+    pre.classList.remove('has-line-numbers');
+  }
 }
 
 export function renderGistDetail(gist: GistRecord): DocumentFragment {
@@ -117,6 +162,11 @@ export function renderGistDetail(gist: GistRecord): DocumentFragment {
     copyUrlBtn.textContent = 'Copy URL';
     actions.appendChild(copyUrlBtn);
   }
+  const lineNumbersBtn = document.createElement('button');
+  lineNumbersBtn.className = 'btn btn-ghost';
+  lineNumbersBtn.dataset.action = 'toggle-line-numbers';
+  lineNumbersBtn.textContent = 'Lines';
+  actions.appendChild(lineNumbersBtn);
   const shareBtn = document.createElement('button');
   shareBtn.className = 'btn btn-ghost';
   shareBtn.dataset.action = 'share';
@@ -125,8 +175,41 @@ export function renderGistDetail(gist: GistRecord): DocumentFragment {
     shareBtn.hidden = true;
   }
   actions.appendChild(shareBtn);
+  const downloadBtn = document.createElement('button');
+  downloadBtn.className = 'btn btn-ghost';
+  downloadBtn.dataset.action = 'download';
+  downloadBtn.textContent = 'Download';
+  actions.appendChild(downloadBtn);
+  const downloadZipBtn = document.createElement('button');
+  downloadZipBtn.className = 'btn btn-ghost';
+  downloadZipBtn.dataset.action = 'download-zip';
+  downloadZipBtn.textContent = 'Download ZIP';
+  actions.appendChild(downloadZipBtn);
   header.appendChild(actions);
   wrapper.appendChild(header);
+
+  // ── Tags section ─────────────────────────────────────────────────
+  const tagsSection = document.createElement('div');
+  tagsSection.className = 'tag-assignment';
+  tagsSection.id = 'tag-assignment-section';
+
+  const tagsTitle = document.createElement('span');
+  tagsTitle.className = 'micro-label';
+  tagsTitle.textContent = 'TAGS';
+  tagsSection.appendChild(tagsTitle);
+
+  const tagsList = document.createElement('div');
+  tagsList.className = 'tag-assignment-list';
+  tagsList.id = 'tag-assignment-list';
+  tagsSection.appendChild(tagsList);
+
+  const addTagBtn = document.createElement('button');
+  addTagBtn.className = 'btn btn-ghost btn-sm';
+  addTagBtn.dataset.action = 'add-tag';
+  addTagBtn.textContent = '+ Add Tag';
+  tagsSection.appendChild(addTagBtn);
+
+  wrapper.appendChild(tagsSection);
 
   // ── File tabs ────────────────────────────────────────────────────
   if (fileCount > 1) {
@@ -214,6 +297,22 @@ export function renderGistDetail(gist: GistRecord): DocumentFragment {
   return frag;
 }
 
+async function highlightVisibleCode(container: HTMLElement, signal?: AbortSignal): Promise<void> {
+  const pres = container.querySelectorAll('.code-block:not([data-highlighted])');
+  for (const pre of Array.from(pres) as HTMLPreElement[]) {
+    if (signal?.aborted) return;
+    const code = pre.querySelector('code');
+    if (!code) continue;
+    const content = code.textContent ?? '';
+    if (shouldLazyHighlight(content)) {
+      highlightObserver.observe(pre);
+    } else {
+      const lang = pre.className.match(/language-(\S+)/)?.[1];
+      await applyHighlight(pre, code, lang, content);
+    }
+  }
+}
+
 export async function loadGistDetail(
   id: string,
   container: HTMLElement,
@@ -230,6 +329,7 @@ export async function loadGistDetail(
     }
     container.replaceChildren(renderGistDetail(gist));
     bindDetailEvents(container, { onBack, onEdit, onViewRevision }, signal);
+    void highlightVisibleCode(container, signal);
   } catch (err) {
     safeError('[GistDetail] Failed to load gist', err);
     const isLikelyOffline = err instanceof Error && /network|offline|fetch/i.test(err.message);
@@ -342,7 +442,7 @@ export function bindDetailEvents(
   },
   signal?: AbortSignal
 ): void {
-  const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id');
+  const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id') ?? null;
   container.querySelector('#gist-back-btn')?.addEventListener('click', onBack, { signal });
   container.querySelector('[data-action="edit"]')?.addEventListener(
     'click',
@@ -392,6 +492,33 @@ export function bindDetailEvents(
     { signal }
   );
 
+  // Line numbers toggle
+  container.querySelector('[data-action="toggle-line-numbers"]')?.addEventListener(
+    'click',
+    () => {
+      const btn = container.querySelector('[data-action="toggle-line-numbers"]');
+      if (!btn) return;
+      const isActive = btn.classList.toggle('active');
+      btn.setAttribute('aria-pressed', String(isActive));
+      const pres = container.querySelectorAll('.code-block');
+      for (const pre of Array.from(pres) as HTMLPreElement[]) {
+        applyLineNumbers(pre, isActive);
+      }
+    },
+    { signal }
+  );
+
+  // Tag assignment
+  void loadTagAssignment(container, gistId, signal);
+
+  container.querySelector('[data-action="add-tag"]')?.addEventListener(
+    'click',
+    () => {
+      void showTagAssignmentDialog(container, gistId, signal);
+    },
+    { signal }
+  );
+
   // File Tabs
   const tabs = container.querySelectorAll('.file-tab');
   tabs.forEach((tab) => {
@@ -431,6 +558,7 @@ export function bindDetailEvents(
               contentArea.replaceChildren(buildFileContent(file.content || '', file.language));
               contentArea.setAttribute('aria-labelledby', tab.id);
               contentArea.classList.remove('is-switching');
+              void highlightVisibleCode(container, signal);
             }, 100);
           }
 
@@ -564,6 +692,31 @@ export function bindDetailEvents(
           void shareGist(container, signal);
           return;
         }
+
+        // Download gist as JSON
+        if (target.closest('[data-action="download"]')) {
+          const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id');
+          if (gistId) {
+            const gist = gistStore.getGist(gistId);
+            if (gist) exportGistAsJsonInline(gist);
+          }
+          return;
+        }
+
+        if (target.closest('[data-action="download-zip"]')) {
+          void (async () => {
+            const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id');
+            if (gistId) {
+              const gist = gistStore.getGist(gistId);
+              if (gist) {
+                const { exportGistAsZip } = await import('../services/export-import');
+                const blob = exportGistAsZip(gist);
+                triggerDownload(blob, `${slugifyName(gist.description)}.zip`);
+              }
+            }
+          })();
+          return;
+        }
       },
       { signal }
     );
@@ -656,6 +809,40 @@ async function fallbackCopy(url: string, signal?: AbortSignal): Promise<void> {
   }
 }
 
+function slugifyName(name: string | null | undefined): string {
+  return (name || 'gist').replace(/[^a-z0-9]/gi, '-').toLowerCase();
+}
+
+function triggerDownload(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportGistAsJsonInline(gist: GistRecord): void {
+  const files: Record<string, { filename: string; content: string; language?: string }> = {};
+  for (const key in gist.files) {
+    if (Object.hasOwn(gist.files, key)) {
+      const f = gist.files[key];
+      if (!f) continue;
+      files[key] = { filename: f.filename, content: f.content ?? '', language: f.language };
+    }
+  }
+  const data = {
+    id: gist.id,
+    description: gist.description,
+    public: gist.public,
+    createdAt: gist.createdAt,
+    updatedAt: gist.updatedAt,
+    files,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  triggerDownload(blob, `${slugifyName(gist.description)}.json`);
+}
+
 function bindRevisionEvents(
   container: HTMLElement,
   {
@@ -676,4 +863,102 @@ function bindRevisionEvents(
       { signal }
     );
   });
+}
+
+async function loadTagAssignment(
+  container: HTMLElement,
+  gistId: string | null,
+  signal?: AbortSignal
+): Promise<void> {
+  if (!gistId) return;
+  const tagsList = container.querySelector('#tag-assignment-list');
+  if (!tagsList) return;
+
+  const gistTags = await gistStore.getTagsForGist(gistId);
+  if (signal?.aborted) return;
+
+  tagsList.innerHTML =
+    gistTags.length > 0
+      ? renderTagChips(gistTags, true)
+      : '<span class="micro-label">No tags assigned</span>';
+
+  tagsList.querySelectorAll('[data-remove-tag]').forEach((btn) => {
+    btn.addEventListener(
+      'click',
+      async (e) => {
+        e.stopPropagation();
+        const tagId = (btn as HTMLElement).dataset.removeTag;
+        if (!tagId || !gistId) return;
+        await gistStore.removeTag(gistId, tagId);
+        void loadTagAssignment(container, gistId, signal);
+      },
+      { signal }
+    );
+  });
+}
+
+async function showTagAssignmentDialog(
+  container: HTMLElement,
+  gistId: string | null,
+  signal?: AbortSignal
+): Promise<void> {
+  if (!gistId) return;
+
+  const allTags = await gistStore.getAllTags();
+  const gistTags = await gistStore.getTagsForGist(gistId);
+  const gistTagIds = new Set(gistTags.map((t) => t.id));
+
+  const existingDialog = container.querySelector('#tag-assignment-dialog');
+  if (existingDialog) existingDialog.remove();
+
+  const dialog = document.createElement('div');
+  dialog.id = 'tag-assignment-dialog';
+  dialog.className = 'tag-assignment';
+  dialog.style.cssText =
+    'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--spacing-v4); min-width: 300px; box-shadow: var(--shadow-lg);';
+
+  const title = document.createElement('h3');
+  title.className = 'form-label';
+  title.textContent = 'Assign Tags';
+  dialog.appendChild(title);
+
+  const tagsList = document.createElement('div');
+  tagsList.className = 'tag-assignment-list';
+  tagsList.style.marginTop = 'var(--spacing-v2)';
+
+  for (const tag of allTags) {
+    const isSelected = gistTagIds.has(tag.id);
+    const item = document.createElement('button');
+    item.className = `tag-assignment-item${isSelected ? ' selected' : ''}`;
+    item.style.cssText = `border-color: ${tag.color}; background: ${isSelected ? `${tag.color}20` : 'transparent'}; color: ${tag.color};`;
+    item.textContent = tag.name;
+    item.dataset.tagId = tag.id;
+
+    item.addEventListener(
+      'click',
+      async () => {
+        if (isSelected) {
+          await gistStore.removeTag(gistId, tag.id);
+        } else {
+          await gistStore.assignTag(gistId, tag.id);
+        }
+        dialog.remove();
+        void loadTagAssignment(container, gistId, signal);
+      },
+      { signal }
+    );
+
+    tagsList.appendChild(item);
+  }
+
+  dialog.appendChild(tagsList);
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'btn btn-ghost btn-sm';
+  closeBtn.textContent = 'Close';
+  closeBtn.style.marginTop = 'var(--spacing-v2)';
+  closeBtn.addEventListener('click', () => dialog.remove(), { signal });
+  dialog.appendChild(closeBtn);
+
+  document.body.appendChild(dialog);
 }

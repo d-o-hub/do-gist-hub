@@ -1,7 +1,7 @@
 /**
  * Unit tests for Announcer utility
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Announcer, announcer } from '../../src/utils/announcer';
 
 describe('Announcer', () => {
@@ -10,12 +10,10 @@ describe('Announcer', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     // Mock requestAnimationFrame to run callback immediately
-    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(
-      (cb: FrameRequestCallback) => {
-        cb(0);
-        return 0;
-      },
-    );
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    });
     // Clean up pre-existing .sr-only regions created by the singleton import
     document.querySelectorAll('.sr-only').forEach((el) => el.remove());
     ann = new Announcer();

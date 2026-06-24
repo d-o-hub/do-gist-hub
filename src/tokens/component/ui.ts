@@ -14,7 +14,7 @@ export const uiTokens = {
     blur: tokens.UiGlassBlur,
   },
   card: {
-    padding: 'var(--spacing-5)',
+    padding: 'var(--spacing-v5)',
     borderRadius: 'var(--radius-xl)',
     border: '1px solid var(--color-border-default)',
     background: 'var(--color-background-primary)',
