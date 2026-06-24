@@ -5,6 +5,7 @@
 import { loadGistDetail } from '../components/gist-detail';
 import { Skeleton } from '../components/ui/skeleton';
 import { lifecycle } from '../services/lifecycle';
+import { noop } from '../utils/noop';
 
 export function render(container: HTMLElement, params?: Record<string, string>): void {
   const signal = lifecycle.getRouteSignal();
@@ -29,8 +30,8 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     () => {
       window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route: 'home' } }));
     },
-    () => {},
-    () => {},
+    noop,
+    noop,
     signal
   );
 

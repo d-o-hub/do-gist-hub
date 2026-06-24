@@ -124,8 +124,8 @@ function parseLinkHeader(linkHeader: string | null): PaginationInfo {
   for (const part of linkHeader.split(',')) {
     const match = part.match(/<[^>]+[?&]page=(\d+)[^>]*>;\s*rel="(\w+)"/);
     if (match) {
-      const page = Number.parseInt(match[1]!, 10);
-      const rel = match[2]!;
+      const page = Number.parseInt(match[1] ?? '0', 10);
+      const rel = match[2] ?? '';
       if (rel === 'next') result.nextPage = page;
       else if (rel === 'prev') result.prevPage = page;
       else if (rel === 'first') result.firstPage = page;

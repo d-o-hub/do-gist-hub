@@ -15,6 +15,9 @@ import { renderTagChips } from './ui/tag-chip';
 import { toast } from './ui/toast';
 
 export function buildFileContent(content: string, language?: string): DocumentFragment {
+  if (typeof document === 'undefined') {
+    return new DocumentFragment();
+  }
   const frag = document.createDocumentFragment();
   const pre = document.createElement('pre');
   pre.className = `code-block language-${language?.replace(/[^a-z0-9-]/gi, '') || 'text'}`;
@@ -244,7 +247,7 @@ export function renderGistDetail(gist: GistRecord): DocumentFragment {
   let firstFile: GistRecord['files'][string] | null = null;
   for (const key in gist.files) {
     if (Object.hasOwn(gist.files, key)) {
-      firstFile = gist.files[key]!;
+      firstFile = gist.files[key] ?? null;
       break;
     }
   }

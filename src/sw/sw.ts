@@ -8,6 +8,7 @@
  */
 
 import { APP } from '../config/app.config';
+import { noop } from '../utils/noop';
 
 // Derive deployment base path from SW's own URL — works at any subpath without hardcoding
 const BASE_PATH = self.location.pathname.substring(0, self.location.pathname.lastIndexOf('/') + 1);
@@ -137,9 +138,9 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
           caches
             .open(STATIC_CACHE)
             .then((cache) => {
-              cache.put(request, timestampedResponse).catch(() => {});
+              cache.put(request, timestampedResponse).catch(noop);
             })
-            .catch(() => {});
+            .catch(noop);
           return response;
         })
         .catch(async () => {
@@ -170,9 +171,9 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
             caches
               .open(APP.apiCacheName)
               .then((cache) => {
-                cache.put(request, timestampedResponse).catch(() => {});
+                cache.put(request, timestampedResponse).catch(noop);
               })
-              .catch(() => {});
+              .catch(noop);
           }
           return response;
         })
@@ -204,7 +205,7 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
             caches
               .open(STATIC_CACHE)
               .then((cache) => cache.delete(request))
-              .catch(() => {});
+              .catch(noop);
           } else {
             return cachedResponse;
           }
@@ -218,9 +219,9 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
           caches
             .open(STATIC_CACHE)
             .then((cache) => {
-              cache.put(request, timestampedResponse).catch(() => {});
+              cache.put(request, timestampedResponse).catch(noop);
             })
-            .catch(() => {});
+            .catch(noop);
           return response;
         });
       })
@@ -237,9 +238,9 @@ swSelf.addEventListener('fetch', (event: FetchEvent) => {
         caches
           .open(APP.cacheName)
           .then((cache) => {
-            cache.put(request, timestampedResponse).catch(() => {});
+            cache.put(request, timestampedResponse).catch(noop);
           })
-          .catch(() => {});
+          .catch(noop);
         return response;
       })
       .catch(async () => {

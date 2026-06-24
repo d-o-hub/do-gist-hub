@@ -190,7 +190,7 @@ function uint32LE(n: number): Uint8Array {
 function crc32(data: Uint8Array): number {
   let crc = 0xffffffff;
   for (let i = 0; i < data.length; i++) {
-    crc ^= data[i]!;
+    crc ^= data[i] ?? 0;
     for (let j = 0; j < 8; j++) {
       crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
     }

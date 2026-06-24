@@ -6,6 +6,7 @@
 import type { PendingWrite } from '../../types';
 import type { CreateGistRequest, GitHubGist, UpdateGistRequest } from '../../types/api';
 import { githubGistToRecord } from '../../utils/gist-mapper';
+import { noop } from '../../utils/noop';
 import {
   deleteGist as dbDeleteGist,
   queueWrite as dbQueueWrite,
@@ -80,7 +81,7 @@ export class SyncQueue {
     };
     const id = await dbQueueWrite(write);
     safeLog(`[SyncQueue] Queued ${action} for gist ${gistId}, queue ID: ${id}`);
-    this.updateBadge().catch(() => {});
+    this.updateBadge().catch(noop);
     if (networkMonitor.isOnline()) {
       void this.processQueue();
     }
@@ -107,7 +108,7 @@ export class SyncQueue {
         if (result.success) {
           await removePendingWrite(write.id);
           safeLog(`[SyncQueue] Successfully synced operation ${write.id}`);
-          this.updateBadge().catch(() => {});
+          this.updateBadge().catch(noop);
         } else {
           if (result.shouldRetry && write.retryCount < MAX_RETRIES) {
             await updatePendingWriteError(write.id, result.error || 'Unknown error');
@@ -124,7 +125,7 @@ export class SyncQueue {
       safeError('[SyncQueue] Error processing queue:', error);
     } finally {
       this.isSyncing = false;
-      this.updateBadge().catch(() => {});
+      this.updateBadge().catch(noop);
     }
   }
 

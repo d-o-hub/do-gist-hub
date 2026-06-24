@@ -23,6 +23,7 @@ import gistStore from '../stores/gist-store';
 import { getThemePreference, initTheme } from '../tokens/design-tokens';
 import { showConfirmDialog } from '../utils/dialog';
 import { clearFieldError, showFieldError } from '../utils/form-error';
+import { noop } from '../utils/noop';
 
 export async function render(
   container: HTMLElement,
@@ -411,8 +412,8 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
           const result = await saveToken(input.value);
           if (result.success) {
             toast.success('TOKEN SAVED');
-            void recordAuthMethod('pat').catch(() => {});
-            void recordAuthCompleted().catch(() => {});
+            void recordAuthMethod('pat').catch(noop);
+            void recordAuthCompleted().catch(noop);
             await loadTokenInfo(container);
             input.value = '';
           } else {
