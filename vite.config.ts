@@ -344,9 +344,11 @@ export default defineConfig({
     // Chunk splitting strategy for better caching
     rollupOptions: {
       output: {
-        // Separate vendor chunks
+        // Separate vendor chunks — heavy libs get their own chunk for lazy loading
         manualChunks(id) {
           if (id.includes('node_modules')) {
+            if (id.includes('shiki')) return 'vendor-shiki';
+            if (id.includes('idb')) return 'vendor-idb';
             return 'vendor';
           }
           return null;

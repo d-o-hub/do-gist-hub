@@ -1,3 +1,4 @@
+
 :root {
   /* ===== Theme Color Scheme ===== */
   color-scheme: dark;
@@ -46,19 +47,19 @@
   --color-status-error-bg: var(--semantic-dark-status-error-bg);
   --color-status-error-fg: var(--semantic-dark-status-error-fg);
   --color-status-error-border: var(--semantic-dark-status-error-border);
-
+  
   --color-status-warning-bg: var(--semantic-dark-status-warning-bg);
   --color-status-warning-fg: var(--semantic-dark-status-warning-fg);
   --color-status-warning-border: var(--semantic-dark-status-warning-border);
-
+  
   --color-status-info-bg: var(--semantic-dark-status-info-bg);
   --color-status-info-fg: var(--semantic-dark-status-info-fg);
   --color-status-info-border: var(--semantic-dark-status-info-border);
-
+  
   --color-interactive-hover: var(--semantic-dark-interactive-hover);
   --color-interactive-active: var(--semantic-dark-interactive-active);
   --color-interactive-focus: var(--semantic-dark-interactive-focus);
-
+  
   /* ===== Spacing Tokens ===== */
   --spacing-v0: var(--spacing-v0);
   --spacing-v05: var(--spacing-v05);
@@ -103,10 +104,10 @@
   --font-family-mono: var(--font-family-mono);
 
   /* 2026: Semantic font aliases for self-hosted variable fonts (ADR-022) */
-  --font-body: "Inter Variable", var(--font-family-sans);
-  --font-display: "Anton", var(--font-family-sans);
-  --font-mono: "JetBrains Mono Variable", var(--font-family-mono);
-
+  --font-body: 'Inter Variable', var(--font-family-sans);
+  --font-display: 'Anton', var(--font-family-sans);
+  --font-mono: 'JetBrains Mono Variable', var(--font-family-mono);
+  
   --font-size-xs: var(--font-size-xs);
   --font-size-sm: var(--font-size-sm);
   --font-size-base: var(--font-size-base);
@@ -120,7 +121,7 @@
   --font-size-7xl: var(--font-size-7xl);
   --font-size-8xl: var(--font-size-8xl);
   --font-size-9xl: var(--font-size-9xl);
-
+  
   --font-weight-thin: var(--font-weight-thin);
   --font-weight-extralight: var(--font-weight-extralight);
   --font-weight-light: var(--font-weight-light);
@@ -130,21 +131,21 @@
   --font-weight-bold: var(--font-weight-bold);
   --font-weight-extrabold: var(--font-weight-extrabold);
   --font-weight-black: var(--font-weight-black);
-
+  
   --line-height-none: var(--line-height-none);
   --line-height-tight: var(--line-height-tight);
   --line-height-snug: var(--line-height-snug);
   --line-height-normal: var(--line-height-normal);
   --line-height-relaxed: var(--line-height-relaxed);
   --line-height-loose: var(--line-height-loose);
-
+  
   --letter-spacing-tighter: var(--letter-spacing-tighter);
   --letter-spacing-tight: var(--letter-spacing-tight);
   --letter-spacing-normal: var(--letter-spacing-normal);
   --letter-spacing-wide: var(--letter-spacing-wide);
   --letter-spacing-wider: var(--letter-spacing-wider);
   --letter-spacing-widest: var(--letter-spacing-widest);
-
+  
   /* ===== Radius Tokens ===== */
   --radius-none: var(--radius-none);
   --radius-sm: var(--radius-sm);
@@ -155,7 +156,7 @@
   --radius-2xl: var(--radius-2xl);
   --radius-3xl: var(--radius-3xl);
   --radius-full: var(--radius-full);
-
+  
   /* ===== Motion Tokens (2026) ===== */
   --motion-duration-instant: var(--motion-duration-instant);
   --motion-duration-fast: var(--motion-duration-fast);
@@ -179,7 +180,7 @@
   --motion-easing-ease-out: var(--motion-easing-out);
   --motion-easing-ease-in: var(--motion-easing-in);
   --motion-duration-slower: var(--motion-duration-deliberate);
-
+  
   /* ===== Shadow Tokens (Dark Mode Defaults) ===== */
   --shadow-none: var(--shadow-none);
   --shadow-sm: var(--shadow-sm-dark);
@@ -190,7 +191,7 @@
   --shadow-inner: var(--shadow-inner);
   --shadow-accent: 0 2px 8px var(--color-accent-glow);
   --shadow-accent-lg: 0 4px 16px var(--color-accent-glow);
-
+  
   /* ===== Breakpoint Tokens ===== */
   --bp-phone-small: var(--breakpoint-phone-small);
   --bp-phone: var(--breakpoint-phone);
