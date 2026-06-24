@@ -328,8 +328,8 @@
     },
     "063-pre-existing-ci-issues-2026-06-01.md": {
       "type": "analysis",
-      "status": "active",
-      "summary": "Pre-existing CI issues: html-escaper CJS fix, commitlint failures, F-Droid APK build failure"
+      "status": "complete",
+      "summary": "Pre-existing CI issues resolved: html-escaper CJS fix, commitlint workflow discipline, F-Droid lintVital suppression in Gradle config (PR #252)"
     },
     "062-progress-update-2026-05-30-plan060-completion.md": {
       "type": "progress",

@@ -26,6 +26,7 @@ import './styles/navigation.css';
 import './styles/modern-glass.css';
 import './styles/conflicts.css';
 import './styles/command-palette.css';
+import './styles/keyboard-help.css';
 
 // Initialize global error handling (uncaught exceptions + promise rejections)
 initGlobalErrorHandling();

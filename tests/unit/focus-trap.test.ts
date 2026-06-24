@@ -1,7 +1,7 @@
 /**
  * Unit tests for FocusTrap utility
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FocusTrap, focusTrap } from '../../src/utils/focus-trap';
 
 describe('FocusTrap', () => {
@@ -145,7 +145,7 @@ describe('FocusTrap', () => {
       btn1.focus();
 
       btn1.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }),
+        new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true })
       );
       expect(document.activeElement).toBe(btn3);
     });
@@ -171,7 +171,7 @@ describe('FocusTrap', () => {
 
       // Tab on a single element wraps to itself (production behavior)
       single.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
+        new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
       );
       expect(document.activeElement).toBe(single);
       document.body.removeChild(singleContainer);
@@ -184,7 +184,7 @@ describe('FocusTrap', () => {
 
       // After deactivation, Tab listener should be removed via abort
       const caught = btn1.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
+        new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
       );
       // Event should not be cancelled since no listener handles it
       expect(caught).toBe(true);

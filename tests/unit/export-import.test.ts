@@ -2,7 +2,7 @@
  * Unit tests for src/services/export-import.ts
  * Covers exportAllGists, importGists, ExportData, ImportResult
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock db module — all exports become vi.fn()
 vi.mock('../../src/services/db', () => ({
@@ -29,14 +29,10 @@ vi.mock('../../src/services/security/logger', () => ({
   safeError: vi.fn(),
 }));
 
-import {
-  exportAllGists,
-  importGists,
-  type ImportResult,
-} from '../../src/services/export-import';
 import * as db from '../../src/services/db';
-import * as conflictDetector from '../../src/services/sync/conflict-detector';
+import { exportAllGists, importGists } from '../../src/services/export-import';
 import type { GistConflict } from '../../src/services/sync/conflict-detector';
+import * as conflictDetector from '../../src/services/sync/conflict-detector';
 
 const mockGist = {
   id: 'gist-1',

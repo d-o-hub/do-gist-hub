@@ -7,7 +7,7 @@
  * (which triggers top-level addEventListener), store captured listeners,
  * then call them directly in each test.
  */
-import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Track event listeners registered by the sw module
 const mockEventListeners = new Map<string, EventListener[]>();
@@ -39,15 +39,18 @@ const mockClients = {
 const mockSkipWaiting = vi.fn();
 
 /** Helper to capture event listeners registered via addEventListener */
-function createEventListenerSpy(store: Map<string, EventListener[]>): typeof window.addEventListener {
+function createEventListenerSpy(
+  store: Map<string, EventListener[]>
+): typeof window.addEventListener {
   return ((type: string, listener: EventListenerOrEventListenerObject) => {
     if (!store.has(type)) {
       store.set(type, []);
     }
-    const fn = typeof listener === 'function'
-      ? listener
-      : (listener as EventListenerObject).handleEvent.bind(listener);
-    store.get(type)!.push(fn);
+    const fn =
+      typeof listener === 'function'
+        ? listener
+        : (listener as EventListenerObject).handleEvent.bind(listener);
+    store.get(type)?.push(fn);
   }) as typeof window.addEventListener;
 }
 
@@ -139,7 +142,10 @@ describe('ServiceWorker (sw.ts)', () => {
   });
 
   it('cleans up old caches on activate', async () => {
-    mockCacheStorage.keys.mockResolvedValue(['old-cache-v1', 'do-gist-hub-static-__BUILD_TIMESTAMP__']);
+    mockCacheStorage.keys.mockResolvedValue([
+      'old-cache-v1',
+      'do-gist-hub-static-__BUILD_TIMESTAMP__',
+    ]);
 
     const listener = getListener('activate');
     expect(listener).toBeDefined();

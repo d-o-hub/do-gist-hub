@@ -3,6 +3,7 @@
 > **Status**: Complete
 > **Type**: GOAP
 > **Created**: 2026-06-16
+> **Updated**: 2026-06-24
 > **Owner**: agent
 > **Related**: adr-001, adr-034, 003-design-token-architecture.md
 
@@ -17,11 +18,11 @@ Audit the design token system for consistency, remove dead code, and ensure full
 - [x] **A1**: Update `plans/003-design-token-architecture.md` with full token system inventory — all 6 layers, pipeline, theme system, known issues, implementation checklist
 - [x] **A2**: Create `plans/adr-034-design-token-system-dtcg.md` — formalize DTCG-aligned token architecture as accepted ADR
 
-### Phase 2: Token Cleanup (Documented, Not Implemented)
+### Phase 2: Token Cleanup (Complete)
 
-- [ ] **A3**: Remove recursive `--spacing-N: var(--spacing-N)` self-references from `css-variables.ts:75-110` — these are dead code; the working aliases are `--space-N` (bridge) and `--spacing-vN` (generated)
-- [ ] **A4**: Remove corresponding recursive entries from `public/design-tokens.css:71-122, 365-418` — same dead code in the committed output file
-- [ ] **A5**: Verify no external consumers reference the recursive `--spacing-N` layer before deletion
+- [x] **A3**: Remove recursive `--spacing-N: var(--spacing-N)` self-references from `css-variables.ts:75-110` — these are dead code; the working aliases are `--space-N` (bridge) and `--spacing-vN` (generated)
+- [x] **A4**: Remove corresponding recursive entries from `public/design-tokens.css:71-122, 365-418` — same dead code in the committed output file
+- [x] **A5**: Verify no external consumers reference the recursive `--spacing-N` layer before deletion
 
 ### Phase 3: Validation (Future)
 

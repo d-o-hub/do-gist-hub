@@ -1,29 +1,29 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import 'fake-indexeddb/auto';
-import { openDB, deleteDB } from 'idb';
+import { deleteDB } from 'idb';
 
 import {
-  initIndexedDB,
-  getDB,
+  clearAllData,
   closeDB,
+  deleteGist,
+  exportData,
+  type GistRecord,
+  getAllGists,
+  getDB,
+  getEtag,
+  getGist,
+  getMetadata,
+  getPendingWrites,
+  importData,
+  initIndexedDB,
   isDBReady,
+  queueWrite,
+  removePendingWrite,
   saveGist,
   saveGists,
-  getGist,
-  getAllGists,
-  deleteGist,
-  queueWrite,
-  getPendingWrites,
-  removePendingWrite,
-  updatePendingWriteError,
-  setMetadata,
-  getMetadata,
   setEtag,
-  getEtag,
-  exportData,
-  importData,
-  clearAllData,
-  type GistRecord,
+  setMetadata,
+  updatePendingWriteError,
 } from '../../src/services/db';
 
 // ─── Helpers ───────────────────────────────────────────────────────────
@@ -72,7 +72,7 @@ describe('db', () => {
     it('creates database with correct name and version', async () => {
       const db = await initIndexedDB();
       expect(db.name).toBe('d-o-gist-hub-db');
-      expect(db.version).toBe(3);
+      expect(db.version).toBe(4);
     });
 
     it('creates object stores: gists, pendingWrites, metadata, logs', async () => {

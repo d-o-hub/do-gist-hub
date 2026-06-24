@@ -44,9 +44,14 @@ echo "→ Checking bundle sizes in dist/..."
 
 EXIT_CODE=0
 
-# Find main entry JS files (the largest non-vendor chunk)
+# Find main entry JS files (exclude lazy-loaded vendor chunks like vendor-shiki-*)
 while IFS= read -r file; do
   filename=$(basename "$file")
+  # Skip lazy-loaded vendor chunks (they have their own budget via performanceBudgetPlugin)
+  if [[ "$filename" == vendor-shiki-* || "$filename" == vendor-idb-* ]]; then
+    echo "  ⊘ $filename: lazy-loaded, skipped (budget enforced by performanceBudgetPlugin)"
+    continue
+  fi
   size_bytes=$(stat -c%s "$file")
   size_kb=$((size_bytes / 1024))
 

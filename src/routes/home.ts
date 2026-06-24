@@ -6,11 +6,14 @@
 import { bindCardEvents, renderCard } from '../components/gist-card';
 import { EmptyState } from '../components/ui/empty-state';
 import { Skeleton } from '../components/ui/skeleton';
+import { toast } from '../components/ui/toast';
 import { lifecycle } from '../services/lifecycle';
+import type { BulkAction } from '../stores/gist-store';
 import gistStore from '../stores/gist-store';
 import { parseIsoDate } from '../utils/date';
+import { destroyKeyboardShortcuts, registerKeyboardShortcuts } from '../utils/keyboard-shortcuts';
 
-export type Filter = 'all' | 'mine' | 'starred';
+export type Filter = 'all' | 'mine' | 'starred' | 'pending' | 'conflict' | 'error';
 export type Sort = 'created-desc' | 'updated-desc' | 'updated-asc';
 
 let searchTimeout: number | undefined;
@@ -23,6 +26,7 @@ export function render(container: HTMLElement, params?: Record<string, string>):
   let currentFilter = (params?.filter as Filter) || 'all';
   let currentSort = (params?.sort as Sort) || 'updated-desc';
   let searchQuery = params?.searchQuery || '';
+  let selectedTagId: string | null = null;
 
   const unsubscribe = gistStore.subscribe(() => {
     if (document.contains(container)) {
@@ -30,6 +34,14 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     }
   });
   lifecycle.onRouteCleanup(() => unsubscribe());
+
+  const unsubscribeSelection = gistStore.subscribeSelection(() => {
+    if (document.contains(container)) {
+      updateBulkToolbar();
+      updateList();
+    }
+  });
+  lifecycle.onRouteCleanup(() => unsubscribeSelection());
 
   buildHomeShell(currentFilter, currentSort, searchQuery, container);
   updateList();
@@ -87,11 +99,22 @@ export function render(container: HTMLElement, params?: Record<string, string>):
 
     const filterButtons = document.createElement('div');
     filterButtons.className = 'filter-buttons filter-chips';
-    for (const f of ['all', 'mine', 'starred'] as const) {
+    for (const f of ['all', 'mine', 'starred', 'pending', 'conflict', 'error'] as const) {
       const chip = document.createElement('button');
       chip.className = `chip${filter === f ? ' active' : ''}`;
       chip.dataset.filter = f;
-      chip.textContent = f === 'all' ? 'All' : f === 'mine' ? 'Mine' : 'Starred';
+      chip.textContent =
+        f === 'all'
+          ? 'All'
+          : f === 'mine'
+            ? 'Mine'
+            : f === 'starred'
+              ? 'Starred'
+              : f === 'pending'
+                ? 'Pending Sync'
+                : f === 'conflict'
+                  ? 'Conflicts'
+                  : 'Errors';
       filterButtons.appendChild(chip);
     }
     filterHeader.appendChild(filterButtons);
@@ -113,11 +136,37 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     filterHeader.appendChild(sortSelect);
     routeHome.appendChild(filterHeader);
 
+    // Tag filter
+    const tagFilter = document.createElement('div');
+    tagFilter.className = 'tag-filter';
+    tagFilter.id = 'tag-filter';
+    routeHome.appendChild(tagFilter);
+    void loadTagFilters(tagFilter);
+
     // Gist list placeholder (populated by updateList)
     const gistList = document.createElement('div');
     gistList.id = 'gist-list';
     gistList.className = 'gist-list gist-grid';
     routeHome.appendChild(gistList);
+
+    // Bulk action toolbar
+    const bulkToolbar = document.createElement('div');
+    bulkToolbar.id = 'bulk-toolbar';
+    bulkToolbar.className = 'bulk-toolbar';
+    bulkToolbar.style.display = 'none';
+    bulkToolbar.setAttribute('role', 'toolbar');
+    bulkToolbar.setAttribute('aria-label', 'Bulk actions');
+    bulkToolbar.innerHTML = `
+      <span class="bulk-count micro-label" aria-live="polite"></span>
+      <div class="bulk-actions">
+        <button class="chip" data-bulk-action="star" type="button">STAR</button>
+        <button class="chip" data-bulk-action="unstar" type="button">UNSTAR</button>
+        <button class="chip" data-bulk-action="delete" type="button">DELETE</button>
+        <button class="chip" data-bulk-action="copy-urls" type="button">COPY URLS</button>
+        <button class="chip" data-bulk-action="clear" type="button">CLEAR</button>
+      </div>
+    `;
+    routeHome.appendChild(bulkToolbar);
 
     // Result count: visible summary + screen-reader-only live region.
     // The visible count tells the user "X gists" at a glance; the
@@ -133,14 +182,42 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     target.appendChild(routeHome);
   }
 
-  function renderGistList(): string {
+  /**
+   * Update the gist list and result count.
+   * BOLT: Consolidated filtering, searching, sorting, and rendering into a single
+   * pass to eliminate redundant O(N) iterations and function overhead.
+   */
+  function updateList(): void {
+    const list = container.querySelector('#gist-list') as HTMLElement | null;
+    const countEl = container.querySelector('#gist-result-count') as HTMLElement | null;
+
+    if (!list) return;
+
+    // Loading state
     if (gistStore.getLoading() && gistStore.getGists().length === 0) {
-      return Skeleton.renderList(3);
+      list.innerHTML = Skeleton.renderList(3);
+      if (countEl) countEl.textContent = 'Loading gists...';
+      return;
     }
 
-    let gists = gistStore.filterGists(
-      currentFilter === 'mine' ? 'all' : (currentFilter as 'all' | 'starred')
-    );
+    // 1. Initial filter
+    let gists =
+      currentFilter === 'pending'
+        ? gistStore.getGists().filter((g) => g.syncStatus === 'pending')
+        : currentFilter === 'conflict'
+          ? gistStore.getGists().filter((g) => g.syncStatus === 'conflict')
+          : currentFilter === 'error'
+            ? gistStore.getGists().filter((g) => g.syncStatus === 'error')
+            : gistStore.filterGists(
+                currentFilter === 'mine' ? 'all' : (currentFilter as 'all' | 'starred')
+              );
+
+    if (selectedTagId) {
+      gists = gists.filter((g) => {
+        const tags = gistStore.getTagsFromCache(g.id);
+        return tags.some((t) => t.id === selectedTagId);
+      });
+    }
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -154,8 +231,59 @@ export function render(container: HTMLElement, params?: Record<string, string>):
       });
     }
 
-    // BOLT: Optimize by skipping sorting when the order matches the store's natural order (updated-desc).
-    // The store already maintains gists sorted by updatedAt descending, and filtering preserves order.
+    const filteredCount = gists.length;
+    const totalCount = gistStore.getGists().length;
+
+    // 3. Update result count
+    if (countEl) {
+      countEl.textContent =
+        filteredCount === totalCount
+          ? `${totalCount} gist${totalCount === 1 ? '' : 's'}`
+          : `${filteredCount} of ${totalCount} gist${totalCount === 1 ? '' : 's'}`;
+    }
+
+    // 4. Handle empty state
+    if (filteredCount === 0) {
+      if (searchQuery) {
+        list.innerHTML = EmptyState.render({
+          title: 'No Matches Found',
+          description: `We couldn't find any gists matching "${searchQuery}"`,
+          actionLabel: 'Clear Search',
+          actionType: 'clear-search',
+        });
+      } else {
+        const isStarred = currentFilter === 'starred';
+        const isPending = currentFilter === 'pending';
+        const isConflict = currentFilter === 'conflict';
+        const isError = currentFilter === 'error';
+        const isSyncFilter = isPending || isConflict || isError;
+        list.innerHTML = EmptyState.render({
+          title: isConflict
+            ? 'No Conflicts'
+            : isError
+              ? 'No Errors'
+              : isPending
+                ? 'No Pending Syncs'
+                : isStarred
+                  ? 'No Starred Gists'
+                  : 'No Gists Found',
+          description: isConflict
+            ? 'All gists are free of conflicts'
+            : isError
+              ? 'No gists have sync errors'
+              : isPending
+                ? 'All gists are synced'
+                : isStarred
+                  ? "You haven't starred any gists yet"
+                  : 'Start by creating your first gist or syncing from GitHub',
+          actionLabel: isSyncFilter || isStarred ? 'View All Gists' : 'Create New Gist',
+          actionRoute: isSyncFilter || isStarred ? 'home' : 'create',
+        });
+      }
+      return;
+    }
+
+    // 5. Sort (if not natural updated-desc order)
     if (currentSort !== 'updated-desc') {
       gists = gists
         .map((gist) => ({
@@ -166,76 +294,34 @@ export function render(container: HTMLElement, params?: Record<string, string>):
         .map((item) => item.gist);
     }
 
-    if (gists.length === 0) {
-      if (searchQuery) {
-        return EmptyState.render({
-          title: 'No Matches Found',
-          description: `We couldn't find any gists matching "${searchQuery}"`,
-          actionLabel: 'Clear Search',
-          actionType: 'clear-search',
-        });
-      }
-
-      const isStarred = currentFilter === 'starred';
-      return EmptyState.render({
-        title: isStarred ? 'No Starred Gists' : 'No Gists Found',
-        description: isStarred
-          ? "You haven't starred any gists yet"
-          : 'Start by creating your first gist or syncing from GitHub',
-        actionLabel: isStarred ? 'View All Gists' : 'Create New Gist',
-        actionRoute: isStarred ? 'home' : 'create',
-      });
-    }
-
-    return gists.map((g) => renderCard(g)).join('');
-  }
-
-  function updateList(): void {
-    const list = container.querySelector('#gist-list');
-    const countEl = container.querySelector('#gist-result-count') as HTMLElement | null;
-    if (countEl) {
-      const total = gistStore.getGists().length;
-      const filtered = countFilteredGists();
-      const countText =
-        filtered === total
-          ? `${total} gist${total === 1 ? '' : 's'}`
-          : `${filtered} of ${total} gist${total === 1 ? '' : 's'}`;
-      countEl.textContent = countText;
-    }
-    if (list) {
-      list.innerHTML = renderGistList();
-      bindCardEvents(
-        list as HTMLElement,
-        (id: string) => {
-          window.dispatchEvent(
-            new CustomEvent('app:navigate', {
-              detail: { route: 'detail', params: { gistId: id } },
-            })
-          );
-        },
-        signal
-      );
-    }
-  }
-
-  function countFilteredGists(): number {
-    let gists = gistStore.filterGists(
-      currentFilter === 'mine' ? 'all' : (currentFilter as 'all' | 'starred')
+    // 6. Render and bind
+    list.innerHTML = gists.map((g) => renderCard(g, gistStore.isSelected(g.id))).join('');
+    bindCardEvents(
+      list,
+      (id: string) => {
+        window.dispatchEvent(
+          new CustomEvent('app:navigate', {
+            detail: { route: 'detail', params: { gistId: id } },
+          })
+        );
+      },
+      signal
     );
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      gists = gists.filter((g) => {
-        if (g.description?.toLowerCase().includes(q)) return true;
-        for (const filename in g.files) {
-          if (filename.toLowerCase().includes(q)) return true;
-        }
-        return false;
-      });
-    }
-    return gists.length;
   }
 
   function bindEvents(signal: AbortSignal): void {
+    registerKeyboardShortcuts(signal, (route: string) => {
+      window.dispatchEvent(new CustomEvent('app:navigate', { detail: { route } }));
+    });
+
+    signal.addEventListener(
+      'abort',
+      () => {
+        destroyKeyboardShortcuts();
+      },
+      { once: true }
+    );
+
     const searchInput = container.querySelector('#gist-search') as HTMLInputElement | null;
     const clearBtn = container.querySelector('#gist-search-clear') as HTMLButtonElement | null;
     if (searchInput) {
@@ -296,7 +382,6 @@ export function render(container: HTMLElement, params?: Record<string, string>):
         );
       }
 
-      // Clear debounce timer when the signal aborts to prevent stale updates
       signal.addEventListener(
         'abort',
         () => {
@@ -312,42 +397,145 @@ export function render(container: HTMLElement, params?: Record<string, string>):
       (e) => {
         const chip = (e.target as HTMLElement).closest('.chip') as HTMLElement;
         if (!chip) return;
-
-        for (const b of container.querySelectorAll('.chip')) {
-          b.classList.remove('active');
-        }
+        const newFilter = chip.dataset.filter as Filter;
+        if (newFilter === currentFilter) return;
+        currentFilter = newFilter;
+        container.querySelectorAll('.filter-chips .chip').forEach((c) => {
+          c.classList.remove('active');
+        });
         chip.classList.add('active');
-        currentFilter = (chip.dataset.filter as Filter) || 'all';
         updateList();
       },
       { signal }
     );
 
-    container.querySelector('#sort-select')?.addEventListener(
-      'change',
-      (e) => {
-        currentSort = (e.target as HTMLSelectElement).value as Sort;
-        window.dispatchEvent(
-          new CustomEvent('app:sort-changed', { detail: { sort: currentSort } })
-        );
-        updateList();
-      },
-      { signal }
-    );
-
-    container.addEventListener(
-      'click',
-      (e) => {
-        const target = e.target as HTMLElement;
-        const actionBtn = target.closest('[data-action="clear-search"]') as HTMLElement;
-        if (actionBtn) {
-          searchQuery = '';
-          const input = container.querySelector('#gist-search') as HTMLInputElement;
-          if (input) input.value = '';
+    const sortSelect = container.querySelector('#sort-select') as HTMLSelectElement | null;
+    if (sortSelect) {
+      sortSelect.addEventListener(
+        'change',
+        (e) => {
+          currentSort = (e.target as HTMLSelectElement).value as Sort;
+          window.dispatchEvent(
+            new CustomEvent('app:sort-changed', { detail: { sort: currentSort } })
+          );
           updateList();
+        },
+        { signal }
+      );
+    }
+
+    container.addEventListener('click', (e) => {
+      const actionEl = (e.target as HTMLElement).closest('[data-action]') as HTMLElement;
+      if (!actionEl) return;
+      const action = actionEl.dataset.action;
+      if (action === 'clear-search') {
+        clearTimeout(searchTimeout);
+        searchTimeout = undefined;
+        const input = container.querySelector('#gist-search') as HTMLInputElement | null;
+        if (input) input.value = '';
+        searchQuery = '';
+        updateList();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      const isInput =
+        document.activeElement?.tagName === 'INPUT' ||
+        document.activeElement?.tagName === 'TEXTAREA';
+      if (isInput) return;
+      if (e.key === 'x') {
+        const focused = document.activeElement?.closest('.gist-card') as HTMLElement | null;
+        if (focused) {
+          const id = focused.getAttribute('data-gist-id');
+          if (id) gistStore.toggleSelect(id);
         }
+      }
+      if (e.key === 'Escape') {
+        gistStore.clearSelection();
+      }
+    });
+
+    container.addEventListener('click', (e) => {
+      const bulkBtn = (e.target as HTMLElement).closest('[data-bulk-action]') as HTMLElement;
+      if (bulkBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const action = bulkBtn.dataset.bulkAction as BulkAction | 'clear';
+        void handleBulkAction(action);
+      }
+    });
+  }
+
+  function updateBulkToolbar(): void {
+    const toolbar = container.querySelector('#bulk-toolbar') as HTMLElement | null;
+    if (!toolbar) return;
+    const count = gistStore.getSelectedIds().size;
+    const countEl = toolbar.querySelector('.bulk-count') as HTMLElement | null;
+    if (countEl) countEl.textContent = `${count} SELECTED`;
+    toolbar.style.display = count > 0 ? '' : 'none';
+  }
+
+  async function handleBulkAction(action: BulkAction | 'clear'): Promise<void> {
+    if (action === 'clear') {
+      gistStore.clearSelection();
+      return;
+    }
+    if (action === 'copy-urls') {
+      const result = await gistStore.executeBulkAction(action);
+      const urls = result.succeeded
+        .map((id) => gistStore.getGist(id)?.htmlUrl ?? '')
+        .filter(Boolean);
+      if (urls.length > 0) {
+        await navigator.clipboard.writeText(urls.join('\n'));
+        toast.success(`${urls.length} URL${urls.length === 1 ? '' : 'S'} COPIED`);
+      }
+      return;
+    }
+    const result = await gistStore.executeBulkAction(action);
+    if (result.failed.length > 0) {
+      toast.error(`${result.failed.length} FAILED`, 5000);
+    } else {
+      toast.success(`${result.succeeded.length} ${action.toUpperCase()}D`);
+    }
+  }
+
+  async function loadTagFilters(container: HTMLElement): Promise<void> {
+    const tags = await gistStore.getAllTags();
+    container.innerHTML = '';
+
+    if (tags.length === 0) return;
+
+    const allChip = document.createElement('button');
+    allChip.className = `tag-filter-chip${selectedTagId === null ? ' active' : ''}`;
+    allChip.textContent = 'All Tags';
+    allChip.dataset.tagId = '';
+    allChip.addEventListener(
+      'click',
+      () => {
+        selectedTagId = null;
+        void loadTagFilters(container);
+        updateList();
       },
       { signal }
     );
+    container.appendChild(allChip);
+
+    for (const tag of tags) {
+      const chip = document.createElement('button');
+      chip.className = `tag-filter-chip${selectedTagId === tag.id ? ' active' : ''}`;
+      chip.textContent = tag.name;
+      chip.style.cssText = `border-color: ${tag.color}; ${selectedTagId === tag.id ? `background: ${tag.color}20; color: ${tag.color};` : ''}`;
+      chip.dataset.tagId = tag.id;
+      chip.addEventListener(
+        'click',
+        () => {
+          selectedTagId = selectedTagId === tag.id ? null : tag.id;
+          void loadTagFilters(container);
+          updateList();
+        },
+        { signal }
+      );
+      container.appendChild(chip);
+    }
   }
 }

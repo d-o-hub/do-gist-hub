@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('GistStore Integration', () => {
   test.beforeEach(async ({ page }) => {
@@ -225,7 +225,10 @@ test.describe('GistStore Integration', () => {
   });
 
   test('should toggle star status', async ({ page, context, browserName }) => {
-    test.skip(browserName === 'webkit', 'WebKit IndexedDB evaluation is unreliable for star toggle');
+    test.skip(
+      browserName === 'webkit',
+      'WebKit IndexedDB evaluation is unreliable for star toggle'
+    );
 
     await context.route('**/gists/*/star', async (route) => {
       await route.fulfill({ status: 204 });

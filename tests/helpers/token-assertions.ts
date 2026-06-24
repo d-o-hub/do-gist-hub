@@ -24,10 +24,7 @@ import { expect } from 'vitest';
  * Checks for `--name:` pattern to validate the token is declared.
  */
 export function expectToken(css: string, name: string): void {
-  expect(
-    css.includes(`${name}:`),
-    `Expected CSS to contain token "${name}:"`,
-  ).toBe(true);
+  expect(css.includes(`${name}:`), `Expected CSS to contain token "${name}:"`).toBe(true);
 }
 
 /**
@@ -83,9 +80,7 @@ export function expectBalancedBrackets(css: string): void {
  * Returns an empty string if the selector is not found.
  */
 export function extractSection(css: string, selector: string): string {
-  const regex = new RegExp(
-    `${escapeRegex(selector)}\\s*\\{([\\s\\S]*?)\\}`,
-  );
+  const regex = new RegExp(`${escapeRegex(selector)}\\s*\\{([\\s\\S]*?)\\}`);
   const match = css.match(regex);
   return match?.[1] ?? '';
 }
@@ -96,9 +91,7 @@ export function extractSection(css: string, selector: string): string {
  */
 export function extractMediaQuery(css: string, query: string): string {
   const escaped = escapeRegex(query);
-  const regex = new RegExp(
-    `@media\\s*\\(${escaped}\\)\\s*\\{[\\s\\S]*?\\}`,
-  );
+  const regex = new RegExp(`@media\\s*\\(${escaped}\\)\\s*\\{[\\s\\S]*?\\}`);
   const match = css.match(regex);
   return match?.[0] ?? '';
 }
@@ -106,17 +99,13 @@ export function extractMediaQuery(css: string, query: string): string {
 /**
  * Asserts that a given section (selector/at-rule block) contains the listed tokens.
  */
-export function expectSectionTokens(
-  css: string,
-  selector: string,
-  tokens: string[],
-): void {
+export function expectSectionTokens(css: string, selector: string, tokens: string[]): void {
   const section = extractSection(css, selector);
   expect(section.length).toBeGreaterThan(0);
   for (const token of tokens) {
     expect(
       section.includes(`${token}:`),
-      `Expected section "${selector}" to contain token "${token}:"`,
+      `Expected section "${selector}" to contain token "${token}:"`
     ).toBe(true);
   }
 }

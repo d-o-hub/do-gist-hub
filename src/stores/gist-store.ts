@@ -1,9 +1,17 @@
 import {
+  assignTag as dbAssignTag,
+  createTag as dbCreateTag,
   deleteGist as dbDeleteGist,
+  deleteTag as dbDeleteTag,
   getAllGists as dbGetAllGists,
+  getAllTags as dbGetAllTags,
+  getTagsForGist as dbGetTagsForGist,
+  removeTag as dbRemoveTag,
   saveGist as dbSaveGist,
+  updateTag as dbUpdateTag,
   type GistRecord,
   saveGists,
+  type TagRecord,
 } from '../services/db';
 import { isAuthenticated } from '../services/github/auth';
 import * as GitHub from '../services/github/client';
@@ -24,6 +32,14 @@ import { parseIsoDate } from '../utils/date';
 import { githubGistToRecord } from '../utils/gist-mapper';
 
 export type GistStoreListener = (gists: GistRecord[]) => void;
+
+export type BulkAction = 'star' | 'unstar' | 'delete' | 'copy-urls';
+
+export type BulkActionResult = {
+  action: BulkAction;
+  succeeded: string[];
+  failed: { id: string; error: string }[];
+};
 
 const GIST_LIST_PAGE_SIZE = 100;
 
@@ -55,6 +71,8 @@ class GistStore {
   private isLoading = false;
   private error: string | null = null;
   private lastError: AppError | null = null;
+  private selectedIds = new Set<string>();
+  private selectionListeners: (() => void)[] = [];
 
   async init(): Promise<void> {
     this.isLoading = true;
@@ -105,6 +123,104 @@ class GistStore {
   }
   getLastAppError(): AppError | null {
     return this.lastError;
+  }
+
+  getSelectedIds(): ReadonlySet<string> {
+    return this.selectedIds;
+  }
+
+  isSelected(id: string): boolean {
+    return this.selectedIds.has(id);
+  }
+
+  toggleSelect(id: string): void {
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+    this.notifySelectionListeners();
+  }
+
+  selectRange(fromId: string, toId: string): void {
+    const visibleIds = this.getGists().map((g) => g.id);
+    const fromIdx = visibleIds.indexOf(fromId);
+    const toIdx = visibleIds.indexOf(toId);
+    if (fromIdx === -1 || toIdx === -1) return;
+    const start = Math.min(fromIdx, toIdx);
+    const end = Math.max(fromIdx, toIdx);
+    for (let i = start; i <= end; i++) {
+      const id = visibleIds[i];
+      if (id) this.selectedIds.add(id);
+    }
+    this.notifySelectionListeners();
+  }
+
+  selectAll(): void {
+    for (const g of this.gists) {
+      this.selectedIds.add(g.id);
+    }
+    this.notifySelectionListeners();
+  }
+
+  clearSelection(): void {
+    if (this.selectedIds.size === 0) return;
+    this.selectedIds.clear();
+    this.notifySelectionListeners();
+  }
+
+  subscribeSelection(listener: () => void): () => void {
+    this.selectionListeners.push(listener);
+    return () => {
+      this.selectionListeners = this.selectionListeners.filter((l) => l !== listener);
+    };
+  }
+
+  async executeBulkAction(action: BulkAction): Promise<BulkActionResult> {
+    const ids = Array.from(this.selectedIds);
+    const result: BulkActionResult = { action, succeeded: [], failed: [] };
+
+    if (action === 'copy-urls') {
+      result.succeeded = ids;
+      this.clearSelection();
+      return result;
+    }
+
+    const settled = await Promise.allSettled(
+      ids.map((id) => {
+        switch (action) {
+          case 'star': {
+            const gist = this.gists.find((g) => g.id === id);
+            if (!gist || gist.starred) return null;
+            return gistStore.toggleStar(id);
+          }
+          case 'unstar': {
+            const gist = this.gists.find((g) => g.id === id);
+            if (!gist?.starred) return null;
+            return gistStore.toggleStar(id);
+          }
+          case 'delete':
+            return gistStore.deleteGist(id);
+          default:
+            return null;
+        }
+      })
+    );
+
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i];
+      const r = settled[i];
+      if (!id || !r) continue;
+      if (r.status === 'fulfilled' && r.value !== false) {
+        result.succeeded.push(id);
+      } else {
+        const msg = r.status === 'rejected' ? String(r.reason) : 'operation failed';
+        result.failed.push({ id, error: msg });
+      }
+    }
+
+    this.clearSelection();
+    return result;
   }
 
   async loadGists(refresh = false): Promise<void> {
@@ -434,9 +550,66 @@ class GistStore {
     }
   }
 
+  async createTag(name: string, color: string): Promise<TagRecord> {
+    return await dbCreateTag(name, color);
+  }
+
+  async renameTag(id: string, name: string): Promise<void> {
+    await dbUpdateTag(id, { name });
+  }
+
+  async deleteTag(id: string): Promise<void> {
+    await dbDeleteTag(id);
+  }
+
+  async assignTag(gistId: string, tagId: string): Promise<void> {
+    await dbAssignTag(gistId, tagId);
+  }
+
+  async removeTag(gistId: string, tagId: string): Promise<void> {
+    await dbRemoveTag(gistId, tagId);
+  }
+
+  async getTagsForGist(gistId: string): Promise<TagRecord[]> {
+    return await dbGetTagsForGist(gistId);
+  }
+
+  async getAllTags(): Promise<TagRecord[]> {
+    return await dbGetAllTags();
+  }
+
+  filterGistsByTag(tagId: string): GistRecord[] {
+    return this.gists.filter((g) => {
+      const tags = this.tagCache.get(g.id);
+      return tags?.some((t) => t.id === tagId) ?? false;
+    });
+  }
+
+  private tagCache = new Map<string, TagRecord[]>();
+
+  async loadTagsForGist(gistId: string): Promise<TagRecord[]> {
+    const tags = await dbGetTagsForGist(gistId);
+    this.tagCache.set(gistId, tags);
+    return tags;
+  }
+
+  getTagsFromCache(gistId: string): TagRecord[] {
+    return this.tagCache.get(gistId) ?? [];
+  }
+
+  clearTagCache(): void {
+    this.tagCache.clear();
+  }
+
   private notifyListeners(): void {
     for (const l of this.listeners) {
       l(this.gists);
+    }
+  }
+
+  private notifySelectionListeners(): void {
+    for (const l of this.selectionListeners) {
+      l();
     }
   }
 

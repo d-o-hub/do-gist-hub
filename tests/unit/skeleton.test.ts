@@ -1,7 +1,7 @@
 /**
  * Unit tests for Skeleton Loading Component
  */
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { Skeleton } from '../../src/components/ui/skeleton';
 
 describe('Skeleton', () => {

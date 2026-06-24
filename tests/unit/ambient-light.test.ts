@@ -1,7 +1,7 @@
 /**
  * Unit tests for Ambient Light Theming
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -21,14 +21,14 @@ vi.mock('../../src/components/ui/toast', () => ({
 // ── Imports (after mocks) ───────────────────────────────────────────
 
 import {
-  resolveAmbientTheme,
-  isAmbientLightSupported,
   checkAmbientLightPermission,
-  enableAmbientLightTheming,
-  startAmbientLightSensor,
   cleanupAmbientLightSensor,
+  enableAmbientLightTheming,
+  isAmbientLightSupported,
+  resolveAmbientTheme,
+  startAmbientLightSensor,
 } from '../../src/components/ui/ambient-light';
-import { initTheme, cleanupThemeSystem } from '../../src/tokens/design-tokens';
+import { cleanupThemeSystem, initTheme } from '../../src/tokens/design-tokens';
 
 // ── Tests ─────────────────────────────────────────────────────────────
 
@@ -233,7 +233,9 @@ describe('Ambient Light Theming', () => {
       // Set up AmbientLightSensor that errors on start
       const mockSensor = vi.fn().mockImplementation(() => ({
         illuminance: 100,
-        start: vi.fn(() => { throw new Error('Sensor error'); }),
+        start: vi.fn(() => {
+          throw new Error('Sensor error');
+        }),
         stop: vi.fn(),
         onreading: null,
         onerror: null,
@@ -301,7 +303,7 @@ describe('Ambient Light Theming', () => {
     it('starts sensor and triggers onreading when permission granted', async () => {
       // Create a controllable sensor with onreading/onerror support
       let capturedOnreading: (() => void) | null = null;
-      let capturedOnerror: ((event: Event) => void) | null = null;
+      let _capturedOnerror: ((event: Event) => void) | null = null;
       let startCalled = false;
 
       const mockSensor = {
@@ -330,7 +332,7 @@ describe('Ambient Light Theming', () => {
         get: () => internalOnerror,
         set(fn: ((event: Event) => void) | null) {
           internalOnerror = fn;
-          capturedOnerror = fn;
+          _capturedOnerror = fn;
         },
         configurable: true,
       });

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('IndexedDB Service', () => {
   test.beforeEach(async ({ page }) => {
@@ -18,7 +18,7 @@ test.describe('IndexedDB Service', () => {
       updatedAt: new Date().toISOString(),
       starred: false,
       public: true,
-      syncStatus: 'synced' as const
+      syncStatus: 'synced' as const,
     };
 
     const result = await page.evaluate(async (g) => {
@@ -40,7 +40,7 @@ test.describe('IndexedDB Service', () => {
     const write = {
       gistId: 'gist-1',
       action: 'update' as const,
-      payload: { description: 'New description' }
+      payload: { description: 'New description' },
     };
 
     const result = await page.evaluate(async (w) => {
@@ -51,7 +51,12 @@ test.describe('IndexedDB Service', () => {
       const updated = (await db.getPendingWrites())[0];
       await db.removePendingWrite(id);
       const remaining = await db.getPendingWrites();
-      return { id, pendingCount: pending.length, retryCount: updated.retryCount, remainingCount: remaining.length };
+      return {
+        id,
+        pendingCount: pending.length,
+        retryCount: updated.retryCount,
+        remainingCount: remaining.length,
+      };
     }, write);
 
     expect(result.id).toBeGreaterThan(0);

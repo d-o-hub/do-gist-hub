@@ -2,14 +2,14 @@
  * Unit tests for src/services/github/error-handler.ts
  * Covers handleGitHubError, createAppError, getErrorMessage, requiresAuthAction
  */
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-  handleGitHubError,
-  createAppError,
-  getErrorMessage,
-  requiresAuthAction,
-  ErrorCategory,
   type AppError,
+  createAppError,
+  ErrorCategory,
+  getErrorMessage,
+  handleGitHubError,
+  requiresAuthAction,
 } from '../../src/services/github/error-handler';
 
 describe('ErrorHandler', () => {
@@ -97,7 +97,7 @@ describe('ErrorHandler', () => {
       expect(result.technicalDetails).toBe('just a string error');
     });
 
-      it('handles null error gracefully as UNKNOWN', () => {
+    it('handles null error gracefully as UNKNOWN', () => {
       // null: 'typeof null === "object"' is true, but 'null && typeof null === "object"' is false
       // so it falls through to the generic error branch: 'error instanceof Error' is false
       // then the final generic return is used with String(null) = 'null'

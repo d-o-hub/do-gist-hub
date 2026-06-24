@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Conflict Resolution UI Walkthrough', () => {
   test.beforeEach(async ({ page }) => {
@@ -7,7 +7,7 @@ test.describe('Conflict Resolution UI Walkthrough', () => {
 
     // Seed IndexedDB with a conflict gist and its metadata
     await page.evaluate(async () => {
-      const dbRequest = indexedDB.open('d-o-gist-hub-db', 3);
+      const dbRequest = indexedDB.open('d-o-gist-hub-db', 4);
       await new Promise<void>((resolve, reject) => {
         dbRequest.onerror = () => reject(new Error('Failed to open DB'));
         dbRequest.onblocked = () => reject(new Error('DB blocked'));
@@ -100,7 +100,9 @@ test.describe('Conflict Resolution UI Walkthrough', () => {
     await page.waitForSelector('.app-shell');
   });
 
-  test('should navigate to conflicts, resolve with KEEP LOCAL VERSION, and return to list', async ({ page }) => {
+  test('should navigate to conflicts, resolve with KEEP LOCAL VERSION, and return to list', async ({
+    page,
+  }) => {
     // Verify conflict count on the offline status page
     await page.locator('[data-testid="nav-offline"]').first().click();
     await page.waitForSelector('[data-testid="conflict-count"]');
@@ -128,9 +130,10 @@ test.describe('Conflict Resolution UI Walkthrough', () => {
     await page.locator('[data-testid="resolve-local"]').click();
 
     // Verify success toast appears
-    await expect(
-      page.locator('.toast-success').filter({ visible: true }).first()
-    ).toContainText('CONFLICT RESOLVED', { timeout: 15000 });
+    await expect(page.locator('.toast-success').filter({ visible: true }).first()).toContainText(
+      'CONFLICT RESOLVED',
+      { timeout: 15000 }
+    );
 
     // After resolving the only conflict, the empty state is shown (no conflict-list)
     // Verify the view returns to the conflicts route showing empty state
@@ -159,9 +162,10 @@ test.describe('Conflict Resolution UI Walkthrough', () => {
     await page.locator('[data-testid="resolve-remote"]').click();
 
     // Verify success toast
-    await expect(
-      page.locator('.toast-success').filter({ visible: true }).first()
-    ).toContainText('CONFLICT RESOLVED', { timeout: 15000 });
+    await expect(page.locator('.toast-success').filter({ visible: true }).first()).toContainText(
+      'CONFLICT RESOLVED',
+      { timeout: 15000 }
+    );
 
     // After resolving the only conflict, the empty state is shown
     await expect(page.locator('.empty-state-container')).toBeVisible({ timeout: 10000 });

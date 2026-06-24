@@ -11,7 +11,7 @@ import { type DBSchema, type IDBPDatabase, openDB } from 'idb';
 import { APP } from '@/config/app.config';
 
 // Schema version
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 const DB_NAME = APP.dbName;
 
 /**
@@ -53,6 +53,10 @@ export interface GistDBSchema extends DBSchema {
       'by-timestamp': number;
       'by-level': string;
     };
+  };
+  tags: {
+    key: string;
+    value: TagRecord;
   };
 }
 
@@ -147,6 +151,17 @@ export interface LogEntry {
   data?: unknown;
 }
 
+/**
+ * Tag record stored in IndexedDB
+ * Tags are LOCAL ONLY — not synced to GitHub
+ */
+export interface TagRecord {
+  id: string;
+  name: string;
+  color: string;
+  gistIds: string[];
+}
+
 let dbInstance: IDBPDatabase<GistDBSchema> | null = null;
 
 /**
@@ -201,6 +216,11 @@ export async function initIndexedDB(): Promise<IDBPDatabase<GistDBSchema>> {
       if (oldVersion < 3) {
         // Create etags store
         db.createObjectStore('etags', { keyPath: 'url' });
+      }
+
+      if (oldVersion < 4) {
+        // Create tags store
+        db.createObjectStore('tags', { keyPath: 'id' });
       }
     },
 
@@ -393,16 +413,101 @@ export const getEtag = async (url: string): Promise<ETagRecord | undefined> => {
 };
 
 /**
+ * Create a new tag
+ */
+export async function createTag(name: string, color: string): Promise<TagRecord> {
+  const db = getDB();
+  const id = crypto.randomUUID();
+  const tag: TagRecord = { id, name, color, gistIds: [] };
+  await db.put('tags', tag);
+  return tag;
+}
+
+/**
+ * Get all tags
+ */
+export async function getAllTags(): Promise<TagRecord[]> {
+  const db = getDB();
+  return await db.getAll('tags');
+}
+
+/**
+ * Get a tag by ID
+ */
+export async function getTag(id: string): Promise<TagRecord | undefined> {
+  const db = getDB();
+  return await db.get('tags', id);
+}
+
+/**
+ * Update a tag
+ */
+export async function updateTag(
+  id: string,
+  updates: Partial<Pick<TagRecord, 'name' | 'color'>>
+): Promise<void> {
+  const db = getDB();
+  const existing = await db.get('tags', id);
+  if (!existing) throw new Error(`Tag ${id} not found`);
+  await db.put('tags', { ...existing, ...updates });
+}
+
+/**
+ * Delete a tag
+ */
+export async function deleteTag(id: string): Promise<void> {
+  const db = getDB();
+  await db.delete('tags', id);
+}
+
+/**
+ * Get tags for a specific gist
+ */
+export async function getTagsForGist(gistId: string): Promise<TagRecord[]> {
+  const db = getDB();
+  const allTags = await db.getAll('tags');
+  return allTags.filter((tag) => tag.gistIds.includes(gistId));
+}
+
+/**
+ * Assign a tag to a gist
+ */
+export async function assignTag(gistId: string, tagId: string): Promise<void> {
+  const db = getDB();
+  const tag = await db.get('tags', tagId);
+  if (!tag) throw new Error(`Tag ${tagId} not found`);
+  if (!tag.gistIds.includes(gistId)) {
+    tag.gistIds.push(gistId);
+    await db.put('tags', tag);
+  }
+}
+
+/**
+ * Remove a tag from a gist
+ */
+export async function removeTag(gistId: string, tagId: string): Promise<void> {
+  const db = getDB();
+  const tag = await db.get('tags', tagId);
+  if (!tag) throw new Error(`Tag ${tagId} not found`);
+  tag.gistIds = tag.gistIds.filter((id) => id !== gistId);
+  await db.put('tags', tag);
+}
+
+/**
  * Clear all data (for logout/reset)
  */
 export const clearAllData = async (): Promise<void> => {
   const db = getDB();
-  const tx = db.transaction(['gists', 'pendingWrites', 'metadata', 'logs', 'etags'], 'readwrite');
+  const tx = db.transaction(
+    ['gists', 'pendingWrites', 'metadata', 'logs', 'etags', 'tags'],
+    'readwrite'
+  );
   await tx.objectStore('gists').clear();
   await tx.objectStore('pendingWrites').clear();
   await tx.objectStore('metadata').clear();
   await tx.objectStore('logs').clear();
   await tx.objectStore('etags').clear();
+  await tx.objectStore('tags').clear();
   await tx.done;
 };
 

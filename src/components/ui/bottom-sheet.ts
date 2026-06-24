@@ -75,9 +75,9 @@ export class BottomSheet {
     });
 
     await withViewTransition(() => {
-      this.backdrop!.classList.add('visible');
-      this.container!.classList.add('open');
-      this.container!.setAttribute('aria-hidden', 'false');
+      this.backdrop?.classList.add('visible');
+      this.container?.classList.add('open');
+      this.container?.setAttribute('aria-hidden', 'false');
     });
 
     focusTrap.activate(this.container);
@@ -91,9 +91,9 @@ export class BottomSheet {
     this.isOpen = false;
 
     await withViewTransition(() => {
-      this.backdrop!.classList.remove('visible');
-      this.container!.classList.remove('open');
-      this.container!.setAttribute('aria-hidden', 'true');
+      this.backdrop?.classList.remove('visible');
+      this.container?.classList.remove('open');
+      this.container?.setAttribute('aria-hidden', 'true');
     });
   }
 

@@ -1,7 +1,7 @@
 /**
  * Unit tests for main.ts bootstrap logic
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 // main.ts has many imports that need to be mocked to test in isolation.
@@ -90,7 +90,7 @@ import { isAuthenticated } from '../../src/services/github/auth';
 import networkMonitor from '../../src/services/network/offline-monitor';
 import { initWebVitals } from '../../src/services/perf';
 import { registerServiceWorker } from '../../src/services/pwa/register-sw';
-import { safeLog, safeError } from '../../src/services/security/logger';
+import { safeError, safeLog } from '../../src/services/security/logger';
 import syncQueue from '../../src/services/sync/queue';
 import gistStore from '../../src/stores/gist-store';
 import { initDesignTokens, initTheme } from '../../src/tokens/design-tokens';
@@ -286,10 +286,7 @@ describe('main.ts bootstrap', () => {
         expect(initGlobalErrorHandling).toHaveBeenCalled();
         expect(initDesignTokens).toHaveBeenCalled();
         expect(initTheme).toHaveBeenCalled();
-        expect(safeLog).toHaveBeenCalledWith(
-          '[App] View Transitions API:',
-          'supported'
-        );
+        expect(safeLog).toHaveBeenCalledWith('[App] View Transitions API:', 'supported');
       } finally {
         vi.unstubAllGlobals();
         mountPoint.remove();

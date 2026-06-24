@@ -2,7 +2,7 @@
  * Unit tests for Gist Detail Route (src/routes/gist-detail.ts)
  * Covers render function with all branches
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---- Mocks (hoisted) ----
 
@@ -18,9 +18,9 @@ vi.mock('../../src/components/ui/skeleton', () => ({
 
 // ---- Imports (after mocks) ----
 
-import { render } from '../../src/routes/gist-detail';
 import { loadGistDetail } from '../../src/components/gist-detail';
 import { Skeleton } from '../../src/components/ui/skeleton';
+import { render } from '../../src/routes/gist-detail';
 
 describe('GistDetail Route', () => {
   let container: HTMLElement;
@@ -79,7 +79,7 @@ describe('GistDetail Route', () => {
         expect.any(Function),
         expect.any(Function),
         expect.any(Function),
-        expect.any(AbortSignal),
+        expect.any(AbortSignal)
       );
     });
 
@@ -92,13 +92,13 @@ describe('GistDetail Route', () => {
       const onBack = vi.mocked(loadGistDetail).mock.calls[0]?.[2];
       expect(onBack).toBeDefined();
 
-      onBack!();
+      onBack?.();
 
       expect(dispatchSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'app:navigate',
           detail: { route: 'home' },
-        }),
+        })
       );
 
       dispatchSpy.mockRestore();

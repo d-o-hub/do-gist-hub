@@ -2,7 +2,7 @@
  * Unit tests for src/services/network/offline-monitor.ts
  * Covers init, getStatus, isOnline, subscribe, online/offline events, destroy
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import networkMonitor from '../../src/services/network/offline-monitor';
 
 describe('OfflineMonitor', () => {

@@ -1,7 +1,7 @@
 /**
  * Unit tests for Navigation Rail Component
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mocks (hoisted) ───────────────────────────────────────────
 
@@ -89,15 +89,11 @@ describe('NavRail', () => {
 
       rail.updateActive('settings');
 
-      const settingsBtn = container.querySelector(
-        '[data-testid="settings-btn"]'
-      ) as HTMLElement;
+      const settingsBtn = container.querySelector('[data-testid="settings-btn"]') as HTMLElement;
       expect(settingsBtn?.classList.contains('active')).toBe(true);
       expect(settingsBtn?.getAttribute('aria-current')).toBe('page');
 
-      const homeBtn = container.querySelector(
-        '[data-testid="nav-home"]'
-      ) as HTMLElement;
+      const homeBtn = container.querySelector('[data-testid="nav-home"]') as HTMLElement;
       expect(homeBtn?.classList.contains('active')).toBe(false);
       expect(homeBtn?.hasAttribute('aria-current')).toBe(false);
     });
@@ -108,9 +104,7 @@ describe('NavRail', () => {
 
       rail.updateActive('starred');
 
-      expect(announcer.announce).toHaveBeenCalledWith(
-        'Navigation rail updated for starred'
-      );
+      expect(announcer.announce).toHaveBeenCalledWith('Navigation rail updated for starred');
     });
   });
 
@@ -130,9 +124,7 @@ describe('NavRail', () => {
       const rail = new NavRail();
       rail.mount(container, 'create');
 
-      const createBtn = container.querySelector(
-        '[data-testid="nav-create"]'
-      ) as HTMLElement;
+      const createBtn = container.querySelector('[data-testid="nav-create"]') as HTMLElement;
       expect(createBtn?.classList.contains('active')).toBe(true);
     });
   });
@@ -145,15 +137,11 @@ describe('NavRail', () => {
       const rail = new NavRail();
       rail.mount(container, 'home');
 
-      const homeBtn = container.querySelector(
-        '[data-testid="nav-home"]'
-      ) as HTMLElement;
+      const homeBtn = container.querySelector('[data-testid="nav-home"]') as HTMLElement;
       expect(homeBtn).not.toBeNull();
 
       // Simulate Enter key
-      homeBtn?.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
-      );
+      homeBtn?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     });
 
     it('handles ArrowDown to focus next item', () => {
@@ -161,16 +149,10 @@ describe('NavRail', () => {
       const rail = new NavRail();
       rail.mount(container, 'home');
 
-      const homeBtn = container.querySelector(
-        '[data-testid="nav-home"]'
-      ) as HTMLElement;
-      homeBtn?.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
-      );
+      const homeBtn = container.querySelector('[data-testid="nav-home"]') as HTMLElement;
+      homeBtn?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
 
-      const starredBtn = container.querySelector(
-        '[data-testid="nav-starred"]'
-      ) as HTMLElement;
+      const starredBtn = container.querySelector('[data-testid="nav-starred"]') as HTMLElement;
       expect(document.activeElement).toBe(starredBtn);
     });
 
@@ -179,16 +161,10 @@ describe('NavRail', () => {
       const rail = new NavRail();
       rail.mount(container, 'create');
 
-      const createBtn = container.querySelector(
-        '[data-testid="nav-create"]'
-      ) as HTMLElement;
-      createBtn?.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
-      );
+      const createBtn = container.querySelector('[data-testid="nav-create"]') as HTMLElement;
+      createBtn?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
 
-      const starredBtn = container.querySelector(
-        '[data-testid="nav-starred"]'
-      ) as HTMLElement;
+      const starredBtn = container.querySelector('[data-testid="nav-starred"]') as HTMLElement;
       // Should have wrapped from Create up to Starred (index 1 from 2)
       expect(document.activeElement).toBe(starredBtn);
     });
@@ -198,16 +174,10 @@ describe('NavRail', () => {
       const rail = new NavRail();
       rail.mount(container, 'home');
 
-      const homeBtn = container.querySelector(
-        '[data-testid="nav-home"]'
-      ) as HTMLElement;
-      homeBtn?.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
-      );
+      const homeBtn = container.querySelector('[data-testid="nav-home"]') as HTMLElement;
+      homeBtn?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
 
-      const settingsBtn = container.querySelector(
-        '[data-testid="settings-btn"]'
-      ) as HTMLElement;
+      const settingsBtn = container.querySelector('[data-testid="settings-btn"]') as HTMLElement;
       expect(document.activeElement).toBe(settingsBtn);
     });
 
@@ -216,18 +186,12 @@ describe('NavRail', () => {
       const rail = new NavRail();
       rail.mount(container, 'home');
 
-      const settingsBtn = container.querySelector(
-        '[data-testid="settings-btn"]'
-      ) as HTMLElement;
+      const settingsBtn = container.querySelector('[data-testid="settings-btn"]') as HTMLElement;
       settingsBtn?.focus();
       // Dispatch from the focused element
-      settingsBtn?.dispatchEvent(
-        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
-      );
+      settingsBtn?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
 
-      const homeBtn = container.querySelector(
-        '[data-testid="nav-home"]'
-      ) as HTMLElement;
+      const homeBtn = container.querySelector('[data-testid="nav-home"]') as HTMLElement;
       expect(document.activeElement).toBe(homeBtn);
     });
   });

@@ -211,7 +211,7 @@ describe('CommandPalette', () => {
 
       // Simulate typing "set" into the search input
       input!.value = 'set';
-      input!.dispatchEvent(new Event('input'));
+      input?.dispatchEvent(new Event('input'));
 
       const results = document.querySelector('.command-palette-results');
       expect(results?.innerHTML).toContain('Settings');
@@ -229,7 +229,7 @@ describe('CommandPalette', () => {
 
       const input = document.querySelector('.command-palette input') as HTMLInputElement;
       input!.value = 'preferences';
-      input!.dispatchEvent(new Event('input'));
+      input?.dispatchEvent(new Event('input'));
 
       const results = document.querySelector('.command-palette-results');
       expect(results?.innerHTML).toContain('Settings');
@@ -247,7 +247,7 @@ describe('CommandPalette', () => {
 
       const input = document.querySelector('.command-palette input') as HTMLInputElement;
       input!.value = 'navigation';
-      input!.dispatchEvent(new Event('input'));
+      input?.dispatchEvent(new Event('input'));
 
       const results = document.querySelector('.command-palette-results');
       expect(results?.innerHTML).toContain('Settings');
@@ -260,7 +260,7 @@ describe('CommandPalette', () => {
 
       const input = document.querySelector('.command-palette input') as HTMLInputElement;
       input!.value = 'zzzzz';
-      input!.dispatchEvent(new Event('input'));
+      input?.dispatchEvent(new Event('input'));
 
       const results = document.querySelector('.command-palette-results');
       // The "no results" message includes the user's query so they
@@ -278,11 +278,11 @@ describe('CommandPalette', () => {
 
       // Navigate down to select Beta
       const input = document.querySelector('.command-palette input') as HTMLInputElement;
-      input!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
 
       // Now search — selection should reset
       input!.value = 'alpha';
-      input!.dispatchEvent(new Event('input'));
+      input?.dispatchEvent(new Event('input'));
 
       // First item should be selected (index 0)
       const firstItem = document.querySelector('[data-index="0"]');
@@ -303,7 +303,7 @@ describe('CommandPalette', () => {
       await palette.open();
 
       const input = document.querySelector('.command-palette input') as HTMLInputElement;
-      input!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
 
       const secondItem = document.querySelector('[data-index="1"]');
       expect(secondItem?.classList.contains('selected')).toBe(true);
@@ -320,9 +320,9 @@ describe('CommandPalette', () => {
 
       const input = document.querySelector('.command-palette input') as HTMLInputElement;
       // Down twice, then up once
-      input!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
-      input!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
-      input!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+      input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
 
       const secondItem = document.querySelector('[data-index="1"]');
       expect(secondItem?.classList.contains('selected')).toBe(true);
@@ -338,8 +338,8 @@ describe('CommandPalette', () => {
 
       const input = document.querySelector('.command-palette input') as HTMLInputElement;
       // Down to last (index 1), then down again wraps to first (index 0)
-      input!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
-      input!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
 
       const firstItem = document.querySelector('[data-index="0"]');
       expect(firstItem?.classList.contains('selected')).toBe(true);
@@ -354,7 +354,7 @@ describe('CommandPalette', () => {
       await palette.open();
 
       const input = document.querySelector('.command-palette input') as HTMLInputElement;
-      input!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+      input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
 
       const lastItem = document.querySelector('[data-index="1"]');
       expect(lastItem?.classList.contains('selected')).toBe(true);
@@ -367,7 +367,7 @@ describe('CommandPalette', () => {
       await palette.open();
 
       const input = document.querySelector('.command-palette input') as HTMLInputElement;
-      input!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
 
       expect(action).toHaveBeenCalled();
     });
@@ -379,7 +379,7 @@ describe('CommandPalette', () => {
       await palette.open();
 
       const input = document.querySelector('.command-palette input') as HTMLInputElement;
-      input!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      input?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
 
       const container = document.querySelector('.command-palette');
       expect(container?.getAttribute('aria-expanded')).toBe('false');

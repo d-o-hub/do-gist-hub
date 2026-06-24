@@ -72,43 +72,43 @@ export function generateCSSVariables(): string {
   --color-interactive-focus: var(--semantic-dark-interactive-focus);
   
   /* ===== Spacing Tokens ===== */
-  --spacing-0: var(--spacing-0);
-  --spacing-0-5: var(--spacing-0-5);
-  --spacing-1: var(--spacing-1);
-  --spacing-1-5: var(--spacing-1-5);
-  --spacing-2: var(--spacing-2);
-  --spacing-2-5: var(--spacing-2-5);
-  --spacing-3: var(--spacing-3);
-  --spacing-4: var(--spacing-4);
-  --spacing-5: var(--spacing-5);
-  --spacing-6: var(--spacing-6);
-  --spacing-7: var(--spacing-7);
-  --spacing-8: var(--spacing-8);
-  --spacing-9: var(--spacing-9);
-  --spacing-10: var(--spacing-10);
-  --spacing-11: var(--spacing-11);
-  --spacing-12: var(--spacing-12);
-  --spacing-14: var(--spacing-14);
-  --spacing-15: var(--spacing-15);
-  --spacing-16: var(--spacing-16);
-  --spacing-20: var(--spacing-20);
-  --spacing-24: var(--spacing-24);
-  --spacing-28: var(--spacing-28);
-  --spacing-32: var(--spacing-32);
-  --spacing-36: var(--spacing-36);
-  --spacing-40: var(--spacing-40);
-  --spacing-44: var(--spacing-44);
-  --spacing-48: var(--spacing-48);
-  --spacing-50: var(--spacing-50);
-  --spacing-52: var(--spacing-52);
-  --spacing-56: var(--spacing-56);
-  --spacing-60: var(--spacing-60);
-  --spacing-64: var(--spacing-64);
-  --spacing-72: var(--spacing-72);
-  --spacing-80: var(--spacing-80);
-  --spacing-96: var(--spacing-96);
-  --spacing-100: var(--spacing-100);
-  
+  --spacing-v0: var(--spacing-v0);
+  --spacing-v05: var(--spacing-v05);
+  --spacing-v1: var(--spacing-v1);
+  --spacing-v15: var(--spacing-v15);
+  --spacing-v2: var(--spacing-v2);
+  --spacing-v25: var(--spacing-v25);
+  --spacing-v3: var(--spacing-v3);
+  --spacing-v4: var(--spacing-v4);
+  --spacing-v5: var(--spacing-v5);
+  --spacing-v6: var(--spacing-v6);
+  --spacing-v7: var(--spacing-v7);
+  --spacing-v8: var(--spacing-v8);
+  --spacing-v9: var(--spacing-v9);
+  --spacing-v10: var(--spacing-v10);
+  --spacing-v11: var(--spacing-v11);
+  --spacing-v12: var(--spacing-v12);
+  --spacing-v14: var(--spacing-v14);
+  --spacing-v15-large: var(--spacing-v15-large);
+  --spacing-v16: var(--spacing-v16);
+  --spacing-v20: var(--spacing-v20);
+  --spacing-v24: var(--spacing-v24);
+  --spacing-v28: var(--spacing-v28);
+  --spacing-v32: var(--spacing-v32);
+  --spacing-v36: var(--spacing-v36);
+  --spacing-v40: var(--spacing-v40);
+  --spacing-v44: var(--spacing-v44);
+  --spacing-v48: var(--spacing-v48);
+  --spacing-v50: var(--spacing-v50);
+  --spacing-v52: var(--spacing-v52);
+  --spacing-v56: var(--spacing-v56);
+  --spacing-v60: var(--spacing-v60);
+  --spacing-v64: var(--spacing-v64);
+  --spacing-v72: var(--spacing-v72);
+  --spacing-v80: var(--spacing-v80);
+  --spacing-v96: var(--spacing-v96);
+  --spacing-v100: var(--spacing-v100);
+
   /* ===== Typography Tokens ===== */
   --font-family-sans: var(--font-family-sans);
   --font-family-serif: var(--font-family-serif);
@@ -374,49 +374,49 @@ export function generateCSSVariables(): string {
 /* ===== Responsive Container Spacing ===== */
 @media (min-width: 320px) {
   :root {
-    --spacing-container: var(--spacing-4);
+    --spacing-container: var(--spacing-v4);
   }
 }
 
 @media (min-width: 390px) {
   :root {
-    --spacing-container: var(--spacing-4);
+    --spacing-container: var(--spacing-v4);
   }
 }
 
 @media (min-width: 480px) {
   :root {
-    --spacing-container: var(--spacing-5);
+    --spacing-container: var(--spacing-v5);
   }
 }
 
 @media (min-width: 640px) {
   :root {
-    --spacing-container: var(--spacing-5);
+    --spacing-container: var(--spacing-v5);
   }
 }
 
 @media (min-width: 768px) {
   :root {
-    --spacing-container: var(--spacing-6);
+    --spacing-container: var(--spacing-v6);
   }
 }
 
 @media (min-width: 1024px) {
   :root {
-    --spacing-container: var(--spacing-8);
+    --spacing-container: var(--spacing-v8);
   }
 }
 
 @media (min-width: 1280px) {
   :root {
-    --spacing-container: var(--spacing-10);
+    --spacing-container: var(--spacing-v10);
   }
 }
 
 @media (min-width: 1536px) {
   :root {
-    --spacing-container: var(--spacing-12);
+    --spacing-container: var(--spacing-v12);
   }
 }
 

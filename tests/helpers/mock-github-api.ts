@@ -11,8 +11,8 @@
  * view renders correctly from IndexedDB-seeded data.
  */
 import type { Page } from '@playwright/test';
-import type { GitHubGist, GistFile, PaginatedResult } from '../../src/types/api';
 import type { GistRecord } from '../../src/services/db';
+import type { GistFile, GitHubGist, PaginatedResult } from '../../src/types/api';
 
 /**
  * Convert an IndexedDB GistRecord back to the GitHubGist API response shape.
@@ -26,19 +26,17 @@ export function gistRecordToGitHubGist(record: GistRecord): GitHubGist {
     git_push_url: record.gitPushUrl,
     html_url: record.htmlUrl,
     files: Object.fromEntries(
-      Object.entries(record.files).map(
-        ([key, f]): [string, GistFile] => [
-          key,
-          {
-            filename: f.filename,
-            content: f.content ?? '',
-            raw_url: f.rawUrl,
-            language: f.language,
-            type: 'text/plain',
-            size: f.content?.length ?? 0,
-          },
-        ],
-      ),
+      Object.entries(record.files).map(([key, f]): [string, GistFile] => [
+        key,
+        {
+          filename: f.filename,
+          content: f.content ?? '',
+          raw_url: f.rawUrl,
+          language: f.language,
+          type: 'text/plain',
+          size: f.content?.length ?? 0,
+        },
+      ])
     ),
     public: record.public,
     created_at: record.createdAt,
@@ -81,10 +79,7 @@ const EMPTY_PAGINATED: PaginatedResult<never> = {
  * Call this in beforeEach after page.goto('/') but before any
  * interactions that trigger GitHub API calls.
  */
-export async function mockGitHubApi(
-  page: Page,
-  gists: GistRecord[],
-): Promise<void> {
+export async function mockGitHubApi(page: Page, gists: GistRecord[]): Promise<void> {
   const gistMap = new Map(gists.map((g) => [g.id, gistRecordToGitHubGist(g)]));
 
   await page.route('**/api.github.com/**', async (route) => {
@@ -127,7 +122,9 @@ export async function mockGitHubApi(
     // Fail unmocked API calls to prevent hitting the real GitHub API in tests
     await route.fulfill({
       status: 500,
-      json: { message: 'Unmocked API call — all GitHub requests must be explicitly mocked in tests' },
+      json: {
+        message: 'Unmocked API call — all GitHub requests must be explicitly mocked in tests',
+      },
     });
   });
 }

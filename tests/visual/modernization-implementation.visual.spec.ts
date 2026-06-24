@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('UI Modernization - Implementation Verification', () => {
   test.beforeEach(async ({ page }) => {
@@ -35,7 +35,7 @@ test.describe('UI Modernization - Implementation Verification', () => {
     await page.waitForLoadState('networkidle');
 
     // Check if transition was triggered
-    const wasTriggered = await page.evaluate(() => {
+    const _wasTriggered = await page.evaluate(() => {
       return (window as any).__transitionCalled ? (window as any).__transitionCalled() : false;
     });
 
@@ -118,9 +118,9 @@ test.describe('UI Modernization - Implementation Verification', () => {
     try {
       await page.waitForSelector('[data-testid="command-palette"]', {
         state: 'visible',
-        timeout: 5000
+        timeout: 5000,
       });
-    } catch (e) {
+    } catch (_e) {
       test.skip(true, 'Command palette not available or not implemented');
       return;
     }

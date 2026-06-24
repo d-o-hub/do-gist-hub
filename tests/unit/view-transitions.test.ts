@@ -1,11 +1,11 @@
 /**
  * Unit tests for View Transitions utility
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  withViewTransition,
   isViewTransitionSupported,
   viewTransitionNames,
+  withViewTransition,
 } from '../../src/utils/view-transitions';
 
 describe('view-transitions', () => {
@@ -13,9 +13,7 @@ describe('view-transitions', () => {
 
   describe('isViewTransitionSupported', () => {
     it('returns true when startViewTransition exists in document', () => {
-      expect(isViewTransitionSupported()).toBe(
-        'startViewTransition' in document,
-      );
+      expect(isViewTransitionSupported()).toBe('startViewTransition' in document);
     });
   });
 
@@ -63,7 +61,7 @@ describe('view-transitions', () => {
         (cb: () => void | Promise<void>) => {
           cb();
           return mockTransition;
-        },
+        }
       );
     });
 

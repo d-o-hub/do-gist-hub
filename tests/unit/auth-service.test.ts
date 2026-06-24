@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks (hoisted) ───────────────────────────────────
 
@@ -14,7 +14,7 @@ vi.mock('../../src/services/db', () => {
 });
 
 vi.mock('../../src/services/security/logger', () => ({
-  redactToken: vi.fn().mockImplementation((t) => 'REDACTED'),
+  redactToken: vi.fn().mockImplementation((_t) => 'REDACTED'),
   safeLog: vi.fn(),
   safeError: vi.fn(),
 }));
@@ -26,17 +26,16 @@ vi.mock('../../src/services/github/client', () => ({
 
 // ── Imports (after mocks) ─────────────────────────────
 
+import { getMetadata, setMetadata } from '../../src/services/db';
 import {
   getToken,
-  saveToken,
-  removeToken,
-  isAuthenticated,
   getUsername,
+  isAuthenticated,
+  removeToken,
+  saveToken,
 } from '../../src/services/github/auth';
-import { encrypt, decrypt } from '../../src/services/security/crypto';
-import { getMetadata, setMetadata } from '../../src/services/db';
-import { safeLog, safeError } from '../../src/services/security/logger';
 import { validateToken } from '../../src/services/github/client';
+import { decrypt, encrypt } from '../../src/services/security/crypto';
 
 // ── Tests ─────────────────────────────────────
 
@@ -46,7 +45,7 @@ describe('Auth Service', () => {
     // Clear token cache by calling removeToken
     await removeToken();
     // Mock getMetadata to return undefined by default
-    vi.mocked(getMetadata).mockImplementation((key: string) => {
+    vi.mocked(getMetadata).mockImplementation((_key: string) => {
       return Promise.resolve(undefined);
     });
     // Mock validateToken to return valid by default

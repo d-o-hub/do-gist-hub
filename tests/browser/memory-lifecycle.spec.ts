@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 test.describe('Memory Safety & Lifecycle', () => {
   test.beforeEach(async ({ page }) => {
@@ -14,17 +14,20 @@ test.describe('Memory Safety & Lifecycle', () => {
     await page.keyboard.press('Enter');
   };
 
-  test('should verify AbortController cancels pending requests on navigation', async ({ page, browserName }) => {
+  test('should verify AbortController cancels pending requests on navigation', async ({
+    page,
+    browserName,
+  }) => {
     if (browserName === 'webkit') {
-       test.skip(true, 'WebKit layout is flaky for Settings nav button');
+      test.skip(true, 'WebKit layout is flaky for Settings nav button');
     }
     await page.route('**/gists*', async (route) => {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       await route.continue();
     });
 
     const abortedRequests: string[] = [];
-    page.on('requestfailed', request => {
+    page.on('requestfailed', (request) => {
       if (request.url().includes('/gists')) {
         abortedRequests.push(request.url());
       }
@@ -37,9 +40,12 @@ test.describe('Memory Safety & Lifecycle', () => {
     expect(abortedRequests.length).toBeGreaterThanOrEqual(0);
   });
 
-  test('should verify LifecycleManager cleans up event listeners on route change', async ({ page, browserName }) => {
+  test('should verify LifecycleManager cleans up event listeners on route change', async ({
+    page,
+    browserName,
+  }) => {
     if (browserName === 'webkit') {
-       test.skip(true, 'WebKit layout is flaky for Settings nav button');
+      test.skip(true, 'WebKit layout is flaky for Settings nav button');
     }
     for (let i = 0; i < 3; i++) {
       await clickNav(page, 'settings');
@@ -77,16 +83,16 @@ test.describe('Memory Safety & Lifecycle', () => {
 
   test('should verify IndexedDB connections are closed properly', async ({ page, browserName }) => {
     if (browserName === 'webkit') {
-       test.skip(true, 'WebKit layout is flaky for Settings nav button');
+      test.skip(true, 'WebKit layout is flaky for Settings nav button');
     }
     await clickNav(page, 'settings');
     await clickNav(page, 'home');
 
     const dbStatus = await page.evaluate(async () => {
       try {
-        const request = indexedDB.open('d-o-gist-hub-db', 3);
+        const request = indexedDB.open('d-o-gist-hub-db', 4);
         return !!request;
-      } catch (e) {
+      } catch (_e) {
         return false;
       }
     });

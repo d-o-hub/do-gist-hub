@@ -2,6 +2,7 @@
  * Settings Route
  */
 
+import { renderLogViewer } from '../components/log-viewer';
 import {
   cleanupAmbientLightSensor,
   enableAmbientLightTheming,
@@ -127,6 +128,39 @@ export async function render(
 
         <details class="settings-section">
           <summary class="settings-section-header">
+            <h3 class="form-label">Logs</h3>
+          </summary>
+          <div class="settings-section-content">
+            <div id="log-viewer-container"></div>
+          </div>
+        </details>
+
+        <details class="settings-section">
+          <summary class="settings-section-header">
+            <h3 class="form-label">Manage Tags</h3>
+          </summary>
+          <div class="settings-section-content">
+            <div class="manage-tags">
+              <div class="tag-create-form">
+                <div class="form-group">
+                  <label class="form-label" for="tag-name-input">Tag Name</label>
+                  <input type="text" id="tag-name-input" class="form-input" placeholder="e.g., important, bug, feature">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="tag-color-input">Color</label>
+                  <div class="color-input-wrapper">
+                    <input type="color" id="tag-color-input" value="#3b82f6">
+                  </div>
+                </div>
+                <button id="create-tag-btn" class="btn btn-primary">CREATE</button>
+              </div>
+              <div id="tag-list" class="tag-list"></div>
+            </div>
+          </div>
+        </details>
+
+        <details class="settings-section">
+          <summary class="settings-section-header">
             <h3 class="form-label">AI Integration (Optional)</h3>
           </summary>
           <div class="settings-section-content">
@@ -161,7 +195,15 @@ export async function render(
   await loadDiagnostics(container);
   await loadLLMSettings(container);
   loadAccentHue(container);
+  await loadTags(container);
   bindEvents(container, signal);
+  bindTagEvents(container, signal);
+
+  const logViewerContainer = container.querySelector('#log-viewer-container');
+  if (logViewerContainer) {
+    const cleanupLogViewer = renderLogViewer(logViewerContainer as HTMLElement, signal);
+    signal.addEventListener('abort', () => cleanupLogViewer(), { once: true });
+  }
 }
 
 /**
@@ -639,6 +681,146 @@ function bindEvents(container: HTMLElement, signal: AbortSignal): void {
           toast.error('FAILED TO SAVE LLM SETTINGS');
         }
       })();
+    },
+    { signal }
+  );
+}
+
+async function loadTags(container: HTMLElement): Promise<void> {
+  const tagList = container.querySelector('#tag-list');
+  if (!tagList) return;
+
+  const tags = await gistStore.getAllTags();
+  tagList.innerHTML = '';
+
+  if (tags.length === 0) {
+    const emptyMsg = document.createElement('p');
+    emptyMsg.className = 'micro-label';
+    emptyMsg.textContent = 'No tags created yet. Create one above.';
+    tagList.appendChild(emptyMsg);
+    return;
+  }
+
+  for (const tag of tags) {
+    const item = document.createElement('div');
+    item.className = 'tag-list-item';
+    item.dataset.tagId = tag.id;
+
+    const colorDot = document.createElement('span');
+    colorDot.style.cssText = `width: 12px; height: 12px; border-radius: 50%; background: ${tag.color}; flex-shrink: 0;`;
+    item.appendChild(colorDot);
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'tag-list-item-name';
+    nameSpan.textContent = tag.name;
+    item.appendChild(nameSpan);
+
+    const gistCount = document.createElement('span');
+    gistCount.className = 'micro-label';
+    gistCount.textContent = `${tag.gistIds.length} gists`;
+    item.appendChild(gistCount);
+
+    const actions = document.createElement('div');
+    actions.className = 'tag-list-item-actions';
+
+    const renameBtn = document.createElement('button');
+    renameBtn.className = 'btn btn-ghost btn-sm';
+    renameBtn.textContent = 'RENAME';
+    renameBtn.dataset.action = 'rename-tag';
+    renameBtn.dataset.tagId = tag.id;
+    actions.appendChild(renameBtn);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn btn-ghost btn-sm';
+    deleteBtn.textContent = 'DELETE';
+    deleteBtn.dataset.action = 'delete-tag';
+    deleteBtn.dataset.tagId = tag.id;
+    actions.appendChild(deleteBtn);
+
+    item.appendChild(actions);
+    tagList.appendChild(item);
+  }
+}
+
+function bindTagEvents(container: HTMLElement, signal: AbortSignal): void {
+  container.querySelector('#create-tag-btn')?.addEventListener(
+    'click',
+    () => {
+      void (async () => {
+        const nameInput = container.querySelector('#tag-name-input') as HTMLInputElement;
+        const colorInput = container.querySelector('#tag-color-input') as HTMLInputElement;
+
+        const name = nameInput?.value.trim();
+        const color = colorInput?.value || '#3b82f6';
+
+        if (!name) {
+          toast.error('TAG NAME IS REQUIRED');
+          return;
+        }
+
+        try {
+          await gistStore.createTag(name, color);
+          toast.success('TAG CREATED');
+          nameInput.value = '';
+          await loadTags(container);
+        } catch {
+          toast.error('FAILED TO CREATE TAG');
+        }
+      })();
+    },
+    { signal }
+  );
+
+  container.querySelector('#tag-list')?.addEventListener(
+    'click',
+    (e) => {
+      const target = e.target as HTMLElement;
+
+      if (target.dataset.action === 'rename-tag') {
+        const tagId = target.dataset.tagId;
+        if (!tagId) return;
+
+        const item = target.closest('.tag-list-item');
+        const nameSpan = item?.querySelector('.tag-list-item-name');
+        const currentName = nameSpan?.textContent || '';
+
+        const newName = window.prompt('Enter new tag name:', currentName);
+        if (newName?.trim() && newName.trim() !== currentName) {
+          void (async () => {
+            try {
+              await gistStore.renameTag(tagId, newName.trim());
+              toast.success('TAG RENAMED');
+              await loadTags(container);
+            } catch {
+              toast.error('FAILED TO RENAME TAG');
+            }
+          })();
+        }
+      }
+
+      if (target.dataset.action === 'delete-tag') {
+        const tagId = target.dataset.tagId;
+        if (!tagId) return;
+
+        void (async () => {
+          const confirmed = await showConfirmDialog({
+            title: 'Delete this tag?',
+            message: 'This will remove the tag from all gists. This cannot be undone.',
+            confirmLabel: 'Delete tag',
+            cancelLabel: 'Keep it',
+            variant: 'danger',
+          });
+          if (!confirmed) return;
+
+          try {
+            await gistStore.deleteTag(tagId);
+            toast.success('TAG DELETED');
+            await loadTags(container);
+          } catch {
+            toast.error('FAILED TO DELETE TAG');
+          }
+        })();
+      }
     },
     { signal }
   );

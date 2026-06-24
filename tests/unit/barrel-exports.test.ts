@@ -3,7 +3,7 @@
  * Ensures all index.ts barrel files correctly re-export their modules.
  * These files are pure re-exports — verifying the exports exist suffices.
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 // ── Mock all underlying service modules to avoid side effects ──
 

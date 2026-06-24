@@ -13,6 +13,10 @@ vi.mock('../../src/stores/gist-store', () => ({
   default: {
     toggleStar: vi.fn(),
     deleteGist: vi.fn(),
+    toggleSelect: vi.fn(),
+    isSelected: vi.fn(() => false),
+    getSelectedIds: vi.fn(() => new Set()),
+    getTagsFromCache: vi.fn(() => []),
   },
 }));
 
@@ -25,6 +29,10 @@ vi.mock('../../src/components/ui/toast', () => ({
     success: vi.fn(),
     error: vi.fn(),
   },
+}));
+
+vi.mock('../../src/components/ui/tag-chip', () => ({
+  renderTagChips: vi.fn(() => ''),
 }));
 
 // ── Imports (after mocks) ───────────────────────────────────────────
@@ -501,6 +509,46 @@ describe('Gist Card', () => {
       const starBtn = container.querySelector('.star-btn') as HTMLElement;
       const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
       starBtn?.dispatchEvent(event);
+
+      expect(onCardClick).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── Multi-Select ───────────────────────────────────────────────
+
+  describe('multi-select', () => {
+    it('renders checkbox with data-select-id', () => {
+      const gist = makeGist('select-test');
+      const html = renderCard(gist);
+
+      expect(html).toContain('gist-checkbox');
+      expect(html).toContain('data-select-id="select-test"');
+    });
+
+    it('renders checked when selected', () => {
+      const gist = makeGist('checked-test');
+      const html = renderCard(gist, true);
+
+      expect(html).toContain('checked');
+      expect(html).toContain('selected');
+    });
+
+    it('renders unchecked when not selected', () => {
+      const gist = makeGist('unchecked-test');
+      const html = renderCard(gist, false);
+
+      expect(html).toContain('data-select-id="unchecked-test"');
+      expect(html).not.toContain(' checked');
+      expect(html).not.toContain('gist-card selected');
+    });
+
+    it('does not call onCardClick when checkbox is clicked', () => {
+      const onCardClick = vi.fn();
+      container.innerHTML = renderCard(makeGist('checkbox-click'));
+      bindCardEvents(container, onCardClick);
+
+      const checkbox = container.querySelector('.gist-checkbox') as HTMLElement;
+      checkbox?.click();
 
       expect(onCardClick).not.toHaveBeenCalled();
     });

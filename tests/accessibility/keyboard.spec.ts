@@ -2,7 +2,7 @@
  * Accessibility Keyboard Navigation Tests
  * Test keyboard navigation, focus management, tab order, and focus traps
  */
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Accessibility - Keyboard', () => {
   test.beforeEach(async ({ page }) => {
@@ -53,7 +53,10 @@ test.describe('Accessibility - Keyboard', () => {
 
   test('should activate buttons with Enter key', async ({ page }) => {
     // Navigate to settings button
-    const settingsBtn = page.locator('[data-testid="settings-btn"]').filter({ visible: true }).first();
+    const settingsBtn = page
+      .locator('[data-testid="settings-btn"]')
+      .filter({ visible: true })
+      .first();
     await settingsBtn.focus();
     await expect(settingsBtn).toBeFocused();
 
@@ -115,9 +118,7 @@ test.describe('Accessibility - Keyboard', () => {
       const boxShadow = style.boxShadow;
 
       // Check for any visible focus indicator
-      return outline !== 'none' ||
-             outlineWidth !== '0px' ||
-             boxShadow !== 'none';
+      return outline !== 'none' || outlineWidth !== '0px' || boxShadow !== 'none';
     });
 
     test.info().annotations.push({
@@ -172,7 +173,7 @@ test.describe('Accessibility - Keyboard', () => {
 
     // Focus should have moved to another filter or stayed (both acceptable)
     const focusedFilter = page.locator('.filter-btn:focus');
-    const isFocused = await focusedFilter.count().then(c => c > 0);
+    const isFocused = await focusedFilter.count().then((c) => c > 0);
 
     test.info().annotations.push({
       type: 'arrow-nav',
@@ -237,7 +238,7 @@ test.describe('Accessibility - Keyboard', () => {
   test('should skip repetitive navigation elements with skip link', async ({ page }) => {
     // Check if skip link exists (recommended but not required)
     const skipLink = page.locator('a[href="#main-content"], a:has-text("Skip to content")');
-    const skipExists = await skipLink.count().then(c => c > 0);
+    const skipExists = await skipLink.count().then((c) => c > 0);
 
     test.info().annotations.push({
       type: 'skip-link',

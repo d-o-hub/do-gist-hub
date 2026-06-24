@@ -1,7 +1,7 @@
 /**
  * Unit tests for Accessible Button Component
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Imports ───────────────────────────────────────────────────────────
 

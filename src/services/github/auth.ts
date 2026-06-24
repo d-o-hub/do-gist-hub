@@ -170,7 +170,7 @@ export async function saveToken(token: string): Promise<{ success: boolean; erro
     recordAuthMethod('pat').catch(() => {});
     recordAuthCompleted().catch(() => {});
     return { success: true };
-  } catch (error) {
+  } catch (error: unknown) {
     safeError('[Auth] Failed to save token:', error);
     return {
       success: false,

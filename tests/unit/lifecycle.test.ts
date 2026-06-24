@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks (hoisted) ───────────────────────────
 
@@ -15,7 +15,7 @@ vi.mock('../../src/services/github/client', () => ({
 
 import { lifecycle } from '../../src/services/lifecycle';
 
-import { safeLog, safeError } from '../../src/services/security/logger';
+import { safeError, safeLog } from '../../src/services/security/logger';
 
 // ── Tests ─────────────────────────────────────
 
