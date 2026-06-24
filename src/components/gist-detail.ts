@@ -71,23 +71,7 @@ function applyLineNumbers(pre: HTMLPreElement, enabled: boolean): void {
   }
 }
 
-export function renderGistDetail(gist: GistRecord): DocumentFragment {
-  const title = gist.description || 'Untitled Gist';
-
-  // BOLT: Calculate file count in a single pass to avoid Object.keys() array allocation
-  let fileCount = 0;
-  for (const key in gist.files) {
-    if (Object.hasOwn(gist.files, key)) fileCount++;
-  }
-
-  const visibility = gist.public ? 'Public' : 'Secret';
-  const frag = document.createDocumentFragment();
-
-  const wrapper = document.createElement('div');
-  wrapper.className = 'gist-detail';
-  wrapper.dataset.gistId = gist.id;
-
-  // ── Header ───────────────────────────────────────────────────────
+function createDetailHeader(gist: GistRecord, fileCount: number): HTMLElement {
   const header = document.createElement('header');
   header.className = 'detail-header';
   header.style.viewTransitionName = 'detail-header';
@@ -108,7 +92,7 @@ export function renderGistDetail(gist: GistRecord): DocumentFragment {
 
   const h1 = document.createElement('h1');
   h1.className = 'detail-title';
-  h1.textContent = title;
+  h1.textContent = gist.description || 'Untitled Gist';
   header.appendChild(h1);
 
   const metaRow = document.createElement('div');
@@ -119,7 +103,7 @@ export function renderGistDetail(gist: GistRecord): DocumentFragment {
   metaRow.appendChild(filesChip);
   const visChip = document.createElement('span');
   visChip.className = 'detail-chip';
-  visChip.textContent = visibility;
+  visChip.textContent = gist.public ? 'Public' : 'Secret';
   metaRow.appendChild(visChip);
   const timeEl = document.createElement('time');
   timeEl.className = 'micro-label';
@@ -128,28 +112,35 @@ export function renderGistDetail(gist: GistRecord): DocumentFragment {
   metaRow.appendChild(timeEl);
   header.appendChild(metaRow);
 
+  return header;
+}
+
+function createDetailActions(gist: GistRecord): HTMLElement {
   const actions = document.createElement('div');
   actions.className = 'gist-detail-actions';
-  const starBtn = document.createElement('button');
-  starBtn.className = `btn ${gist.starred ? 'btn-danger' : 'btn-primary'}`;
-  starBtn.dataset.action = 'star';
-  starBtn.textContent = gist.starred ? 'Unstar' : 'Star';
-  actions.appendChild(starBtn);
-  const forkBtn = document.createElement('button');
-  forkBtn.className = 'btn btn-ghost';
-  forkBtn.dataset.action = 'fork';
-  forkBtn.textContent = 'Fork';
-  actions.appendChild(forkBtn);
-  const editBtn = document.createElement('button');
-  editBtn.className = 'btn btn-ghost';
-  editBtn.dataset.action = 'edit';
-  editBtn.textContent = 'Edit';
-  actions.appendChild(editBtn);
-  const revisionsBtn = document.createElement('button');
-  revisionsBtn.className = 'btn btn-ghost';
-  revisionsBtn.dataset.action = 'revisions';
-  revisionsBtn.textContent = 'Revisions';
-  actions.appendChild(revisionsBtn);
+
+  const addBtn = (
+    label: string,
+    action: string,
+    className = 'btn btn-ghost'
+  ): HTMLButtonElement => {
+    const btn = document.createElement('button');
+    btn.className = className;
+    btn.dataset.action = action;
+    btn.textContent = label;
+    actions.appendChild(btn);
+    return btn;
+  };
+
+  addBtn(
+    gist.starred ? 'Unstar' : 'Star',
+    'star',
+    `btn ${gist.starred ? 'btn-danger' : 'btn-primary'}`
+  );
+  addBtn('Fork', 'fork');
+  addBtn('Edit', 'edit');
+  addBtn('Revisions', 'revisions');
+
   if (gist.htmlUrl) {
     const githubLink = document.createElement('a');
     githubLink.className = 'btn btn-ghost';
@@ -159,37 +150,35 @@ export function renderGistDetail(gist: GistRecord): DocumentFragment {
     githubLink.rel = 'noopener noreferrer';
     githubLink.textContent = 'Open in GitHub';
     actions.appendChild(githubLink);
-    const copyUrlBtn = document.createElement('button');
-    copyUrlBtn.className = 'btn btn-ghost';
-    copyUrlBtn.dataset.action = 'copy-url';
-    copyUrlBtn.textContent = 'Copy URL';
-    actions.appendChild(copyUrlBtn);
+    addBtn('Copy URL', 'copy-url');
   }
-  const lineNumbersBtn = document.createElement('button');
-  lineNumbersBtn.className = 'btn btn-ghost';
-  lineNumbersBtn.dataset.action = 'toggle-line-numbers';
-  lineNumbersBtn.textContent = 'Lines';
-  actions.appendChild(lineNumbersBtn);
-  const shareBtn = document.createElement('button');
-  shareBtn.className = 'btn btn-ghost';
-  shareBtn.dataset.action = 'share';
-  shareBtn.textContent = 'Share';
+
+  addBtn('Lines', 'toggle-line-numbers');
+
+  const shareBtn = addBtn('Share', 'share');
   if (typeof navigator === 'undefined' || !('share' in navigator)) {
     shareBtn.hidden = true;
   }
-  actions.appendChild(shareBtn);
-  const downloadBtn = document.createElement('button');
-  downloadBtn.className = 'btn btn-ghost';
-  downloadBtn.dataset.action = 'download';
-  downloadBtn.textContent = 'Download';
-  actions.appendChild(downloadBtn);
-  const downloadZipBtn = document.createElement('button');
-  downloadZipBtn.className = 'btn btn-ghost';
-  downloadZipBtn.dataset.action = 'download-zip';
-  downloadZipBtn.textContent = 'Download ZIP';
-  actions.appendChild(downloadZipBtn);
-  header.appendChild(actions);
-  wrapper.appendChild(header);
+
+  addBtn('Download', 'download');
+  addBtn('Download ZIP', 'download-zip');
+
+  return actions;
+}
+
+export function renderGistDetail(gist: GistRecord): DocumentFragment {
+  let fileCount = 0;
+  for (const key in gist.files) {
+    if (Object.hasOwn(gist.files, key)) fileCount++;
+  }
+
+  const frag = document.createDocumentFragment();
+  const wrapper = document.createElement('div');
+  wrapper.className = 'gist-detail';
+  wrapper.dataset.gistId = gist.id;
+
+  wrapper.appendChild(createDetailHeader(gist, fileCount));
+  wrapper.appendChild(createDetailActions(gist));
 
   // ── Tags section ─────────────────────────────────────────────────
   const tagsSection = document.createElement('div');
