@@ -90,7 +90,7 @@ test.describe('Memory Safety & Lifecycle', () => {
 
     const dbStatus = await page.evaluate(async () => {
       try {
-        const request = indexedDB.open('d-o-gist-hub-db', 3);
+        const request = indexedDB.open('d-o-gist-hub-db', 4);
         return !!request;
       } catch (_e) {
         return false;

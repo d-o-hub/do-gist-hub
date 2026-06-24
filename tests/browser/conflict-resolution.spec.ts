@@ -7,7 +7,7 @@ test.describe('Conflict Resolution UI Walkthrough', () => {
 
     // Seed IndexedDB with a conflict gist and its metadata
     await page.evaluate(async () => {
-      const dbRequest = indexedDB.open('d-o-gist-hub-db', 3);
+      const dbRequest = indexedDB.open('d-o-gist-hub-db', 4);
       await new Promise<void>((resolve, reject) => {
         dbRequest.onerror = () => reject(new Error('Failed to open DB'));
         dbRequest.onblocked = () => reject(new Error('DB blocked'));
