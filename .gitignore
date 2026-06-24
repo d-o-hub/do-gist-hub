@@ -47,6 +47,7 @@ coverage/
 
 # Mutation/stryker reports (may contain false-positive secret detections)
 reports/
+.stryker-tmp/
 htmlcov/
 .coverage
 *.coverage
