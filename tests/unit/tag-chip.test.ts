@@ -52,6 +52,26 @@ describe('renderTagChip', () => {
     expect(html).toContain('color: #ff0000');
     expect(html).toContain('border-color: #ff000040');
   });
+
+  it('sanitizes tag data to prevent XSS', () => {
+    const maliciousTag = makeTag({
+      id: '"><script>alert(1)</script>',
+      name: '<b>danger</b>',
+      color: '"><img src=x onerror=alert(1)>',
+    });
+    const html = renderTagChip(maliciousTag, true);
+
+    // ID should be escaped
+    expect(html).toContain('data-tag-id="&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;"');
+    expect(html).toContain('data-remove-tag="&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;"');
+
+    // Name should be escaped
+    expect(html).toContain('&lt;b&gt;danger&lt;/b&gt;');
+    expect(html).toContain('aria-label="Remove tag &lt;b&gt;danger&lt;/b&gt;"');
+
+    // Color should be escaped (in style attribute)
+    expect(html).toContain('background-color: &quot;&gt;&lt;img src=x onerror=alert(1)&gt;20');
+  });
 });
 
 describe('renderTagChips', () => {
