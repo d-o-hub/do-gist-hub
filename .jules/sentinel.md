@@ -26,3 +26,8 @@
 **Vulnerability:** `sanitizeUrl` only stripped leading control characters and whitespace. An attacker could bypass protocol validation by embedding non-printable control characters (like null bytes `\0`) or whitespace within the protocol string (e.g., `java\0script:alert(1)`). Browsers often ignore these characters, allowing the malicious script to execute.
 **Learning:** Security validation must happen on a normalized version of the input. Stripping dangerous characters from only the start of a string is insufficient if the target system (the browser's URI parser) is permissive about where those characters appear.
 **Prevention:** Always strip all control characters and whitespace from the entire string before performing protocol or pattern matching for security validation.
+
+## 2025-05-16 - [XSS: Unsanitized Tag Data]
+**Vulnerability:** In `tag-chip.ts`, tag properties (`id`, `name`, `color`) were directly interpolated into HTML strings. A malicious tag imported via JSON or created with crafted input could execute arbitrary JavaScript via `onerror` attributes or break out of attributes.
+**Learning:** Local-only data (like tags) can still be an attack vector if it can be imported from external files (JSON backups). Defense-in-depth requires sanitizing all dynamic data injected into the DOM, regardless of its source or "expected" format.
+**Prevention:** Always use `sanitizeHtml` for any variable interpolated into HTML templates, especially when using `innerHTML` or template-literal based rendering.
