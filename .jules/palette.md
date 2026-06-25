@@ -19,3 +19,7 @@
 ## 2026-07-20 - [Roving Tabindex for Navigation Efficiency]
 **Learning:** Roving tabindex is essential for tabbed interfaces to prevent keyboard users from being "trapped" in long lists of tabs. It allows users to skip the entire tab list with a single Tab press while still maintaining access to all tabs via Arrow keys, significantly improving keyboard navigation efficiency.
 **Action:** Implement Roving Tabindex (`tabindex="0"` for active, `-1` for inactive) for all custom tabbed or grouped controls.
+
+## 2026-06-25 - [Localized Interaction Feedback & Discoverable Shortcuts]
+**Learning:** Immediate localized feedback (e.g., changing button text to "COPIED") is more effective than global toasts alone as it preserves the user's focus on the interaction point. Pairing these actions with discoverable keyboard shortcuts (via 'title' attribute hints) significantly lowers the barrier for power-user adoption.
+**Action:** Use the "Text Change + Success Class" pattern for copy actions and document shortcuts in tooltips using the "(Key)" convention.

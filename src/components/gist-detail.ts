@@ -150,7 +150,8 @@ function createDetailActions(gist: GistRecord): HTMLElement {
     githubLink.rel = 'noopener noreferrer';
     githubLink.textContent = 'Open in GitHub';
     actions.appendChild(githubLink);
-    addBtn('Copy URL', 'copy-url');
+    const copyUrlBtn = addBtn('Copy URL', 'copy-url');
+    copyUrlBtn.title = 'Copy URL (C)';
   }
 
   addBtn('Lines', 'toggle-line-numbers');
@@ -435,6 +436,25 @@ export function bindDetailEvents(
   signal?: AbortSignal
 ): void {
   const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id') ?? null;
+
+  // Shortcut for Copy URL
+  container.addEventListener(
+    'keydown',
+    (e) => {
+      if (e.key.toLowerCase() === 'c') {
+        const isInput =
+          document.activeElement?.tagName === 'INPUT' ||
+          document.activeElement?.tagName === 'TEXTAREA' ||
+          (document.activeElement as HTMLElement)?.isContentEditable;
+        if (!isInput) {
+          e.preventDefault();
+          void copyGistUrl(container, signal);
+        }
+      }
+    },
+    { signal }
+  );
+
   container.querySelector('#gist-back-btn')?.addEventListener('click', onBack, { signal });
   container.querySelector('[data-action="edit"]')?.addEventListener(
     'click',
@@ -735,12 +755,30 @@ async function copyGistUrl(container: HTMLElement, signal?: AbortSignal): Promis
     toast.error('No URL available for this gist');
     return;
   }
+
+  const copyBtn = container.querySelector('[data-action="copy-url"]') as HTMLButtonElement;
+
   try {
     if (!navigator.clipboard) {
       throw new Error('Clipboard API not available');
     }
     await navigator.clipboard.writeText(url);
     if (signal?.aborted) return;
+
+    if (copyBtn && !copyBtn.classList.contains('btn-success')) {
+      const originalText = copyBtn.textContent;
+      copyBtn.textContent = 'COPIED';
+      copyBtn.classList.add('btn-success');
+      copyBtn.classList.add('is-state-changed');
+
+      setTimeout(() => {
+        if (signal?.aborted) return;
+        copyBtn.textContent = originalText;
+        copyBtn.classList.remove('btn-success');
+        copyBtn.classList.remove('is-state-changed');
+      }, 2000);
+    }
+
     toast.success('URL COPIED TO CLIPBOARD');
   } catch (err) {
     safeError('Failed to copy URL', err);
