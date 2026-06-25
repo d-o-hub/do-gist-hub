@@ -184,8 +184,9 @@ export function render(container: HTMLElement, params?: Record<string, string>):
 
   /**
    * Update the gist list and result count.
-   * BOLT: Consolidated filtering, searching, sorting, and rendering into a single
-   * pass to eliminate redundant O(N) iterations and function overhead.
+   * BOLT: Consolidated filtering, searching, and sorting preparation into a
+   * single O(N) pass to eliminate multiple array allocations and redundant
+   * iterations. Skips sorting entirely for the default "updated-desc" order.
    */
   function updateList(): void {
     const list = container.querySelector('#gist-list') as HTMLElement | null;
@@ -194,45 +195,82 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     if (!list) return;
 
     // Loading state
-    if (gistStore.getLoading() && gistStore.getGists().length === 0) {
+    const allGists = gistStore.getGists();
+    if (gistStore.getLoading() && allGists.length === 0) {
       list.innerHTML = Skeleton.renderList(3);
       if (countEl) countEl.textContent = 'Loading gists...';
       return;
     }
 
-    // 1. Initial filter
-    let gists =
-      currentFilter === 'pending'
-        ? gistStore.getGists().filter((g) => g.syncStatus === 'pending')
-        : currentFilter === 'conflict'
-          ? gistStore.getGists().filter((g) => g.syncStatus === 'conflict')
-          : currentFilter === 'error'
-            ? gistStore.getGists().filter((g) => g.syncStatus === 'error')
-            : gistStore.filterGists(
-                currentFilter === 'mine' ? 'all' : (currentFilter as 'all' | 'starred')
-              );
+    const q = searchQuery.toLowerCase();
+    const isSortNeeded = currentSort !== 'updated-desc';
+    const filtered: typeof allGists = [];
+    const sortData: { gist: (typeof allGists)[number]; ts: number }[] = [];
 
-    if (selectedTagId) {
-      gists = gists.filter((g) => {
+    // 1. Unified pass for filtering and sort data collection
+    for (let i = 0, len = allGists.length; i < len; i++) {
+      const g = allGists[i]!;
+
+      // Filter by status/owner
+      if (currentFilter === 'pending') {
+        if (g.syncStatus !== 'pending') continue;
+      } else if (currentFilter === 'conflict') {
+        if (g.syncStatus !== 'conflict') continue;
+      } else if (currentFilter === 'error') {
+        if (g.syncStatus !== 'error') continue;
+      } else if (currentFilter === 'starred') {
+        if (!g.starred) continue;
+      }
+
+      // Filter by tag
+      if (selectedTagId) {
         const tags = gistStore.getTagsFromCache(g.id);
-        return tags.some((t) => t.id === selectedTagId);
-      });
-    }
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      gists = gists.filter((g) => {
-        if (g.description?.toLowerCase().includes(q)) return true;
-        // BOLT: Efficient file search avoiding Object.values() array allocation
-        for (const filename in g.files) {
-          if (filename.toLowerCase().includes(q)) return true;
+        let tagMatch = false;
+        for (let j = 0, tLen = tags.length; j < tLen; j++) {
+          if (tags[j]?.id === selectedTagId) {
+            tagMatch = true;
+            break;
+          }
         }
-        return false;
-      });
+        if (!tagMatch) continue;
+      }
+
+      // Filter by search query
+      if (q) {
+        let searchMatch = false;
+        if (g.description?.toLowerCase().includes(q)) {
+          searchMatch = true;
+        } else {
+          for (const filename in g.files) {
+            if (filename.toLowerCase().includes(q)) {
+              searchMatch = true;
+              break;
+            }
+          }
+        }
+        if (!searchMatch) continue;
+      }
+
+      if (isSortNeeded) {
+        sortData.push({
+          gist: g,
+          ts: parseIsoDate(currentSort === 'created-desc' ? g.createdAt : g.updatedAt),
+        });
+      } else {
+        filtered.push(g);
+      }
     }
 
-    const filteredCount = gists.length;
-    const totalCount = gistStore.getGists().length;
+    // 2. Sort if non-default order requested
+    if (isSortNeeded) {
+      sortData.sort((a, b) => (currentSort === 'updated-asc' ? a.ts - b.ts : b.ts - a.ts));
+      for (let i = 0, len = sortData.length; i < len; i++) {
+        filtered.push(sortData[i]!.gist);
+      }
+    }
+
+    const filteredCount = filtered.length;
+    const totalCount = allGists.length;
 
     // 3. Update result count
     if (countEl) {
@@ -283,19 +321,8 @@ export function render(container: HTMLElement, params?: Record<string, string>):
       return;
     }
 
-    // 5. Sort (if not natural updated-desc order)
-    if (currentSort !== 'updated-desc') {
-      gists = gists
-        .map((gist) => ({
-          gist,
-          ts: parseIsoDate(currentSort === 'created-desc' ? gist.createdAt : gist.updatedAt),
-        }))
-        .sort((a, b) => (currentSort === 'updated-asc' ? a.ts - b.ts : b.ts - a.ts))
-        .map((item) => item.gist);
-    }
-
-    // 6. Render and bind
-    list.innerHTML = gists.map((g) => renderCard(g, gistStore.isSelected(g.id))).join('');
+    // 5. Render and bind
+    list.innerHTML = filtered.map((g) => renderCard(g, gistStore.isSelected(g.id))).join('');
     bindCardEvents(
       list,
       (id: string) => {

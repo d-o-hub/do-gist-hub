@@ -706,13 +706,15 @@ describe('Home Route', () => {
     });
 
     it('shows filtered count when some gists are filtered', () => {
-      const allGists = [makeStoreGist('g1'), makeStoreGist('g2'), makeStoreGist('g3')];
-      const filteredGists = [makeStoreGist('g1')];
+      const allGists = [
+        makeStoreGist('g1', { starred: true }),
+        makeStoreGist('g2', { starred: false }),
+        makeStoreGist('g3', { starred: false }),
+      ];
       vi.mocked(gistStore.getGists).mockReturnValue(allGists as never[]);
       vi.mocked(gistStore.getLoading).mockReturnValue(false);
-      vi.mocked(gistStore.filterGists).mockReturnValue(filteredGists as never[]);
 
-      render(container);
+      render(container, { filter: 'starred', sort: 'updated-desc', searchQuery: '' });
 
       const countEl = container.querySelector('#gist-result-count');
       expect(countEl?.textContent).toContain('1 of 3');
