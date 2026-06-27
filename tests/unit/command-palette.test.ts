@@ -156,8 +156,8 @@ describe('CommandPalette', () => {
       await palette.open();
 
       const container = document.querySelector('.command-palette');
-      expect(container?.innerHTML).toContain('↑↓');
-      expect(container?.innerHTML).toContain('esc');
+      expect(container?.innerHTML).toContain('UP/DOWN');
+      expect(container?.innerHTML).toContain('ESC');
     });
   });
 

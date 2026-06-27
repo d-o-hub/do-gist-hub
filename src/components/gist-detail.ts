@@ -82,7 +82,7 @@ function createDetailHeader(gist: GistRecord, fileCount: number): HTMLElement {
   backBtn.className = 'btn btn-ghost';
   backBtn.id = 'gist-back-btn';
   backBtn.setAttribute('aria-label', 'Go back');
-  backBtn.textContent = '← Back';
+  backBtn.textContent = 'BACK';
   headerTop.appendChild(backBtn);
   const detailLabel = document.createElement('span');
   detailLabel.className = 'micro-label';
@@ -381,7 +381,7 @@ export function renderRevisions(gistId: string, revisions: GistRevision[]): Docu
   const backBtn = document.createElement('button');
   backBtn.className = 'btn btn-ghost';
   backBtn.id = 'gist-back-btn';
-  backBtn.textContent = '← Back';
+  backBtn.textContent = 'BACK';
   header.appendChild(backBtn);
   const h1 = document.createElement('h1');
   h1.className = 'detail-title';

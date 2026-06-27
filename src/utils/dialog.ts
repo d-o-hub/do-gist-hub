@@ -37,13 +37,13 @@ export function showConfirmDialog(
       ? {
           message: messageOrOptions,
           title: legacyTitle || 'Are you sure?',
-          confirmLabel: 'Confirm',
-          cancelLabel: 'Cancel',
+          confirmLabel: 'CONFIRM',
+          cancelLabel: 'CANCEL',
           variant: 'danger',
         }
       : {
-          confirmLabel: 'Confirm',
-          cancelLabel: 'Cancel',
+          confirmLabel: 'CONFIRM',
+          cancelLabel: 'CANCEL',
           variant: 'danger',
           ...messageOrOptions,
         };
@@ -51,8 +51,8 @@ export function showConfirmDialog(
   const {
     title,
     message,
-    confirmLabel = 'Confirm',
-    cancelLabel = 'Cancel',
+    confirmLabel = 'CONFIRM',
+    cancelLabel = 'CANCEL',
     variant = 'danger',
   } = options;
 

@@ -139,7 +139,7 @@ export class CommandPalette {
 
     const footer = document.createElement('div');
     footer.className = 'command-palette-footer';
-    for (const label of ['↑↓ to navigate', '↵ to select', 'esc to close']) {
+    for (const label of ['UP/DOWN to navigate', 'ENTER to select', 'ESC to close']) {
       const span = document.createElement('span');
       span.textContent = label;
       footer.appendChild(span);

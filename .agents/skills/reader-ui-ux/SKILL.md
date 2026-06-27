@@ -1,10 +1,10 @@
 ---
-version: '0.1.0'
+version: '0.2.1'
 name: reader-ui-ux
 description: >
   Build production-ready, accessible reader/admin UI with 2026 best practices: View Transitions API, sophisticated micro-interactions, fluid responsive layouts (7 breakpoints), semantic tokens, and mobile-first navigation. Use when creating/modifying UI components, implementing professional effects, optimizing responsive behavior, or modernizing existing interfaces. Triggers: "modernize UI", "responsive layout", "professional animations", "view transitions", "micro-interactions", "mobile navigation", "token-driven design", "accessible components".
 category: workflow
-template_version: '0.1.0'
+template_version: '0.2.1'
 ---
 
 # Reader UI/UX - 2026 Modern

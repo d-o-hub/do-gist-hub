@@ -67,8 +67,8 @@ describe('showConfirmDialog', () => {
       void showConfirmDialog('Test');
       const cancelBtn = document.querySelector('[data-action="cancel"]');
       const confirmBtn = document.querySelector('[data-action="confirm"]');
-      expect(cancelBtn?.textContent).toBe('Cancel');
-      expect(confirmBtn?.textContent).toBe('Confirm');
+      expect(cancelBtn?.textContent).toBe('CANCEL');
+      expect(confirmBtn?.textContent).toBe('CONFIRM');
     });
   });
 

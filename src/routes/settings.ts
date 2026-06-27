@@ -70,7 +70,7 @@ export async function render(
               </div>
               <div id="device-flow-status" class="micro-label mt-2" style="white-space: pre-line;"></div>
               <p class="micro-label hint-text mt-2">
-                ⚠️ Only enter the code on <strong>github.com</strong>. Never share it with anyone.
+                WARNING: Only enter the code on <strong>github.com</strong>. Never share it with anyone.
               </p>
             </div>
           </div>
@@ -102,7 +102,7 @@ export async function render(
                 <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>Light</option>
                 <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>Dark</option>
                 <option value="auto" ${currentTheme === 'auto' ? 'selected' : ''}>Auto (System)</option>
-                <option value="time" ${currentTheme === 'time' ? 'selected' : ''}>Time-based (Dark 7PM–7AM)</option>
+                <option value="time" ${currentTheme === 'time' ? 'selected' : ''}>Time-based (Dark 7PM-7AM)</option>
                 <option value="ambient" ${currentTheme === 'ambient' ? 'selected' : ''}>Ambient Light (Opt-in)</option>
               </select>
             </div>
@@ -150,7 +150,7 @@ export async function render(
                 <div class="form-group">
                   <label class="form-label" for="tag-color-input">Color</label>
                   <div class="color-input-wrapper">
-                    <input type="color" id="tag-color-input" value="#3b82f6">
+                    <input type="color" id="tag-color-input" value="#2563eb">
                   </div>
                 </div>
                 <button id="create-tag-btn" class="btn btn-primary">CREATE</button>
@@ -235,7 +235,7 @@ async function loadTokenInfo(container: HTMLElement): Promise<void> {
         if (ageDays > 60) {
           const rotationP = document.createElement('p');
           rotationP.className = 'micro-label token-rotation';
-          rotationP.textContent = `⚠️ Token is ${Math.floor(ageDays)} days old. Consider rotating it for security.`;
+          rotationP.textContent = `WARNING: Token is ${Math.floor(ageDays)} days old. Consider rotating it for security.`;
           el.appendChild(rotationP);
         }
       }
@@ -752,7 +752,7 @@ function bindTagEvents(container: HTMLElement, signal: AbortSignal): void {
         const colorInput = container.querySelector('#tag-color-input') as HTMLInputElement;
 
         const name = nameInput?.value.trim();
-        const color = colorInput?.value || '#3b82f6';
+        const color = colorInput?.value || 'var(--color-accent-primary)';
 
         if (!name) {
           toast.error('TAG NAME IS REQUIRED');

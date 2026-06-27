@@ -130,7 +130,7 @@ describe('Gist Edit', () => {
       const gist = makeGist();
       const wrapper = renderToWrapper(gist);
 
-      expect(wrapper.querySelector('#edit-back-btn')?.textContent).toContain('← BACK');
+      expect(wrapper.querySelector('#edit-back-btn')?.textContent).toContain('BACK');
     });
 
     it('renders hidden remove button for single-file gists', () => {

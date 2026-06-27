@@ -89,7 +89,7 @@ export function render(container: HTMLElement, params?: Record<string, string>):
       clearBtn.setAttribute('aria-hidden', 'true');
       clearBtn.tabIndex = -1;
     }
-    clearBtn.textContent = '×';
+    clearBtn.textContent = 'CLEAR';
     searchContainer.appendChild(clearBtn);
     routeHome.appendChild(searchContainer);
 

@@ -1,8 +1,8 @@
 ---
 name: github-gist-api
 description: Implement typed GitHub Gist API client with pagination, rate limiting, conditional requests, and error mapping.
-version: '0.1.0'
-template_version: '0.1.0'
+version: '0.2.1'
+template_version: '0.2.1'
 ---
 
 # Github-gist-api Skill
