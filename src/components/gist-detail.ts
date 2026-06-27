@@ -443,11 +443,11 @@ export function bindDetailEvents(
     (e) => {
       if (e.key.toLowerCase() === 'c') {
         const activeEl = document.activeElement;
-        const isInFormField =
+        const isInputActive =
           activeEl?.tagName === 'INPUT' ||
           activeEl?.tagName === 'TEXTAREA' ||
           (activeEl as HTMLElement).isContentEditable;
-        if (!isInFormField) {
+        if (!isInputActive) {
           e.preventDefault();
           void copyGistUrl(container, signal);
         }
