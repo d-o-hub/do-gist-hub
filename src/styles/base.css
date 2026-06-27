@@ -436,6 +436,7 @@ body {
   margin: var(--space-1) 0 0;
   line-height: 1.4;
   text-wrap: balance;
+  max-width: 65ch;
   animation: form-error-slide-in var(--motion-duration-base) var(--motion-easing-out);
 }
 
@@ -593,7 +594,6 @@ body {
   font-size: var(--text-lg);
   line-height: 1.1;
   letter-spacing: -0.01em;
-  text-transform: uppercase;
   color: var(--color-text);
   margin-top: var(--space-1);
   overflow-wrap: anywhere;
@@ -905,7 +905,6 @@ body {
   font-weight: 900;
   line-height: 0.9;
   letter-spacing: -0.02em;
-  text-transform: uppercase;
   color: var(--color-text);
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -1330,7 +1329,7 @@ body {
   margin-bottom: var(--space-6);
   position: sticky;
   top: var(--spacing-v15);
-  z-index: 100;
+  z-index: var(--z-index-sticky);
   background: var(--color-bg);
   padding: var(--space-2) 0;
 }
@@ -2076,7 +2075,7 @@ textarea.form-textarea {
   left: 0;
   height: 3px;
   background: linear-gradient(90deg, var(--color-accent-primary), var(--color-accent-hover));
-  z-index: 9999;
+  z-index: var(--z-index-toast);
   transform-origin: left;
   animation: scroll-progress linear;
   animation-timeline: scroll();
@@ -2245,7 +2244,7 @@ textarea.form-textarea {
   text-wrap: pretty;
   word-break: break-word;
   overflow-wrap: anywhere;
-  max-width: var(--spacing-v80);
+  max-width: 65ch;
 }
 
 .error-details {

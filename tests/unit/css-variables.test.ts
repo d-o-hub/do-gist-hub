@@ -194,7 +194,6 @@ describe('generateCSSVariables', () => {
       '--motion-easing-smooth',
       '--motion-easing-out',
       '--motion-easing-in',
-      '--motion-easing-elastic',
       '--motion-easing-spring',
     ]);
   });

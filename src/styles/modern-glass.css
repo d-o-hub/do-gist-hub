@@ -1,30 +1,22 @@
-/* App Mode — Glassmorphism 2.0 Refractive System */
+/* App Mode — Card System (solid surfaces, no decorative glass) */
 
 .glass-card {
-  background: color-mix(in srgb, var(--color-background-elevated), transparent 15%);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border: 1px solid color-mix(in srgb, var(--color-foreground-primary), transparent 92%);
+  background: var(--color-surface);
+  border: var(--glass-border);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--glass-shadow);
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
   transition:
     background-color var(--motion-duration-base) var(--motion-easing),
-    border-color var(--motion-duration-base) var(--motion-easing),
-    box-shadow var(--motion-duration-base) var(--motion-easing),
-    transform var(--motion-duration-base) var(--motion-easing);
+    box-shadow var(--motion-duration-base) var(--motion-easing);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .glass-card:hover {
-    background: color-mix(in srgb, var(--color-background-elevated), transparent 5%);
-    border-color: color-mix(in srgb, var(--color-accent-primary), transparent 80%);
-    box-shadow:
-      var(--shadow-xl),
-      0 0 0 1px color-mix(in srgb, var(--color-accent-primary), transparent 90%);
-    transform: translateY(-2px);
+    background: var(--color-surface-2);
+    box-shadow: var(--shadow-glass-hover);
   }
 }
 
@@ -34,9 +26,8 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-6);
-  background: color-mix(in srgb, var(--color-background-elevated), transparent 20%);
-  backdrop-filter: blur(12px);
-  border: 1px solid color-mix(in srgb, var(--color-foreground-primary), transparent 94%);
+  background: var(--color-surface);
+  border: var(--glass-border);
   border-radius: var(--radius-card);
 }
 
@@ -74,9 +65,9 @@
 .confirm-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
-  background: color-mix(in srgb, var(--color-background-primary), transparent 30%);
-  backdrop-filter: blur(12px);
+  z-index: var(--z-index-modal);
+  background: var(--color-backdrop-medium);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -98,11 +89,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  background: color-mix(in srgb, var(--color-background-elevated), transparent 5%);
-  backdrop-filter: blur(32px);
-  border: 1px solid color-mix(in srgb, var(--color-foreground-primary), transparent 90%);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-2xl);
   transform: scale(0.95);
   transition: transform var(--motion-duration-base) var(--motion-easing);
 }
@@ -114,7 +100,6 @@
 .confirm-title {
   font-family: var(--font-display);
   font-size: var(--text-lg);
-  text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-text);
 }
@@ -124,6 +109,7 @@
   color: var(--color-text-muted);
   line-height: 1.5;
   text-wrap: pretty;
+  max-width: 65ch;
 }
 
 .confirm-actions {

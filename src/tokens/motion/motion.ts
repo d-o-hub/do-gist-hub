@@ -26,7 +26,6 @@ export const motionTokens = {
     // Dramatic (2026 additions)
     outExpo: `cubic-bezier(${tokens.MotionEasingOutExpo.join(', ')})`,
     inExpo: `cubic-bezier(${tokens.MotionEasingInExpo.join(', ')})`,
-    elastic: `cubic-bezier(${tokens.MotionEasingElastic.join(', ')})`,
 
     // Spring physics (2026: CSS linear() for natural motion)
     spring: tokens.MotionEasingSpring,

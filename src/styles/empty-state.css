@@ -37,7 +37,7 @@
 .empty-state-description {
   font-size: var(--font-size-sm);
   color: var(--color-foreground-muted);
-  max-width: var(--spacing-v80);
+  max-width: 65ch;
   margin-bottom: var(--spacing-v6);
   line-height: 1.5;
   text-wrap: pretty;
