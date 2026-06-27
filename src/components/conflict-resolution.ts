@@ -191,7 +191,7 @@ export function buildConflictDetail(conflict: GistConflict): DocumentFragment {
   header.className = 'detail-header';
   const backBtn = document.createElement('button');
   backBtn.className = 'btn btn-ghost back-to-list';
-  backBtn.textContent = '← BACK TO LIST';
+  backBtn.textContent = 'BACK TO LIST';
   header.appendChild(backBtn);
   const h1 = document.createElement('h1');
   h1.className = 'detail-title';

@@ -1,7 +1,7 @@
 ---
 name: web-search-researcher
 description: Enables robust web-based research strategies including query formulation, source evaluation, and result synthesis.
-version: '0.1.0'
+version: '0.2.1'
 template_version: '0.2.9'
 ---
 

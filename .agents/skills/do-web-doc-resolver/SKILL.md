@@ -1,7 +1,7 @@
 ---
 name: do-web-doc-resolver
 description: Provides URL-to-markdown context resolution for live documentation fetching and integration into agent workflows.
-version: '0.1.0'
+version: '0.2.1'
 template_version: '0.2.9'
 ---
 

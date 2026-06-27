@@ -38,8 +38,8 @@ describe('showConfirmDialog options variant', () => {
 
     const confirmBtn = document.querySelector('[data-action="confirm"]');
     const cancelBtn = document.querySelector('[data-action="cancel"]');
-    expect(confirmBtn?.textContent).toBe('Confirm');
-    expect(cancelBtn?.textContent).toBe('Cancel');
+    expect(confirmBtn?.textContent).toBe('CONFIRM');
+    expect(cancelBtn?.textContent).toBe('CANCEL');
   });
 
   it('applies primary variant class', () => {

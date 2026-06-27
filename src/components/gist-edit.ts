@@ -32,7 +32,7 @@ function buildFileEditorFields(): DocumentFragment {
   const removeBtn = document.createElement('button');
   removeBtn.type = 'button';
   removeBtn.className = 'btn btn-danger remove-file-btn';
-  removeBtn.textContent = '×';
+  removeBtn.textContent = 'REMOVE';
   row.appendChild(removeBtn);
   group1.appendChild(row);
   frag.appendChild(group1);
@@ -68,7 +68,7 @@ export function renderEditForm(gist: GistRecord): DocumentFragment {
   const backBtn = document.createElement('button');
   backBtn.className = 'btn btn-ghost';
   backBtn.id = 'edit-back-btn';
-  backBtn.textContent = '← BACK';
+  backBtn.textContent = 'BACK';
   header.appendChild(backBtn);
   const h1 = document.createElement('h1');
   h1.className = 'detail-title';
@@ -129,7 +129,7 @@ export function renderEditForm(gist: GistRecord): DocumentFragment {
     const rmBtn = document.createElement('button');
     rmBtn.type = 'button';
     rmBtn.className = 'btn btn-danger remove-file-btn';
-    rmBtn.textContent = '×';
+    rmBtn.textContent = 'REMOVE';
     if (fileCount <= 1) rmBtn.hidden = true;
     row.appendChild(rmBtn);
     fg1.appendChild(row);

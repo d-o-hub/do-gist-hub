@@ -82,7 +82,7 @@ export class ToastManager {
     closeBtn.className = 'toast-close';
     closeBtn.setAttribute('aria-label', 'Dismiss notification');
     closeBtn.type = 'button';
-    closeBtn.textContent = '×';
+    closeBtn.textContent = 'CLOSE';
     toast.appendChild(closeBtn);
 
     container.appendChild(toast);
