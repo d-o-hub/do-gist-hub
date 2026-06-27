@@ -209,7 +209,8 @@ export function render(container: HTMLElement, params?: Record<string, string>):
 
     // 1. Unified pass for filtering and sort data collection
     for (let i = 0, len = allGists.length; i < len; i++) {
-      const g = allGists[i]!;
+      const g = allGists[i];
+      if (!g) continue;
 
       // Filter by status/owner
       if (currentFilter === 'pending') {
@@ -265,7 +266,8 @@ export function render(container: HTMLElement, params?: Record<string, string>):
     if (isSortNeeded) {
       sortData.sort((a, b) => (currentSort === 'updated-asc' ? a.ts - b.ts : b.ts - a.ts));
       for (let i = 0, len = sortData.length; i < len; i++) {
-        filtered.push(sortData[i]!.gist);
+        const item = sortData[i];
+        if (item) filtered.push(item.gist);
       }
     }
 
@@ -443,7 +445,9 @@ export function render(container: HTMLElement, params?: Record<string, string>):
         (e) => {
           currentSort = (e.target as HTMLSelectElement).value as Sort;
           window.dispatchEvent(
-            new CustomEvent('app:sort-changed', { detail: { sort: currentSort } })
+            new CustomEvent('app:sort-changed', {
+              detail: { sort: currentSort },
+            })
           );
           updateList();
         },
