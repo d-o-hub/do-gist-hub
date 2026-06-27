@@ -150,7 +150,8 @@ function createDetailActions(gist: GistRecord): HTMLElement {
     githubLink.rel = 'noopener noreferrer';
     githubLink.textContent = 'Open in GitHub';
     actions.appendChild(githubLink);
-    addBtn('Copy URL', 'copy-url');
+    const copyUrlBtn = addBtn('Copy URL', 'copy-url');
+    copyUrlBtn.title = 'Copy URL (C)';
   }
 
   addBtn('Lines', 'toggle-line-numbers');
@@ -435,6 +436,26 @@ export function bindDetailEvents(
   signal?: AbortSignal
 ): void {
   const gistId = container.querySelector('.gist-detail')?.getAttribute('data-gist-id') ?? null;
+
+  // Shortcut for Copy URL
+  container.addEventListener(
+    'keydown',
+    (e) => {
+      if (e.key.toLowerCase() === 'c') {
+        const activeEl = document.activeElement;
+        const isInputActive =
+          activeEl?.tagName === 'INPUT' ||
+          activeEl?.tagName === 'TEXTAREA' ||
+          (activeEl as HTMLElement).isContentEditable;
+        if (!isInputActive) {
+          e.preventDefault();
+          void copyGistUrl(container, signal);
+        }
+      }
+    },
+    { signal }
+  );
+
   container.querySelector('#gist-back-btn')?.addEventListener('click', onBack, { signal });
   container.querySelector('[data-action="edit"]')?.addEventListener(
     'click',
@@ -735,12 +756,29 @@ async function copyGistUrl(container: HTMLElement, signal?: AbortSignal): Promis
     toast.error('No URL available for this gist');
     return;
   }
+
   try {
     if (!navigator.clipboard) {
       throw new Error('Clipboard API not available');
     }
     await navigator.clipboard.writeText(url);
     if (signal?.aborted) return;
+
+    const copyBtn = container.querySelector<HTMLButtonElement>('[data-action="copy-url"]');
+    if (copyBtn && !copyBtn.classList.contains('btn-success')) {
+      const originalText = copyBtn.textContent ?? '';
+      copyBtn.textContent = 'COPIED';
+      copyBtn.classList.add('btn-success');
+      copyBtn.classList.add('is-state-changed');
+
+      setTimeout(() => {
+        if (signal?.aborted) return;
+        copyBtn.textContent = originalText;
+        copyBtn.classList.remove('btn-success');
+        copyBtn.classList.remove('is-state-changed');
+      }, 2000);
+    }
+
     toast.success('URL COPIED TO CLIPBOARD');
   } catch (err) {
     safeError('Failed to copy URL', err);
@@ -820,7 +858,16 @@ function exportGistAsJsonInline(gist: GistRecord): void {
     if (Object.hasOwn(gist.files, key)) {
       const f = gist.files[key];
       if (!f) continue;
-      files[key] = { filename: f.filename, content: f.content ?? '', language: f.language };
+      Object.defineProperty(files, key, {
+        value: {
+          filename: f.filename,
+          content: f.content ?? '',
+          language: f.language,
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
     }
   }
   const data = {
@@ -831,7 +878,9 @@ function exportGistAsJsonInline(gist: GistRecord): void {
     updatedAt: gist.updatedAt,
     files,
   };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: 'application/json',
+  });
   triggerDownload(blob, `${slugifyName(gist.description)}.json`);
 }
 
@@ -840,7 +889,10 @@ function bindRevisionEvents(
   {
     onBack,
     onViewRevision,
-  }: { onBack: () => void; onViewRevision: (id: string, version: string) => void },
+  }: {
+    onBack: () => void;
+    onViewRevision: (id: string, version: string) => void;
+  },
   signal?: AbortSignal
 ): void {
   const gistId = container.querySelector('.revisions-list')?.getAttribute('data-gist-id');
