@@ -756,8 +756,6 @@ async function copyGistUrl(container: HTMLElement, signal?: AbortSignal): Promis
     return;
   }
 
-  const copyBtn = container.querySelector('[data-action="copy-url"]') as HTMLButtonElement;
-
   try {
     if (!navigator.clipboard) {
       throw new Error('Clipboard API not available');
@@ -765,8 +763,9 @@ async function copyGistUrl(container: HTMLElement, signal?: AbortSignal): Promis
     await navigator.clipboard.writeText(url);
     if (signal?.aborted) return;
 
+    const copyBtn = container.querySelector<HTMLButtonElement>('[data-action="copy-url"]');
     if (copyBtn && !copyBtn.classList.contains('btn-success')) {
-      const originalText = copyBtn.textContent;
+      const originalText = copyBtn.textContent ?? '';
       copyBtn.textContent = 'COPIED';
       copyBtn.classList.add('btn-success');
       copyBtn.classList.add('is-state-changed');
@@ -858,7 +857,11 @@ function exportGistAsJsonInline(gist: GistRecord): void {
     if (Object.hasOwn(gist.files, key)) {
       const f = gist.files[key];
       if (!f) continue;
-      files[key] = { filename: f.filename, content: f.content ?? '', language: f.language };
+      files[key] = {
+        filename: f.filename,
+        content: f.content ?? '',
+        language: f.language,
+      };
     }
   }
   const data = {
@@ -869,7 +872,9 @@ function exportGistAsJsonInline(gist: GistRecord): void {
     updatedAt: gist.updatedAt,
     files,
   };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: 'application/json',
+  });
   triggerDownload(blob, `${slugifyName(gist.description)}.json`);
 }
 
@@ -878,7 +883,10 @@ function bindRevisionEvents(
   {
     onBack,
     onViewRevision,
-  }: { onBack: () => void; onViewRevision: (id: string, version: string) => void },
+  }: {
+    onBack: () => void;
+    onViewRevision: (id: string, version: string) => void;
+  },
   signal?: AbortSignal
 ): void {
   const gistId = container.querySelector('.revisions-list')?.getAttribute('data-gist-id');
