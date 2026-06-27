@@ -442,11 +442,12 @@ export function bindDetailEvents(
     'keydown',
     (e) => {
       if (e.key.toLowerCase() === 'c') {
-        const isInput =
-          document.activeElement?.tagName === 'INPUT' ||
-          document.activeElement?.tagName === 'TEXTAREA' ||
-          (document.activeElement as HTMLElement)?.isContentEditable;
-        if (!isInput) {
+        const activeEl = document.activeElement;
+        const isInFormField =
+          activeEl?.tagName === 'INPUT' ||
+          activeEl?.tagName === 'TEXTAREA' ||
+          (activeEl as HTMLElement).isContentEditable;
+        if (!isInFormField) {
           e.preventDefault();
           void copyGistUrl(container, signal);
         }
@@ -857,11 +858,16 @@ function exportGistAsJsonInline(gist: GistRecord): void {
     if (Object.hasOwn(gist.files, key)) {
       const f = gist.files[key];
       if (!f) continue;
-      files[key] = {
-        filename: f.filename,
-        content: f.content ?? '',
-        language: f.language,
-      };
+      Object.defineProperty(files, key, {
+        value: {
+          filename: f.filename,
+          content: f.content ?? '',
+          language: f.language,
+        },
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
     }
   }
   const data = {
