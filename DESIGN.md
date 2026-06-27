@@ -39,7 +39,7 @@ Tinted neutrals + one accent ≤ 10%. The accent (blue, hue 220°) is used for i
 | Accent primary | `#2563eb` | Blue-600 |
 | Border default | `#dde3ef` | Cool gray border |
 
-### Rules
+### Color Rules
 
 - All neutrals carry 0.005–0.015 chroma toward brand hue (220°). No pure gray/black.
 - `color-scheme: dark` / `light` set on `:root` / `[data-theme="light"]`.
@@ -54,7 +54,7 @@ Tinted neutrals + one accent ≤ 10%. The accent (blue, hue 220°) is used for i
 | Display | Anton | 900 | Tight grotesque for headings; natural case (no uppercase) |
 | Mono | JetBrains Mono Variable | 400–700 | Code, stats, file names |
 
-### Rules
+### Typography Rules
 
 - Display headings use natural case — not `text-transform: uppercase`.
 - `uppercase` reserved for functional labels: chips, badges, form labels, nav section titles.

@@ -15,6 +15,7 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.ts'],
     setupFiles: ['tests/setup.ts'],
     coverage: {
+      reporter: ['lcov', 'text'],
       include: ['src/**/*.ts'],
       exclude: ['src/**/*.d.ts', 'src/**/index.ts', 'src/services/llm/providers/*.ts'],
       thresholds: {

@@ -237,9 +237,14 @@ jobs:
       - name: Install dependencies
         if: steps.filter.outputs.unit == 'true'
         run: pnpm install --frozen-lockfile
-      - name: Run unit tests
+      - name: Run unit tests with coverage
         if: steps.filter.outputs.unit == 'true'
-        run: pnpm run tokens:build && pnpm exec vitest run --reporter=verbose
+        run: pnpm run tokens:build && pnpm exec vitest run --reporter=verbose --coverage
+      - name: Upload coverage to Codacy
+        if: steps.filter.outputs.unit == 'true' && github.event_name == 'pull_request'
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info
 
   sha-pin-audit:
     name: SHA-Pin Audit
