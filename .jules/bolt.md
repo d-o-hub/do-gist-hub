@@ -23,3 +23,7 @@
 ## 2026-05-11 - Consolidating Redundant O(N) Passes in Rendering
 **Learning:** Dividing list processing into separate functions for "counting" and "rendering" leads to redundant O(N) iterations and extra array allocations. Consolidating filtering, searching, and sorting into a single update function improves both performance and state consistency.
 **Action:** Avoid separate passes for UI metadata (like result counts) and the actual item list. Process the collection once and use the derived results for all UI elements.
+
+## 2026-05-12 - Consolidating Hot-Path Iterations
+**Learning:** Chaining functional array methods (filter/map/sort) in UI render loops causes multiple O(N) passes and redundant array allocations. Consolidating these into a single manual 'for' loop and skipping sorting entirely when the default order is already present significantly reduces CPU and memory pressure on the main thread.
+**Action:** Identify hot-path render functions with multiple filter/sort passes. Consolidate into a single unified iteration. Ensure unit tests mock raw data rather than processing methods to allow for such refactors without breaking test suites.
