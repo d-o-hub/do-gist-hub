@@ -1044,10 +1044,10 @@ async function showTagAssignmentDialog(
       if (focusable.length === 0) return;
       if (e.shiftKey && document.activeElement === focusable[0]) {
         e.preventDefault();
-        focusable[focusable.length - 1]?.focus();
+        focusable[focusable.length - 1]!.focus();
       } else if (!e.shiftKey && document.activeElement === focusable[focusable.length - 1]) {
         e.preventDefault();
-        focusable[0]?.focus();
+        focusable[0]!.focus();
       }
     }
   }
