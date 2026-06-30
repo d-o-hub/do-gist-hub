@@ -4,6 +4,7 @@ version: "2.0.0"
 category: code-quality
 description: Use the Codacy CLI for local static analysis and cloud data queries. Use the Analysis CLI (`codacy-analysis`) to run local analysis without pushing to Codacy Cloud, or the Cloud CLI (`codacy`) to query remote repositories, issues, security findings, pull requests, and patterns. Use when the user wants to analyze code locally, check code quality metrics on Codacy Cloud, inspect remote PR results, browse vulnerabilities, or search patterns — even if they just say "run codacy" or "check code quality". Not for generic linter triage (use static-analysis).
 license: MIT
+template_version: "0.2.1"
 metadata:
   author: Codacy
 ---
@@ -11,6 +12,7 @@ metadata:
 > **Glossary:** See [glossary.md](references/glossary.md) for shared definitions of Codacy concepts (issues, findings, severity, coverage, tools, patterns, etc.).
 
 Codacy provides two CLI tools:
+
 - **Analysis CLI** (`codacy-analysis`): Runs static analysis locally without pushing code to Codacy Cloud
 - **Cloud CLI** (`codacy`): Queries remote Codacy data (repositories, issues, PRs, security findings)
 
@@ -150,9 +152,9 @@ codacy repository --reanalyze
 
 ## Filesystem conventions
 
-| Location | Scope | Contents |
-|----------|-------|----------|
-| `.codacy/` (repo root) | Per-project | `codacy.config.json`, `generated/` (tool configs) |
+| Location                | Scope        | Contents                                           |
+| ----------------------- | ------------ | -------------------------------------------------- |
+| `.codacy/` (repo root)  | Per-project  | `codacy.config.json`, `generated/` (tool configs)  |
 | `~/.codacy/` (home dir) | Machine-wide | Runtimes, tool binaries, caches, logs, credentials |
 
 The analyzed repository is **never modified outside of `.codacy/`**.
@@ -165,11 +167,11 @@ The analyzed repository is **never modified outside of `.codacy/`**.
 
 ## Rationalizations
 
-| Rationalization | Reality |
-|-----------------|---------|
-| "The CLI is slow" | Better to wait for local results than to wait 10+ minutes for a CI failure. |
-| "I'll just fix it later" | Unfixed quality gate failures compound technical debt and block others. |
-| "I can just check the dashboard" | CLI is faster for automation and scripting than navigating a UI. |
+| Rationalization                  | Reality                                                                     |
+| -------------------------------- | --------------------------------------------------------------------------- |
+| "The CLI is slow"                | Better to wait for local results than to wait 10+ minutes for a CI failure. |
+| "I'll just fix it later"         | Unfixed quality gate failures compound technical debt and block others.     |
+| "I can just check the dashboard" | CLI is faster for automation and scripting than navigating a UI.            |
 
 ## Red Flags
 
