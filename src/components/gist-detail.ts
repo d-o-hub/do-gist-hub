@@ -1042,12 +1042,13 @@ async function showTagAssignmentDialog(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
       if (focusable.length === 0) return;
-      if (e.shiftKey && document.activeElement === focusable[0]) {
+      const elems = Array.from(focusable);
+      if (e.shiftKey && document.activeElement === elems[0]) {
         e.preventDefault();
-        focusable[focusable.length - 1]!.focus();
-      } else if (!e.shiftKey && document.activeElement === focusable[focusable.length - 1]) {
+        elems.at(-1)?.focus();
+      } else if (!e.shiftKey && document.activeElement === elems.at(-1)) {
         e.preventDefault();
-        focusable[0]!.focus();
+        elems[0]?.focus();
       }
     }
   }
