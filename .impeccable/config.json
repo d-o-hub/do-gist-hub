@@ -1,0 +1,11 @@
+{
+  "detector": {
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "Inter",
+        "reason": "Deliberate choice: Inter provides geometric contrast axis with Anton display (ADR-028)"
+      }
+    ]
+  }
+}

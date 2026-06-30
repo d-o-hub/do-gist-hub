@@ -1,0 +1,9 @@
+---
+exclude_paths:
+  - ".agents/skills/impeccable/**"
+  - ".agents/skills/codacy-analysis-cli/**"
+  - ".agents/skills/codacy-cloud-cli/**"
+  - ".agents/skills/codacy-code-review/**"
+  - ".agents/skills/configure-codacy/**"
+  - ".agents/skills/configure-codacy-cloud/**"
+  - ".agents/skills/setup-codacy-coverage/**"

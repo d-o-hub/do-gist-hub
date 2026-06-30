@@ -206,6 +206,11 @@
       "status": "accepted",
       "summary": "Keep fine-grained PAT as default; add opt-in OAuth Device Flow via thin stateless Cloudflare Worker; defer GitHub App installation tokens"
     },
+    "adr-028-impeccable-ui-modernization.md": {
+      "type": "adr",
+      "status": "complete",
+      "summary": "Impeccable UI modernization — remove AI tells, tint colors toward 220° brand hue, semantic z-index, dead token cleanup"
+    },
     "adr-029-android-release-signing.md": {
       "type": "adr",
       "status": "accepted",
@@ -365,6 +370,11 @@
       "type": "goap",
       "status": "complete",
       "summary": "Design token system audit: documentation update, ADR formalization, dead-code identification, validation plan"
+    },
+    "071-progress-update-2026-06-27-impeccable-ui-modernization.md": {
+      "type": "progress",
+      "status": "complete",
+      "summary": "All phases complete, 0 detector findings — z-index tokens, color tinting, glassmorphism cleanup, prose line-length cap"
     }
   },
   "archive": [
@@ -398,7 +408,7 @@
   ],
   "nextAvailable": {
     "adr": "adr-035",
-    "plan": "071",
-    "goap": "071"
+    "plan": "072",
+    "goap": "072"
   }
 }

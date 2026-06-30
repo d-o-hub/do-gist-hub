@@ -78,6 +78,7 @@ Consult `.agents/skills/` or `agents-docs/available-skills.md` for the full skil
 | `plans/053-progress-update-2026-05-21-playwright-cache-fix.md` | Playwright WebKit cache deps fix — system libs missing on cache hit |
 | `plans/060-goap-plain-text-paste-llm-gist-creation.md` | Plain text paste parser, LLM-assisted gist creation, drag-and-drop file import |
 | `plans/066-progress-update-2026-06-02-responsive-recomposition.md` | Responsive recomposition pass — 8 narrow-viewport gaps fixed, breakpoint tokens + media queries + component tokens added |
+| `plans/071-progress-update-2026-06-27-impeccable-ui-modernization.md` | Impeccable UI modernization — all phases complete, 0 detector findings |
 | `.agents/skills/codebase-optimizer/SKILL.md`               | Autonomous optimization and self-learning system                                        |
 | `.qwen/skills/` / `.gemini/skills/`                        | 25 skills mirrored across agent frameworks (Qwen, Gemini, Claude)                       |
 
