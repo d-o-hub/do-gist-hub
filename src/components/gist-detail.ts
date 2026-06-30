@@ -998,7 +998,7 @@ async function showTagAssignmentDialog(
         } else {
           await gistStore.assignTag(gistId, tag.id);
         }
-        closeDialog();
+        closeDialog(document.activeElement);
         void loadTagAssignment(container, gistId, signal);
       },
       { signal }
@@ -1015,25 +1015,26 @@ async function showTagAssignmentDialog(
   closeBtn.addEventListener(
     'click',
     () => {
-      closeDialog();
+      closeDialog(document.activeElement);
     },
     { signal }
   );
   dialog.appendChild(closeBtn);
 
   // Close helper: remove dialog + backdrop, restore focus
-  const triggerElement = document.activeElement as HTMLElement | null; // codacy-disable-line ESLint8_xss_no-mixed-html
-  function closeDialog(): void {
+  function closeDialog(activeEl?: Element | null): void {
     backdrop.remove();
     dialog.remove();
-    triggerElement?.focus();
+    if (activeEl && 'focus' in activeEl) {
+      (activeEl as HTMLElement).focus();
+    }
   }
 
   // Escape key handler
   function handleKeydown(e: KeyboardEvent): void {
     if (e.key === 'Escape') {
       e.preventDefault();
-      closeDialog();
+      closeDialog(document.activeElement);
     }
     // Focus trap: Tab cycles within dialog
     if (e.key === 'Tab') {
@@ -1041,14 +1042,12 @@ async function showTagAssignmentDialog(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
       if (focusable.length === 0) return;
-      const first = focusable[0] as HTMLElement; // codacy-disable-line ESLint8_xss_no-mixed-html
-      const last = focusable[focusable.length - 1] as HTMLElement; // codacy-disable-line ESLint8_xss_no-mixed-html
-      if (e.shiftKey && document.activeElement === first) {
+      if (e.shiftKey && document.activeElement === focusable[0]) {
         e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
+        focusable[focusable.length - 1]?.focus();
+      } else if (!e.shiftKey && document.activeElement === focusable[focusable.length - 1]) {
         e.preventDefault();
-        first.focus();
+        focusable[0]?.focus();
       }
     }
   }
@@ -1059,7 +1058,7 @@ async function showTagAssignmentDialog(
   backdrop.addEventListener(
     'click',
     () => {
-      closeDialog();
+      closeDialog(document.activeElement);
     },
     { signal }
   );
