@@ -244,7 +244,12 @@ jobs:
         if: steps.filter.outputs.unit == 'true' && github.event_name == 'pull_request'
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info
+        run: |
+          if [ -z "$CODACY_PROJECT_TOKEN" ]; then
+            echo "::warning::CODACY_PROJECT_TOKEN not set, skipping coverage upload"
+            exit 0
+          fi
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage/lcov.info
 
   sha-pin-audit:
     name: SHA-Pin Audit
