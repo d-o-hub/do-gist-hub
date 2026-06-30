@@ -31,6 +31,9 @@ Implement comprehensive responsive design with 7 breakpoints and a mobile-first 
 - **Pattern 4: Sticky Rail**: sticky rail nav with `height: 100dvh` and safe-area padding.
 - **Pattern 5: Comparison Grid**: Viewport-aware grids (1-col on mobile, 2-col on desktop).
 - **Pattern 6: Filter Stack**: Stacking filter headers vertically at ≤480px.
+- **Pattern 7: Touch Device Awareness**: Hide keyboard-only UI on `(hover: none) and (pointer: coarse)`.
+- **Pattern 8: Blur Tokens**: Use `--blur-sm/md/lg/xl/2xl` for all `backdrop-filter` values.
+- **Pattern 9: Dialog Accessibility**: `role="dialog"`, `aria-modal`, focus trap, Escape, return-focus.
 
 ## Token-Driven Workflow
 1. Update `src/tokens/responsive/breakpoints.ts`.

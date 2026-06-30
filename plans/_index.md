@@ -48,6 +48,7 @@ See `plans/archive/` for completed or superseded files moved here on 2026-05-15.
 | `archive/025-progress-update-2026-05-07.md`   | Complete ✅    | Progress update                                                |
 
 | `070-goap-design-token-system-audit-and-cleanup.md` | GOAP | Complete ✅ | Design token system audit: documentation, ADR, dead-code removal (37 recursive self-references removed) |
+| `071-goap-impeccable-ui-production-ready.md` | GOAP | Complete ✅ | Final 5% UI/UX: tag dialog a11y (P0), 9 missing tokens defined, blur/letter-spacing token discipline, mobile command-palette/keyboard-help, fork dead code removed |
 | `069-progress-update-2026-06-16-responsive-composition-v2.md` | Progress | Complete ✅ | Responsive composition v2: 8 narrow-viewport fixes, token cleanup |
 
 ## Active ADRs (accepted, not superseded)

@@ -137,7 +137,8 @@ function createDetailActions(gist: GistRecord): HTMLElement {
     'star',
     `btn ${gist.starred ? 'btn-danger' : 'btn-primary'}`
   );
-  addBtn('Fork', 'fork');
+  // Fork button removed — GitHub Gist Fork API not integrated yet (Plan 071 A11)
+  // addBtn('Fork', 'fork');
   addBtn('Edit', 'edit');
   addBtn('Revisions', 'revisions');
 
@@ -955,26 +956,37 @@ async function showTagAssignmentDialog(
   const existingDialog = container.querySelector('#tag-assignment-dialog');
   if (existingDialog) existingDialog.remove();
 
+  // Backdrop
+  const backdrop = document.createElement('div');
+  backdrop.className = 'tag-dialog-backdrop';
+
+  // Dialog element
   const dialog = document.createElement('div');
   dialog.id = 'tag-assignment-dialog';
-  dialog.className = 'tag-assignment';
-  dialog.style.cssText =
-    'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--spacing-v4); min-width: 300px; box-shadow: var(--shadow-lg);';
+  dialog.className = 'tag-dialog';
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-modal', 'true');
+  dialog.setAttribute('aria-label', 'Assign tags');
 
   const title = document.createElement('h3');
   title.className = 'form-label';
+  title.id = 'tag-dialog-title';
   title.textContent = 'Assign Tags';
+  dialog.setAttribute('aria-labelledby', 'tag-dialog-title');
   dialog.appendChild(title);
 
   const tagsList = document.createElement('div');
-  tagsList.className = 'tag-assignment-list';
-  tagsList.style.marginTop = 'var(--spacing-v2)';
+  tagsList.className = 'tag-assignment-list mt-2';
 
   for (const tag of allTags) {
     const isSelected = gistTagIds.has(tag.id);
     const item = document.createElement('button');
     item.className = `tag-assignment-item${isSelected ? ' selected' : ''}`;
-    item.style.cssText = `border-color: ${tag.color}; background: ${isSelected ? `${tag.color}20` : 'transparent'}; color: ${tag.color};`;
+    item.style.borderColor = tag.color;
+    item.style.color = tag.color;
+    if (isSelected) {
+      item.style.background = `${tag.color}20`;
+    }
     item.textContent = tag.name;
     item.dataset.tagId = tag.id;
 
@@ -986,7 +998,7 @@ async function showTagAssignmentDialog(
         } else {
           await gistStore.assignTag(gistId, tag.id);
         }
-        dialog.remove();
+        closeDialog();
         void loadTagAssignment(container, gistId, signal);
       },
       { signal }
@@ -998,11 +1010,57 @@ async function showTagAssignmentDialog(
   dialog.appendChild(tagsList);
 
   const closeBtn = document.createElement('button');
-  closeBtn.className = 'btn btn-ghost btn-sm';
+  closeBtn.className = 'btn btn-ghost mt-2';
   closeBtn.textContent = 'Close';
-  closeBtn.style.marginTop = 'var(--spacing-v2)';
-  closeBtn.addEventListener('click', () => dialog.remove(), { signal });
+  closeBtn.addEventListener('click', () => closeDialog(), { signal });
   dialog.appendChild(closeBtn);
 
+  // Close helper: remove dialog + backdrop, restore focus
+  const triggerElement = document.activeElement as HTMLElement | null;
+  function closeDialog(): void {
+    backdrop.remove();
+    dialog.remove();
+    triggerElement?.focus();
+  }
+
+  // Escape key handler
+  function handleKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeDialog();
+    }
+    // Focus trap: Tab cycles within dialog
+    if (e.key === 'Tab') {
+      const focusable = dialog.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0] as HTMLElement;
+      const last = focusable[focusable.length - 1] as HTMLElement;
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+
+  dialog.addEventListener('keydown', handleKeydown, { signal });
+
+  // Backdrop click closes
+  backdrop.addEventListener('click', () => closeDialog(), { signal });
+
+  document.body.appendChild(backdrop);
   document.body.appendChild(dialog);
+
+  // Move focus into dialog
+  const firstFocusable = dialog.querySelector<HTMLElement>('button, [tabindex]');
+  if (firstFocusable) {
+    firstFocusable.focus();
+  } else {
+    dialog.setAttribute('tabindex', '-1');
+    dialog.focus();
+  }
 }
