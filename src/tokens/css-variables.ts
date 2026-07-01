@@ -108,6 +108,7 @@ export function generateCSSVariables(): string {
   --spacing-v80: var(--spacing-v80);
   --spacing-v96: var(--spacing-v96);
   --spacing-v100: var(--spacing-v100);
+  --spacing-v128: 32rem;
 
   /* ===== Typography Tokens ===== */
   --font-family-sans: var(--font-family-sans);
@@ -168,6 +169,14 @@ export function generateCSSVariables(): string {
   --radius-3xl: var(--radius-3xl);
   --radius-full: var(--radius-full);
   
+  /* ===== Blur Tokens (Plan 071) ===== */
+  --blur-xs: 2px;
+  --blur-sm: 4px;
+  --blur-md: 8px;
+  --blur-lg: 12px;
+  --blur-xl: 20px;
+  --blur-2xl: 32px;
+
   /* ===== Motion Tokens (2026) ===== */
   --motion-duration-instant: var(--motion-duration-instant);
   --motion-duration-fast: var(--motion-duration-fast);
@@ -248,6 +257,13 @@ export function generateCSSVariables(): string {
   --glass-border: 1px solid var(--color-border-default);
   --glass-shadow: var(--shadow-md);
   --radius-card: var(--radius-xl);
+
+  /* ===== Missing Token Definitions (Plan 071) ===== */
+  --color-border-subtle: var(--color-border-default);
+  --color-on-accent: var(--color-foreground-inverse);
+  --color-overlay-dark: rgba(0, 0, 0, 0.6);
+  --color-overlay-light: rgba(255, 255, 255, 0.08);
+  --color-text-secondary: var(--color-foreground-secondary);
 
   /* ===== Surface & Overlay Tokens ===== */
   --color-surface-overlay: var(--semantic-dark-overlay-surface);
@@ -356,6 +372,13 @@ export function generateCSSVariables(): string {
   --color-status-success-subtle: var(--semantic-light-status-success-subtle);
   --skeleton-shimmer-start: var(--semantic-light-skeleton-shimmer-start);
   --skeleton-shimmer-mid: var(--semantic-light-skeleton-shimmer-mid);
+
+  /* Plan 071 token definitions */
+  --color-border-subtle: var(--color-border-default);
+  --color-on-accent: var(--color-foreground-inverse);
+  --color-overlay-dark: rgba(0, 0, 0, 0.4);
+  --color-overlay-light: rgba(0, 0, 0, 0.04);
+  --color-text-secondary: var(--color-foreground-secondary);
 }
 
 /* Light mode OKLCH shadows */

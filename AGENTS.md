@@ -79,6 +79,7 @@ Consult `.agents/skills/` or `agents-docs/available-skills.md` for the full skil
 | `plans/060-goap-plain-text-paste-llm-gist-creation.md` | Plain text paste parser, LLM-assisted gist creation, drag-and-drop file import |
 | `plans/066-progress-update-2026-06-02-responsive-recomposition.md` | Responsive recomposition pass — 8 narrow-viewport gaps fixed, breakpoint tokens + media queries + component tokens added |
 | `plans/071-progress-update-2026-06-27-impeccable-ui-modernization.md` | Impeccable UI modernization — all phases complete, 0 detector findings |
+| `plans/071-goap-impeccable-ui-production-ready.md`          | Final 5% UI/UX completion: tag dialog a11y, 9 missing tokens, blur/letter-spacing tokens, mobile palette/keyboard-help, dead fork button removed |
 | `.agents/skills/codebase-optimizer/SKILL.md`               | Autonomous optimization and self-learning system                                        |
 | `.qwen/skills/` / `.gemini/skills/`                        | 25 skills mirrored across agent frameworks (Qwen, Gemini, Claude)                       |
 
@@ -129,6 +130,9 @@ This section is automatically updated by `./scripts/analyze-codebase.sh`.
 2. **Dynamic Viewport**: Use `100dvh` for app shell on mobile
 3. **Safe Areas**: Include `env(safe-area-inset-*)` for header/footer padding
 4. **Flex Scrolling**: Add `min-height: 0` to flex children with overflow
+5. **Token Discipline (Plan 071)**: Never hardcode `letter-spacing`, `backdrop-filter: blur()`, or animation durations — use `--letter-spacing-*`, `--blur-*`, and `--motion-duration-*` tokens
+6. **Dialog Accessibility**: All custom dialogs MUST have `role="dialog"`, `aria-modal="true"`, focus trap, Escape handling, and return-focus-on-close
+7. **Touch Device Awareness**: Hide keyboard-only UI (shortcuts footer, keyboard-help modal) on `(hover: none) and (pointer: coarse)`
 
 ### Issue History
 

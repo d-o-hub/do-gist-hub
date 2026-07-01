@@ -159,10 +159,11 @@ describe('GistDetail', () => {
       expect(w.querySelector('.file-tabs')).toBeNull();
     });
 
-    it('renders star and fork buttons', () => {
+    it('renders star and edit buttons', () => {
       const w = renderToWrapper(mockGist);
       expect(w.querySelector('[data-action="star"]')).not.toBeNull();
-      expect(w.querySelector('[data-action="fork"]')).not.toBeNull();
+      // Fork button removed — GitHub Gist Fork API not integrated yet (Plan 071 A11)
+      expect(w.querySelector('[data-action="fork"]')).toBeNull();
       expect(w.querySelector('[data-action="edit"]')).not.toBeNull();
     });
 

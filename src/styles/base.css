@@ -183,7 +183,7 @@ body {
   color: var(--color-foreground-muted);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  letter-spacing: 0.05em;
+  letter-spacing: var(--letter-spacing-wider);
   text-transform: uppercase;
   margin: 0 0 var(--space-3);
   min-height: var(--spacing-v5);
@@ -381,7 +381,7 @@ body {
 .form-label {
   font-size: var(--text-micro);
   font-weight: 700;
-  letter-spacing: 0.3em;
+  letter-spacing: var(--letter-spacing-widest);
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
@@ -758,7 +758,7 @@ body {
   font-family: var(--font-mono);
   font-size: var(--text-micro);
   font-weight: 700;
-  letter-spacing: 0.15em;
+  letter-spacing: var(--letter-spacing-widest);
   text-transform: uppercase;
   color: var(--color-status-warning-fg);
   cursor: help;
@@ -924,7 +924,7 @@ body {
   border: 1px solid var(--color-border);
   font-size: var(--text-micro);
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: var(--letter-spacing-widest);
   text-transform: uppercase;
   color: var(--color-accent-text);
   background: var(--color-accent-subtle);
@@ -1127,7 +1127,7 @@ body {
   gap: var(--space-2);
   font-family: var(--font-mono);
   font-size: var(--text-micro);
-  letter-spacing: 0.2em;
+  letter-spacing: var(--letter-spacing-widest);
   text-transform: uppercase;
   color: var(--color-text-faint);
 }
@@ -2230,7 +2230,7 @@ textarea.form-textarea {
 .error-title {
   font-family: var(--font-display);
   font-size: var(--font-size-lg);
-  letter-spacing: 0.05em;
+  letter-spacing: var(--letter-spacing-wider);
   color: var(--color-foreground-primary);
   margin: 0;
   text-wrap: balance;
@@ -2342,7 +2342,7 @@ textarea.form-textarea {
 
   .file-editor .remove-file-btn {
     flex: 1 1 100%;
-    min-height: var(--spacing-11);
+    min-height: var(--spacing-v11);
   }
 }
 
@@ -2390,6 +2390,34 @@ textarea.form-textarea {
   .form-actions.flex-col.gap-2 > .flex-row.gap-2 .btn {
     flex: 1 1 100%;
   }
+}
+
+/* ===== Tag Dialog (Plan 071 — A7-A10) ===== */
+.tag-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay-dark);
+  backdrop-filter: blur(var(--blur-sm));
+  z-index: 999;
+}
+
+.tag-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  width: min(300px, calc(100vw - var(--space-8)));
+  max-height: calc(100dvh - var(--space-8));
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 /* ===== Tag Chips ===== */
