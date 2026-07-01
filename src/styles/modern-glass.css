@@ -47,7 +47,7 @@
   font-family: var(--font-body);
   font-size: var(--text-micro);
   font-weight: 700;
-  letter-spacing: 0.3em;
+  letter-spacing: var(--letter-spacing-widest);
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
@@ -67,7 +67,7 @@
   inset: 0;
   z-index: var(--z-index-modal);
   background: var(--color-backdrop-medium);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--blur-md));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,6 +89,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  background: var(--color-background-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2xl);
   transform: scale(0.95);
   transition: transform var(--motion-duration-base) var(--motion-easing);
 }
@@ -100,7 +104,8 @@
 .confirm-title {
   font-family: var(--font-display);
   font-size: var(--text-lg);
-  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wider);
   color: var(--color-text);
 }
 
