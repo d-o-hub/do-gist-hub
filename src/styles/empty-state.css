@@ -12,24 +12,10 @@
   margin: var(--spacing-v4) 0;
 }
 
-/* Tighter padding on very narrow phones so the title and
-   description don't get crushed against the container edges. */
-@media (max-width: 480px) {
-  .empty-state-container {
-    padding: var(--spacing-v8) var(--spacing-v4);
-  }
-  .empty-state-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-  .empty-state-actions .btn {
-    width: 100%;
-  }
-}
 .empty-state-title {
   font-family: var(--font-display);
   font-size: var(--font-size-lg);
-  letter-spacing: 0.05em;
+  letter-spacing: var(--letter-spacing-wider);
   color: var(--color-foreground-primary);
   margin-bottom: var(--spacing-v2);
   text-wrap: balance;
@@ -39,7 +25,7 @@
   color: var(--color-foreground-muted);
   max-width: 65ch;
   margin-bottom: var(--spacing-v6);
-  line-height: 1.5;
+  line-height: var(--line-height-normal);
   text-wrap: pretty;
 }
 .empty-state-icon {
@@ -56,12 +42,14 @@
 }
 
 @media (max-width: 480px) {
+  .empty-state-container {
+    padding: var(--spacing-v8) var(--spacing-v4);
+  }
   .empty-state-actions {
     flex-direction: column-reverse;
     align-items: stretch;
     width: 100%;
   }
-
   .empty-state-actions .btn {
     width: 100%;
   }

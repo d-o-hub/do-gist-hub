@@ -2,7 +2,7 @@
   position: fixed;
   inset: 0;
   background: var(--color-surface-overlay);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--blur-md));
   opacity: 0;
   visibility: hidden;
   transition:
@@ -95,7 +95,7 @@
   font-weight: 700;
   color: var(--color-accent-text);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--letter-spacing-widest);
 }
 
 .keyboard-help-list {
@@ -124,4 +124,33 @@
   margin: 0;
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
+}
+
+/* Touch devices: keyboard shortcuts are irrelevant */
+@media (hover: none) and (pointer: coarse) {
+  .keyboard-help-modal {
+    display: none;
+  }
+  .keyboard-help-backdrop {
+    display: none;
+  }
+}
+
+/* Mobile: tighter padding, constrain to safe area */
+@media (max-width: 480px) {
+  .keyboard-help-modal {
+    max-height: calc(100dvh - var(--space-8));
+  }
+
+  .keyboard-help-header {
+    padding: var(--space-3);
+  }
+
+  .keyboard-help-body {
+    padding: var(--space-3);
+  }
+
+  .keyboard-help-list {
+    gap: var(--space-1) var(--space-3);
+  }
 }
