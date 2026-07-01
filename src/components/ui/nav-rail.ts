@@ -59,9 +59,9 @@ export class NavRail {
     ).join('');
 
     return `
-      <aside class="rail-nav" role="navigation" aria-label="Rail navigation">
+      <nav class="rail-nav" data-testid="rail-nav" role="navigation" aria-label="Main navigation">
         ${itemsHtml}
-      </aside>
+      </nav>
     `;
   }
 

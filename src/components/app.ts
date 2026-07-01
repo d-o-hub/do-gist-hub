@@ -337,7 +337,7 @@ export class App {
     this.container.innerHTML = `
       <a href="#main-content" class="skip-link">Skip to main content</a>
       <div class="app-shell">
-        <aside class="sidebar-nav" data-testid="sidebar-nav" role="navigation" aria-label="Sidebar navigation">
+        <aside class="sidebar-nav" data-testid="sidebar-nav" role="navigation" aria-label="Main navigation">
           <div class="nav-section">
             <div class="nav-section-title" id="nav-primary-title">Navigation</div>
             <ul role="menubar" aria-labelledby="nav-primary-title">
@@ -381,11 +381,6 @@ export class App {
                   <span>Settings</span>
                 </button>
               </li>
-              <li role="none">
-                <button role="menuitem" class="sidebar-item install-app-btn" id="install-app-btn" data-testid="install-app-btn" hidden>
-                  <span>Install App</span>
-                </button>
-              </li>
             </ul>
           </div>
         </aside>
@@ -405,14 +400,21 @@ export class App {
               }
             </button>
             <div id="sync-indicator" class="sync-indicator" data-status="online"><span class="sync-dot" aria-hidden="true"></span><span class="sr-only" aria-live="polite" aria-atomic="true">online</span></div>
-            <button id="mobile-menu-btn" class="icon-button" aria-label="Open menu" data-testid="mobile-menu-btn" aria-expanded="false" aria-controls="mobile-menu">Menu</button>
-            <button class="icon-button" aria-label="Settings" data-testid="settings-btn" data-route="settings">Settings</button>
+            <button id="install-app-btn" class="icon-button" aria-label="Install app" data-testid="install-app-btn" hidden>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <button id="mobile-menu-btn" class="icon-button" aria-label="Open menu" data-testid="mobile-menu-btn" aria-expanded="false" aria-controls="mobile-menu">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <button class="icon-button" aria-label="Settings" data-testid="settings-btn" data-route="settings">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
           </div>
         </header>
 
         <main class="app-main" id="main-content" tabindex="-1"></main>
 
-        <nav class="bottom-nav" data-testid="bottom-nav" role="navigation" aria-label="Bottom navigation">
+        <nav class="bottom-nav" data-testid="bottom-nav" role="navigation" aria-label="Main navigation">
           <button class="nav-item ${this.currentRoute === 'home' ? 'active' : ''}" data-route="home" data-testid="nav-home" ${this.currentRoute === 'home' ? 'aria-current="page"' : ''}>
             <span class="nav-label">Home</span>
           </button>

@@ -18,14 +18,14 @@
 }
 
 /* Hide mobile-only header buttons when rail/sidebar is visible */
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   #mobile-menu-btn {
     display: none;
   }
 }
 
-/* Hide header settings button when sidebar is visible (desktop has Settings in sidebar) */
-@media (min-width: 1024px) {
+/* Hide header settings button when rail/sidebar is visible (they have Settings) */
+@media (min-width: 640px) {
   .header-right .icon-button[data-route="settings"] {
     display: none;
   }
@@ -72,6 +72,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  flex-shrink: 0;
 }
 
 .app-title {
@@ -118,6 +119,9 @@
 }
 
 .chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-chip);
   font-size: var(--text-xs);
@@ -130,6 +134,7 @@
   cursor: pointer;
   transition: all var(--motion-duration-fast) var(--motion-easing);
   min-height: var(--spacing-v11);
+  min-width: var(--spacing-v11);
 }
 
 .chip.active,
@@ -152,8 +157,8 @@
   display: none;
 }
 
-/* ===== Bottom Navigation — Mobile (320px-767px) ===== */
-@media (max-width: 767px) {
+/* ===== Bottom Navigation — Mobile (< 640px) ===== */
+@media (max-width: 639px) {
   .bottom-nav {
     display: flex;
     position: fixed;
@@ -233,8 +238,8 @@
   border-radius: var(--radius-md);
 }
 
-/* ===== Rail Navigation — Tablet (768px-1023px) ===== */
-@media (min-width: 768px) and (max-width: 1023px) {
+/* ===== Rail Navigation — Tablet (640px-1023px) ===== */
+@media (min-width: 640px) and (max-width: 1023px) {
   .rail-nav {
     display: flex;
     flex-direction: column;
@@ -257,7 +262,8 @@
 
 @media (min-width: 1024px) {
   .sidebar-nav {
-    display: block;
+    display: flex;
+    flex-direction: column;
     width: var(--nav-sidebar-width, 240px);
     background: var(--color-nav-bg);
     border-right: 1px solid var(--color-border-default);
@@ -377,7 +383,7 @@
 }
 
 /* Tablet+: grid layout with side nav */
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .app-shell {
     display: grid;
     grid-template-columns: auto 1fr;
