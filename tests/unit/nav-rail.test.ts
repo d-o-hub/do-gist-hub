@@ -36,12 +36,12 @@ describe('NavRail', () => {
   // ── render ──────────────────────────────────────────────────────────
 
   describe('render', () => {
-    it('returns HTML with navigation aside', () => {
+    it('returns HTML with navigation', () => {
       const html = navRail.render('home');
 
       expect(html).toContain('rail-nav');
       expect(html).toContain('role="navigation"');
-      expect(html).toContain('Rail navigation');
+      expect(html).toContain('Main navigation');
     });
 
     it('renders all navigation items', () => {

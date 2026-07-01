@@ -165,9 +165,11 @@ test.describe('Mobile Responsive', () => {
     const clientWidth = await page.evaluate(() => document.documentElement.clientWidth);
     expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1);
 
-    // Bottom nav should still be visible
+    // Main navigation should still be visible (either bottom nav or rail nav)
     const bottomNav = page.locator('[data-testid="bottom-nav"]');
-    const navVisible = await bottomNav.isVisible().catch(() => false);
-    expect(navVisible).toBe(true);
+    const railNav = page.locator('[data-testid="rail-nav"]');
+    const bottomVisible = await bottomNav.isVisible().catch(() => false);
+    const railVisible = await railNav.isVisible().catch(() => false);
+    expect(bottomVisible || railVisible).toBe(true);
   });
 });
