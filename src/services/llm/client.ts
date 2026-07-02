@@ -7,6 +7,7 @@
 import type { LLMClient, LLMConfig, ParsedFile, ParsedPasteResult } from '../../types/gist';
 import { getMetadata, setMetadata } from '../db';
 import { parsePasteText } from '../gist-paste-parser';
+import { decrypt, encrypt } from '../security/crypto';
 import { safeError } from '../security/logger';
 
 const LLM_CONFIG_KEY = 'llm-config';
@@ -25,7 +26,20 @@ const DEFAULT_CONFIG: LLMConfig = {
 export async function loadLLMConfig(): Promise<LLMConfig> {
   try {
     const config = await getMetadata<LLMConfig>(LLM_CONFIG_KEY);
-    return config ?? DEFAULT_CONFIG;
+    if (!config) return DEFAULT_CONFIG;
+
+    // Sentinel: Decrypt API key if it's stored in encrypted format
+    if (config.apiKey && typeof config.apiKey === 'object' && 'data' in config.apiKey) {
+      try {
+        const encrypted = config.apiKey as { data: string; iv: string };
+        config.apiKey = await decrypt(encrypted.data, encrypted.iv);
+      } catch (err) {
+        safeError('[LLM] Failed to decrypt API key', err);
+        config.apiKey = undefined;
+      }
+    }
+
+    return config;
   } catch {
     return DEFAULT_CONFIG;
   }
@@ -35,7 +49,18 @@ export async function loadLLMConfig(): Promise<LLMConfig> {
  * Save LLM configuration to IndexedDB
  */
 export async function saveLLMConfig(config: LLMConfig): Promise<void> {
-  await setMetadata(LLM_CONFIG_KEY, config);
+  const configToSave = { ...config };
+
+  // Sentinel: Encrypt API key before persisting to IndexedDB
+  if (configToSave.apiKey && typeof configToSave.apiKey === 'string') {
+    try {
+      configToSave.apiKey = (await encrypt(configToSave.apiKey)) as unknown as string;
+    } catch (err) {
+      safeError('[LLM] Failed to encrypt API key', err);
+    }
+  }
+
+  await setMetadata(LLM_CONFIG_KEY, configToSave);
 }
 
 /**

@@ -14,6 +14,11 @@ vi.mock('../../src/services/security/logger', () => ({
   safeError: vi.fn(),
 }));
 
+vi.mock('../../src/services/security/crypto', () => ({
+  encrypt: vi.fn((text: string) => Promise.resolve({ data: `enc-${text}`, iv: 'iv' })),
+  decrypt: vi.fn((data: string) => Promise.resolve(data.replace('enc-', ''))),
+}));
+
 vi.mock('../../src/services/github/auth', () => ({
   getToken: vi.fn(),
 }));
@@ -27,6 +32,7 @@ vi.mock('../../src/services/gist-paste-parser', () => ({
 // ── Imports (after mocks) ───────────────────────────────────────────
 
 import { getMetadata, setMetadata } from '../../src/services/db';
+import { decrypt, encrypt } from '../../src/services/security/crypto';
 import {
   createLLMClient,
   generateDescription,
@@ -57,16 +63,30 @@ describe('LLM Client', () => {
       const config = await loadLLMConfig();
       expect(config).toEqual(stored);
     });
+
+    it('decrypts encrypted API key', async () => {
+      const stored = {
+        provider: 'openai',
+        apiKey: { data: 'enc-sk-test', iv: 'iv' },
+        enabled: true,
+      };
+      vi.mocked(getMetadata).mockResolvedValue(stored);
+
+      const config = await loadLLMConfig();
+      expect(decrypt).toHaveBeenCalled();
+      expect(config.apiKey).toBe('sk-test');
+    });
   });
 
   describe('saveLLMConfig', () => {
-    it('saves config to IndexedDB', async () => {
+    it('saves encrypted config to IndexedDB', async () => {
       vi.mocked(setMetadata).mockResolvedValue(undefined);
 
       await saveLLMConfig({ provider: 'openai', apiKey: 'sk-test', enabled: true });
+      expect(encrypt).toHaveBeenCalledWith('sk-test');
       expect(setMetadata).toHaveBeenCalledWith('llm-config', {
         provider: 'openai',
-        apiKey: 'sk-test',
+        apiKey: { data: 'enc-sk-test', iv: 'iv' },
         enabled: true,
       });
     });
