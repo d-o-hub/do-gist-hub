@@ -545,6 +545,7 @@ export async function exportData(): Promise<string> {
     .map((m) => {
       if (m.key === 'llm-config' && m.value && typeof m.value === 'object') {
         const config = { ...(m.value as Record<string, unknown>) };
+        // Sentinel: Redact API key regardless of format (string or encrypted object)
         if (config.apiKey) config.apiKey = '[REDACTED]';
         return { ...m, value: config };
       }

@@ -181,7 +181,6 @@
   --motion-easing-in: var(--motion-easing-in);
   --motion-easing-out-expo: var(--motion-easing-out-expo);
   --motion-easing-in-expo: var(--motion-easing-in-expo);
-  --motion-easing-elastic: var(--motion-easing-elastic);
   --motion-easing-spring: var(--motion-easing-spring);
 
   /* Legacy aliases for backward compatibility */

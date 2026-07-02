@@ -31,6 +31,7 @@ export function redactSecrets(input: string): string {
     /(ghs_[A-Za-z0-9_]{36,})/g, // Installation token
     /(Bearer [A-Za-z0-9._~+\-/]{20,}=*)/g, // Bearer token (JWT/Base64)
     /(token [A-Za-z0-9_]{20,})/g, // Token header value
+    /(sk-[A-Za-z0-9-]{32,})/g, // OpenAI API Key
   ];
 
   let result = input;

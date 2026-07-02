@@ -17,6 +17,7 @@ const OAUTH = gh('gho', `${PAT_BODY}valid`);
 const JWT_SEG1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
 const JWT_SEG2 = 'eyJzdWIiOiIxMjM0NTY3ODkwIn0';
 const JWT = `${JWT_SEG1}.${JWT_SEG2}`;
+const OPENAI_KEY = 'sk-1234567890abcdef1234567890abcdef';
 
 // ─── Mocks ─────────────────────────────────────────────────────────
 
@@ -211,6 +212,11 @@ describe('security logger', () => {
     it('returns empty/falsy input unchanged', () => {
       expect(redactSecrets('')).toBe('');
       expect(redactSecrets(null as unknown as string)).toBeNull();
+    });
+
+    it('should redact OpenAI API keys', () => {
+      const input = `My key is ${OPENAI_KEY}`;
+      expect(redactSecrets(input)).toBe('My key is [REDACTED]');
     });
   });
 
